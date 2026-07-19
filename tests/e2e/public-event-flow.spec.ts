@@ -19,7 +19,7 @@ test("목록에서 필터하고 상세·원문·주변 명소를 확인한다", 
   await context.route("https://www.sokcho.go.kr/**", (route) => route.abort());
 
   await page.goto("/");
-  await expect(page.getByRole("heading", { name: "오늘 속초에서 뭐 하지?" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "요즘 속초에서 뭐 하지?" })).toBeVisible();
   await expect(page.getByRole("heading", { name: /찾은 행사 8개/ })).toBeVisible();
   await page.getByRole("link", { name: "가족", exact: true }).click();
   await expect(page).toHaveURL(/audience=family/);

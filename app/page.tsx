@@ -26,9 +26,9 @@ export default async function HomePage({ searchParams }: HomePageProps) {
       <section className="overflow-hidden bg-gradient-to-br from-teal-900 via-teal-800 to-cyan-700 text-white">
         <div className="mx-auto grid max-w-6xl gap-8 px-4 py-14 sm:px-6 sm:py-20 lg:grid-cols-[1.4fr_0.6fr] lg:items-end">
           <div>
-            <p className="mb-4 inline-flex rounded-full bg-white/15 px-3 py-1.5 text-sm font-bold ring-1 ring-white/20">속초의 오늘을 한곳에</p>
-            <h1 className="max-w-3xl text-4xl font-black leading-tight tracking-tight sm:text-6xl">오늘 속초에서<br />뭐 하지?</h1>
-            <p className="mt-6 max-w-2xl text-base leading-7 text-cyan-50 sm:text-lg">흩어진 공연·축제·체험·교육 정보를 비교하고, 확인된 원문이나 신청 페이지로 바로 이동하세요.</p>
+            <p className="mb-4 inline-flex rounded-full bg-white/15 px-3 py-1.5 text-sm font-bold ring-1 ring-white/20">속초의 요즘을 한눈에</p>
+            <h1 className="max-w-3xl text-4xl font-black leading-tight tracking-tight sm:text-6xl">요즘 속초에서<br />뭐 하지?</h1>
+            <p className="mt-6 max-w-2xl text-base leading-7 text-cyan-50 sm:text-lg">이번 주말부터 다가오는 행사까지, 속초의 공연·축제·체험·교육 정보를 한눈에 확인하세요.</p>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="rounded-3xl bg-white/12 p-5 ring-1 ring-white/20 backdrop-blur">

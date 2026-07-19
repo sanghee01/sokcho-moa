@@ -6,7 +6,7 @@ import { getPublicEnv } from "@/lib/config/env";
 import "./globals.css";
 
 const siteUrl = getPublicEnv().NEXT_PUBLIC_SITE_URL;
-const defaultTitle = "속초모아 | 오늘 속초에서 뭐 하지?";
+const defaultTitle = "속초모아 | 요즘 속초에서 뭐 하지?";
 const description = "속초의 행사·공연·축제·체험·교육 프로그램을 한곳에서 비교하세요.";
 
 export const metadata: Metadata = {
@@ -44,13 +44,13 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
           <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
             <Link href="/" className="block overflow-hidden rounded-2xl ring-teal-700/30 focus-visible:ring-4">
               <Image
-                src="/sokchomoa-logo.jpeg"
+                src="/sokchomoa-header.png"
                 alt="속초모아"
-                width={1254}
-                height={1254}
+                width={1918}
+                height={820}
                 priority
-                sizes="(min-width: 640px) 64px, 56px"
-                className="h-14 w-14 object-contain sm:h-16 sm:w-16"
+                sizes="(min-width: 640px) 176px, 144px"
+                className="h-auto w-36 object-contain sm:w-44"
               />
             </Link>
             <nav aria-label="주요 메뉴" className="flex items-center gap-3 text-sm font-semibold">

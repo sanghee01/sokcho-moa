@@ -3,6 +3,7 @@ import { metadata } from "@/app/layout";
 
 describe("home metadata", () => {
   it("publishes canonical, Open Graph, and Twitter metadata", () => {
+    expect(metadata.title).toMatchObject({ default: "속초모아 | 요즘 속초에서 뭐 하지?" });
     expect(metadata.alternates?.canonical).toBe("/");
     expect(metadata.openGraph).toMatchObject({
       type: "website",
