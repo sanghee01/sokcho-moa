@@ -1,17 +1,73 @@
 # 속초모아
 
-속초의 공연·축제·체험·교육 정보를 날짜, 신청 가능 여부, 요금, 대상, 카테고리로 찾아보고 원문과 주변 명소까지 확인하는 운영용 MVP입니다. 공개 화면은 서버 렌더링과 ISR을 사용하고, 관리자는 Supabase Auth와 `admin_users` 허용 목록을 통과한 한 명의 운영자를 전제로 합니다.
+> 오늘 속초에서 뭐 하지?
+
+속초모아는 여러 기관과 채널에 흩어진 속초의 공연, 축제, 체험, 교육 정보를 한곳에서 찾도록 돕는 지역 행사 탐색 서비스입니다. 날짜, 신청 상태, 요금, 대상, 카테고리로 행사를 비교하고 공식 원문과 주변 명소까지 이어서 확인할 수 있습니다.
+
+[속초모아 서비스 바로가기](https://sokcho-moa.vercel.app/)
+
+## 서비스가 해결하려는 문제
+
+속초의 행사 정보는 시청, 문화기관, 관광시설, 사회관계망 서비스(SNS) 등에 나뉘어 올라옵니다. 주민과 여행자는 여러 페이지를 오가며 일정, 신청 마감일, 이용 대상, 요금을 직접 비교해야 합니다.
+
+속초모아는 이 탐색 과정을 한 화면으로 줄입니다:
+
+- 오늘, 이번 주, 이번 달에 열리는 행사 찾기
+- 신청 가능, 무료, 대상, 카테고리 조건으로 필터링하기
+- 행사 기간, 장소, 요금, 신청 상태를 한눈에 비교하기
+- 공식 원문과 신청 페이지에서 최신 정보 확인하기
+- 행사 전후에 방문할 주변 명소 살펴보기
+
+## 핵심 기능
+
+### 방문자를 위한 행사 탐색
+
+공개 화면은 검수를 마친 행사만 보여줍니다. 필터 조건은 주소에 남기 때문에 검색 결과를 그대로 공유할 수 있습니다.
+
+- 행사명, 장소, 기관 통합 검색
+- 오늘, 이번 주, 이번 달 기간 필터
+- 신청 가능, 무료 행사 필터
+- 아동, 청소년, 가족, 성인 대상 필터
+- 공연, 축제, 체험, 교육, 전시 카테고리 필터
+- 진행 예정, 진행 중, 종료 및 신청 상태 표시
+- 공식 원문, 신청 페이지, 지도 링크 제공
+- 행사 위치를 기준으로 주변 명소 추천
+
+### 운영자를 위한 정보 관리
+
+운영자는 행사 정보를 등록하고 검수한 뒤 공개합니다. 관리자 화면은 Supabase Auth 로그인과 `admin_users` 허용 목록을 모두 통과해야 사용할 수 있습니다.
+
+- 행사 등록, 수정, 공개, 비공개, 반려, 삭제
+- 대표 이미지 업로드
+- 원문 출처와 마지막 확인 날짜 기록
+- 주변 명소 등록 및 공개 상태 관리
+- 수집한 행사 후보를 검수 대기로 가져오기
+
+## 정보 신뢰 원칙
+
+속초모아는 행사를 소개하는 탐색 서비스이며 공식 주최 기관을 대신하지 않습니다. 운영 정보가 바뀔 수 있으므로 방문하거나 신청하기 전에 각 행사 카드의 원문을 확인해야 합니다.
+
+- 출처 URL이 있는 정보만 등록합니다
+- 운영자가 내용을 검수한 행사만 공개합니다
+- 확인할 수 없는 값은 추측해서 채우지 않습니다
+- 원문 출처와 마지막 확인 날짜를 함께 관리합니다
+- 자동 수집을 도입해도 운영자 검수 전에는 공개하지 않습니다
 
 ## 기술 구성
 
-- Next.js App Router, React, TypeScript, Tailwind CSS
-- Supabase Postgres, Auth, Storage, RLS
-- Zod, Vitest, Playwright
-- Vercel 배포 기준
+| 영역 | 기술 |
+| --- | --- |
+| 웹 애플리케이션 | Next.js App Router, React, TypeScript, Tailwind CSS |
+| 데이터 및 인증 | Supabase Postgres, Auth, Storage, Row Level Security (RLS) |
+| 입력 검증 | Zod |
+| 테스트 | Vitest, Playwright |
+| 배포 | Vercel |
 
-## 로컬 실행
+공개 목록은 서버에서 렌더링합니다. 행사 상세와 사이트맵은 Incremental Static Regeneration (ISR)으로 캐시하며, 운영자가 정보를 변경하면 관련 경로를 갱신합니다.
 
-Node.js 22와 pnpm 9를 사용합니다.
+## 로컬에서 실행하기
+
+Node.js 22와 pnpm 9가 필요합니다. 다음 명령은 의존성을 설치하고 샘플 데이터 모드로 개발 서버를 실행합니다.
 
 ```bash
 pnpm install
@@ -19,102 +75,87 @@ cp .env.example .env.local
 pnpm dev
 ```
 
-기본 `NEXT_PUBLIC_DATA_MODE=demo`에서는 자격증명 없이 `http://localhost:3000`에서 명시적으로 표시된 샘플 8개를 볼 수 있습니다. 샘플은 실제 행사 정보가 아닙니다.
+브라우저에서 `http://localhost:3000`을 엽니다. 기본 `demo` 모드는 실제 행사 정보가 아닌 화면 검증용 샘플 8개를 표시합니다.
 
-## 환경 변수
+## 환경 변수 설정하기
 
-실제 키 이름과 기본값은 `.env.example`에 있습니다.
+`.env.example`을 `.env.local`로 복사한 뒤 실행 환경에 맞게 값을 입력합니다.
 
-| 이름 | 용도 |
-| --- | --- |
-| `NEXT_PUBLIC_DATA_MODE` | `demo` 또는 `supabase` |
-| `NEXT_PUBLIC_SITE_URL` | canonical, sitemap, robots의 공개 기준 URL |
-| `NEXT_PUBLIC_SUPABASE_URL` | Supabase Project URL |
-| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | 브라우저와 서버의 RLS 적용 공개 키 |
-| `SUPABASE_SERVICE_ROLE_KEY` | 향후 서버 전용 자동 수집용 예약 값. 현재 앱 코드는 사용하지 않음 |
-| `REVALIDATE_SECRET` | 외부 작업이 `POST /api/revalidate`를 호출할 때의 Bearer 비밀값 |
+| 이름 | 용도 | 공개 여부 |
+| --- | --- | --- |
+| `NEXT_PUBLIC_DATA_MODE` | `demo` 또는 `supabase` 데이터 모드 | 공개 |
+| `NEXT_PUBLIC_SITE_URL` | canonical URL, 사이트맵, robots 기준 주소 | 공개 |
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase 프로젝트 URL | 공개 |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | RLS가 적용되는 publishable key | 공개 |
+| `SUPABASE_SERVICE_ROLE_KEY` | 향후 서버 전용 자동 수집 기능용 키 | 비공개 |
+| `REVALIDATE_SECRET` | 외부 작업의 캐시 갱신 요청 인증값 | 비공개 |
 
-`SUPABASE_SERVICE_ROLE_KEY`와 `REVALIDATE_SECRET`에는 `NEXT_PUBLIC_` 접두사를 붙이지 않습니다.
+`SUPABASE_SERVICE_ROLE_KEY`와 `REVALIDATE_SECRET`에는 `NEXT_PUBLIC_` 접두사를 붙이지 마세요. 두 값은 브라우저 코드나 공개 저장소에 포함하면 안 됩니다.
 
-## Supabase 연결
+## Supabase 연결하기
 
-다음 단계는 Supabase Dashboard에서 운영자가 직접 수행합니다.
+실제 운영 데이터를 사용하려면 Supabase 프로젝트에 스키마와 운영자 계정을 설정합니다:
 
-1. 새 프로젝트를 만들고 SQL Editor에서 `supabase/migrations/202607190001_initial_schema.sql`을 실행합니다.
-2. 필요할 때만 `supabase/seed.sql`을 실행합니다. 이 파일의 행사는 모두 샘플이며 실제 운영 데이터로 간주하면 안 됩니다.
-3. Authentication의 Users에서 이메일/비밀번호 운영자 한 명을 만듭니다.
-4. SQL Editor에서 아래 값을 실제 Auth 사용자 값으로 바꿔 허용 목록에 넣습니다.
+1. SQL Editor에서 `supabase/migrations/202607190001_initial_schema.sql`을 실행합니다.
+2. Authentication의 **Users**에서 이메일과 비밀번호를 사용하는 운영자를 만듭니다.
+3. 운영자의 사용자 ID와 이메일을 `public.admin_users`에 등록합니다.
+4. `.env.local`에 프로젝트 URL과 publishable key를 입력합니다.
+5. `NEXT_PUBLIC_DATA_MODE=supabase`로 변경합니다.
+6. `/admin/login`에서 로그인해 행사와 명소를 관리합니다.
+
+다음 쿼리의 값을 실제 운영자 정보로 바꿔 실행합니다:
 
 ```sql
 insert into public.admin_users (user_id, email)
-values ('AUTH_USER_UUID', 'operator@example.com');
+values ('00000000-0000-0000-0000-000000000000', 'operator@example.com');
 ```
 
-5. Project Settings > API의 Project URL과 publishable key를 `.env.local`에 넣고 `NEXT_PUBLIC_DATA_MODE=supabase`로 바꿉니다.
-6. `/admin/login`에서 로그인한 뒤 `/admin`에서 행사와 명소를 관리합니다.
-
-Migration은 공개된 행사와 명소만 익명 읽기를 허용하고, 쓰기는 로그인한 `admin_users`에만 허용합니다. `event-images` 버킷은 JPG, PNG, WebP와 5MB 제한을 적용합니다. 공개 전 행사에는 시작일과 `published_at`이 필요합니다.
-
-이 저장소에서는 실제 Supabase 프로젝트 생성, migration 실행, Auth 사용자 생성, Storage 업로드를 검증하지 않았습니다. 자격증명이 있는 환경에서 위 순서와 RLS 거부/허용 동작을 별도로 확인해야 합니다.
+`supabase/seed.sql`은 화면 검증용 샘플 데이터를 추가합니다. 실제 운영 데이터베이스에는 필요한 경우에만 실행하세요.
 
 ## 운영 흐름
 
-- `/admin/events/new`: 출처 URL과 확인 날짜를 포함해 행사를 검수 대기로 등록
-- `/admin/events/[id]`: 수정, 이미지 업로드, 공개, 반려, 삭제
-- `/admin/places/new`, `/admin/places/[id]`: 주변 명소 등록과 관리
-- `/admin/import`: `EventCandidate` JSON을 추측 없는 검수 대기 행사로 등록
+행사는 등록과 동시에 공개되지 않습니다. 운영자는 출처와 내용을 확인한 뒤 공개 상태를 결정합니다:
 
-공개나 수정 뒤 목록, 상세, sitemap 경로가 재검증됩니다. 외부 수집 작업이 추가 재검증해야 하면 다음 요청을 보냅니다.
+1. `/admin/events/new`에서 행사와 원문 출처를 등록합니다.
+2. 검수 대기 상태에서 날짜, 장소, 신청 정보, 요금을 확인합니다.
+3. 확인을 마친 행사를 공개합니다.
+4. 정보가 바뀌면 내용을 수정하고 마지막 확인 날짜를 갱신합니다.
+5. 종료했거나 신뢰하기 어려운 행사는 비공개 또는 반려 처리합니다.
 
-```bash
-curl -X POST https://YOUR_DOMAIN/api/revalidate \
-  -H "Authorization: Bearer YOUR_REVALIDATE_SECRET" \
-  -H "Content-Type: application/json" \
-  -d '{"slug":"event-slug"}'
-```
+`/admin/import`에서는 수집 결과를 `EventCandidate` JSON으로 가져올 수 있습니다. 가져온 후보도 운영자 검수를 거쳐야 공개할 수 있습니다.
 
-`slug`를 빼면 목록과 sitemap만 갱신합니다.
+## 품질 검사하기
 
-## 향후 하루 한 번 AI 수집 연결
-
-완전 자동 공개는 범위 밖입니다. 하루 한 번 실행하는 수집기는 공식 원문에서 확인한 값만 `EventCandidate` 형태로 만들고, 확인 불가 값은 `null`로 유지해야 합니다. 현재 구현된 정확한 연결 지점은 다음 네 파일입니다.
-
-- 후보 계약: `lib/domain/event.ts`의 `eventCandidateSchema`
-- JSON 입력 검증: `lib/admin/schemas.ts`의 `candidateJsonSchema`
-- 검수 대기 저장과 출처 이력: `lib/actions/admin.ts`의 `importEventCandidateAction`
-- 운영자 입력 화면: `app/admin/import/page.tsx`
-
-따라서 첫 운영 단계에서는 일일 작업의 JSON 결과를 `/admin/import`에 붙여넣고 운영자가 보완·공개합니다. 무인 스케줄러를 추가할 때도 같은 Zod 계약과 pending 저장 규칙을 공유해야 하며, service role은 새 서버 전용 경계에서만 읽어야 합니다. 현재 저장소에는 무인 수집기나 스케줄이 없고 원격 실행도 검증하지 않았습니다.
-
-## 검증
+변경 사항을 배포하기 전에 다음 검사를 실행합니다:
 
 ```bash
 pnpm lint
 pnpm typecheck
 pnpm test
-pnpm exec playwright install chromium
 pnpm test:e2e
 pnpm build
 ```
 
-Playwright는 demo mode로 개발 서버를 띄우고 데스크톱 Chrome과 Pixel 7 뷰포트에서 목록 → 가족 필터 → 상세 → 원문 링크 → 주변 명소 4곳을 검사합니다. 원문 링크는 로컬 DOM의 접근 가능한 이름·`href`·`target`과 새 탭 생성 이벤트로 검증합니다. 외부 사이트 응답에는 의존하지 않도록 원문 네트워크 요청은 테스트에서 중단하며, 새 탭이 외부 문서를 실제로 불러왔는지는 단언하지 않습니다.
+Playwright 테스트는 데스크톱과 모바일 환경에서 행사 필터, 상세 페이지, 원문 링크, 주변 명소 탐색 흐름을 확인합니다.
 
-## Vercel 배포
+## 배포하기
 
-1. 저장소를 Vercel 프로젝트로 가져옵니다.
-2. Framework Preset은 Next.js, Install Command는 `pnpm install`, Build Command는 `pnpm build`를 사용합니다.
-3. Production 환경 변수에 `.env.example`의 이름을 등록합니다. `NEXT_PUBLIC_DATA_MODE=supabase`, `NEXT_PUBLIC_SITE_URL=https://YOUR_DOMAIN`을 사용하고 Supabase URL, publishable key, `REVALIDATE_SECRET`을 넣습니다.
-4. 배포 후 `/`, 필터 URL, 샘플이 아닌 공개 행사 상세, `/sitemap.xml`, `/robots.txt`, `/admin/login`을 확인합니다.
-5. 운영자로 로그인해 pending 행사 등록, 공개, 수정, 이미지 업로드, 반려와 공개 페이지 갱신을 확인합니다.
+Vercel에서 이 저장소를 가져오고 Production 환경 변수를 등록합니다. 운영 환경에서는 `NEXT_PUBLIC_DATA_MODE=supabase`와 실제 서비스 주소를 사용합니다.
 
-이 저장소에서는 Vercel 프로젝트 생성, 환경 변수 등록, 실제 배포, 도메인·Auth 리디렉션 검증을 수행하지 않았습니다.
+배포 후 다음 흐름을 확인합니다:
 
-## 릴리스 체크리스트
+1. 공개 목록과 필터가 실제 행사 데이터를 보여주는지 확인합니다.
+2. 행사 상세의 원문, 신청, 지도 링크를 확인합니다.
+3. `/sitemap.xml`과 `/robots.txt` 응답을 확인합니다.
+4. 운영자로 로그인해 행사 등록과 상태 변경을 확인합니다.
+5. 공개 상태 변경이 방문자 화면에 반영되는지 확인합니다.
 
-- 샘플 데이터가 실제 운영 정보와 명확히 구분되는가
-- 원문, 신청, 지도 링크가 새 창 안내와 함께 올바른 대상으로 가는가
-- 모바일과 데스크톱에서 필터, 카드, 표, 폼이 가로로 잘리지 않는가
-- 키보드 초점, 본문 건너뛰기, 이미지 대체 텍스트, 빈/오류/로딩 상태가 보이는가
-- 비운영자가 관리자 쓰기와 Storage 변경을 할 수 없는가
-- `SUPABASE_SERVICE_ROLE_KEY`가 브라우저 번들 또는 `NEXT_PUBLIC_` 변수에 없는가
-- lint, typecheck, unit, E2E, build가 모두 통과하는가
+## 앞으로의 방향
+
+속초모아는 정확한 운영 데이터를 쌓는 일을 우선합니다. 다음 단계에서는 공식 출처의 행사 후보를 정기적으로 수집하고, 운영자가 더 적은 작업으로 검수할 수 있도록 개선합니다.
+
+- 실제 속초 행사 데이터 확충
+- 공식 출처 기반 정기 수집
+- 오래된 정보와 원문 변경 감지
+- 운영자 검수 대기열 개선
+- 행사 저장과 공유 기능 검토
