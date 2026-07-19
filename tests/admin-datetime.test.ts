@@ -1,0 +1,49 @@
+import { describe, expect, it } from "vitest";
+import { isoToSeoulDatetimeLocal, seoulDatetimeLocalToIso } from "@/lib/admin/datetime";
+import { eventFormSchema } from "@/lib/admin/schemas";
+
+describe("admin Asia/Seoul datetime round trip", () => {
+  it("interprets datetime-local as Korean wall time regardless of the server timezone", () => {
+    expect(seoulDatetimeLocalToIso("2026-07-19T14:30")).toBe("2026-07-19T05:30:00.000Z");
+    expect(isoToSeoulDatetimeLocal("2026-07-19T05:30:00.000Z")).toBe("2026-07-19T14:30");
+    expect(seoulDatetimeLocalToIso("2026-01-01T00:15")).toBe("2025-12-31T15:15:00.000Z");
+  });
+
+  it("rejects normalized but impossible calendar dates", () => {
+    expect(() => seoulDatetimeLocalToIso("2026-02-30T09:00")).toThrow("올바른 날짜");
+  });
+
+  it("uses the same conversion in the administrator event schema", () => {
+    const parsed = eventFormSchema.parse({
+      slug: "test-event",
+      title: "테스트 행사",
+      summary: "",
+      description: "",
+      category: "other",
+      audiences: ["all"],
+      eventStartAt: "2026-07-19T14:30",
+      eventEndAt: "",
+      operatingHours: "",
+      applicationStartAt: "",
+      applicationEndAt: "",
+      locationName: "",
+      address: "",
+      latitude: null,
+      longitude: null,
+      priceText: "",
+      isFree: "unknown",
+      organizer: "",
+      contact: "",
+      officialUrl: "",
+      applicationUrl: "",
+      imageUrl: "",
+      sourceName: "공식 출처",
+      sourceUrl: "https://example.com/event",
+      isFeatured: false,
+      lastVerifiedAt: "2026-07-19T09:00",
+    });
+
+    expect(parsed.eventStartAt).toBe("2026-07-19T05:30:00.000Z");
+    expect(parsed.lastVerifiedAt).toBe("2026-07-19T00:00:00.000Z");
+  });
+});

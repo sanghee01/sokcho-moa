@@ -1,0 +1,286 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import { z } from "zod";
+import { requireAdmin } from "@/lib/admin/auth";
+import { candidateJsonSchema, eventFormSchema, placeFormSchema } from "@/lib/admin/schemas";
+import { createAuthenticatedSupabaseClient } from "@/lib/supabase/auth-server";
+
+const reviewSchema = z.object({
+  id: z.string().uuid(),
+  slug: z.string().min(1),
+  status: z.enum(["pending", "published", "rejected"]),
+});
+
+const deleteSchema = z.object({
+  id: z.string().uuid(),
+  slug: z.string().min(1),
+  confirmation: z.literal("delete"),
+});
+
+function value(formData: FormData, key: string) {
+  const raw = formData.get(key);
+  return typeof raw === "string" ? raw : "";
+}
+
+function nullableNumberValue(formData: FormData, key: string) {
+  const raw = value(formData, key).trim();
+  return raw ? raw : null;
+}
+
+function fail(error: z.ZodError): never {
+  throw new Error(`입력값을 확인하세요. ${z.prettifyError(error)}`);
+}
+
+function revalidateEventPaths(slug?: string | null) {
+  revalidatePath("/");
+  revalidatePath("/sitemap.xml");
+  if (slug) revalidatePath(`/events/${slug}`);
+  revalidatePath("/admin");
+}
+
+export async function signInAction(formData: FormData) {
+  const parsed = z.object({ email: z.string().email(), password: z.string().min(8) }).safeParse({
+    email: value(formData, "email"),
+    password: value(formData, "password"),
+  });
+  if (!parsed.success) fail(parsed.error);
+  const client = await createAuthenticatedSupabaseClient();
+  if (!client) throw new Error("Supabase 모드와 공개 환경 변수를 먼저 설정하세요.");
+  const { error } = await client.auth.signInWithPassword(parsed.data);
+  if (error) throw new Error(`로그인하지 못했습니다: ${error.message}`);
+  redirect("/admin");
+}
+
+export async function signOutAction() {
+  const client = await createAuthenticatedSupabaseClient();
+  if (client) await client.auth.signOut();
+  redirect("/admin/login");
+}
+
+export async function saveEventAction(formData: FormData) {
+  await requireAdmin();
+  const parsed = eventFormSchema.safeParse({
+    id: value(formData, "id") || undefined,
+    slug: value(formData, "slug"),
+    title: value(formData, "title"),
+    summary: value(formData, "summary"),
+    description: value(formData, "description"),
+    category: value(formData, "category"),
+    audiences: formData.getAll("audiences").filter((item): item is string => typeof item === "string"),
+    eventStartAt: value(formData, "eventStartAt"),
+    eventEndAt: value(formData, "eventEndAt"),
+    operatingHours: value(formData, "operatingHours"),
+    applicationStartAt: value(formData, "applicationStartAt"),
+    applicationEndAt: value(formData, "applicationEndAt"),
+    locationName: value(formData, "locationName"),
+    address: value(formData, "address"),
+    latitude: nullableNumberValue(formData, "latitude"),
+    longitude: nullableNumberValue(formData, "longitude"),
+    priceText: value(formData, "priceText"),
+    isFree: value(formData, "isFree") || "unknown",
+    organizer: value(formData, "organizer"),
+    contact: value(formData, "contact"),
+    officialUrl: value(formData, "officialUrl"),
+    applicationUrl: value(formData, "applicationUrl"),
+    imageUrl: value(formData, "imageUrl"),
+    sourceName: value(formData, "sourceName"),
+    sourceUrl: value(formData, "sourceUrl"),
+    isFeatured: formData.get("isFeatured") === "on",
+    lastVerifiedAt: value(formData, "lastVerifiedAt"),
+  });
+  if (!parsed.success) fail(parsed.error);
+  const event = parsed.data;
+  const payload = {
+    slug: event.slug,
+    title: event.title,
+    summary: event.summary,
+    description: event.description,
+    category: event.category,
+    audiences: event.audiences,
+    event_start_at: event.eventStartAt,
+    event_end_at: event.eventEndAt,
+    operating_hours: event.operatingHours,
+    application_start_at: event.applicationStartAt,
+    application_end_at: event.applicationEndAt,
+    location_name: event.locationName,
+    address: event.address,
+    latitude: event.latitude,
+    longitude: event.longitude,
+    price_text: event.priceText,
+    is_free: event.isFree,
+    organizer: event.organizer,
+    contact: event.contact,
+    official_url: event.officialUrl,
+    application_url: event.applicationUrl,
+    image_url: event.imageUrl,
+    source_name: event.sourceName,
+    source_url: event.sourceUrl,
+    is_featured: event.isFeatured,
+    last_verified_at: event.lastVerifiedAt,
+  };
+  const client = await createAuthenticatedSupabaseClient();
+  if (!client) throw new Error("Supabase 관리자 연결이 없습니다.");
+  const result = event.id
+    ? await client.from("events").update(payload).eq("id", event.id).select("id").single()
+    : await client.from("events").insert({ ...payload, review_status: "pending" }).select("id").single();
+  if (result.error) throw new Error(`행사를 저장하지 못했습니다: ${result.error.message}`);
+  const { error: sourceError } = await client.from("event_sources").upsert({
+    event_id: result.data.id,
+    provider: event.sourceName,
+    original_url: event.sourceUrl,
+    last_checked_at: event.lastVerifiedAt,
+  }, { onConflict: "event_id,provider,original_url" });
+  if (sourceError) throw new Error(`행사 출처를 저장하지 못했습니다: ${sourceError.message}`);
+  revalidateEventPaths(event.slug);
+  redirect(`/admin/events/${result.data.id}`);
+}
+
+export async function setEventReviewStatusAction(formData: FormData) {
+  await requireAdmin();
+  const parsed = reviewSchema.safeParse({ id: value(formData, "id"), slug: value(formData, "slug"), status: value(formData, "status") });
+  if (!parsed.success) fail(parsed.error);
+  const client = await createAuthenticatedSupabaseClient();
+  if (!client) throw new Error("Supabase 관리자 연결이 없습니다.");
+  const { error } = await client
+    .from("events")
+    .update({ review_status: parsed.data.status, published_at: parsed.data.status === "published" ? new Date().toISOString() : null })
+    .eq("id", parsed.data.id);
+  if (error) throw new Error(`공개 상태를 바꾸지 못했습니다: ${error.message}`);
+  revalidateEventPaths(parsed.data.slug);
+}
+
+export async function uploadEventImageAction(formData: FormData) {
+  await requireAdmin();
+  const parsed = z.object({ id: z.string().uuid(), slug: z.string().min(1) }).safeParse({ id: value(formData, "id"), slug: value(formData, "slug") });
+  if (!parsed.success) fail(parsed.error);
+  const file = formData.get("image");
+  if (!(file instanceof File) || file.size === 0) throw new Error("업로드할 이미지를 선택하세요.");
+  if (!new Set(["image/jpeg", "image/png", "image/webp"]).has(file.type)) throw new Error("JPG, PNG, WebP 이미지만 업로드할 수 있습니다.");
+  if (file.size > 5 * 1024 * 1024) throw new Error("이미지는 5MB 이하여야 합니다.");
+  const client = await createAuthenticatedSupabaseClient();
+  if (!client) throw new Error("Supabase 관리자 연결이 없습니다.");
+  const extension = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" }[file.type];
+  const path = `events/${crypto.randomUUID()}.${extension}`;
+  const { error: uploadError } = await client.storage.from("event-images").upload(path, await file.arrayBuffer(), { contentType: file.type, upsert: false });
+  if (uploadError) throw new Error(`이미지를 업로드하지 못했습니다: ${uploadError.message}`);
+  const { data } = client.storage.from("event-images").getPublicUrl(path);
+  const { error: updateError } = await client.from("events").update({ image_url: data.publicUrl }).eq("id", parsed.data.id);
+  if (updateError) throw new Error(`대표 이미지 URL을 저장하지 못했습니다: ${updateError.message}`);
+  revalidateEventPaths(parsed.data.slug);
+}
+
+export async function deleteEventAction(formData: FormData) {
+  await requireAdmin();
+  const parsed = deleteSchema.safeParse({
+    id: value(formData, "id"),
+    slug: value(formData, "slug"),
+    confirmation: value(formData, "confirmation"),
+  });
+  if (!parsed.success) fail(parsed.error);
+  const client = await createAuthenticatedSupabaseClient();
+  if (!client) throw new Error("Supabase 관리자 연결이 없습니다.");
+  const { error } = await client.from("events").delete().eq("id", parsed.data.id);
+  if (error) throw new Error(`행사를 삭제하지 못했습니다: ${error.message}`);
+  revalidateEventPaths(parsed.data.slug);
+  redirect("/admin");
+}
+
+export async function savePlaceAction(formData: FormData) {
+  await requireAdmin();
+  const parsed = placeFormSchema.safeParse({
+    id: value(formData, "id") || undefined,
+    slug: value(formData, "slug"),
+    name: value(formData, "name"),
+    category: value(formData, "category"),
+    summary: value(formData, "summary"),
+    address: value(formData, "address"),
+    latitude: value(formData, "latitude"),
+    longitude: value(formData, "longitude"),
+    imageUrl: value(formData, "imageUrl"),
+    officialUrl: value(formData, "officialUrl"),
+    mapUrl: value(formData, "mapUrl"),
+    isPublished: formData.get("isPublished") === "on",
+  });
+  if (!parsed.success) fail(parsed.error);
+  const place = parsed.data;
+  const payload = {
+    slug: place.slug, name: place.name, category: place.category, summary: place.summary, address: place.address,
+    latitude: place.latitude, longitude: place.longitude, image_url: place.imageUrl, official_url: place.officialUrl,
+    map_url: place.mapUrl, is_published: place.isPublished,
+  };
+  const client = await createAuthenticatedSupabaseClient();
+  if (!client) throw new Error("Supabase 관리자 연결이 없습니다.");
+  const result = place.id
+    ? await client.from("places").update(payload).eq("id", place.id).select("id").single()
+    : await client.from("places").insert(payload).select("id").single();
+  if (result.error) throw new Error(`명소를 저장하지 못했습니다: ${result.error.message}`);
+  revalidatePath("/");
+  revalidatePath("/admin");
+  redirect(`/admin/places/${result.data.id}`);
+}
+
+export async function deletePlaceAction(formData: FormData) {
+  await requireAdmin();
+  const parsed = deleteSchema.safeParse({
+    id: value(formData, "id"),
+    slug: value(formData, "slug"),
+    confirmation: value(formData, "confirmation"),
+  });
+  if (!parsed.success) fail(parsed.error);
+  const client = await createAuthenticatedSupabaseClient();
+  if (!client) throw new Error("Supabase 관리자 연결이 없습니다.");
+  const { error } = await client.from("places").delete().eq("id", parsed.data.id);
+  if (error) throw new Error(`명소를 삭제하지 못했습니다: ${error.message}`);
+  revalidatePath("/");
+  revalidatePath("/admin");
+  redirect("/admin");
+}
+
+export async function importEventCandidateAction(formData: FormData) {
+  await requireAdmin();
+  const parsed = candidateJsonSchema.safeParse(value(formData, "candidateJson"));
+  if (!parsed.success) fail(parsed.error);
+  const candidate = parsed.data;
+  const client = await createAuthenticatedSupabaseClient();
+  if (!client) throw new Error("Supabase 관리자 연결이 없습니다.");
+  const slug = `candidate-${Date.now()}`;
+  const { data, error } = await client.from("events").insert({
+    slug,
+    title: candidate.title,
+    summary: candidate.summary,
+    description: candidate.description,
+    category: candidate.category ?? "other",
+    audiences: candidate.audiences,
+    event_start_at: candidate.eventStartAt,
+    event_end_at: candidate.eventEndAt,
+    operating_hours: candidate.operatingHours,
+    application_start_at: candidate.applicationStartAt,
+    application_end_at: candidate.applicationEndAt,
+    location_name: candidate.locationName,
+    address: candidate.address,
+    latitude: candidate.latitude,
+    longitude: candidate.longitude,
+    price_text: candidate.priceText,
+    is_free: candidate.isFree,
+    organizer: candidate.organizer,
+    contact: candidate.contact,
+    official_url: candidate.officialUrl,
+    application_url: candidate.applicationUrl,
+    image_url: candidate.imageUrl,
+    source_name: candidate.sourceName,
+    source_url: candidate.sourceUrl,
+    review_status: "pending",
+    last_verified_at: null,
+  }).select("id").single();
+  if (error) throw new Error(`후보 행사를 등록하지 못했습니다: ${error.message}`);
+  const { error: sourceError } = await client.from("event_sources").insert({
+    event_id: data.id,
+    provider: candidate.sourceName,
+    original_url: candidate.sourceUrl,
+  });
+  if (sourceError) throw new Error(`후보 출처를 등록하지 못했습니다: ${sourceError.message}`);
+  revalidatePath("/admin");
+  redirect(`/admin/events/${data.id}`);
+}
