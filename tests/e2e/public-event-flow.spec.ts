@@ -37,10 +37,12 @@ async function expectNoHorizontalOverflow(page: Page, locators: Locator[]) {
 }
 
 test("행사 상세는 지도 SDK나 인라인 미리보기 없이 장소·주소·외부 링크를 제공한다", async ({ page }) => {
-  let sdkRequestCount = 0;
-  await page.route("https://oapi.map.naver.com/**", async (route) => {
-    sdkRequestCount += 1;
-    await route.abort("blockedbyclient");
+  const mapSdkRequests: string[] = [];
+  page.on("request", (request) => {
+    const hostname = new URL(request.url()).hostname;
+    if (hostname === "oapi.map.naver.com" || hostname === "dapi.kakao.com") {
+      mapSdkRequests.push(request.url());
+    }
   });
 
   await page.goto("/events/demo-sea-family-festival");
@@ -57,7 +59,23 @@ test("행사 상세는 지도 SDK나 인라인 미리보기 없이 장소·주�
   await expect(mapLink).toBeVisible();
   await expect(mapLink).toHaveAttribute("href", /^https:\/\/map\.naver\.com\/p\/search\//);
   await expect(mapLink).toHaveAttribute("target", "_blank");
-  expect(sdkRequestCount).toBe(0);
+  await expect(mapLink).toHaveAttribute("rel", "noreferrer");
+  await expect(mapLink).toHaveAttribute("data-analytics-event", "map_link_clicked");
+  await expect(mapLink).toHaveAccessibleName("네이버 지도에서 위치 확인 (새 창)");
+
+  await page.waitForLoadState("networkidle");
+  await page.evaluate(() => new Promise<void>((resolve) => {
+    const settle = () => window.setTimeout(resolve, 100);
+    if ("requestIdleCallback" in window) {
+      window.requestIdleCallback(settle, { timeout: 500 });
+    } else {
+      settle();
+    }
+  }));
+
+  await expect(locationCard.locator("iframe")).toHaveCount(0);
+  await expect(page.locator('script[src*="oapi.map.naver.com"], script[src*="dapi.kakao.com"]')).toHaveCount(0);
+  expect(mapSdkRequests).toEqual([]);
 });
 
 test("정상·null·빈 문자열·404 이미지가 목록과 상세에서 같은 크기를 유지한다", async ({ page }) => {
