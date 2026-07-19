@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import Script from "next/script";
 import type { ReactNode } from "react";
 import { TransitionLink } from "@/components/transition-link";
 import { getPublicEnv } from "@/lib/config/env";
 import headerLogo from "@/public/sokchomoa-header.webp";
 import "./globals.css";
 
+const googleAnalyticsId = "G-9KN84HHJKD";
 const siteUrl = getPublicEnv().NEXT_PUBLIC_SITE_URL;
 const defaultTitle = "속초모아 | 요즘 속초에서 뭐 하지?";
 const description = "속초의 행사·공연·축제·체험·교육 프로그램을 한곳에서 비교하세요.";
@@ -84,6 +86,18 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
             </div>
           </div>
         </footer>
+        <Script
+          src={`https://www.googletagmanager.com/gtag/js?id=${googleAnalyticsId}`}
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '${googleAnalyticsId}');
+          `}
+        </Script>
       </body>
     </html>
   );

@@ -4,13 +4,12 @@ import { notFound } from "next/navigation";
 import { EventCard } from "@/components/event-card";
 import { AnalyticsRuntime } from "@/components/analytics/analytics-runtime";
 import { EventImage } from "@/components/event-image";
-import { EventLocationMap } from "@/components/event-location-map";
 import { PlaceCard } from "@/components/place-card";
 import { StatusBadges } from "@/components/status-badges";
 import { getAllPublicEvents, getPublicEventBySlug, getPublicPlaces, getRelatedEvents } from "@/lib/data/events";
 import { audienceLabels, applicationStateLabels, categoryLabels, formatDate, formatDateRange, formatOperatingSchedule } from "@/lib/domain/format";
 import { deriveApplicationState, deriveEventState } from "@/lib/domain/event";
-import { createEventMapLinks, findNearbyPlaces, hasVerifiedLocation } from "@/lib/domain/geo";
+import { createEventMapLinks, findNearbyPlaces } from "@/lib/domain/geo";
 import { isKnownUnavailableOfficialUrl, isSameSourceUrl } from "@/lib/domain/source";
 
 export const revalidate = 3600;
@@ -51,7 +50,6 @@ export default async function EventDetailPage({ params }: EventPageProps) {
     event.latitude,
     event.longitude,
   );
-  const showInlineMap = hasVerifiedLocation(event);
   const availableOfficialUrl = event.officialUrl && !isKnownUnavailableOfficialUrl(event.officialUrl)
     ? event.officialUrl
     : null;
@@ -156,18 +154,10 @@ export default async function EventDetailPage({ params }: EventPageProps) {
               <p className="mt-1">일정·요금·신청 가능 여부는 변경될 수 있습니다. 출발 전 <a href={event.sourceUrl} target="_blank" rel="noreferrer" data-analytics-event="source_link_clicked" data-event-slug={event.slug} className="font-bold underline">{event.sourceName} 원문<span className="sr-only">(새 창)</span></a>을 확인하세요.</p>
             </div>
           </section>
-          <section aria-labelledby="location-title" className="rounded-3xl bg-teal-900 p-6 text-white sm:p-8">
+          <section aria-labelledby="location-title" className="self-start rounded-3xl bg-teal-900 p-6 text-white sm:p-8">
             <p className="text-sm font-bold text-cyan-200">위치 및 길찾기</p>
             <h2 id="location-title" className="mt-1 text-2xl font-black">{event.locationName ?? "장소 확인 필요"}</h2>
             <p className="mt-4 leading-7 text-cyan-50">{event.address ?? "상세 주소는 원문에서 확인해 주세요."}</p>
-            {showInlineMap && event.latitude != null && event.longitude != null && (
-              <EventLocationMap
-                latitude={event.latitude}
-                longitude={event.longitude}
-                locationName={event.locationName ?? event.title}
-                address={event.address}
-              />
-            )}
             {mapLinks ? (
               <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-sm font-bold text-cyan-100">
                 <a href={mapLinks.naver} target="_blank" rel="noreferrer" data-analytics-event="map_link_clicked" data-event-slug={event.slug} className="underline underline-offset-4">{mapLinks.hasVerifiedCoordinates ? "네이버 지도에서 위치 확인" : "네이버 지도에서 검색"} <span className="sr-only">(새 창)</span></a>

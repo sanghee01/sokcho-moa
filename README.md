@@ -87,7 +87,6 @@ pnpm dev
 | `NEXT_PUBLIC_SITE_URL` | canonical URL, 사이트맵, robots 기준 주소 | 공개 |
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase 프로젝트 URL | 공개 |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | RLS가 적용되는 publishable key | 공개 |
-| `NEXT_PUBLIC_NAVER_MAP_CLIENT_ID` | 행사 상세 인라인 지도용 NAVER Maps Client ID(`ncpKeyId`) | 공개 |
 | `SUPABASE_SERVICE_ROLE_KEY` | 향후 서버 전용 자동 수집 기능용 키 | 비공개 |
 | `REVALIDATE_SECRET` | 외부 작업의 캐시 갱신 요청 인증값 | 비공개 |
 
@@ -104,7 +103,7 @@ pnpm dev
 5. `NEXT_PUBLIC_DATA_MODE=supabase`로 변경합니다.
 6. `/admin/login`에서 로그인해 행사와 명소를 관리합니다.
 
-행사 상세의 인라인 지도를 사용하려면 NAVER Cloud의 신규 단독 Maps 상품에서 Dynamic Map을 선택하고 Web 서비스 URL에 포트·경로 없이 `http://localhost`와 `http://sokcho-moa.vercel.app`을 등록한 뒤 Client ID를 `NEXT_PUBLIC_NAVER_MAP_CLIENT_ID`에 설정합니다. 공식 계약상 http/https는 구분하지 않습니다. Client ID가 없거나 URL이 등록되지 않으면 동일한 높이의 주소 안내와 작은 네이버 지도 링크가 표시됩니다. 대표 계정 여부를 확인하고 계정 전체 월 한도 합을 무료 제공량 이하로 제한해야 실제 청구를 막을 수 있습니다. 속초모아의 초기 한도는 Dynamic Map 월 100,000건·일 5,000건, 알림은 70%로 설정합니다. 현재 로그인한 계정이 해당 Maps 상품의 대표 계정이 아니라면 Client ID를 비워 둔 채 fallback 상태로 앱을 배포할 수 있습니다.
+행사 상세는 별도 지도 SDK나 Client ID 없이 검증된 장소명·주소와 외부 지도 링크만 제공합니다. 위치 좌표와 검증 근거는 향후 지도 기능을 다시 검토할 때 사용할 수 있도록 데이터베이스에 보존합니다.
 
 다음 쿼리의 값을 실제 운영자 정보로 바꿔 실행합니다:
 
@@ -143,7 +142,7 @@ Playwright 테스트는 데스크톱과 모바일 환경에서 행사 필터, �
 
 ## 배포하기
 
-Vercel에서 이 저장소를 가져오고 Production 환경 변수를 등록합니다. 운영 환경에서는 `NEXT_PUBLIC_DATA_MODE=supabase`, 실제 서비스 주소, `NEXT_PUBLIC_NAVER_MAP_CLIENT_ID`를 사용합니다.
+Vercel에서 이 저장소를 가져오고 Production 환경 변수를 등록합니다. 운영 환경에서는 `NEXT_PUBLIC_DATA_MODE=supabase`와 실제 서비스 주소를 사용하며 지도용 환경 변수는 필요하지 않습니다.
 
 배포 후 다음 흐름을 확인합니다:
 
