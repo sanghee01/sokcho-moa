@@ -11,7 +11,7 @@ import { getAllPublicEvents, getPublicEventBySlug, getPublicPlaces, getRelatedEv
 import { audienceLabels, applicationStateLabels, categoryLabels, formatDate, formatDateRange, formatOperatingSchedule } from "@/lib/domain/format";
 import { deriveApplicationState, deriveEventState } from "@/lib/domain/event";
 import { createEventMapLinks, findNearbyPlaces, hasVerifiedLocation } from "@/lib/domain/geo";
-import { isSameSourceUrl } from "@/lib/domain/source";
+import { isKnownUnavailableOfficialUrl, isSameSourceUrl } from "@/lib/domain/source";
 
 export const revalidate = 3600;
 
@@ -53,8 +53,11 @@ export default async function EventDetailPage({ params }: EventPageProps) {
     event.longitude,
   );
   const showInlineMap = hasVerifiedLocation(event);
-  const distinctOfficialUrl = event.officialUrl && !isSameSourceUrl(event.officialUrl, event.sourceUrl)
+  const availableOfficialUrl = event.officialUrl && !isKnownUnavailableOfficialUrl(event.officialUrl)
     ? event.officialUrl
+    : null;
+  const distinctOfficialUrl = availableOfficialUrl && !isSameSourceUrl(availableOfficialUrl, event.sourceUrl)
+    ? availableOfficialUrl
     : null;
   const eventJsonLd = {
     "@context": "https://schema.org",
@@ -73,7 +76,7 @@ export default async function EventDetailPage({ params }: EventPageProps) {
     } : undefined,
     organizer: event.organizer ? { "@type": "Organization", name: event.organizer } : undefined,
     image: event.imageUrl ? [event.imageUrl] : undefined,
-    url: event.officialUrl ?? undefined,
+    url: availableOfficialUrl ?? undefined,
     isAccessibleForFree: event.isFree ?? undefined,
   };
 

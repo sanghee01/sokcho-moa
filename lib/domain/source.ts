@@ -4,6 +4,7 @@ const SOKCHO_HOSTS = new Set(["sokcho.go.kr", "www.sokcho.go.kr"]);
 const SOKCHO_FACILITIES_HOSTS = new Set(["sokchosiseol.or.kr", "www.sokchosiseol.or.kr"]);
 const SOKCHO_LIBRARY_HOST = "library.sokcho.go.kr";
 const MCST_HOSTS = new Set(["mcst.go.kr", "www.mcst.go.kr"]);
+const UNAVAILABLE_OFFICIAL_HOSTS = new Set(["sokchocf.or.kr", "www.sokchocf.or.kr"]);
 
 const SOKCHO_ARTICLE_PATHS = new Set([
   "/ct/museum/archives/notice/news",
@@ -40,6 +41,15 @@ export function isSameSourceUrl(left: string | null, right: string | null) {
   const normalizedLeft = normalizeComparableUrl(left);
   const normalizedRight = normalizeComparableUrl(right);
   return normalizedLeft != null && normalizedLeft === normalizedRight;
+}
+
+export function isKnownUnavailableOfficialUrl(value: string | null) {
+  if (!value) return false;
+  try {
+    return UNAVAILABLE_OFFICIAL_HOSTS.has(new URL(value).hostname.toLowerCase());
+  } catch {
+    return true;
+  }
 }
 
 export function extractSourceExternalId(value: string) {

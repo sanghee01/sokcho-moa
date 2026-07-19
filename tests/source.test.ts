@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { extractSourceExternalId, isLikelyEventDetailUrl, isSameSourceUrl } from "@/lib/domain/source";
+import {
+  extractSourceExternalId,
+  isKnownUnavailableOfficialUrl,
+  isLikelyEventDetailUrl,
+  isSameSourceUrl,
+} from "@/lib/domain/source";
 
 describe("공식 원문 URL", () => {
   it("알려진 쿼리·경로·공식 파일에서 외부 식별자를 추출한다", () => {
@@ -59,5 +64,10 @@ describe("공식 원문 URL", () => {
 
   it("슬래시·쿼리 순서 차이를 제거해 중복 링크를 판정한다", () => {
     expect(isSameSourceUrl("https://example.com/event/?b=2&a=1", "https://example.com/event?a=1&b=2")).toBe(true);
+  });
+
+  it("현재 접속 불가능한 속초문화관광재단 링크는 공식 안내에서 제외한다", () => {
+    expect(isKnownUnavailableOfficialUrl("https://sokchocf.or.kr/sokchocf/community/notice?articleSeq=4139")).toBe(true);
+    expect(isKnownUnavailableOfficialUrl("https://www.sokcho.go.kr/sc/upload/popupzone/event-poster.jpg")).toBe(false);
   });
 });

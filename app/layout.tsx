@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { getPublicEnv } from "@/lib/config/env";
@@ -13,6 +14,10 @@ export const metadata: Metadata = {
   title: { default: defaultTitle, template: "%s | 속초모아" },
   description,
   alternates: { canonical: "/" },
+  icons: {
+    icon: [{ url: "/icon.jpeg", type: "image/jpeg" }],
+    shortcut: "/icon.jpeg",
+  },
   openGraph: {
     type: "website",
     locale: "ko_KR",
@@ -37,11 +42,16 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
         </a>
         <header className="border-b border-teal-900/10 bg-white/85 backdrop-blur">
           <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
-            <Link href="/" className="flex items-center gap-2 text-xl font-black tracking-tight text-teal-900">
-              <span aria-hidden="true" className="grid h-9 w-9 place-items-center rounded-2xl bg-teal-700 text-white">
-                ㅅ
-              </span>
-              속초모아
+            <Link href="/" className="block overflow-hidden rounded-2xl ring-teal-700/30 focus-visible:ring-4">
+              <Image
+                src="/sokchomoa-logo.jpeg"
+                alt="속초모아"
+                width={1254}
+                height={1254}
+                priority
+                sizes="(min-width: 640px) 64px, 56px"
+                className="h-14 w-14 object-contain sm:h-16 sm:w-16"
+              />
             </Link>
             <nav aria-label="주요 메뉴" className="flex items-center gap-3 text-sm font-semibold">
               <Link href="/?when=today" className="rounded-full px-3 py-2 hover:bg-teal-50">

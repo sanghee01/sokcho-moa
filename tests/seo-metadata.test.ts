@@ -11,5 +11,9 @@ describe("home metadata", () => {
       siteName: "속초모아",
     });
     expect(metadata.twitter).toMatchObject({ card: "summary_large_image" });
+    expect(metadata.icons).toMatchObject({
+      icon: [{ url: "/icon.jpeg", type: "image/jpeg" }],
+      shortcut: "/icon.jpeg",
+    });
   });
 });

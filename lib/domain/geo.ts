@@ -36,8 +36,27 @@ export function findNearbyPlaces(event: Event, places: Place[], limit = 4): Near
     .slice(0, limit);
 }
 
+export function createMapSearchName(name: string) {
+  const trimmedName = name.trim();
+  const detailSuffixes = [
+    /(?:\s+|\(|\[)\s*(?:(?:지하\s*)?\d+\s*층|b\s*\d+(?:\s*층)?)(?:\s*.*)?$/iu,
+    /\s+(?:대공연장|소공연장|대회의실|소회의실|시청각실|다목적실|회의실|강의실|세미나실|교육실|체험실|열람실|전시실|연습실|강당|야외무대|야외테라스)(?:\s*.*)?$/u,
+    /\s+(?:본관|신관|별관)$/u,
+    /\s+일원$/u,
+    /\s*\([^)]*(?:시|군|구|읍|면|동|리)\)\s*$/u,
+  ];
+
+  const searchName = detailSuffixes.reduce((value, suffix) => {
+    const match = value.match(suffix);
+    if (match?.index == null || match.index === 0) return value;
+    return value.slice(0, match.index).trim();
+  }, trimmedName);
+
+  return searchName || trimmedName;
+}
+
 export function createNaverMapUrl(name: string, latitude: number, longitude: number) {
-  const query = encodeURIComponent(name);
+  const query = encodeURIComponent(createMapSearchName(name));
   return `https://map.naver.com/p/search/${query}?c=${longitude},${latitude},15,0,0,0,dh`;
 }
 
@@ -56,7 +75,12 @@ export function createEventMapLinks(
   const hasVerifiedCoordinates = latitude != null && longitude != null;
   if (!address && !hasVerifiedCoordinates) return null;
 
-  const query = encodeURIComponent([name, address].filter(Boolean).join(" "));
+  const searchName = createMapSearchName(name);
+  const searchAddress = address ? createMapSearchName(address) : null;
+  const hasInteriorDetails = searchName !== name.trim();
+  const query = encodeURIComponent(
+    (hasInteriorDetails ? [searchName] : [searchName, searchAddress]).filter(Boolean).join(" "),
+  );
   if (!hasVerifiedCoordinates) {
     return {
       naver: `https://map.naver.com/p/search/${query}`,
@@ -67,7 +91,7 @@ export function createEventMapLinks(
 
   return {
     naver: createNaverMapUrl(name, latitude, longitude),
-    kakao: `https://map.kakao.com/link/to/${encodeURIComponent(name)},${latitude},${longitude}`,
+    kakao: `https://map.kakao.com/link/to/${encodeURIComponent(searchName)},${latitude},${longitude}`,
     hasVerifiedCoordinates: true,
   };
 }
