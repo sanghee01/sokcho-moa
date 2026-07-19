@@ -6,6 +6,7 @@ import { after } from "next/server";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/admin/auth";
 import { candidateJsonSchema, eventFormSchema, placeFormSchema } from "@/lib/admin/schemas";
+import { extractSourceExternalId, isLikelyEventDetailUrl } from "@/lib/domain/source";
 import { createAuthenticatedSupabaseClient } from "@/lib/supabase/auth-server";
 
 const reviewSchema = z.object({
@@ -127,16 +128,31 @@ export async function saveEventAction(formData: FormData) {
   };
   const client = await createAuthenticatedSupabaseClient();
   if (!client) throw new Error("Supabase 관리자 연결이 없습니다.");
+  const previousEvent = event.id
+    ? await client.from("events").select("source_name,source_url").eq("id", event.id).maybeSingle()
+    : { data: null, error: null };
+  if (previousEvent.error) throw new Error(`기존 행사 출처를 확인하지 못했습니다: ${previousEvent.error.message}`);
   const result = event.id
     ? await client.from("events").update(payload).eq("id", event.id).select("id").single()
     : await client.from("events").insert({ ...payload, review_status: "pending" }).select("id").single();
   if (result.error) throw new Error(`행사를 저장하지 못했습니다: ${result.error.message}`);
-  const { error: sourceError } = await client.from("event_sources").upsert({
+  const sourcePayload = {
     event_id: result.data.id,
     provider: event.sourceName,
     original_url: event.sourceUrl,
+    external_id: extractSourceExternalId(event.sourceUrl),
     last_checked_at: event.lastVerifiedAt,
-  }, { onConflict: "event_id,provider,original_url" });
+  };
+  const previousSourceUrl = typeof previousEvent.data?.source_url === "string" ? previousEvent.data.source_url : null;
+  const previousSourceName = typeof previousEvent.data?.source_name === "string" ? previousEvent.data.source_name : null;
+  const isCorrectingGenericSource = previousSourceUrl != null && !isLikelyEventDetailUrl(previousSourceUrl);
+  const sourceResult = isCorrectingGenericSource && previousSourceName
+    ? await client.from("event_sources").update(sourcePayload)
+        .eq("event_id", result.data.id)
+        .eq("provider", previousSourceName)
+        .eq("original_url", previousSourceUrl)
+    : await client.from("event_sources").upsert(sourcePayload, { onConflict: "event_id,provider,original_url" });
+  const sourceError = sourceResult.error;
   if (sourceError) throw new Error(`행사 출처를 저장하지 못했습니다: ${sourceError.message}`);
   revalidateEventPaths(event.slug);
   redirect(`/admin/events/${result.data.id}`);
@@ -285,6 +301,8 @@ export async function importEventCandidateAction(formData: FormData) {
     event_id: data.id,
     provider: candidate.sourceName,
     original_url: candidate.sourceUrl,
+    external_id: extractSourceExternalId(candidate.sourceUrl),
+    last_checked_at: new Date().toISOString(),
   });
   if (sourceError) throw new Error(`후보 출처를 등록하지 못했습니다: ${sourceError.message}`);
   revalidatePath("/admin");

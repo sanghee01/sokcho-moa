@@ -7,9 +7,10 @@ import { EventImage } from "@/components/event-image";
 import { PlaceCard } from "@/components/place-card";
 import { StatusBadges } from "@/components/status-badges";
 import { getAllPublicEvents, getPublicEventBySlug, getPublicPlaces, getRelatedEvents } from "@/lib/data/events";
-import { audienceLabels, applicationStateLabels, categoryLabels, formatDate, formatDateRange } from "@/lib/domain/format";
+import { audienceLabels, applicationStateLabels, categoryLabels, formatDate, formatDateRange, formatOperatingSchedule } from "@/lib/domain/format";
 import { deriveApplicationState, deriveEventState } from "@/lib/domain/event";
-import { createNaverMapUrl, findNearbyPlaces } from "@/lib/domain/geo";
+import { createEventMapLinks, findNearbyPlaces } from "@/lib/domain/geo";
+import { isSameSourceUrl } from "@/lib/domain/source";
 
 export const revalidate = 3600;
 
@@ -44,8 +45,14 @@ export default async function EventDetailPage({ params }: EventPageProps) {
   const relatedEvents = getRelatedEvents(event, allEvents);
   const eventState = deriveEventState(event);
   const applicationState = deriveApplicationState(event);
-  const mapUrl = event.latitude != null && event.longitude != null
-    ? createNaverMapUrl(event.locationName ?? event.title, event.latitude, event.longitude)
+  const mapLinks = createEventMapLinks(
+    event.locationName ?? event.title,
+    event.address,
+    event.latitude,
+    event.longitude,
+  );
+  const distinctOfficialUrl = event.officialUrl && !isSameSourceUrl(event.officialUrl, event.sourceUrl)
+    ? event.officialUrl
     : null;
   const eventJsonLd = {
     "@context": "https://schema.org",
@@ -69,10 +76,10 @@ export default async function EventDetailPage({ params }: EventPageProps) {
   };
 
   const facts = [
-    ["행사 기간", formatDateRange(event.eventStartAt, event.eventEndAt)],
-    ["운영 시간", event.operatingHours ?? "원문 확인"],
-    ["신청 기간", event.applicationStartAt || event.applicationEndAt ? `${formatDate(event.applicationStartAt)} – ${formatDate(event.applicationEndAt)}` : "별도 신청 없음"],
-    ["신청 상태", applicationStateLabels[applicationState]],
+    ["행사기간", formatDateRange(event.eventStartAt, event.eventEndAt)],
+    ["운영일정", formatOperatingSchedule(event.operatingHours)],
+    ["신청기간", event.applicationStartAt || event.applicationEndAt ? formatDateRange(event.applicationStartAt, event.applicationEndAt) : "별도 신청 없음"],
+    ["신청상태", applicationStateLabels[applicationState]],
     ["장소", event.locationName ?? "원문 확인"],
     ["상세 주소", event.address ?? "원문 확인"],
     ["이용 요금", event.priceText ?? "원문 확인"],
@@ -107,8 +114,8 @@ export default async function EventDetailPage({ params }: EventPageProps) {
             <h1 className="mt-3 text-3xl font-black leading-tight tracking-tight text-slate-950 sm:text-5xl">{event.title}</h1>
             <p className="mt-5 text-lg leading-8 text-slate-600">{event.summary ?? "핵심 정보와 원문 출처를 확인하세요."}</p>
             <div className="mt-7 flex flex-wrap gap-3">
-              {event.applicationUrl && <a href={event.applicationUrl} target="_blank" rel="noreferrer" data-analytics-event="application_link_clicked" data-event-slug={event.slug} className="rounded-2xl bg-rose-600 px-5 py-3 font-bold text-white">신청 페이지 <span className="sr-only">(새 창)</span></a>}
-              <a href={event.sourceUrl} target="_blank" rel="noreferrer" data-analytics-event="source_link_clicked" data-event-slug={event.slug} className="rounded-2xl bg-teal-800 px-5 py-3 font-bold text-white">원문 확인 <span className="sr-only">(새 창)</span></a>
+              {event.applicationUrl && <a href={event.applicationUrl} target="_blank" rel="noreferrer" data-analytics-event="application_link_clicked" data-event-slug={event.slug} className="rounded-2xl bg-rose-600 px-5 py-3 font-bold text-white">신청·예매 <span className="sr-only">(새 창)</span></a>}
+              <a href={event.sourceUrl} target="_blank" rel="noreferrer" data-analytics-event="source_link_clicked" data-event-slug={event.slug} className="rounded-2xl bg-teal-800 px-5 py-3 font-bold text-white">공식 원문 <span className="sr-only">(새 창)</span></a>
             </div>
           </div>
         </div>
@@ -128,8 +135,9 @@ export default async function EventDetailPage({ params }: EventPageProps) {
             <div className="grid gap-2 border-t border-slate-100 px-5 py-4 sm:grid-cols-[10rem_1fr] sm:gap-5">
               <dt className="font-bold text-slate-700">공식 링크</dt>
               <dd className="flex flex-wrap gap-3 font-bold text-teal-700">
-                {event.officialUrl ? <a href={event.officialUrl} target="_blank" rel="noreferrer" data-analytics-event="source_link_clicked" data-event-slug={event.slug} className="underline underline-offset-4">공식 홈페이지 <span className="sr-only">(새 창)</span></a> : <span className="font-normal text-slate-500">등록되지 않음</span>}
-                {event.applicationUrl && <a href={event.applicationUrl} target="_blank" rel="noreferrer" data-analytics-event="application_link_clicked" data-event-slug={event.slug} className="underline underline-offset-4">신청 페이지 <span className="sr-only">(새 창)</span></a>}
+                <a href={event.sourceUrl} target="_blank" rel="noreferrer" data-analytics-event="source_link_clicked" data-event-slug={event.slug} className="underline underline-offset-4">공식 원문 <span className="sr-only">(새 창)</span></a>
+                {distinctOfficialUrl && <a href={distinctOfficialUrl} target="_blank" rel="noreferrer" data-analytics-event="source_link_clicked" data-event-slug={event.slug} className="underline underline-offset-4">공식 안내 <span className="sr-only">(새 창)</span></a>}
+                {event.applicationUrl && <a href={event.applicationUrl} target="_blank" rel="noreferrer" data-analytics-event="application_link_clicked" data-event-slug={event.slug} className="underline underline-offset-4">신청·예매 <span className="sr-only">(새 창)</span></a>}
               </dd>
             </div>
           </dl>
@@ -148,18 +156,27 @@ export default async function EventDetailPage({ params }: EventPageProps) {
             <p className="text-sm font-bold text-cyan-200">위치 및 길찾기</p>
             <h2 id="location-title" className="mt-1 text-2xl font-black">{event.locationName ?? "장소 확인 필요"}</h2>
             <p className="mt-4 leading-7 text-cyan-50">{event.address ?? "상세 주소는 원문에서 확인해 주세요."}</p>
-            {mapUrl && <a href={mapUrl} target="_blank" rel="noreferrer" data-analytics-event="map_link_clicked" data-event-slug={event.slug} className="mt-6 inline-block rounded-2xl bg-white px-5 py-3 font-bold text-teal-900">지도에서 보기 <span className="sr-only">(새 창)</span></a>}
+            {mapLinks ? (
+              <div className="mt-6 flex flex-wrap gap-3">
+                <a href={mapLinks.naver} target="_blank" rel="noreferrer" data-analytics-event="map_link_clicked" data-event-slug={event.slug} className="rounded-2xl bg-white px-5 py-3 font-bold text-teal-900">네이버 지도 <span className="sr-only">(새 창)</span></a>
+                <a href={mapLinks.kakao} target="_blank" rel="noreferrer" data-analytics-event="map_link_clicked" data-event-slug={event.slug} className="rounded-2xl border border-cyan-200 px-5 py-3 font-bold text-white">{mapLinks.hasVerifiedCoordinates ? "카카오맵 길찾기" : "카카오맵 검색"} <span className="sr-only">(새 창)</span></a>
+              </div>
+            ) : (
+              <p className="mt-6 text-sm leading-6 text-cyan-100">정확한 주소를 확인한 뒤 지도와 길찾기를 제공합니다.</p>
+            )}
           </section>
         </div>
       </article>
 
-      <section aria-labelledby="nearby-title" className="mt-14">
-        <p className="text-sm font-bold text-teal-700">행사 전후로 함께</p>
-        <h2 id="nearby-title" className="mt-1 text-2xl font-black text-slate-950 sm:text-3xl">주변 명소 둘러보기</h2>
-        <div className="mt-5 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {nearbyPlaces.map((place) => <PlaceCard key={place.id} place={place} />)}
-        </div>
-      </section>
+      {nearbyPlaces.length > 0 && (
+        <section aria-labelledby="nearby-title" className="mt-14">
+          <p className="text-sm font-bold text-teal-700">행사 전후로 함께</p>
+          <h2 id="nearby-title" className="mt-1 text-2xl font-black text-slate-950 sm:text-3xl">주변 명소 둘러보기</h2>
+          <div className="mt-5 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {nearbyPlaces.map((place) => <PlaceCard key={place.id} place={place} />)}
+          </div>
+        </section>
+      )}
 
       {relatedEvents.length > 0 && (
         <section aria-labelledby="related-title" className="mt-14">

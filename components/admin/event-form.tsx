@@ -40,7 +40,7 @@ export function EventForm({ row }: { row: Row }) {
           <label className={label}>행사 종료<input type="datetime-local" name="eventEndAt" defaultValue={dateValue(row, "event_end_at")} className={input} /></label>
           <label className={label}>신청 시작<input type="datetime-local" name="applicationStartAt" defaultValue={dateValue(row, "application_start_at")} className={input} /></label>
           <label className={label}>신청 종료<input type="datetime-local" name="applicationEndAt" defaultValue={dateValue(row, "application_end_at")} className={input} /></label>
-          <label className={label}>운영 시간<input name="operatingHours" defaultValue={text(row, "operating_hours")} className={input} /></label>
+          <label className={label}>운영일정<input name="operatingHours" defaultValue={text(row, "operating_hours")} placeholder="예: 매주 수요일 16:00~19:00 · 총 10회" className={input} /><span className="mt-1 block text-xs font-normal leading-5 text-slate-500">행사기간을 반복하지 말고 실제 운영일·요일·회차·시간만 적어 주세요.</span></label>
           <label className={label}>요금 문구<input name="priceText" defaultValue={text(row, "price_text")} className={input} /></label>
         </section>
 
@@ -54,12 +54,12 @@ export function EventForm({ row }: { row: Row }) {
         <section className="grid gap-5 sm:grid-cols-2">
           <label className={label}>주최·주관<input name="organizer" defaultValue={text(row, "organizer")} className={input} /></label>
           <label className={label}>문의처<input name="contact" defaultValue={text(row, "contact")} className={input} /></label>
-          <label className={label}>공식 홈페이지<input type="url" name="officialUrl" defaultValue={text(row, "official_url")} className={input} /></label>
-          <label className={label}>신청 페이지<input type="url" name="applicationUrl" defaultValue={text(row, "application_url")} className={input} /></label>
-          <label className={label}>대표 이미지 URL<input type="url" name="imageUrl" defaultValue={text(row, "image_url")} className={input} /></label>
+          <label className={label}>공식 안내 URL<input type="url" name="officialUrl" defaultValue={text(row, "official_url")} className={input} /><span className="mt-1 block text-xs font-normal leading-5 text-slate-500">주최기관 또는 행사 공식 안내 주소입니다.</span></label>
+          <label className={label}>신청·예매 URL<input type="url" name="applicationUrl" defaultValue={text(row, "application_url")} className={input} /><span className="mt-1 block text-xs font-normal leading-5 text-slate-500">신청이나 예매를 실제로 시작할 수 있는 주소만 입력하세요.</span></label>
+          <label className={label}>대표 이미지 URL<input type="url" name="imageUrl" defaultValue={text(row, "image_url")} className={input} /><span className="mt-1 block text-xs font-normal leading-5 text-rose-700">행사 공식 이미지이며 재사용 허가·공공누리 조건을 확인한 경우에만 입력하세요.</span></label>
           <label className={label}>마지막 확인일<input type="datetime-local" name="lastVerifiedAt" defaultValue={dateValue(row, "last_verified_at")} className={input} /></label>
           <label className={label}>출처 기관<input required name="sourceName" defaultValue={text(row, "source_name")} className={input} /></label>
-          <label className={label}>원문 URL<input required type="url" name="sourceUrl" defaultValue={text(row, "source_url")} className={input} /></label>
+          <label className={label}>공식 원문 URL<input required type="url" name="sourceUrl" defaultValue={text(row, "source_url")} className={input} /><span className="mt-1 block text-xs font-normal leading-5 text-slate-500">기관 대표 홈이나 목록이 아니라 해당 행사를 직접 설명하는 상세 원문을 입력하세요.</span></label>
         </section>
         <label className="flex items-center gap-2 text-sm font-bold"><input type="checkbox" name="isFeatured" defaultChecked={checked(row, "is_featured")} /> 추천 행사로 표시</label>
         <button className="rounded-2xl bg-teal-800 px-6 py-3 font-bold text-white hover:bg-teal-900">행사 저장</button>
@@ -69,7 +69,7 @@ export function EventForm({ row }: { row: Row }) {
         <>
           <form action={uploadEventImageAction} className="rounded-3xl bg-cyan-50 p-5 ring-1 ring-cyan-200 sm:p-6">
             <input type="hidden" name="id" value={id} /><input type="hidden" name="slug" value={slug} />
-            <label className={label}>대표 이미지 업로드 (JPG·PNG·WebP, 최대 5MB)<input required type="file" name="image" accept="image/jpeg,image/png,image/webp" className="mt-2 block w-full text-sm" /></label>
+            <label className={label}>대표 이미지 업로드 (JPG·PNG·WebP, 최대 5MB)<input required type="file" name="image" accept="image/jpeg,image/png,image/webp" className="mt-2 block w-full text-sm" /><span className="mt-2 block text-xs font-normal leading-5 text-cyan-950">공식 원본과 재사용 조건을 확인한 파일만 Storage에 올려 주세요.</span></label>
             <button className="mt-4 rounded-xl bg-cyan-800 px-4 py-2.5 text-sm font-bold text-white">Storage에 업로드</button>
           </form>
           <form action={deleteEventAction} className="rounded-3xl bg-rose-50 p-5 ring-1 ring-rose-200 sm:p-6">

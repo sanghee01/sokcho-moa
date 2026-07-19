@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { seoulDatetimeLocalToIso } from "@/lib/admin/datetime";
 import { eventAudiences, eventCandidateSchema, eventCategories } from "@/lib/domain/event";
+import { isLikelyEventDetailUrl } from "@/lib/domain/source";
 
 const optionalText = z.string().trim().transform((value) => value || null);
 const optionalUrl = z.string().trim().transform((value, context) => {
@@ -47,7 +48,7 @@ export const eventFormSchema = z.object({
   applicationUrl: optionalUrl,
   imageUrl: optionalUrl,
   sourceName: z.string().trim().min(1).max(200),
-  sourceUrl: z.string().url(),
+  sourceUrl: z.string().trim().url().refine(isLikelyEventDetailUrl, "기관 대표 홈이나 목록이 아닌 행사별 공식 원문 URL을 입력하세요."),
   isFeatured: z.boolean(),
   lastVerifiedAt: optionalDate,
 });

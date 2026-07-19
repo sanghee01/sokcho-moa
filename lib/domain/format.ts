@@ -1,19 +1,20 @@
 import type { ApplicationState, EventAudience, EventCategory, EventState } from "./event";
 
-const dateFormatter = new Intl.DateTimeFormat("ko-KR", {
+const datePartsFormatter = new Intl.DateTimeFormat("en-CA", {
   timeZone: "Asia/Seoul",
   year: "numeric",
-  month: "long",
-  day: "numeric",
+  month: "2-digit",
+  day: "2-digit",
 });
 
-const dateTimeFormatter = new Intl.DateTimeFormat("ko-KR", {
+const dateTimePartsFormatter = new Intl.DateTimeFormat("en-CA", {
   timeZone: "Asia/Seoul",
   year: "numeric",
-  month: "long",
-  day: "numeric",
+  month: "2-digit",
+  day: "2-digit",
   hour: "2-digit",
   minute: "2-digit",
+  hourCycle: "h23",
 });
 
 export const categoryLabels: Record<EventCategory, string> = {
@@ -48,15 +49,38 @@ export const applicationStateLabels: Record<ApplicationState, string> = {
 };
 
 export function formatDate(value: string | null) {
-  return value ? dateFormatter.format(new Date(value)) : "확인 필요";
+  if (!value) return "확인 필요";
+  const parts = getDateParts(datePartsFormatter, value);
+  return parts ? `${parts.year}.${parts.month}.${parts.day}` : "확인 필요";
 }
 
 export function formatDateTime(value: string | null) {
-  return value ? dateTimeFormatter.format(new Date(value)) : "확인 필요";
+  if (!value) return "확인 필요";
+  const parts = getDateParts(dateTimePartsFormatter, value);
+  return parts ? `${parts.year}.${parts.month}.${parts.day} ${parts.hour}:${parts.minute}` : "확인 필요";
 }
 
-export function formatDateRange(start: string, end: string | null) {
+export function formatDateRange(start: string | null, end: string | null) {
+  if (!start && !end) return "확인 필요";
+  if (!start) return formatDate(end);
+  if (!end) return formatDate(start);
   const startLabel = formatDate(start);
   const endLabel = formatDate(end);
-  return end && startLabel !== endLabel ? `${startLabel} – ${endLabel}` : startLabel;
+  return startLabel !== endLabel ? `${startLabel} ~ ${endLabel}` : startLabel;
+}
+
+export function formatOperatingSchedule(value: string | null) {
+  return value?.trim().replace(/\s+/g, " ") || "공식 원문 확인";
+}
+
+function getDateParts(formatter: Intl.DateTimeFormat, value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  const parts = formatter.formatToParts(date);
+  const read = (type: Intl.DateTimeFormatPartTypes) => parts.find((part) => part.type === type)?.value;
+  const year = read("year");
+  const month = read("month");
+  const day = read("day");
+  if (!year || !month || !day) return null;
+  return { year, month, day, hour: read("hour") ?? "00", minute: read("minute") ?? "00" };
 }

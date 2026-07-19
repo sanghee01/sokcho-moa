@@ -36,4 +36,9 @@ describe("eventCandidateSchema", () => {
     const result = eventCandidateSchema.safeParse({ ...candidate, sourceUrl: "not-a-url", latitude: 120 });
     expect(result.success).toBe(false);
   });
+
+  it("기관 대표 홈을 행사 원문으로 허용하지 않는다", () => {
+    const result = eventCandidateSchema.safeParse({ ...candidate, sourceUrl: "https://www.sokcho.go.kr/sc/portal" });
+    expect(result.success).toBe(false);
+  });
 });

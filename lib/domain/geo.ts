@@ -16,7 +16,7 @@ export type NearbyPlace = Place & { distanceKm: number | null };
 
 export function findNearbyPlaces(event: Event, places: Place[], limit = 4): NearbyPlace[] {
   if (event.latitude == null || event.longitude == null) {
-    return places.slice(0, limit).map((place) => ({ ...place, distanceKm: null }));
+    return [];
   }
 
   return places
@@ -31,4 +31,35 @@ export function findNearbyPlaces(event: Event, places: Place[], limit = 4): Near
 export function createNaverMapUrl(name: string, latitude: number, longitude: number) {
   const query = encodeURIComponent(name);
   return `https://map.naver.com/p/search/${query}?c=${longitude},${latitude},15,0,0,0,dh`;
+}
+
+export type EventMapLinks = {
+  naver: string;
+  kakao: string;
+  hasVerifiedCoordinates: boolean;
+};
+
+export function createEventMapLinks(
+  name: string,
+  address: string | null,
+  latitude: number | null,
+  longitude: number | null,
+): EventMapLinks | null {
+  const hasVerifiedCoordinates = latitude != null && longitude != null;
+  if (!address && !hasVerifiedCoordinates) return null;
+
+  const query = encodeURIComponent([name, address].filter(Boolean).join(" "));
+  if (!hasVerifiedCoordinates) {
+    return {
+      naver: `https://map.naver.com/p/search/${query}`,
+      kakao: `https://map.kakao.com/link/search/${query}`,
+      hasVerifiedCoordinates: false,
+    };
+  }
+
+  return {
+    naver: createNaverMapUrl(name, latitude, longitude),
+    kakao: `https://map.kakao.com/link/to/${encodeURIComponent(name)},${latitude},${longitude}`,
+    hasVerifiedCoordinates: true,
+  };
 }

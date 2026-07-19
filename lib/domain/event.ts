@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isLikelyEventDetailUrl } from "./source";
 
 export const eventCategories = [
   "performance",
@@ -115,7 +116,7 @@ export const eventCandidateSchema: z.ZodType<EventCandidate> = z.object({
   applicationUrl: nullableUrl,
   imageUrl: nullableUrl,
   sourceName: z.string().trim().min(1).max(200),
-  sourceUrl: z.string().url(),
+  sourceUrl: z.string().url().refine(isLikelyEventDetailUrl, "기관 대표 홈이나 목록이 아닌 행사별 공식 원문 URL을 입력하세요."),
 });
 
 export type EventState = "upcoming" | "ongoing" | "ended";
