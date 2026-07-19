@@ -62,7 +62,6 @@ export function createNaverMapUrl(name: string, latitude: number, longitude: num
 
 export type EventMapLinks = {
   naver: string;
-  kakao: string;
   hasVerifiedCoordinates: boolean;
 };
 
@@ -84,14 +83,12 @@ export function createEventMapLinks(
   if (!hasVerifiedCoordinates) {
     return {
       naver: `https://map.naver.com/p/search/${query}`,
-      kakao: `https://map.kakao.com/link/search/${query}`,
       hasVerifiedCoordinates: false,
     };
   }
 
   return {
-    naver: createNaverMapUrl(name, latitude, longitude),
-    kakao: `https://map.kakao.com/link/to/${encodeURIComponent(searchName)},${latitude},${longitude}`,
+    naver: createNaverMapUrl(searchName, latitude, longitude),
     hasVerifiedCoordinates: true,
   };
 }

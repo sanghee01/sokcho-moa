@@ -171,8 +171,7 @@ export default async function EventDetailPage({ params }: EventPageProps) {
             )}
             {mapLinks ? (
               <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-sm font-bold text-cyan-100">
-                <a href={mapLinks.naver} target="_blank" rel="noreferrer" data-analytics-event="map_link_clicked" data-event-slug={event.slug} className="underline underline-offset-4">네이버 지도에서 보기 <span className="sr-only">(새 창)</span></a>
-                <a href={mapLinks.kakao} target="_blank" rel="noreferrer" data-analytics-event="map_link_clicked" data-event-slug={event.slug} className="underline underline-offset-4">{mapLinks.hasVerifiedCoordinates ? "카카오맵 길찾기" : "카카오맵에서 검색"} <span className="sr-only">(새 창)</span></a>
+                <a href={mapLinks.naver} target="_blank" rel="noreferrer" data-analytics-event="map_link_clicked" data-event-slug={event.slug} className="underline underline-offset-4">{mapLinks.hasVerifiedCoordinates ? "네이버 지도에서 위치 확인" : "네이버 지도에서 검색"} <span className="sr-only">(새 창)</span></a>
               </div>
             ) : (
               <p className="mt-6 text-sm leading-6 text-cyan-100">정확한 주소를 확인한 뒤 지도와 길찾기를 제공합니다.</p>

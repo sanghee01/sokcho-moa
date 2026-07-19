@@ -1,48 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-
-type KakaoMaps = {
-  load(callback: () => void): void;
-  LatLng: new (latitude: number, longitude: number) => unknown;
-  Map: new (container: HTMLElement, options: Record<string, unknown>) => unknown;
-  Marker: new (options: Record<string, unknown>) => unknown;
-};
-
-declare global {
-  interface Window {
-    kakao?: { maps: KakaoMaps };
-  }
-}
-
-let sdkPromise: Promise<KakaoMaps> | null = null;
-
-function loadKakaoMaps(appKey: string) {
-  if (window.kakao?.maps) {
-    return new Promise<KakaoMaps>((resolve) => window.kakao!.maps.load(() => resolve(window.kakao!.maps)));
-  }
-  if (sdkPromise) return sdkPromise;
-
-  sdkPromise = new Promise<KakaoMaps>((resolve, reject) => {
-    const script = document.createElement("script");
-    script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${encodeURIComponent(appKey)}&autoload=false`;
-    script.async = true;
-    script.onload = () => {
-      if (!window.kakao?.maps) {
-        reject(new Error("카카오 지도 SDK를 초기화하지 못했습니다."));
-        return;
-      }
-      window.kakao.maps.load(() => resolve(window.kakao!.maps));
-    };
-    script.onerror = () => reject(new Error("카카오 지도 SDK를 불러오지 못했습니다."));
-    document.head.appendChild(script);
-  }).catch((error) => {
-    sdkPromise = null;
-    throw error;
-  });
-
-  return sdkPromise;
-}
+import {
+  loadNaverMaps,
+  subscribeNaverMapAuthFailure,
+  type NaverMapInstance,
+  type NaverMarkerInstance,
+} from "@/lib/naver-map-sdk";
 
 type EventLocationMapProps = {
   latitude: number;
@@ -53,53 +17,110 @@ type EventLocationMapProps = {
 
 export function EventLocationMap({ latitude, longitude, locationName, address }: EventLocationMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [status, setStatus] = useState<"loading" | "ready" | "failed">("loading");
-  const appKey = process.env.NEXT_PUBLIC_KAKAO_MAP_JS_KEY;
+  const clientId = process.env.NEXT_PUBLIC_NAVER_MAP_CLIENT_ID;
+  const requestKey = JSON.stringify([clientId, latitude, longitude, locationName]);
+  const [statusState, setStatusState] = useState<{
+    requestKey: string;
+    status: "loading" | "ready" | "failed";
+  }>({ requestKey, status: "loading" });
+  const status = statusState.requestKey === requestKey ? statusState.status : "loading";
 
   useEffect(() => {
-    if (!appKey || !containerRef.current) {
-      setStatus("failed");
+    if (!clientId || !containerRef.current) {
+      setStatusState({ requestKey, status: "failed" });
       return;
     }
 
     let cancelled = false;
-    const timeout = window.setTimeout(() => setStatus("failed"), 8_000);
-    loadKakaoMaps(appKey)
+    let failed = false;
+    let mapInstance: NaverMapInstance | null = null;
+    let markerInstance: NaverMarkerInstance | null = null;
+    let removeTilesLoadedListener: (() => void) | null = null;
+
+    const destroyMap = () => {
+      const removeTilesListener = removeTilesLoadedListener;
+      const marker = markerInstance;
+      const map = mapInstance;
+      removeTilesLoadedListener = null;
+      markerInstance = null;
+      mapInstance = null;
+
+      try {
+        removeTilesListener?.();
+      } catch {}
+      try {
+        marker?.setMap(null);
+      } catch {}
+      try {
+        map?.destroy();
+      } catch {}
+    };
+
+    const showFallback = () => {
+      if (cancelled || failed) return;
+      failed = true;
+      window.clearTimeout(deadline);
+      try {
+        destroyMap();
+      } finally {
+        setStatusState({ requestKey, status: "failed" });
+      }
+    };
+
+    const unsubscribeAuthFailure = subscribeNaverMapAuthFailure(showFallback);
+    const deadline = window.setTimeout(showFallback, 8_000);
+    loadNaverMaps(clientId)
       .then((maps) => {
-        if (cancelled || !containerRef.current) return;
+        if (cancelled || failed || !containerRef.current) return;
         const center = new maps.LatLng(latitude, longitude);
-        const map = new maps.Map(containerRef.current, {
+        mapInstance = new maps.Map(containerRef.current, {
           center,
-          level: 3,
+          zoom: 16,
           draggable: false,
-          scrollwheel: false,
-          disableDoubleClickZoom: true,
+          pinchZoom: false,
+          scrollWheel: false,
           keyboardShortcuts: false,
+          disableDoubleClickZoom: true,
+          disableDoubleTapZoom: true,
+          disableTwoFingerTapZoom: true,
         });
-        new maps.Marker({ map, position: center, title: locationName });
-        window.clearTimeout(timeout);
-        setStatus("ready");
+        if (cancelled || failed) {
+          destroyMap();
+          return;
+        }
+        markerInstance = new maps.Marker({ map: mapInstance, position: center, title: locationName });
+        const tilesLoadedListener = maps.Event.once(mapInstance, "tilesloaded", () => {
+          removeTilesLoadedListener = null;
+          if (cancelled || failed) return;
+          window.clearTimeout(deadline);
+          setStatusState({ requestKey, status: "ready" });
+        });
+        removeTilesLoadedListener = () => maps.Event.removeListener(tilesLoadedListener);
       })
-      .catch(() => setStatus("failed"));
+      .catch(showFallback);
 
     return () => {
       cancelled = true;
-      window.clearTimeout(timeout);
+      window.clearTimeout(deadline);
+      destroyMap();
+      unsubscribeAuthFailure();
     };
-  }, [appKey, latitude, longitude, locationName]);
+  }, [clientId, latitude, longitude, locationName, requestKey]);
 
   const label = `${locationName} 위치 지도${address ? `, ${address}` : ""}`;
 
   return (
     <div className="relative mt-6 h-72 overflow-hidden rounded-2xl bg-teal-950/60">
-      <div ref={containerRef} role="img" aria-label={label} aria-hidden={status === "failed"} className={`h-full w-full ${status === "failed" ? "invisible" : ""}`} />
+      <div role="img" aria-label={label} aria-hidden={status === "failed"} className="pointer-events-none h-full w-full touch-pan-y">
+        <div ref={containerRef} aria-hidden="true" inert className={`h-full w-full ${status === "ready" ? "" : "invisible"}`} />
+      </div>
       {status === "loading" && (
         <p role="status" className="pointer-events-none absolute inset-0 flex items-center justify-center text-sm text-cyan-50">
           지도를 불러오는 중입니다.
         </p>
       )}
       {status === "failed" && (
-        <div role="status" className="absolute inset-0 flex items-center justify-center px-6 text-center text-sm leading-6 text-cyan-50">
+        <div role="status" aria-label={`${label}를 표시하지 못했습니다.`} className="absolute inset-0 flex items-center justify-center px-6 text-center text-sm leading-6 text-cyan-50">
           <p>지도를 불러오지 못했습니다.<br />아래 길찾기 링크에서 위치를 확인해 주세요.</p>
         </div>
       )}

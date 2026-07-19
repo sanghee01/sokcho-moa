@@ -66,13 +66,12 @@ describe("createEventMapLinks", () => {
     const links = createEventMapLinks("속초문화예술회관", "강원특별자치도 속초시 번영로 155", null, null);
     expect(links?.hasVerifiedCoordinates).toBe(false);
     expect(links?.naver).toContain("map.naver.com/p/search/");
-    expect(links?.kakao).toContain("map.kakao.com/link/search/");
   });
 
-  it("검증 좌표가 있으면 카카오맵 길찾기 링크를 만든다", () => {
+  it("검증 좌표가 있으면 네이버 지도 위치 링크를 만든다", () => {
     const links = createEventMapLinks("속초해수욕장", null, 38.1907, 128.6015);
     expect(links?.hasVerifiedCoordinates).toBe(true);
-    expect(links?.kakao).toBe("https://map.kakao.com/link/to/%EC%86%8D%EC%B4%88%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5,38.1907,128.6015");
+    expect(links?.naver).toBe("https://map.naver.com/p/search/%EC%86%8D%EC%B4%88%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5?c=128.6015,38.1907,15,0,0,0,dh");
   });
 
   it("주소와 완전한 좌표가 모두 없으면 링크를 만들지 않는다", () => {

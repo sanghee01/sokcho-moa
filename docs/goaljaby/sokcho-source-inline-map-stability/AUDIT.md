@@ -107,8 +107,14 @@
 ## 자동 회귀 결과
 
 - `pnpm lint`, `pnpm typecheck`, `pnpm build`: 통과
-- `pnpm test`: 11 files, 38 tests 통과
-- `pnpm test:e2e`: 데스크톱·모바일 8 tests 통과
+- `pnpm test`: 12 files, 41 tests 통과
+- `pnpm test:e2e`: 데스크톱·모바일 22 tests 통과
+- 네이버 SDK 제어 harness: 로딩→성공·네트워크 실패·인증 실패·SDK timeout·타일 timeout 전후 지도 높이 `288px`, 변화량 1px 이하, 지도 1개·마커 1개·검증 좌표·상호작용 비활성 옵션 확인
+- E2E 전용 공개 dummy Client ID와 route 응답으로 실제 SDK script URL의 `ncpKeyId`를 확인하며 `.env.local`·외부 네트워크와 기존 개발 서버에 의존하지 않음
+- 실제 SDK처럼 선행 자원 파괴 후 `navermap_authFailure`가 오는 순서에서도 cleanup 예외를 격리해 동일 높이 fallback·이전 전역 callback·다음 진입 새 SDK 요청을 확인
+- `tilesloaded` 전 8초 전체 deadline, SDK/타일 hang 후 재시도, 이탈 뒤 늦은 인증 실패로 namespace가 사라진 뒤 stale Promise 폐기와 두 번째 script 요청을 확인
+- 실제 SDK가 넣는 focusable attribution 링크 fixture를 `aria-hidden`·`inert` 자식에 격리하고, 바깥 `role=img`의 장소·주소 접근성 이름과 지도 위 wheel의 페이지 세로 스크롤, 데스크톱·모바일 document/body 가로 넘침을 E2E 계약으로 확인. 실제 네이버 타일과 시각적 겹침·잘림은 Client ID 등록 후 운영 화면에서 별도 확인한다.
+- 정상·null·빈 문자열·404 이미지: 목록 16:9와 상세 hero가 로드 성공·실패 전후 같은 크기이며 `공식 이미지 준비 중` 문구가 없음을 확인
 - 관리자 실제 `EventReviewRow`·`StatusControls`: 목록과 행사 수정 화면에서 저장 전·중·성공·실패 rollback의 컨트롤·현재/인접 영역 좌표와 크기 변화 모두 1 CSS px 이하
 
 ## Vercel production 운영 감사
@@ -137,6 +143,15 @@
 - Vercel Production·Preview에 `NEXT_PUBLIC_KAKAO_MAP_JS_KEY`가 있고 production 빌드가 사용하는 값이 로컬 환경 계약과 일치한다. 값 자체는 기록하지 않는다.
 - JavaScript SDK 도메인에 `https://sokcho-moa.vercel.app`과 `http://localhost:3000`이 저장돼 있다.
 - Kakao Developers 앱 `1517897`의 카카오맵 제품은 현재 OFF다. ON 전환 시 `카카오맵 권한이 없습니다`가 표시됐다.
-- 추가 기능 신청 화면은 비즈니스 앱 전환과 비즈니스 정보 심사 후 카카오맵 권한 신청을 요구하며, 현재 신청 버튼은 비활성화돼 있다.
-- 본인 확인·약관 동의·사업 정보 심사는 대리할 수 없는 사용자 작업이므로 Goal의 지도 `18/18`은 아직 완료로 판정하지 않는다.
+- 계정에서 이미 카카오맵을 쓰는 첫 번째 앱이 있어 속초모아는 추가 권한 신청 대상이다.
+- 카카오 일반 앱 설정 문서에는 `개인 개발자 비즈 앱` 전환 경로가 있지만, 사용자는 실제 카카오맵 추가 기능 신청 과정에서 사업자등록증 요구를 확인했다.
+- 사용자는 사업자 심사와 유료 대안을 원하지 않았고 네이버 지도 전환을 명시적으로 승인했다. 따라서 카카오 경로는 더 이상 완료조건이 아니다.
+- 카카오 공식 2026-06-16 공지는 2026-07-21부터 두 번째 활성화 앱이 별도 심사 대신 비즈월렛 연결·유료 API 설정으로 사용할 수 있다고 안내한다. 개인 비즈월렛도 약관상 지원되지만 비용이 발생할 수 있어 자동 설정하지 않는다.
 - 현재 production은 SDK 실패 계약에 따라 동일한 `h-72` 높이의 주소 fallback과 작은 길찾기 링크를 표시한다. 임의 좌표나 속초 중심점은 사용하지 않는다.
+
+## 지도 공급자 변경 결정 — 2026-07-19
+
+- 사용자는 사업자 심사와 사용량 과금을 원하지 않아 네이버 Maps JavaScript API v3 전환을 명시적으로 승인했다.
+- 위 카카오 활성화 기록은 실패 원인과 복구 이력으로 보존하며 완료조건에는 더 이상 사용하지 않는다.
+- 네이버는 개인 회원도 결제수단 등록이 필요하며 대표 계정이 아니면 첫 호출부터 과금될 수 있다. 대표 계정인 경우에만 Client ID를 배포하고, Dynamic Map 월 6,000,000건 무료 제공량 안에서 계정 전체 앱 한도 합과 속초모아 일·월 한도·임계치 알림을 확인한다. 설정 한도가 초과 요청을 실제로 제한한다는 증거도 완료 전에 확인한다.
+- 기존 카카오 POI 위치 근거와 WGS84 좌표는 삭제하지 않고, 네이버 인라인 지도에서 동일 장소 단일 마커를 `18/18` 재대조한다.
