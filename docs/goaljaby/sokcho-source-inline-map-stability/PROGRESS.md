@@ -59,7 +59,7 @@
 - 운영 DB: events 28, 실제 20, 샘플 8, 검수 대기 21, 공개 7, 반려 0
 - 운영 DB: 지도 준비 18, 좌표·근거 위반 0, 제외 2건 좌표·근거 null
 - 운영 DB: 무비 나잇 canonical 원문 및 external_id 11208 단건 확인
-- Vercel production deployment `2BArJZQQp4QVNUT6kTjz88LZUXEd`: Ready·Current, `https://sokcho-moa.vercel.app`
+- 제품 구현 Vercel production deployment `2BArJZQQp4QVNUT6kTjz88LZUXEd`: Ready·Production, `https://sokcho-moa.vercel.app`
 - production 공개 7건 href: 모두 교정된 공식 상세 또는 공식 파일과 정확히 일치
 - production 관리자 목록 실측: 행 `1104 × 73px`, 컨트롤 `317.78125 × 36px`, 컨트롤 상대 y `16.5px`, 인접 행 상대 y `73px`가 저장 전·중·성공·복구 후 동일
 - production 행사 수정 실측: 헤더 `89.7109375 × 32px`, 컨트롤 `256.3359375 × 36px`, 첫 필드 `510 × 42px`와 상대 위치가 저장 전·중·성공·복구 후 동일

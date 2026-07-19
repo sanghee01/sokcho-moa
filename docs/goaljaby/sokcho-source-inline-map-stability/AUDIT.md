@@ -114,7 +114,7 @@
 ## Vercel production 운영 감사
 
 - commit: `dcdd92394b9f6b558661f43e9e05a57646822ae9`
-- deployment: `2BArJZQQp4QVNUT6kTjz88LZUXEd` — Ready·Current·Production
+- 제품 구현 deployment: `2BArJZQQp4QVNUT6kTjz88LZUXEd` — Ready·Production
 - 운영 도메인: `https://sokcho-moa.vercel.app`
 - 공개 행사 7건의 `원문 보기` href를 DOM에서 직접 확인했다. 무비 나잇 `11208`, Bloom Up `11212`, 집밥천재 `11246`, 원데이캠프 `11247`, 핫썸머워터축제 `11248`, 꿈잡(Job)기 `11250`은 모두 `bmode=view` 상세이고, 구인·구직자 만남의 날은 공식 포스터 파일이다.
 - 공개 7건은 전부 교정된 운영 DB URL과 일치한다. 비공개 13건은 인증된 관리자 데이터와 위 20/20 실제 본문 감사표를 대조했다.
