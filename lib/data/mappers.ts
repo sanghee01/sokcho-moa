@@ -18,6 +18,8 @@ export function mapEventRow(row: Record<string, unknown>): Event {
     address: nullableString(row.address),
     latitude: nullableNumber(row.latitude),
     longitude: nullableNumber(row.longitude),
+    locationSourceUrl: nullableString(row.location_source_url),
+    locationVerifiedAt: nullableString(row.location_verified_at),
     priceText: nullableString(row.price_text),
     isFree: typeof row.is_free === "boolean" ? row.is_free : null,
     organizer: nullableString(row.organizer),

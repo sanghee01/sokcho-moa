@@ -18,6 +18,8 @@ const baseEvent: Event = {
   address: null,
   latitude: null,
   longitude: null,
+  locationSourceUrl: null,
+  locationVerifiedAt: null,
   priceText: null,
   isFree: null,
   organizer: null,

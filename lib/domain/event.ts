@@ -33,6 +33,8 @@ export type Event = {
   address: string | null;
   latitude: number | null;
   longitude: number | null;
+  locationSourceUrl: string | null;
+  locationVerifiedAt: string | null;
   priceText: string | null;
   isFree: boolean | null;
   organizer: string | null;

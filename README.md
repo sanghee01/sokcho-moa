@@ -87,6 +87,7 @@ pnpm dev
 | `NEXT_PUBLIC_SITE_URL` | canonical URL, 사이트맵, robots 기준 주소 | 공개 |
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase 프로젝트 URL | 공개 |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | RLS가 적용되는 publishable key | 공개 |
+| `NEXT_PUBLIC_KAKAO_MAP_JS_KEY` | 행사 상세 인라인 지도용 카카오 JavaScript 키 | 공개 |
 | `SUPABASE_SERVICE_ROLE_KEY` | 향후 서버 전용 자동 수집 기능용 키 | 비공개 |
 | `REVALIDATE_SECRET` | 외부 작업의 캐시 갱신 요청 인증값 | 비공개 |
 
@@ -102,6 +103,8 @@ pnpm dev
 4. `.env.local`에 프로젝트 URL과 publishable key를 입력합니다.
 5. `NEXT_PUBLIC_DATA_MODE=supabase`로 변경합니다.
 6. `/admin/login`에서 로그인해 행사와 명소를 관리합니다.
+
+행사 상세의 인라인 지도를 사용하려면 카카오 Developers에서 JavaScript 키를 발급하고, JavaScript SDK 사이트 도메인에 `http://localhost:3000`과 `https://sokcho-moa.vercel.app`을 등록한 뒤 `NEXT_PUBLIC_KAKAO_MAP_JS_KEY`에 키를 설정합니다. 키가 없거나 도메인이 등록되지 않으면 동일한 높이의 주소 안내와 길찾기 링크가 표시됩니다.
 
 다음 쿼리의 값을 실제 운영자 정보로 바꿔 실행합니다:
 
@@ -140,7 +143,7 @@ Playwright 테스트는 데스크톱과 모바일 환경에서 행사 필터, �
 
 ## 배포하기
 
-Vercel에서 이 저장소를 가져오고 Production 환경 변수를 등록합니다. 운영 환경에서는 `NEXT_PUBLIC_DATA_MODE=supabase`와 실제 서비스 주소를 사용합니다.
+Vercel에서 이 저장소를 가져오고 Production 환경 변수를 등록합니다. 운영 환경에서는 `NEXT_PUBLIC_DATA_MODE=supabase`, 실제 서비스 주소, `NEXT_PUBLIC_KAKAO_MAP_JS_KEY`를 사용합니다.
 
 배포 후 다음 흐름을 확인합니다:
 

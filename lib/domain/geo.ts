@@ -14,6 +14,14 @@ export function distanceInKm(lat1: number, lon1: number, lat2: number, lon2: num
 
 export type NearbyPlace = Place & { distanceKm: number | null };
 
+export function hasVerifiedLocation(location: Pick<Event,
+  "latitude" | "longitude" | "locationSourceUrl" | "locationVerifiedAt"
+>) {
+  return location.latitude != null &&
+    location.longitude != null &&
+    Boolean(location.locationSourceUrl && location.locationVerifiedAt);
+}
+
 export function findNearbyPlaces(event: Event, places: Place[], limit = 4): NearbyPlace[] {
   if (event.latitude == null || event.longitude == null) {
     return [];

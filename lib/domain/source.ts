@@ -1,5 +1,18 @@
 const EVENT_ID_QUERY_KEYS = ["fstvlcntntsid", "eventseq", "articleseq", "pseq"];
 const OFFICIAL_IMAGE_PATTERN = /\.(?:avif|gif|jpe?g|png|webp)$/i;
+const SOKCHO_HOSTS = new Set(["sokcho.go.kr", "www.sokcho.go.kr"]);
+const SOKCHO_FACILITIES_HOSTS = new Set(["sokchosiseol.or.kr", "www.sokchosiseol.or.kr"]);
+const SOKCHO_LIBRARY_HOST = "library.sokcho.go.kr";
+const MCST_HOSTS = new Set(["mcst.go.kr", "www.mcst.go.kr"]);
+
+const SOKCHO_ARTICLE_PATHS = new Set([
+  "/ct/museum/archives/notice/news",
+  "/sc/portal/sokchonews/notice",
+  "/sc/portal/sokchonews/pressrelease",
+]);
+
+const GENERIC_LAST_PATH_SEGMENT = /^(?:(?:[a-z0-9_-]*list)|boards|events|home|index|notices|programs)(?:\.[a-z0-9]+)?$/i;
+const AUTH_PATH_SEGMENT = /^(?:auth|login|sign-?in)(?:\.[a-z0-9]+)?$/i;
 
 const KNOWN_GENERIC_PATHS = new Set([
   "/sc/portal",
@@ -48,13 +61,68 @@ export function extractSourceExternalId(value: string) {
   return null;
 }
 
+function queryValues(url: URL, key: string) {
+  return [...url.searchParams.entries()]
+    .filter(([candidate]) => candidate.toLowerCase() === key.toLowerCase())
+    .map(([, value]) => value.trim());
+}
+
+function hasQueryValue(url: URL, key: string) {
+  return queryValues(url, key).some(Boolean);
+}
+
+function isSokchoDetailUrl(url: URL, path: string) {
+  if (path.toLowerCase() === "/sc/event/program") return hasQueryValue(url, "eventSeq");
+  if (SOKCHO_ARTICLE_PATHS.has(path.toLowerCase())) return hasQueryValue(url, "articleSeq");
+
+  return /^\/(?:sc\/)?upload\/popupzone\/(?:.+\/)?[^/]+\.(?:avif|gif|jpe?g|png|webp)$/i.test(path);
+}
+
+function isSokchoFacilitiesDetailUrl(url: URL, path: string) {
+  if (path.toLowerCase() !== "/bbs/event.do") return false;
+  const modes = queryValues(url, "bmode");
+  return modes.length > 0
+    && modes.every((mode) => mode.toLowerCase() === "view")
+    && hasQueryValue(url, "articleseq");
+}
+
+function isSokchoLibraryDetailUrl(path: string) {
+  return /\/(?:post|movie)\/[^/]+$/i.test(path);
+}
+
+function isMcstDetailUrl(url: URL, path: string) {
+  return path.toLowerCase() === "/site/s_culture/festival/festivalview.jsp"
+    && hasQueryValue(url, "pSeq");
+}
+
+function hasAuthenticationPath(path: string) {
+  const segments = path.split("/").filter(Boolean);
+  return segments.some((segment) => AUTH_PATH_SEGMENT.test(segment));
+}
+
+function isGenericPath(path: string) {
+  const segments = path.split("/").filter(Boolean);
+  return segments.length === 0 || GENERIC_LAST_PATH_SEGMENT.test(segments.at(-1) ?? "");
+}
+
 export function isLikelyEventDetailUrl(value: string) {
   try {
     const url = new URL(value);
     if (url.protocol !== "https:") return false;
-    if (extractSourceExternalId(value)) return true;
 
     const path = url.pathname.length > 1 ? url.pathname.replace(/\/+$/, "") : url.pathname;
+    if (hasAuthenticationPath(path)) return false;
+
+    const hostname = url.hostname.toLowerCase();
+    if (SOKCHO_HOSTS.has(hostname)) return isSokchoDetailUrl(url, path);
+    if (SOKCHO_FACILITIES_HOSTS.has(hostname)) return isSokchoFacilitiesDetailUrl(url, path);
+    if (hostname === SOKCHO_LIBRARY_HOST) return isSokchoLibraryDetailUrl(path);
+    if (MCST_HOSTS.has(hostname)) return isMcstDetailUrl(url, path);
+
+    if (isGenericPath(path)) return false;
+
+    if (extractSourceExternalId(value)) return true;
+
     if (path === "/") return false;
     if (KNOWN_GENERIC_PATHS.has(path.toLowerCase())) return false;
 

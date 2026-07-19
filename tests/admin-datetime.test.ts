@@ -30,6 +30,8 @@ describe("admin Asia/Seoul datetime round trip", () => {
       address: "",
       latitude: null,
       longitude: null,
+      locationSourceUrl: "",
+      locationVerifiedAt: "",
       priceText: "",
       isFree: "unknown",
       organizer: "",

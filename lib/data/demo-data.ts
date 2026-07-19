@@ -11,6 +11,8 @@ export function getDemoEvents(): Event[] {
     isDemo: true,
     publishedAt: fromNow(-30 * day),
     lastVerifiedAt: fromNow(-2 * day),
+    locationSourceUrl: null,
+    locationVerifiedAt: null,
   };
 
   return [
@@ -32,6 +34,8 @@ export function getDemoEvents(): Event[] {
       address: "강원특별자치도 속초시 해오름로 190",
       latitude: 38.1907,
       longitude: 128.6015,
+      locationSourceUrl: "https://place.map.kakao.com/8139572",
+      locationVerifiedAt: fromNow(-2 * day),
       priceText: "무료(샘플)",
       isFree: true,
       organizer: "속초모아 데모",
@@ -60,6 +64,7 @@ export function getDemoEvents(): Event[] {
       address: "강원특별자치도 속초시 신흥2길 16",
       latitude: 38.2406,
       longitude: 128.5663,
+      imageUrl: " ",
       priceText: "무료(샘플)",
       isFree: true,
       organizer: "속초모아 데모",
@@ -88,6 +93,7 @@ export function getDemoEvents(): Event[] {
       address: null,
       latitude: 38.2051,
       longitude: 128.5778,
+      imageUrl: "/missing-event-image.jpg",
       priceText: "무료(샘플)",
       isFree: true,
       organizer: "속초모아 데모",

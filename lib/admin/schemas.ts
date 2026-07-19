@@ -40,6 +40,8 @@ export const eventFormSchema = z.object({
   address: optionalText,
   latitude: z.coerce.number().min(-90).max(90).nullable(),
   longitude: z.coerce.number().min(-180).max(180).nullable(),
+  locationSourceUrl: optionalUrl,
+  locationVerifiedAt: optionalDate,
   priceText: optionalText,
   isFree: z.enum(["true", "false", "unknown"]).transform((value) => value === "unknown" ? null : value === "true"),
   organizer: optionalText,
@@ -51,6 +53,21 @@ export const eventFormSchema = z.object({
   sourceUrl: z.string().trim().url().refine(isLikelyEventDetailUrl, "기관 대표 홈이나 목록이 아닌 행사별 공식 원문 URL을 입력하세요."),
   isFeatured: z.boolean(),
   lastVerifiedAt: optionalDate,
+}).superRefine((event, context) => {
+  const hasLatitude = event.latitude != null;
+  const hasLongitude = event.longitude != null;
+  if (hasLatitude !== hasLongitude) {
+    context.addIssue({ code: "custom", path: [hasLatitude ? "longitude" : "latitude"], message: "위도와 경도를 모두 입력하거나 모두 비워 주세요." });
+  }
+
+  const hasLocationSource = event.locationSourceUrl != null;
+  const hasLocationVerifiedAt = event.locationVerifiedAt != null;
+  if (hasLocationSource !== hasLocationVerifiedAt) {
+    context.addIssue({ code: "custom", path: [hasLocationSource ? "locationVerifiedAt" : "locationSourceUrl"], message: "위치 근거 URL과 위치 확인 시각을 함께 입력해 주세요." });
+  }
+  if ((hasLocationSource || hasLocationVerifiedAt) && (!hasLatitude || !hasLongitude)) {
+    context.addIssue({ code: "custom", path: ["latitude"], message: "위치 근거를 등록하려면 위도와 경도가 모두 필요합니다." });
+  }
 });
 
 export const placeFormSchema = z.object({

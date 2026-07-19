@@ -2,19 +2,27 @@
 
 import { useOptimistic, useState, useTransition } from "react";
 import { setEventReviewStatusAction } from "@/lib/actions/admin";
+import { statusControlStyles } from "@/components/admin/status-control-styles";
 
 type ReviewStatus = "pending" | "published" | "rejected";
+type StatusChangeAction = (input: {
+  id: string;
+  slug: string;
+  status: ReviewStatus;
+}) => Promise<{ status: ReviewStatus }>;
 
 export function StatusControls({
   id,
   slug,
   current,
   onStatusChange,
+  performStatusChangeAction = setEventReviewStatusAction,
 }: {
   id: string;
   slug: string;
   current: string;
   onStatusChange?: (status: ReviewStatus) => void;
+  performStatusChangeAction?: StatusChangeAction;
 }) {
   const [confirmedStatus, setConfirmedStatus] = useState<ReviewStatus>(current as ReviewStatus);
   const [optimisticStatus, setOptimisticStatus] = useOptimistic(
@@ -37,7 +45,7 @@ export function StatusControls({
       setOptimisticStatus(nextStatus);
       onStatusChange?.(nextStatus);
       try {
-        const result = await setEventReviewStatusAction({ id, slug, status: nextStatus });
+        const result = await performStatusChangeAction({ id, slug, status: nextStatus });
         setConfirmedStatus(result.status);
       } catch {
         onStatusChange?.(previousStatus);
@@ -47,7 +55,7 @@ export function StatusControls({
   }
 
   return (
-    <div className="flex flex-wrap gap-2" aria-label="공개 상태 변경" aria-busy={isPending}>
+    <div className={statusControlStyles.controls} aria-label="공개 상태 변경" aria-busy={isPending}>
       {actions.map(([status, label, tone]) => (
         <button
           key={status}
@@ -55,13 +63,21 @@ export function StatusControls({
           disabled={isPending || optimisticStatus === status}
           aria-pressed={optimisticStatus === status}
           onClick={() => updateStatus(status)}
-          className={`rounded-xl px-3 py-2 text-sm font-bold transition-opacity disabled:cursor-not-allowed disabled:opacity-40 ${tone}`}
+          className={`${statusControlStyles.button} ${tone}`}
         >
-          {isPending && optimisticStatus === status ? "저장 중…" : label}
+          <span
+            aria-hidden="true"
+            className={`${statusControlStyles.spinner} ${isPending && optimisticStatus === status ? "animate-spin" : "invisible"}`}
+          />
+          <span>{label}</span>
         </button>
       ))}
-      <p className="w-full text-xs" role="status" aria-live="polite">
-        {error ? <span className="text-rose-700">{error}</span> : isPending ? <span className="text-slate-500">변경 사항을 저장하고 있습니다.</span> : null}
+      <p
+        className={error ? statusControlStyles.liveError : statusControlStyles.liveHidden}
+        role="status"
+        aria-live="polite"
+      >
+        {error ?? (isPending ? "변경 사항을 저장하고 있습니다." : "")}
       </p>
     </div>
   );

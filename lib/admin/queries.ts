@@ -4,7 +4,13 @@ import { createAuthenticatedSupabaseClient } from "@/lib/supabase/auth-server";
 export async function getAdminEvents(status?: string) {
   const client = await createAuthenticatedSupabaseClient();
   if (!client) return [];
-  let query = client.from("events").select("*").order("updated_at", { ascending: false });
+  // 상태 변경은 updated_at을 갱신하므로 그 값으로 정렬하면 저장 직후 행이
+  // 목록 맨 위로 이동한다. 생성 순서와 id를 사용해 상태 변경 전후 순서를 고정한다.
+  let query = client
+    .from("events")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .order("id", { ascending: true });
   if (status && ["pending", "published", "rejected"].includes(status)) query = query.eq("review_status", status);
   const { data, error } = await query;
   if (error) throw new Error(`관리자 행사 목록을 불러오지 못했습니다: ${error.message}`);

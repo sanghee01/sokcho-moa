@@ -49,6 +49,8 @@ export function EventForm({ row }: { row: Row }) {
           <label className={label}>주소<input name="address" defaultValue={text(row, "address")} className={input} /></label>
           <label className={label}>위도<input type="number" step="any" name="latitude" defaultValue={text(row, "latitude")} className={input} /></label>
           <label className={label}>경도<input type="number" step="any" name="longitude" defaultValue={text(row, "longitude")} className={input} /></label>
+          <label className={label}>위치 근거 URL<input type="url" name="locationSourceUrl" defaultValue={text(row, "location_source_url")} className={input} /><span className="mt-1 block text-xs font-normal leading-5 text-slate-500">장소와 좌표를 확인할 수 있는 공개 원문을 입력하세요.</span></label>
+          <label className={label}>위치 확인 시각<input type="datetime-local" name="locationVerifiedAt" defaultValue={dateValue(row, "location_verified_at")} className={input} /><span className="mt-1 block text-xs font-normal leading-5 text-slate-500">위치 근거 URL을 직접 확인한 시각입니다.</span></label>
         </section>
 
         <section className="grid gap-5 sm:grid-cols-2">
