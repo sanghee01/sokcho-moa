@@ -747,3 +747,27 @@ test("목록에서 필터하고 상세·원문·주변 명소를 확인한다", 
   await expect(nearby.getByRole("article")).toHaveCount(4);
   await expect(nearby.getByRole("link", { name: /지도에서 보기/ }).first()).toBeVisible();
 });
+
+test("필터 응답이 늦어도 클릭 즉시 진행 상태를 알린다", async ({ page }) => {
+  let releaseRequest = () => {};
+  const delayedResponse = new Promise<void>((resolve) => {
+    releaseRequest = resolve;
+  });
+
+  await page.route("**/*audience=family*", async (route) => {
+    if (route.request().headers().rsc) await delayedResponse;
+    await route.continue();
+  });
+
+  await page.goto("/");
+  const familyFilter = page.getByRole("link", { name: "가족", exact: true });
+  await familyFilter.click();
+
+  await expect(familyFilter).toHaveAttribute("aria-disabled", "true");
+  await expect(page.getByRole("region", { name: "어떤 하루를 찾으세요?" })).toHaveAttribute("aria-busy", "true");
+  await expect(page.getByRole("status").filter({ hasText: "필터를 적용하고 있어요." })).toBeVisible();
+
+  releaseRequest();
+  await expect(page).toHaveURL(/audience=family/);
+  await expect(page.getByRole("heading", { name: /찾은 행사 7개/ })).toBeVisible();
+});

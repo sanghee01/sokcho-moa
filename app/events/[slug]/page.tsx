@@ -37,11 +37,10 @@ export async function generateMetadata({ params }: EventPageProps): Promise<Meta
 }
 
 export default async function EventDetailPage({ params }: EventPageProps) {
-  const { slug } = await params;
-  const event = await getPublicEventBySlug(slug);
+  const [{ slug }, allEvents, places] = await Promise.all([params, getAllPublicEvents(), getPublicPlaces()]);
+  const event = allEvents.find((item) => item.slug === slug) ?? null;
   if (!event) notFound();
 
-  const [allEvents, places] = await Promise.all([getAllPublicEvents(), getPublicPlaces()]);
   const nearbyPlaces = findNearbyPlaces(event, places);
   const relatedEvents = getRelatedEvents(event, allEvents);
   const eventState = deriveEventState(event);

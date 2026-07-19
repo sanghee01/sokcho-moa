@@ -1,11 +1,12 @@
+import { unstable_cache } from "next/cache";
 import { getPublicEnv } from "@/lib/config/env";
 import { filterEvents, type Event, type EventFilters, type Place } from "@/lib/domain/event";
 import { createPublicSupabaseClient } from "@/lib/supabase/server";
+import { PUBLIC_EVENTS_CACHE_TAG, PUBLIC_PLACES_CACHE_TAG } from "./cache-tags";
 import { demoPlaces, getDemoEvents } from "./demo-data";
 import { mapEventRow, mapPlaceRow } from "./mappers";
 
-export async function getAllPublicEvents(): Promise<Event[]> {
-  if (getPublicEnv().NEXT_PUBLIC_DATA_MODE === "demo") return getDemoEvents();
+const getCachedPublicEvents = unstable_cache(async (): Promise<Event[]> => {
   const client = createPublicSupabaseClient();
   if (!client) return [];
   const { data, error } = await client
@@ -15,6 +16,19 @@ export async function getAllPublicEvents(): Promise<Event[]> {
     .order("event_start_at", { ascending: true });
   if (error) throw new Error(`공개 행사 데이터를 불러오지 못했습니다: ${error.message}`);
   return (data ?? []).map((row) => mapEventRow(row as Record<string, unknown>));
+}, ["published-events"], { revalidate: 300, tags: [PUBLIC_EVENTS_CACHE_TAG] });
+
+const getCachedPublicPlaces = unstable_cache(async (): Promise<Place[]> => {
+  const client = createPublicSupabaseClient();
+  if (!client) return [];
+  const { data, error } = await client.from("places").select("*").eq("is_published", true).order("name");
+  if (error) throw new Error(`주변 명소 데이터를 불러오지 못했습니다: ${error.message}`);
+  return (data ?? []).map((row) => mapPlaceRow(row as Record<string, unknown>));
+}, ["published-places"], { revalidate: 300, tags: [PUBLIC_PLACES_CACHE_TAG] });
+
+export async function getAllPublicEvents(): Promise<Event[]> {
+  if (getPublicEnv().NEXT_PUBLIC_DATA_MODE === "demo") return getDemoEvents();
+  return getCachedPublicEvents();
 }
 
 export async function getPublicEvents(filters: EventFilters, now = new Date()) {
@@ -22,28 +36,12 @@ export async function getPublicEvents(filters: EventFilters, now = new Date()) {
 }
 
 export async function getPublicEventBySlug(slug: string): Promise<Event | null> {
-  if (getPublicEnv().NEXT_PUBLIC_DATA_MODE === "demo") {
-    return getDemoEvents().find((event) => event.slug === slug && event.reviewStatus === "published") ?? null;
-  }
-  const client = createPublicSupabaseClient();
-  if (!client) return null;
-  const { data, error } = await client
-    .from("events")
-    .select("*")
-    .eq("slug", slug)
-    .eq("review_status", "published")
-    .maybeSingle();
-  if (error) throw new Error(`행사 상세를 불러오지 못했습니다: ${error.message}`);
-  return data ? mapEventRow(data as Record<string, unknown>) : null;
+  return (await getAllPublicEvents()).find((event) => event.slug === slug) ?? null;
 }
 
 export async function getPublicPlaces(): Promise<Place[]> {
   if (getPublicEnv().NEXT_PUBLIC_DATA_MODE === "demo") return demoPlaces;
-  const client = createPublicSupabaseClient();
-  if (!client) return [];
-  const { data, error } = await client.from("places").select("*").eq("is_published", true).order("name");
-  if (error) throw new Error(`주변 명소 데이터를 불러오지 못했습니다: ${error.message}`);
-  return (data ?? []).map((row) => mapPlaceRow(row as Record<string, unknown>));
+  return getCachedPublicPlaces();
 }
 
 export function getRelatedEvents(current: Event, events: Event[], limit = 4) {

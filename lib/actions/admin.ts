@@ -1,11 +1,12 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { after } from "next/server";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/admin/auth";
 import { candidateJsonSchema, eventFormSchema, placeFormSchema } from "@/lib/admin/schemas";
+import { PUBLIC_EVENTS_CACHE_TAG, PUBLIC_PLACES_CACHE_TAG } from "@/lib/data/cache-tags";
 import { extractSourceExternalId } from "@/lib/domain/source";
 import { createAuthenticatedSupabaseClient } from "@/lib/supabase/auth-server";
 
@@ -35,7 +36,19 @@ function fail(error: z.ZodError): never {
   throw new Error(`입력값을 확인하세요. ${z.prettifyError(error)}`);
 }
 
+export type AdminActionState = { error: string | null };
+
+function invalidFields(error: z.ZodError): AdminActionState {
+  const firstIssue = error.issues[0];
+  return { error: firstIssue?.message ? `입력값을 확인해 주세요. ${firstIssue.message}` : "입력값을 확인해 주세요." };
+}
+
+function actionFailed(message: string): AdminActionState {
+  return { error: message };
+}
+
 function revalidatePublicEventPaths(slug?: string | null) {
+  updateTag(PUBLIC_EVENTS_CACHE_TAG);
   revalidatePath("/");
   revalidatePath("/sitemap.xml");
   if (slug) revalidatePath(`/events/${slug}`);
@@ -46,16 +59,25 @@ function revalidateEventPaths(slug?: string | null) {
   revalidatePath("/admin");
 }
 
-export async function signInAction(formData: FormData) {
+function revalidatePlacePaths() {
+  updateTag(PUBLIC_PLACES_CACHE_TAG);
+  revalidatePath("/");
+  revalidatePath("/admin");
+}
+
+export async function signInAction(
+  _previousState: AdminActionState,
+  formData: FormData,
+): Promise<AdminActionState> {
   const parsed = z.object({ email: z.string().email(), password: z.string().min(8) }).safeParse({
     email: value(formData, "email"),
     password: value(formData, "password"),
   });
-  if (!parsed.success) fail(parsed.error);
+  if (!parsed.success) return { error: "이메일과 8자 이상의 비밀번호를 확인해 주세요." };
   const client = await createAuthenticatedSupabaseClient();
-  if (!client) throw new Error("Supabase 모드와 공개 환경 변수를 먼저 설정하세요.");
+  if (!client) return { error: "운영자 로그인이 아직 설정되지 않았습니다." };
   const { error } = await client.auth.signInWithPassword(parsed.data);
-  if (error) throw new Error(`로그인하지 못했습니다: ${error.message}`);
+  if (error) return { error: "이메일 또는 비밀번호가 올바르지 않습니다." };
   redirect("/admin");
 }
 
@@ -65,7 +87,10 @@ export async function signOutAction() {
   redirect("/admin/login");
 }
 
-export async function saveEventAction(formData: FormData) {
+export async function saveEventAction(
+  _previousState: AdminActionState,
+  formData: FormData,
+): Promise<AdminActionState> {
   await requireAdmin();
   const parsed = eventFormSchema.safeParse({
     id: value(formData, "id") || undefined,
@@ -98,7 +123,7 @@ export async function saveEventAction(formData: FormData) {
     isFeatured: formData.get("isFeatured") === "on",
     lastVerifiedAt: value(formData, "lastVerifiedAt"),
   });
-  if (!parsed.success) fail(parsed.error);
+  if (!parsed.success) return invalidFields(parsed.error);
   const event = parsed.data;
   const payload = {
     slug: event.slug,
@@ -131,11 +156,11 @@ export async function saveEventAction(formData: FormData) {
     last_verified_at: event.lastVerifiedAt,
   };
   const client = await createAuthenticatedSupabaseClient();
-  if (!client) throw new Error("Supabase 관리자 연결이 없습니다.");
+  if (!client) return actionFailed("운영자 데이터 연결을 확인해 주세요.");
   const result = event.id
     ? await client.from("events").update(payload).eq("id", event.id).select("id").single()
     : await client.from("events").insert({ ...payload, review_status: "pending" }).select("id").single();
-  if (result.error) throw new Error(`행사를 저장하지 못했습니다: ${result.error.message}`);
+  if (result.error) return actionFailed("행사를 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.");
   const sourcePayload = {
     event_id: result.data.id,
     provider: event.sourceName,
@@ -147,9 +172,9 @@ export async function saveEventAction(formData: FormData) {
     .from("event_sources")
     .upsert(sourcePayload, { onConflict: "event_id,provider,original_url" });
   const sourceError = sourceResult.error;
-  if (sourceError) throw new Error(`행사 출처를 저장하지 못했습니다: ${sourceError.message}`);
+  if (sourceError) return actionFailed("행사 출처를 저장하지 못했습니다. 입력한 출처를 확인해 주세요.");
   revalidateEventPaths(event.slug);
-  redirect(`/admin/events/${result.data.id}`);
+  redirect(`/admin/events/${result.data.id}?saved=1`);
 }
 
 export async function setEventReviewStatusAction(input: unknown) {
@@ -167,43 +192,53 @@ export async function setEventReviewStatusAction(input: unknown) {
   return { status: parsed.data.status };
 }
 
-export async function uploadEventImageAction(formData: FormData) {
+export async function uploadEventImageAction(
+  _previousState: AdminActionState,
+  formData: FormData,
+): Promise<AdminActionState> {
   await requireAdmin();
   const parsed = z.object({ id: z.string().uuid(), slug: z.string().min(1) }).safeParse({ id: value(formData, "id"), slug: value(formData, "slug") });
-  if (!parsed.success) fail(parsed.error);
+  if (!parsed.success) return invalidFields(parsed.error);
   const file = formData.get("image");
-  if (!(file instanceof File) || file.size === 0) throw new Error("업로드할 이미지를 선택하세요.");
-  if (!new Set(["image/jpeg", "image/png", "image/webp"]).has(file.type)) throw new Error("JPG, PNG, WebP 이미지만 업로드할 수 있습니다.");
-  if (file.size > 5 * 1024 * 1024) throw new Error("이미지는 5MB 이하여야 합니다.");
+  if (!(file instanceof File) || file.size === 0) return actionFailed("업로드할 이미지를 선택하세요.");
+  if (!new Set(["image/jpeg", "image/png", "image/webp"]).has(file.type)) return actionFailed("JPG, PNG, WebP 이미지만 업로드할 수 있습니다.");
+  if (file.size > 5 * 1024 * 1024) return actionFailed("이미지는 5MB 이하여야 합니다.");
   const client = await createAuthenticatedSupabaseClient();
-  if (!client) throw new Error("Supabase 관리자 연결이 없습니다.");
+  if (!client) return actionFailed("운영자 데이터 연결을 확인해 주세요.");
   const extension = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" }[file.type];
   const path = `events/${crypto.randomUUID()}.${extension}`;
   const { error: uploadError } = await client.storage.from("event-images").upload(path, await file.arrayBuffer(), { contentType: file.type, upsert: false });
-  if (uploadError) throw new Error(`이미지를 업로드하지 못했습니다: ${uploadError.message}`);
+  if (uploadError) return actionFailed("이미지를 업로드하지 못했습니다. 잠시 후 다시 시도해 주세요.");
   const { data } = client.storage.from("event-images").getPublicUrl(path);
   const { error: updateError } = await client.from("events").update({ image_url: data.publicUrl }).eq("id", parsed.data.id);
-  if (updateError) throw new Error(`대표 이미지 URL을 저장하지 못했습니다: ${updateError.message}`);
+  if (updateError) return actionFailed("업로드한 이미지 정보를 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.");
   revalidateEventPaths(parsed.data.slug);
+  redirect(`/admin/events/${parsed.data.id}?uploaded=1`);
 }
 
-export async function deleteEventAction(formData: FormData) {
+export async function deleteEventAction(
+  _previousState: AdminActionState,
+  formData: FormData,
+): Promise<AdminActionState> {
   await requireAdmin();
   const parsed = deleteSchema.safeParse({
     id: value(formData, "id"),
     slug: value(formData, "slug"),
     confirmation: value(formData, "confirmation"),
   });
-  if (!parsed.success) fail(parsed.error);
+  if (!parsed.success) return actionFailed("삭제 확인에 체크한 뒤 다시 시도해 주세요.");
   const client = await createAuthenticatedSupabaseClient();
-  if (!client) throw new Error("Supabase 관리자 연결이 없습니다.");
+  if (!client) return actionFailed("운영자 데이터 연결을 확인해 주세요.");
   const { error } = await client.from("events").delete().eq("id", parsed.data.id);
-  if (error) throw new Error(`행사를 삭제하지 못했습니다: ${error.message}`);
+  if (error) return actionFailed("행사를 삭제하지 못했습니다. 잠시 후 다시 시도해 주세요.");
   revalidateEventPaths(parsed.data.slug);
-  redirect("/admin");
+  redirect("/admin?deleted=event");
 }
 
-export async function savePlaceAction(formData: FormData) {
+export async function savePlaceAction(
+  _previousState: AdminActionState,
+  formData: FormData,
+): Promise<AdminActionState> {
   await requireAdmin();
   const parsed = placeFormSchema.safeParse({
     id: value(formData, "id") || undefined,
@@ -219,7 +254,7 @@ export async function savePlaceAction(formData: FormData) {
     mapUrl: value(formData, "mapUrl"),
     isPublished: formData.get("isPublished") === "on",
   });
-  if (!parsed.success) fail(parsed.error);
+  if (!parsed.success) return invalidFields(parsed.error);
   const place = parsed.data;
   const payload = {
     slug: place.slug, name: place.name, category: place.category, summary: place.summary, address: place.address,
@@ -227,40 +262,44 @@ export async function savePlaceAction(formData: FormData) {
     map_url: place.mapUrl, is_published: place.isPublished,
   };
   const client = await createAuthenticatedSupabaseClient();
-  if (!client) throw new Error("Supabase 관리자 연결이 없습니다.");
+  if (!client) return actionFailed("운영자 데이터 연결을 확인해 주세요.");
   const result = place.id
     ? await client.from("places").update(payload).eq("id", place.id).select("id").single()
     : await client.from("places").insert(payload).select("id").single();
-  if (result.error) throw new Error(`명소를 저장하지 못했습니다: ${result.error.message}`);
-  revalidatePath("/");
-  revalidatePath("/admin");
-  redirect(`/admin/places/${result.data.id}`);
+  if (result.error) return actionFailed("명소를 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.");
+  revalidatePlacePaths();
+  redirect(`/admin/places/${result.data.id}?saved=1`);
 }
 
-export async function deletePlaceAction(formData: FormData) {
+export async function deletePlaceAction(
+  _previousState: AdminActionState,
+  formData: FormData,
+): Promise<AdminActionState> {
   await requireAdmin();
   const parsed = deleteSchema.safeParse({
     id: value(formData, "id"),
     slug: value(formData, "slug"),
     confirmation: value(formData, "confirmation"),
   });
-  if (!parsed.success) fail(parsed.error);
+  if (!parsed.success) return actionFailed("삭제 확인에 체크한 뒤 다시 시도해 주세요.");
   const client = await createAuthenticatedSupabaseClient();
-  if (!client) throw new Error("Supabase 관리자 연결이 없습니다.");
+  if (!client) return actionFailed("운영자 데이터 연결을 확인해 주세요.");
   const { error } = await client.from("places").delete().eq("id", parsed.data.id);
-  if (error) throw new Error(`명소를 삭제하지 못했습니다: ${error.message}`);
-  revalidatePath("/");
-  revalidatePath("/admin");
-  redirect("/admin");
+  if (error) return actionFailed("명소를 삭제하지 못했습니다. 잠시 후 다시 시도해 주세요.");
+  revalidatePlacePaths();
+  redirect("/admin?deleted=place");
 }
 
-export async function importEventCandidateAction(formData: FormData) {
+export async function importEventCandidateAction(
+  _previousState: AdminActionState,
+  formData: FormData,
+): Promise<AdminActionState> {
   await requireAdmin();
   const parsed = candidateJsonSchema.safeParse(value(formData, "candidateJson"));
-  if (!parsed.success) fail(parsed.error);
+  if (!parsed.success) return invalidFields(parsed.error);
   const candidate = parsed.data;
   const client = await createAuthenticatedSupabaseClient();
-  if (!client) throw new Error("Supabase 관리자 연결이 없습니다.");
+  if (!client) return actionFailed("운영자 데이터 연결을 확인해 주세요.");
   const slug = `candidate-${Date.now()}`;
   const { data, error } = await client.from("events").insert({
     slug,
@@ -290,7 +329,7 @@ export async function importEventCandidateAction(formData: FormData) {
     review_status: "pending",
     last_verified_at: null,
   }).select("id").single();
-  if (error) throw new Error(`후보 행사를 등록하지 못했습니다: ${error.message}`);
+  if (error) return actionFailed("후보 행사를 등록하지 못했습니다. JSON 내용을 확인해 주세요.");
   const { error: sourceError } = await client.from("event_sources").insert({
     event_id: data.id,
     provider: candidate.sourceName,
@@ -298,7 +337,7 @@ export async function importEventCandidateAction(formData: FormData) {
     external_id: extractSourceExternalId(candidate.sourceUrl),
     last_checked_at: new Date().toISOString(),
   });
-  if (sourceError) throw new Error(`후보 출처를 등록하지 못했습니다: ${sourceError.message}`);
+  if (sourceError) return actionFailed("후보 출처를 등록하지 못했습니다. 공식 원문 URL을 확인해 주세요.");
   revalidatePath("/admin");
-  redirect(`/admin/events/${data.id}`);
+  redirect(`/admin/events/${data.id}?created=1`);
 }

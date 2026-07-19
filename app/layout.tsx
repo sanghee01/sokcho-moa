@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { TransitionLink } from "@/components/transition-link";
 import { getPublicEnv } from "@/lib/config/env";
+import headerLogo from "@/public/sokchomoa-header.webp";
 import "./globals.css";
 
 const siteUrl = getPublicEnv().NEXT_PUBLIC_SITE_URL;
@@ -34,6 +36,8 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
+  const currentYear = new Date().getFullYear();
+
   return (
     <html lang="ko" data-scroll-behavior="smooth">
       <body>
@@ -44,30 +48,40 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
           <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
             <Link href="/" className="block overflow-hidden rounded-2xl ring-teal-700/30 focus-visible:ring-4">
               <Image
-                src="/sokchomoa-header.png"
+                src={headerLogo}
                 alt="속초모아"
-                width={1918}
-                height={820}
                 priority
+                placeholder="blur"
                 sizes="(min-width: 640px) 176px, 144px"
                 className="h-auto w-36 object-contain sm:w-44"
               />
             </Link>
             <nav aria-label="주요 메뉴" className="flex items-center gap-3 text-sm font-semibold">
-              <Link href="/?when=today" className="rounded-full px-3 py-2 hover:bg-teal-50">
+              <TransitionLink href="/?when=today" className="rounded-full px-3 py-2 hover:bg-teal-50 active:scale-[0.98]">
                 오늘 행사
-              </Link>
-              <Link href="/admin" className="rounded-full border border-teal-900/15 px-3 py-2 hover:bg-teal-50">
+              </TransitionLink>
+              <TransitionLink href="/admin" className="rounded-full border border-teal-900/15 px-3 py-2 hover:bg-teal-50 active:scale-[0.98]">
                 운영자
-              </Link>
+              </TransitionLink>
             </nav>
           </div>
         </header>
         {children}
         <footer className="mt-20 border-t border-teal-900/10 bg-white">
-          <div className="mx-auto max-w-6xl px-4 py-10 text-sm leading-6 text-slate-600 sm:px-6">
-            <p className="font-bold text-teal-900">속초모아</p>
-            <p>행사 정보는 변경될 수 있습니다. 방문·신청 전 반드시 각 카드의 원문 출처를 확인하세요.</p>
+          <div className="mx-auto flex max-w-6xl flex-col gap-5 px-4 py-10 text-sm leading-6 text-slate-600 sm:flex-row sm:items-end sm:justify-between sm:px-6">
+            <div>
+              <p className="font-bold text-teal-900">속초모아</p>
+              <p>행사 정보는 변경될 수 있습니다. 방문·신청 전 반드시 각 카드의 원문 출처를 확인하세요.</p>
+            </div>
+            <div className="shrink-0 sm:text-right">
+              <p>
+                문의:{" "}
+                <a className="font-bold text-teal-800 underline decoration-teal-300 underline-offset-4 hover:text-teal-600" href="mailto:workchu777@gmail.com">
+                  workchu777@gmail.com
+                </a>
+              </p>
+              <p>© {currentYear} 속초모아. All rights reserved.</p>
+            </div>
           </div>
         </footer>
       </body>
