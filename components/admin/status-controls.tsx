@@ -1,21 +1,68 @@
+"use client";
+
+import { useOptimistic, useState, useTransition } from "react";
 import { setEventReviewStatusAction } from "@/lib/actions/admin";
 
-export function StatusControls({ id, slug, current }: { id: string; slug: string; current: string }) {
+type ReviewStatus = "pending" | "published" | "rejected";
+
+export function StatusControls({
+  id,
+  slug,
+  current,
+  onStatusChange,
+}: {
+  id: string;
+  slug: string;
+  current: string;
+  onStatusChange?: (status: ReviewStatus) => void;
+}) {
+  const [confirmedStatus, setConfirmedStatus] = useState<ReviewStatus>(current as ReviewStatus);
+  const [optimisticStatus, setOptimisticStatus] = useOptimistic(
+    confirmedStatus,
+    (_, nextStatus: ReviewStatus) => nextStatus,
+  );
+  const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+
   const actions = [
     ["published", "공개", "bg-emerald-700 text-white"],
     ["pending", "비공개", "bg-slate-200 text-slate-800"],
     ["rejected", "반려", "bg-rose-100 text-rose-900"],
-  ] as const;
+  ] as const satisfies readonly [ReviewStatus, string, string][];
+
+  function updateStatus(nextStatus: ReviewStatus) {
+    const previousStatus = confirmedStatus;
+    setError(null);
+    startTransition(async () => {
+      setOptimisticStatus(nextStatus);
+      onStatusChange?.(nextStatus);
+      try {
+        const result = await setEventReviewStatusAction({ id, slug, status: nextStatus });
+        setConfirmedStatus(result.status);
+      } catch {
+        onStatusChange?.(previousStatus);
+        setError("저장에 실패했습니다. 잠시 후 다시 시도해 주세요.");
+      }
+    });
+  }
+
   return (
-    <div className="flex flex-wrap gap-2" aria-label="공개 상태 변경">
+    <div className="flex flex-wrap gap-2" aria-label="공개 상태 변경" aria-busy={isPending}>
       {actions.map(([status, label, tone]) => (
-        <form key={status} action={setEventReviewStatusAction}>
-          <input type="hidden" name="id" value={id} />
-          <input type="hidden" name="slug" value={slug} />
-          <input type="hidden" name="status" value={status} />
-          <button disabled={current === status} className={`rounded-xl px-3 py-2 text-sm font-bold disabled:cursor-not-allowed disabled:opacity-40 ${tone}`}>{label}</button>
-        </form>
+        <button
+          key={status}
+          type="button"
+          disabled={isPending || optimisticStatus === status}
+          aria-pressed={optimisticStatus === status}
+          onClick={() => updateStatus(status)}
+          className={`rounded-xl px-3 py-2 text-sm font-bold transition-opacity disabled:cursor-not-allowed disabled:opacity-40 ${tone}`}
+        >
+          {isPending && optimisticStatus === status ? "저장 중…" : label}
+        </button>
       ))}
+      <p className="w-full text-xs" role="status" aria-live="polite">
+        {error ? <span className="text-rose-700">{error}</span> : isPending ? <span className="text-slate-500">변경 사항을 저장하고 있습니다.</span> : null}
+      </p>
     </div>
   );
 }

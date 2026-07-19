@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { AdminShell } from "@/components/admin/admin-shell";
-import { StatusControls } from "@/components/admin/status-controls";
+import { EventReviewRow } from "@/components/admin/event-review-row";
 import { requireAdmin } from "@/lib/admin/auth";
 import { getAdminEvents, getAdminPlaces } from "@/lib/admin/queries";
 import { getPublicEnv } from "@/lib/config/env";
@@ -38,12 +38,16 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
             <thead className="bg-slate-50 text-slate-600"><tr><th className="px-4 py-3">행사</th><th className="px-4 py-3">상태</th><th className="px-4 py-3">출처</th><th className="px-4 py-3">작업</th></tr></thead>
             <tbody>
               {events.map((row) => (
-                <tr key={String(row.id)} className="border-t border-slate-100 align-top">
-                  <td className="px-4 py-4"><Link href={`/admin/events/${row.id}`} className="font-bold text-slate-950 hover:text-teal-700">{String(row.title)}</Link><p className="mt-1 text-xs text-slate-500">/{String(row.slug)}</p></td>
-                  <td className="px-4 py-4"><span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold">{statusLabels[String(row.review_status)] ?? String(row.review_status)}</span></td>
-                  <td className="px-4 py-4 text-slate-600">{String(row.source_name)}</td>
-                  <td className="px-4 py-4"><StatusControls id={String(row.id)} slug={String(row.slug)} current={String(row.review_status)} /></td>
-                </tr>
+                <EventReviewRow
+                  key={String(row.id)}
+                  event={{
+                    id: String(row.id),
+                    slug: String(row.slug),
+                    title: String(row.title),
+                    sourceName: String(row.source_name),
+                    reviewStatus: String(row.review_status) as "pending" | "published" | "rejected",
+                  }}
+                />
               ))}
               {events.length === 0 && <tr><td colSpan={4} className="px-4 py-12 text-center text-slate-500">이 상태의 행사가 없습니다.</td></tr>}
             </tbody>

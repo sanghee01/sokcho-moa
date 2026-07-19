@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { after } from "next/server";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/admin/auth";
 import { candidateJsonSchema, eventFormSchema, placeFormSchema } from "@/lib/admin/schemas";
@@ -33,10 +34,14 @@ function fail(error: z.ZodError): never {
   throw new Error(`입력값을 확인하세요. ${z.prettifyError(error)}`);
 }
 
-function revalidateEventPaths(slug?: string | null) {
+function revalidatePublicEventPaths(slug?: string | null) {
   revalidatePath("/");
   revalidatePath("/sitemap.xml");
   if (slug) revalidatePath(`/events/${slug}`);
+}
+
+function revalidateEventPaths(slug?: string | null) {
+  revalidatePublicEventPaths(slug);
   revalidatePath("/admin");
 }
 
@@ -137,10 +142,10 @@ export async function saveEventAction(formData: FormData) {
   redirect(`/admin/events/${result.data.id}`);
 }
 
-export async function setEventReviewStatusAction(formData: FormData) {
-  await requireAdmin();
-  const parsed = reviewSchema.safeParse({ id: value(formData, "id"), slug: value(formData, "slug"), status: value(formData, "status") });
+export async function setEventReviewStatusAction(input: unknown) {
+  const parsed = reviewSchema.safeParse(input);
   if (!parsed.success) fail(parsed.error);
+  await requireAdmin();
   const client = await createAuthenticatedSupabaseClient();
   if (!client) throw new Error("Supabase 관리자 연결이 없습니다.");
   const { error } = await client
@@ -148,7 +153,8 @@ export async function setEventReviewStatusAction(formData: FormData) {
     .update({ review_status: parsed.data.status, published_at: parsed.data.status === "published" ? new Date().toISOString() : null })
     .eq("id", parsed.data.id);
   if (error) throw new Error(`공개 상태를 바꾸지 못했습니다: ${error.message}`);
-  revalidateEventPaths(parsed.data.slug);
+  after(() => revalidatePublicEventPaths(parsed.data.slug));
+  return { status: parsed.data.status };
 }
 
 export async function uploadEventImageAction(formData: FormData) {

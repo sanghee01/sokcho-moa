@@ -9,9 +9,11 @@ export async function getAdminIdentity(): Promise<AdminIdentity | null> {
   if (getPublicEnv().NEXT_PUBLIC_DATA_MODE !== "supabase") return null;
   const client = await createAuthenticatedSupabaseClient();
   if (!client) return null;
-  const { data: userData, error: userError } = await client.auth.getUser();
+  const [{ data: userData, error: userError }, { data: isAdmin, error: adminError }] = await Promise.all([
+    client.auth.getUser(),
+    client.rpc("is_admin"),
+  ]);
   if (userError || !userData.user?.email) return null;
-  const { data: isAdmin, error: adminError } = await client.rpc("is_admin");
   if (adminError || isAdmin !== true) return null;
   return { id: userData.user.id, email: userData.user.email };
 }
