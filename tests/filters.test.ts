@@ -15,6 +15,7 @@ describe("parseEventFilters", () => {
   });
 
   it("지원하는 정렬 파라미터만 허용한다", () => {
+    expect(parseEventFilters({ sort: "latest" }).sort).toBe("latest");
     expect(parseEventFilters({ sort: "views" }).sort).toBe("views");
     expect(parseEventFilters({ sort: "published" }).sort).toBe("published");
     expect(parseEventFilters({ sort: "invalid" }).sort).toBeUndefined();
@@ -37,15 +38,33 @@ describe("sortEvents", () => {
     ]);
   });
 
-  it("최신순과 게시순은 행사 시작일과 공개일 기준을 각각 사용한다", () => {
-    const [first, second] = getDemoEvents();
+  it("최신순은 진행 중·가까운 예정·먼 예정·종료 행사 순서로 보여준다", () => {
+    const [first, second, third, fourth] = getDemoEvents();
+    const now = new Date("2026-07-20T00:00:00.000Z");
     const events = [
-      { ...first, eventStartAt: "2026-08-01T00:00:00.000Z", publishedAt: "2026-07-01T00:00:00.000Z" },
-      { ...second, eventStartAt: "2026-07-01T00:00:00.000Z", publishedAt: "2026-07-20T00:00:00.000Z" },
+      { ...first, eventStartAt: "2026-09-01T00:00:00.000Z", eventEndAt: "2026-09-02T00:00:00.000Z" },
+      { ...second, eventStartAt: "2026-07-22T00:00:00.000Z", eventEndAt: "2026-07-23T00:00:00.000Z" },
+      { ...third, eventStartAt: "2026-07-18T00:00:00.000Z", eventEndAt: "2026-07-21T00:00:00.000Z" },
+      { ...fourth, eventStartAt: "2026-07-10T00:00:00.000Z", eventEndAt: "2026-07-19T00:00:00.000Z" },
     ];
 
-    expect(sortEvents(events, "latest").map((event) => event.slug)).toEqual([first.slug, second.slug]);
+    expect(sortEvents(events, "latest", now).map((event) => event.slug)).toEqual([
+      third.slug,
+      second.slug,
+      first.slug,
+      fourth.slug,
+    ]);
+  });
+
+  it("게시순은 공개일이 최신인 행사부터 보여준다", () => {
+    const [first, second] = getDemoEvents();
+    const events = [
+      { ...first, publishedAt: "2026-07-01T00:00:00.000Z" },
+      { ...second, publishedAt: "2026-07-20T00:00:00.000Z" },
+    ];
+
     expect(sortEvents(events, "published").map((event) => event.slug)).toEqual([second.slug, first.slug]);
+    expect(sortEvents(events).map((event) => event.slug)).toEqual([second.slug, first.slug]);
   });
 });
 

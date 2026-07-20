@@ -11,23 +11,31 @@ function sortHref(params: SortParams, sort: EventFilters["sort"]) {
     const value = Array.isArray(raw) ? raw[0] : raw;
     if (value) search.set(name, value);
   }
-  if (sort && sort !== "latest") search.set("sort", sort);
+  if (sort && sort !== "published") search.set("sort", sort);
   const query = search.toString();
   return query ? `/?${query}` : "/";
 }
 
 export function EventSort({ params, activeSort }: { params: SortParams; activeSort: EventFilters["sort"] }) {
-  const isPopular = activeSort === "views";
-  const resolvedSort = activeSort ?? "latest";
+  const resolvedSort = activeSort ?? "published";
 
   return (
     <nav aria-label="행사 정렬" className="inline-flex w-fit rounded-xl border border-slate-200 bg-white p-1 shadow-sm">
       <Link
+        href={sortHref(params, "published")}
+        scroll={false}
+        {...(resolvedSort !== "published" ? analyticsData("sort_changed", { sort_method: "published" }) : {})}
+        aria-current={resolvedSort === "published" ? "page" : undefined}
+        className={`inline-flex min-h-10 items-center justify-center rounded-lg px-3 text-sm font-bold transition ${resolvedSort === "published" ? "bg-teal-800 text-white shadow-sm" : "text-slate-600 hover:bg-teal-50 hover:text-teal-900"}`}
+      >
+        게시순
+      </Link>
+      <Link
         href={sortHref(params, "latest")}
         scroll={false}
         {...(resolvedSort !== "latest" ? analyticsData("sort_changed", { sort_method: "latest" }) : {})}
-        aria-current={activeSort !== "views" && activeSort !== "published" ? "page" : undefined}
-        className={`inline-flex min-h-10 items-center justify-center rounded-lg px-3 text-sm font-bold transition ${activeSort !== "views" && activeSort !== "published" ? "bg-teal-800 text-white shadow-sm" : "text-slate-600 hover:bg-teal-50 hover:text-teal-900"}`}
+        aria-current={resolvedSort === "latest" ? "page" : undefined}
+        className={`inline-flex min-h-10 items-center justify-center rounded-lg px-3 text-sm font-bold transition ${resolvedSort === "latest" ? "bg-teal-800 text-white shadow-sm" : "text-slate-600 hover:bg-teal-50 hover:text-teal-900"}`}
       >
         최신순
       </Link>
@@ -35,19 +43,10 @@ export function EventSort({ params, activeSort }: { params: SortParams; activeSo
         href={sortHref(params, "views")}
         scroll={false}
         {...(resolvedSort !== "views" ? analyticsData("sort_changed", { sort_method: "views" }) : {})}
-        aria-current={isPopular ? "page" : undefined}
-        className={`inline-flex min-h-10 items-center justify-center rounded-lg px-3 text-sm font-bold transition ${isPopular ? "bg-teal-800 text-white shadow-sm" : "text-slate-600 hover:bg-teal-50 hover:text-teal-900"}`}
+        aria-current={resolvedSort === "views" ? "page" : undefined}
+        className={`inline-flex min-h-10 items-center justify-center rounded-lg px-3 text-sm font-bold transition ${resolvedSort === "views" ? "bg-teal-800 text-white shadow-sm" : "text-slate-600 hover:bg-teal-50 hover:text-teal-900"}`}
       >
         조회순
-      </Link>
-      <Link
-        href={sortHref(params, "published")}
-        scroll={false}
-        {...(resolvedSort !== "published" ? analyticsData("sort_changed", { sort_method: "published" }) : {})}
-        aria-current={activeSort === "published" ? "page" : undefined}
-        className={`inline-flex min-h-10 items-center justify-center rounded-lg px-3 text-sm font-bold transition ${activeSort === "published" ? "bg-teal-800 text-white shadow-sm" : "text-slate-600 hover:bg-teal-50 hover:text-teal-900"}`}
-      >
-        게시순
       </Link>
     </nav>
   );

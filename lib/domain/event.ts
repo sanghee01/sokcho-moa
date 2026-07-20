@@ -180,7 +180,7 @@ export function parseEventFilters(params: Record<string, string | string[] | und
     audience: eventAudiences.includes(audience as EventAudience) ? (audience as EventAudience) : undefined,
     category: eventCategories.includes(category as EventCategory) ? (category as EventCategory) : undefined,
     query: query || undefined,
-    sort: sort === "views" || sort === "published" ? sort : undefined,
+    sort: sort === "latest" || sort === "views" || sort === "published" ? sort : undefined,
   };
 }
 
@@ -217,7 +217,7 @@ export function filterEvents(events: Event[], filters: EventFilters, now = new D
 /**
  * 목록 정렬은 필터 적용 뒤에 수행한다. 조회수가 없는 기존 행사는 0으로 취급한다.
  */
-export function sortEvents(events: Event[], sort: EventFilters["sort"] = "latest"): Event[] {
+export function sortEvents(events: Event[], sort: EventFilters["sort"] = "published", now = new Date()): Event[] {
   return [...events].sort((a, b) => {
     if (sort === "views") {
       const viewDifference = (b.viewCount ?? 0) - (a.viewCount ?? 0);
@@ -227,13 +227,32 @@ export function sortEvents(events: Event[], sort: EventFilters["sort"] = "latest
     const publishDifference = dateTimestamp(b.publishedAt) - dateTimestamp(a.publishedAt);
     if (sort === "published" && publishDifference !== 0) return publishDifference;
 
-    const startDifference = dateTimestamp(b.eventStartAt) - dateTimestamp(a.eventStartAt);
-    if (sort === "latest" && startDifference !== 0) return startDifference;
+    if (sort === "latest") {
+      const scheduleDifference = compareLatestSchedule(a, b, now);
+      if (scheduleDifference !== 0) return scheduleDifference;
+    }
 
     if (publishDifference !== 0) return publishDifference;
 
     return a.eventStartAt.localeCompare(b.eventStartAt) || a.title.localeCompare(b.title, "ko-KR");
   });
+}
+
+function compareLatestSchedule(a: Event, b: Event, now: Date) {
+  const aState = deriveEventState(a, now);
+  const bState = deriveEventState(b, now);
+  const statePriority: Record<EventState, number> = { ongoing: 0, upcoming: 1, ended: 2 };
+  const stateDifference = statePriority[aState] - statePriority[bState];
+  if (stateDifference !== 0) return stateDifference;
+
+  if (aState === "ongoing") {
+    return dateTimestamp(b.eventStartAt) - dateTimestamp(a.eventStartAt);
+  }
+  if (aState === "upcoming") {
+    return dateTimestamp(a.eventStartAt) - dateTimestamp(b.eventStartAt);
+  }
+
+  return dateTimestamp(b.eventEndAt ?? b.eventStartAt) - dateTimestamp(a.eventEndAt ?? a.eventStartAt);
 }
 
 function dateTimestamp(value: string | null) {

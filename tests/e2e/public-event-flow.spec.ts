@@ -367,23 +367,26 @@ test("필터 응답이 늦어도 클릭 즉시 진행 상태를 알린다", asyn
   await expect(page.getByRole("heading", { name: /찾은 행사 7개/ })).toBeVisible();
 });
 
-test("행사 목록에서 최신·조회·게시 기준으로 정렬할 수 있다", async ({ page }) => {
+test("행사 목록에서 게시·최신·조회 기준으로 정렬할 수 있다", async ({ page }) => {
   await page.goto("/");
   const sort = page.getByRole("navigation", { name: "행사 정렬" });
+  await expect(sort.getByRole("link")).toHaveText(["게시순", "최신순", "조회순"]);
+  await expect(sort.getByRole("link", { name: "게시순" })).toHaveAttribute("aria-current", "page");
   await sort.scrollIntoViewIfNeeded();
   const initialScrollY = await page.evaluate(() => window.scrollY);
   expect(initialScrollY).toBeGreaterThan(0);
 
+  await sort.getByRole("link", { name: "최신순" }).click();
+  await expect(page).toHaveURL(/sort=latest/);
+  await expect.poll(() => page.evaluate((expected) => Math.abs(window.scrollY - expected), initialScrollY)).toBeLessThanOrEqual(2);
+  await expect(sort.getByRole("link", { name: "최신순" })).toHaveAttribute("aria-current", "page");
+  await expect(page.getByRole("article").first()).toContainText("바다빛 가족 문화축제");
+
   await sort.getByRole("link", { name: "조회순" }).click();
   await expect(page).toHaveURL(/sort=views/);
-  await expect.poll(() => page.evaluate((expected) => Math.abs(window.scrollY - expected), initialScrollY)).toBeLessThanOrEqual(2);
   await expect(sort.getByRole("link", { name: "조회순" })).toHaveAttribute("aria-current", "page");
 
   await sort.getByRole("link", { name: "게시순" }).click();
-  await expect(page).toHaveURL(/sort=published/);
-  await expect(sort.getByRole("link", { name: "게시순" })).toHaveAttribute("aria-current", "page");
-
-  await sort.getByRole("link", { name: "최신순" }).click();
   await expect(page).not.toHaveURL(/sort=/);
-  await expect(sort.getByRole("link", { name: "최신순" })).toHaveAttribute("aria-current", "page");
+  await expect(sort.getByRole("link", { name: "게시순" })).toHaveAttribute("aria-current", "page");
 });
