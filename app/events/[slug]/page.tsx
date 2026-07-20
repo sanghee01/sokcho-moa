@@ -7,7 +7,7 @@ import { EventImage } from "@/components/event-image";
 import { PlaceCard } from "@/components/place-card";
 import { StatusBadges } from "@/components/status-badges";
 import { getAllPublicEvents, getPublicEventBySlug, getPublicPlaces, getRelatedEvents } from "@/lib/data/events";
-import { audienceLabels, applicationStateLabels, categoryLabels, formatDate, formatDateRange, formatOperatingSchedule } from "@/lib/domain/format";
+import { audienceLabels, applicationStateLabels, categoryLabels, formatDateRange, formatOperatingSchedule } from "@/lib/domain/format";
 import { deriveApplicationState, deriveEventState } from "@/lib/domain/event";
 import { createEventMapLinks, findNearbyPlaces } from "@/lib/domain/geo";
 import { isKnownUnavailableOfficialUrl, isSameSourceUrl } from "@/lib/domain/source";
@@ -88,7 +88,6 @@ export default async function EventDetailPage({ params }: EventPageProps) {
     ["참여 대상", event.audiences.map((audience) => audienceLabels[audience]).join(" · ")],
     ["주최·주관", event.organizer ?? "원문 확인"],
     ["문의처", event.contact ?? "원문 확인"],
-    ["마지막 확인", formatDate(event.lastVerifiedAt)],
   ];
 
   return (
@@ -147,11 +146,11 @@ export default async function EventDetailPage({ params }: EventPageProps) {
 
         <div className="mt-10 grid gap-6 lg:grid-cols-[1fr_0.75fr]">
           <section aria-labelledby="intro-title" className="rounded-3xl bg-white p-6 ring-1 ring-slate-200 sm:p-8">
-            <h2 id="intro-title" className="text-2xl font-black text-slate-950">행사 소개</h2>
-            <p className="mt-4 whitespace-pre-line leading-8 text-slate-700">{event.description ?? event.summary ?? "행사 소개는 원문에서 확인해 주세요."}</p>
+            <h2 id="intro-title" className="text-2xl font-black text-slate-950">행사 AI 요약</h2>
+            <p className="mt-4 whitespace-pre-line leading-8 text-slate-700">{event.description ?? event.summary ?? "행사 AI 요약은 원문에서 확인해 주세요."}</p>
             <div className="mt-8 rounded-2xl bg-amber-50 p-5 text-sm leading-6 text-amber-950">
               <h3 className="font-black">참여 전 확인할 내용</h3>
-              <p className="mt-1">일정·요금·신청 가능 여부는 변경될 수 있습니다. 출발 전 <a href={event.sourceUrl} target="_blank" rel="noreferrer" data-analytics-event="source_link_clicked" data-event-slug={event.slug} className="font-bold underline">{event.sourceName} 원문<span className="sr-only">(새 창)</span></a>을 확인하세요.</p>
+              <p className="mt-1">방문하거나 신청하기 전 <a href={event.sourceUrl} target="_blank" rel="noreferrer" data-analytics-event="source_link_clicked" data-event-slug={event.slug} className="font-bold underline">{event.sourceName} 원문<span className="sr-only">(새 창)</span></a>을 확인하세요.</p>
             </div>
           </section>
           <section aria-labelledby="location-title" className="self-start rounded-3xl bg-teal-900 p-6 text-white sm:p-8">

@@ -47,7 +47,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
           본문으로 건너뛰기
         </a>
         <header className="border-b border-teal-900/10 bg-white/85 backdrop-blur">
-          <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
+          <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-4">
             <Link href="/" className="block overflow-hidden rounded-2xl ring-teal-700/30 focus-visible:ring-4">
               <Image
                 src={headerLogo}
@@ -58,8 +58,14 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
                 className="h-auto w-36 object-contain sm:w-44"
               />
             </Link>
-            <nav aria-label="주요 메뉴" className="flex items-center gap-3 text-sm font-semibold">
-              <TransitionLink href="/admin" className="rounded-full border border-teal-900/15 px-3 py-2 hover:bg-teal-50 active:scale-[0.98]">
+            <nav aria-label="주요 메뉴" className="grid w-full grid-cols-3 gap-2 text-xs font-semibold sm:flex sm:w-auto sm:items-center sm:gap-3 sm:text-sm">
+              <TransitionLink href="/?when=today" className="inline-flex min-h-11 items-center justify-center rounded-2xl px-2 py-2 text-center hover:bg-teal-50 active:scale-[0.98] sm:rounded-full sm:px-3">
+                오늘 행사
+              </TransitionLink>
+              <TransitionLink href="/calendar" pendingLabel="행사 캘린더 불러오는 중" className="inline-flex min-h-11 items-center justify-center rounded-2xl bg-teal-800 px-2 py-2 text-center font-black text-white shadow-sm hover:bg-teal-900 active:scale-[0.98] sm:rounded-full sm:px-4">
+                행사 캘린더
+              </TransitionLink>
+              <TransitionLink href="/admin" className="inline-flex min-h-11 items-center justify-center rounded-2xl border border-teal-900/15 px-2 py-2 text-center hover:bg-teal-50 active:scale-[0.98] sm:rounded-full sm:px-3">
                 운영자
               </TransitionLink>
             </nav>
