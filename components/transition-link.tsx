@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTransition, type MouseEvent, type ReactNode } from "react";
 import { LoadingSpinner } from "@/components/loading-spinner";
+import type { AnalyticsDataAttributes } from "@/lib/analytics/events";
 
 function shouldUseNativeNavigation(event: MouseEvent<HTMLAnchorElement>) {
   return event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey;
@@ -16,6 +17,7 @@ export function TransitionLink({
   pendingLabel = "페이지 이동 중",
   showPendingIndicator = true,
   scroll,
+  ...analyticsAttributes
 }: {
   href: string;
   children: ReactNode;
@@ -23,7 +25,7 @@ export function TransitionLink({
   pendingLabel?: string;
   showPendingIndicator?: boolean;
   scroll?: boolean;
-}) {
+} & Partial<AnalyticsDataAttributes>) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
@@ -38,7 +40,7 @@ export function TransitionLink({
   }
 
   return (
-    <Link href={href} onClick={handleClick} aria-busy={isPending} className={`relative transition-opacity aria-busy:opacity-70 ${className}`}>
+    <Link href={href} onClick={handleClick} aria-busy={isPending} {...analyticsAttributes} className={`relative transition-opacity aria-busy:opacity-70 ${className}`}>
       {children}
       {isPending && (
         <>

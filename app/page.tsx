@@ -2,9 +2,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { EventCard } from "@/components/event-card";
 import { EventFilters } from "@/components/event-filters";
-import { AnalyticsRuntime } from "@/components/analytics/analytics-runtime";
+import { EventSort } from "@/components/event-sort";
 import { getAllPublicEvents } from "@/lib/data/events";
-import { filterEvents, parseEventFilters } from "@/lib/domain/event";
+import { filterEvents, parseEventFilters, sortEvents } from "@/lib/domain/event";
 import desktopBannerImage from "@/public/sokchomoa-banner-desktop-bg.webp";
 import mobileBannerImage from "@/public/sokchomoa-banner-bg.webp";
 
@@ -30,19 +30,16 @@ function HeroBurst({ side }: { side: "left" | "right" }) {
 export default async function HomePage({ searchParams }: HomePageProps) {
   const [params, allEvents] = await Promise.all([searchParams, getAllPublicEvents()]);
   const filters = parseEventFilters(params);
-  const events = filterEvents(allEvents, filters).sort(
-    (a, b) => Number(b.isFeatured) - Number(a.isFeatured) || a.eventStartAt.localeCompare(b.eventStartAt),
-  );
+  const events = sortEvents(filterEvents(allEvents, filters), filters.sort);
   const demoMode = allEvents.some((event) => event.isDemo);
 
   return (
     <main id="main-content">
-      <AnalyticsRuntime />
       <section aria-labelledby="home-hero-title" className="overflow-hidden bg-cyan-50">
         <h1 id="home-hero-title" className="sr-only">요즘 속초에서 뭐하지?</h1>
         <p className="sr-only">행사·공연·체험·교육 정보를 한눈에 확인하세요.</p>
         <div className="relative h-[10.8rem] overflow-hidden bg-cyan-100 sm:h-[min(33.77vw,24rem)] lg:mx-auto lg:aspect-[5/1] lg:h-auto lg:max-w-[120rem]">
-          <picture className="absolute inset-0">
+          <picture className="absolute inset-x-0 top-0 bottom-0 lg:-top-2">
             <source media="(min-width: 1024px)" srcSet={desktopBannerImage.src} type="image/webp" />
             <Image
               src={mobileBannerImage}
@@ -84,15 +81,15 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         <EventFilters params={params} filters={filters} />
 
         <section aria-labelledby="event-list-title">
-          <div className="mb-5">
+          <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="text-sm font-bold text-teal-700">한눈에 비교하기</p>
-              <h2 id="event-list-title" className="mt-1 text-2xl font-black text-slate-950 sm:text-3xl">찾은 행사 {events.length}개</h2>
+              <h2 id="event-list-title" className="text-2xl font-black text-slate-950 sm:text-3xl">찾은 행사 {events.length}개</h2>
             </div>
+            <EventSort params={params} activeSort={filters.sort} />
           </div>
           {events.length > 0 ? (
             <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-              {events.map((event) => <EventCard key={event.id} event={event} />)}
+              {events.map((event) => <EventCard key={event.id} event={event} contentSource="event_list" />)}
             </div>
           ) : (
             <div className="rounded-3xl border border-dashed border-teal-300 bg-white px-6 py-16 text-center">

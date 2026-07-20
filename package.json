@@ -8,6 +8,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
+    "places:generate": "node scripts/generate-place-assets.mjs",
+    "places:check": "node scripts/generate-place-assets.mjs --check",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:e2e": "playwright test"

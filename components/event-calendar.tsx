@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { TransitionLink } from "@/components/transition-link";
 import { applicationStateLabels } from "@/lib/domain/format";
+import { analyticsData } from "@/lib/analytics/events";
 import type { ApplicationState } from "@/lib/domain/event";
 import type { CalendarDay, CalendarEvent, CalendarMonth, CalendarWeek } from "@/lib/domain/calendar";
 
@@ -96,6 +97,7 @@ function CalendarToolbar({ month }: { month: CalendarMonth }) {
       <nav aria-label="달력 월 이동" className="grid grid-cols-3 gap-2 sm:flex sm:items-center">
         <TransitionLink
           href={`/calendar?month=${month.previousMonthKey}`}
+          {...analyticsData("calendar_month_changed", { direction: "previous", target_month: month.previousMonthKey })}
           pendingLabel="이전 달 불러오는 중"
           scroll={false}
           className="inline-flex min-h-11 items-center justify-center rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50"
@@ -109,6 +111,7 @@ function CalendarToolbar({ month }: { month: CalendarMonth }) {
         ) : (
           <TransitionLink
             href={`/calendar?month=${month.todayMonthKey}`}
+            {...analyticsData("calendar_month_changed", { direction: "current", target_month: month.todayMonthKey })}
             pendingLabel="이번 달 불러오는 중"
             scroll={false}
             className="inline-flex min-h-11 items-center justify-center rounded-2xl bg-teal-50 px-3 py-2 text-sm font-black text-teal-800 ring-1 ring-teal-200 hover:bg-teal-100"
@@ -118,6 +121,7 @@ function CalendarToolbar({ month }: { month: CalendarMonth }) {
         )}
         <TransitionLink
           href={`/calendar?month=${month.nextMonthKey}`}
+          {...analyticsData("calendar_month_changed", { direction: "next", target_month: month.nextMonthKey })}
           pendingLabel="다음 달 불러오는 중"
           scroll={false}
           className="inline-flex min-h-11 items-center justify-center rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50"
@@ -182,6 +186,7 @@ function DesktopCalendarWeek({ week, eventsById }: { week: CalendarWeek; eventsB
             aria-label={`${event.title}, ${formatDateRange(segment.startDateKey, segment.endDateKey)}, ${applicationStateLabels[event.applicationState]}`}
             data-event-slug={event.slug}
             data-calendar-span={segment.columnSpan}
+            {...analyticsData("select_content", { content_type: "event", content_id: event.slug, content_source: "calendar_desktop" })}
             className={`relative z-10 mx-0.5 flex h-8 min-w-0 items-center gap-1 self-center overflow-hidden px-2.5 text-xs font-black shadow-sm focus-visible:z-20 ${rounded} ${segmentTone[event.applicationState]}`}
             style={{ gridColumn: `${segment.columnStart + 1} / span ${segment.columnSpan}`, gridRow: segment.lane + 2 }}
           >
@@ -231,6 +236,7 @@ function MobileDatePicker({
               aria-label={dayAriaLabel(day, eventsById)}
               aria-pressed={selected}
               onClick={() => onSelect(day.dateKey)}
+              {...analyticsData("calendar_date_selected", { selected_date: day.dateKey, event_count: day.eventIds.length })}
               className={`flex min-h-14 min-w-0 flex-col items-center justify-center rounded-xl border px-1 py-1.5 transition active:scale-[0.97] ${selected ? "border-teal-700 bg-teal-50 text-teal-950 ring-2 ring-teal-200" : "border-transparent bg-white text-slate-700 hover:bg-slate-50"}`}
             >
               <time dateTime={day.dateKey} className={`inline-flex size-7 items-center justify-center rounded-full text-sm font-black ${day.isToday ? "bg-teal-800 text-white" : ""}`}>
@@ -265,6 +271,7 @@ function MobileAgenda({ day, eventsById }: { day: CalendarDay; eventsById: Map<s
               <Link
                 href={`/events/${event.slug}`}
                 data-event-slug={event.slug}
+                {...analyticsData("select_content", { content_type: "event", content_id: event.slug, content_source: "calendar_mobile" })}
                 className="block min-h-11 rounded-2xl border border-slate-200 bg-slate-50 p-4 transition hover:border-teal-300 hover:bg-teal-50 active:scale-[0.99]"
               >
                 <div className="flex flex-wrap items-start justify-between gap-2">

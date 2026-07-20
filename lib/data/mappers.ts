@@ -41,6 +41,7 @@ export function mapEventRow(row: Record<string, unknown>): Event {
     sourceUrl: String(row.source_url),
     reviewStatus: row.review_status as ReviewStatus,
     isFeatured: Boolean(row.is_featured),
+    viewCount: Number(row.view_count ?? 0),
     isDemo: Boolean(row.is_demo),
     lastVerifiedAt: nullableString(row.last_verified_at),
     publishedAt: nullableString(row.published_at),

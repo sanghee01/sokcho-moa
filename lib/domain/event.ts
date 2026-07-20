@@ -56,6 +56,8 @@ export type Event = {
   sourceUrl: string;
   reviewStatus: ReviewStatus;
   isFeatured: boolean;
+  /** 공개 행사 상세 페이지가 열린 횟수. 마이그레이션 전 데이터는 0으로 취급한다. */
+  viewCount?: number;
   isDemo: boolean;
   lastVerifiedAt: string | null;
   publishedAt: string | null;
@@ -162,6 +164,7 @@ export type EventFilters = {
   audience?: EventAudience;
   category?: EventCategory;
   query?: string;
+  sort?: "latest" | "views" | "published";
 };
 
 export function parseEventFilters(params: Record<string, string | string[] | undefined>): EventFilters {
@@ -170,12 +173,14 @@ export function parseEventFilters(params: Record<string, string | string[] | und
   const audience = one(params.audience);
   const category = one(params.category);
   const query = one(params.q)?.trim();
+  const sort = one(params.sort);
   return {
     when: when === "today" || when === "week" || when === "month" ? when : undefined,
     applicationOpen: one(params.application) === "open" || undefined,
     audience: eventAudiences.includes(audience as EventAudience) ? (audience as EventAudience) : undefined,
     category: eventCategories.includes(category as EventCategory) ? (category as EventCategory) : undefined,
     query: query || undefined,
+    sort: sort === "views" || sort === "published" ? sort : undefined,
   };
 }
 
@@ -207,6 +212,33 @@ export function filterEvents(events: Event[], filters: EventFilters, now = new D
     }
     return true;
   });
+}
+
+/**
+ * 목록 정렬은 필터 적용 뒤에 수행한다. 조회수가 없는 기존 행사는 0으로 취급한다.
+ */
+export function sortEvents(events: Event[], sort: EventFilters["sort"] = "latest"): Event[] {
+  return [...events].sort((a, b) => {
+    if (sort === "views") {
+      const viewDifference = (b.viewCount ?? 0) - (a.viewCount ?? 0);
+      if (viewDifference !== 0) return viewDifference;
+    }
+
+    const publishDifference = dateTimestamp(b.publishedAt) - dateTimestamp(a.publishedAt);
+    if (sort === "published" && publishDifference !== 0) return publishDifference;
+
+    const startDifference = dateTimestamp(b.eventStartAt) - dateTimestamp(a.eventStartAt);
+    if (sort === "latest" && startDifference !== 0) return startDifference;
+
+    if (publishDifference !== 0) return publishDifference;
+
+    return a.eventStartAt.localeCompare(b.eventStartAt) || a.title.localeCompare(b.title, "ko-KR");
+  });
+}
+
+function dateTimestamp(value: string | null) {
+  const timestamp = value ? new Date(value).getTime() : 0;
+  return Number.isNaN(timestamp) ? 0 : timestamp;
 }
 
 function eventScheduleRanges(event: Event) {

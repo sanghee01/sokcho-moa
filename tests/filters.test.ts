@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { getDemoEvents } from "@/lib/data/demo-data";
-import { filterEvents, parseEventFilters } from "@/lib/domain/event";
+import { filterEvents, parseEventFilters, sortEvents } from "@/lib/domain/event";
 
 describe("parseEventFilters", () => {
   it("알 수 없는 URL 값은 버리고 유효한 필터만 보존한다", () => {
@@ -10,7 +10,42 @@ describe("parseEventFilters", () => {
       category: undefined,
       applicationOpen: undefined,
       query: undefined,
+      sort: undefined,
     });
+  });
+
+  it("지원하는 정렬 파라미터만 허용한다", () => {
+    expect(parseEventFilters({ sort: "views" }).sort).toBe("views");
+    expect(parseEventFilters({ sort: "published" }).sort).toBe("published");
+    expect(parseEventFilters({ sort: "invalid" }).sort).toBeUndefined();
+  });
+});
+
+describe("sortEvents", () => {
+  it("조회순은 조회수가 많은 행사를 먼저 보여주고 동률이면 최신 공개 행사부터 보여준다", () => {
+    const [first, second, third] = getDemoEvents();
+    const events = [
+      { ...first, viewCount: 12, publishedAt: "2026-07-18T00:00:00.000Z" },
+      { ...second, viewCount: 45, publishedAt: "2026-07-10T00:00:00.000Z" },
+      { ...third, viewCount: 12, publishedAt: "2026-07-19T00:00:00.000Z" },
+    ];
+
+    expect(sortEvents(events, "views").map((event) => event.slug)).toEqual([
+      second.slug,
+      third.slug,
+      first.slug,
+    ]);
+  });
+
+  it("최신순과 게시순은 행사 시작일과 공개일 기준을 각각 사용한다", () => {
+    const [first, second] = getDemoEvents();
+    const events = [
+      { ...first, eventStartAt: "2026-08-01T00:00:00.000Z", publishedAt: "2026-07-01T00:00:00.000Z" },
+      { ...second, eventStartAt: "2026-07-01T00:00:00.000Z", publishedAt: "2026-07-20T00:00:00.000Z" },
+    ];
+
+    expect(sortEvents(events, "latest").map((event) => event.slug)).toEqual([first.slug, second.slug]);
+    expect(sortEvents(events, "published").map((event) => event.slug)).toEqual([second.slug, first.slug]);
   });
 });
 

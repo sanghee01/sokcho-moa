@@ -3,14 +3,24 @@ import { EventImage } from "./event-image";
 import { StatusBadges } from "./status-badges";
 import { audienceLabels, categoryLabels, formatDate, formatDateRange } from "@/lib/domain/format";
 import { deriveApplicationState, type Event } from "@/lib/domain/event";
+import { analyticsData } from "@/lib/analytics/events";
 
-export function EventCard({ event }: { event: Event }) {
+export function EventCard({ event, contentSource = "event_list" }: { event: Event; contentSource?: "event_list" | "related_events" }) {
   const applicationState = deriveApplicationState(event);
   const isApplicationClosed = applicationState === "closed";
 
   return (
     <article className={`group overflow-hidden rounded-3xl border shadow-sm transition hover:-translate-y-1 hover:shadow-xl ${isApplicationClosed ? "border-slate-300 bg-slate-100" : "border-teal-900/10 bg-white"}`}>
-      <Link href={`/events/${event.slug}`} className="block focus-visible:ring-4 focus-visible:ring-teal-300">
+      <Link
+        href={`/events/${event.slug}`}
+        {...analyticsData("select_content", {
+          content_type: "event",
+          content_id: event.slug,
+          content_source: contentSource,
+          event_category: event.category,
+        })}
+        className="block focus-visible:ring-4 focus-visible:ring-teal-300"
+      >
         <div className="relative aspect-[16/9] overflow-hidden">
           <EventImage src={event.imageUrl} alt={event.title} muted={isApplicationClosed} />
           <div className="absolute left-3 top-3">

@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import Script from "next/script";
 import type { ReactNode } from "react";
+import { AnalyticsRuntime } from "@/components/analytics/analytics-runtime";
 import { ScrollToTopButton } from "@/components/scroll-to-top-button";
 import { TransitionLink } from "@/components/transition-link";
 import { getPublicEnv } from "@/lib/config/env";
@@ -69,6 +70,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
             </nav>
           </div>
         </header>
+        <AnalyticsRuntime />
         {children}
         <footer className="mt-20 border-t border-teal-900/10 bg-white">
           <div className="mx-auto flex max-w-6xl flex-col gap-5 px-4 py-10 text-sm leading-6 text-slate-600 sm:flex-row sm:items-end sm:justify-between sm:px-6">
@@ -79,8 +81,13 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
             <div className="shrink-0 sm:text-right">
               <p>
                 문의:{" "}
-                <a className="font-bold text-teal-800 underline decoration-teal-300 underline-offset-4 hover:text-teal-600" href="mailto:workchu777@gmail.com">
-                  workchu777@gmail.com
+                <a
+                  className="font-bold text-teal-800 underline decoration-teal-300 underline-offset-4 hover:text-teal-600"
+                  href="https://open.kakao.com/o/s7kFbUEi"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  카카오톡 오픈채팅 문의 <span className="sr-only">(새 창)</span>
                 </a>
               </p>
               <p>© {currentYear} 속초모아. All rights reserved.</p>
@@ -88,11 +95,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
           </div>
         </footer>
         <ScrollToTopButton />
-        <Script
-          src={`https://www.googletagmanager.com/gtag/js?id=${googleAnalyticsId}`}
-          strategy="afterInteractive"
-        />
-        <Script id="google-analytics" strategy="afterInteractive">
+        <Script id="google-analytics" strategy="beforeInteractive">
           {`
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
@@ -100,6 +103,10 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
             gtag('config', '${googleAnalyticsId}');
           `}
         </Script>
+        <Script
+          src={`https://www.googletagmanager.com/gtag/js?id=${googleAnalyticsId}`}
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );

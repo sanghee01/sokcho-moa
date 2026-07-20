@@ -7,6 +7,11 @@ type ElementBox = {
   height: number;
 };
 
+type CapturedAnalyticsEvent = {
+  name: string;
+  params: Record<string, string | number | boolean>;
+};
+
 async function visibleBox(locator: Locator): Promise<ElementBox> {
   await expect(locator).toBeVisible();
   const box = await locator.boundingBox();
@@ -34,6 +39,22 @@ async function expectNoHorizontalOverflow(page: Page, locators: Locator[]) {
     expect(box.x).toBeGreaterThanOrEqual(-1);
     expect(box.x + box.width).toBeLessThanOrEqual(widths.viewport + 1);
   }
+}
+
+async function capturedAnalyticsEvents(page: Page): Promise<CapturedAnalyticsEvent[]> {
+  return page.evaluate(() => {
+    const dataLayer = (window as Window & { dataLayer?: Array<ArrayLike<unknown>> }).dataLayer ?? [];
+    return dataLayer.flatMap((entry) => {
+      const values = Array.from(entry);
+      if (values[0] !== "event" || typeof values[1] !== "string") return [];
+      return [{
+        name: values[1],
+        params: values[2] && typeof values[2] === "object"
+          ? values[2] as Record<string, string | number | boolean>
+          : {},
+      }];
+    });
+  });
 }
 
 test("행사 상세는 지도 SDK나 인라인 미리보기 없이 장소·주소·외부 링크를 제공한다", async ({ page }) => {
@@ -76,6 +97,93 @@ test("행사 상세는 지도 SDK나 인라인 미리보기 없이 장소·주�
   await expect(locationCard.locator("iframe")).toHaveCount(0);
   await expect(page.locator('script[src*="oapi.map.naver.com"], script[src*="dapi.kakao.com"]')).toHaveCount(0);
   expect(mapSdkRequests).toEqual([]);
+});
+
+test("공유하기는 데스크톱에서 행사 링크만 복사하고 모바일에서는 네이티브 공유 창을 연다", async ({ page }, testInfo) => {
+  const isMobile = testInfo.project.name === "mobile-chromium";
+
+  await page.addInitScript((mobile) => {
+    type ShareCapture = Window & { __copiedEventUrl?: string; __sharedEventUrl?: string };
+    const capture = window as ShareCapture;
+
+    if (mobile) {
+      Object.defineProperty(navigator, "share", {
+        configurable: true,
+        value: ({ url }: { url?: string }) => {
+          capture.__sharedEventUrl = url;
+          return Promise.resolve();
+        },
+      });
+      Object.defineProperty(navigator, "canShare", { configurable: true, value: () => true });
+      return;
+    }
+
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: {
+        writeText: (url: string) => {
+          capture.__copiedEventUrl = url;
+          return Promise.resolve();
+        },
+      },
+    });
+  }, isMobile);
+
+  await page.goto("/events/demo-sea-family-festival?from=search#facts-title");
+  await page.getByRole("button", { name: "공유하기" }).click();
+
+  const expectedUrl = "http://127.0.0.1:3100/events/demo-sea-family-festival";
+  if (isMobile) {
+    await expect.poll(() => page.evaluate(() => (window as Window & { __sharedEventUrl?: string }).__sharedEventUrl)).toBe(expectedUrl);
+    await expect(page.getByRole("button", { name: "공유 완료" })).toBeVisible();
+    await expect.poll(async () => (await capturedAnalyticsEvents(page)).some((event) => (
+      event.name === "share" && event.params.method === "native_share" && event.params.item_id === "demo-sea-family-festival"
+    ))).toBe(true);
+    return;
+  }
+
+  await expect.poll(() => page.evaluate(() => (window as Window & { __copiedEventUrl?: string }).__copiedEventUrl)).toBe(expectedUrl);
+  await expect(page.getByRole("button", { name: "링크 복사됨" })).toBeVisible();
+  await expect.poll(async () => (await capturedAnalyticsEvents(page)).some((event) => (
+    event.name === "share" && event.params.method === "link_copy" && event.params.item_id === "demo-sea-family-festival"
+  ))).toBe(true);
+});
+
+test("GA 이벤트는 탐색부터 상세 도달까지 구조화된 파라미터로 수집한다", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByRole("link", { name: "가족", exact: true }).click();
+  await expect(page).toHaveURL(/audience=family/);
+  await expect.poll(async () => (await capturedAnalyticsEvents(page)).some((event) => (
+    event.name === "filter_used"
+      && event.params.filter_type === "audience"
+      && event.params.filter_value === "family"
+      && event.params.filter_action === "apply"
+  ))).toBe(true);
+
+  await page.getByLabel("키워드 검색").fill("바다빛");
+  await page.getByRole("button", { name: "검색", exact: true }).click();
+  await expect(page).toHaveURL(/q=/);
+  await expect.poll(async () => (await capturedAnalyticsEvents(page)).find((event) => event.name === "search_submitted")?.params).toMatchObject({
+    query_length: 3,
+    has_query: true,
+    active_filter_count: 1,
+  });
+  const searchEvent = (await capturedAnalyticsEvents(page)).find((event) => event.name === "search_submitted");
+  expect(searchEvent?.params).not.toHaveProperty("search_term");
+
+  await page.getByRole("link", { name: /바다빛 가족 문화축제/ }).click();
+  await expect(page).toHaveURL(/\/events\/demo-sea-family-festival$/);
+  await expect.poll(async () => (await capturedAnalyticsEvents(page)).some((event) => (
+    event.name === "select_content"
+      && event.params.content_id === "demo-sea-family-festival"
+      && event.params.content_source === "event_list"
+  ))).toBe(true);
+  await expect.poll(async () => (await capturedAnalyticsEvents(page)).some((event) => (
+    event.name === "event_detail_viewed"
+      && event.params.event_slug === "demo-sea-family-festival"
+      && event.params.event_category === "festival"
+  ))).toBe(true);
 });
 
 test("정상·null·빈 문자열·404 이미지가 목록과 상세에서 같은 크기를 유지한다", async ({ page }) => {
@@ -257,4 +365,21 @@ test("필터 응답이 늦어도 클릭 즉시 진행 상태를 알린다", asyn
   releaseRequest();
   await expect(page).toHaveURL(/audience=family/);
   await expect(page.getByRole("heading", { name: /찾은 행사 7개/ })).toBeVisible();
+});
+
+test("행사 목록에서 최신·조회·게시 기준으로 정렬할 수 있다", async ({ page }) => {
+  await page.goto("/");
+  const sort = page.getByRole("navigation", { name: "행사 정렬" });
+
+  await sort.getByRole("link", { name: "조회순" }).click();
+  await expect(page).toHaveURL(/sort=views/);
+  await expect(sort.getByRole("link", { name: "조회순" })).toHaveAttribute("aria-current", "page");
+
+  await sort.getByRole("link", { name: "게시순" }).click();
+  await expect(page).toHaveURL(/sort=published/);
+  await expect(sort.getByRole("link", { name: "게시순" })).toHaveAttribute("aria-current", "page");
+
+  await sort.getByRole("link", { name: "최신순" }).click();
+  await expect(page).not.toHaveURL(/sort=/);
+  await expect(sort.getByRole("link", { name: "최신순" })).toHaveAttribute("aria-current", "page");
 });

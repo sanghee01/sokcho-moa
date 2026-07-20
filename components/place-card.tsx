@@ -1,4 +1,5 @@
 import { createNaverMapUrl, type NearbyPlace } from "@/lib/domain/geo";
+import { analyticsData } from "@/lib/analytics/events";
 
 export function PlaceCard({ place }: { place: NearbyPlace }) {
   const mapUrl = place.mapUrl ?? createNaverMapUrl(place.name, place.latitude, place.longitude);
@@ -14,8 +15,8 @@ export function PlaceCard({ place }: { place: NearbyPlace }) {
       <p className="text-sm leading-6 text-slate-600">{place.summary}</p>
       {place.address && <p className="mt-3 text-xs text-slate-500">{place.address}</p>}
       <div className="mt-4 flex flex-wrap gap-2 text-sm font-bold">
-        <a href={mapUrl} target="_blank" rel="noreferrer" data-analytics-event="map_link_clicked" data-analytics-label={place.name} className="rounded-xl bg-teal-800 px-3 py-2 text-white">지도에서 보기 <span className="sr-only">(새 창)</span></a>
-        {place.officialUrl && <a href={place.officialUrl} target="_blank" rel="noreferrer" data-analytics-event="nearby_place_clicked" data-analytics-label={place.name} className="rounded-xl border border-slate-200 px-3 py-2">자세히 보기 <span className="sr-only">(새 창)</span></a>}
+        <a href={mapUrl} target="_blank" rel="noreferrer" {...analyticsData("map_link_clicked", { content_type: "nearby_place", place_name: place.name, link_position: "nearby_place_card" })} className="rounded-xl bg-teal-800 px-3 py-2 text-white">지도에서 보기 <span className="sr-only">(새 창)</span></a>
+        {place.officialUrl && <a href={place.officialUrl} target="_blank" rel="noreferrer" {...analyticsData("nearby_place_clicked", { place_name: place.name, place_category: place.category, link_position: "nearby_place_card" })} className="rounded-xl border border-slate-200 px-3 py-2">자세히 보기 <span className="sr-only">(새 창)</span></a>}
       </div>
     </article>
   );
