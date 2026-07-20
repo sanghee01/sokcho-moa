@@ -24,6 +24,7 @@ export function EventSort({ params, activeSort }: { params: SortParams; activeSo
     <nav aria-label="행사 정렬" className="inline-flex w-fit rounded-xl border border-slate-200 bg-white p-1 shadow-sm">
       <Link
         href={sortHref(params, "latest")}
+        scroll={false}
         {...(resolvedSort !== "latest" ? analyticsData("sort_changed", { sort_method: "latest" }) : {})}
         aria-current={activeSort !== "views" && activeSort !== "published" ? "page" : undefined}
         className={`inline-flex min-h-10 items-center justify-center rounded-lg px-3 text-sm font-bold transition ${activeSort !== "views" && activeSort !== "published" ? "bg-teal-800 text-white shadow-sm" : "text-slate-600 hover:bg-teal-50 hover:text-teal-900"}`}
@@ -32,6 +33,7 @@ export function EventSort({ params, activeSort }: { params: SortParams; activeSo
       </Link>
       <Link
         href={sortHref(params, "views")}
+        scroll={false}
         {...(resolvedSort !== "views" ? analyticsData("sort_changed", { sort_method: "views" }) : {})}
         aria-current={isPopular ? "page" : undefined}
         className={`inline-flex min-h-10 items-center justify-center rounded-lg px-3 text-sm font-bold transition ${isPopular ? "bg-teal-800 text-white shadow-sm" : "text-slate-600 hover:bg-teal-50 hover:text-teal-900"}`}
@@ -40,6 +42,7 @@ export function EventSort({ params, activeSort }: { params: SortParams; activeSo
       </Link>
       <Link
         href={sortHref(params, "published")}
+        scroll={false}
         {...(resolvedSort !== "published" ? analyticsData("sort_changed", { sort_method: "published" }) : {})}
         aria-current={activeSort === "published" ? "page" : undefined}
         className={`inline-flex min-h-10 items-center justify-center rounded-lg px-3 text-sm font-bold transition ${activeSort === "published" ? "bg-teal-800 text-white shadow-sm" : "text-slate-600 hover:bg-teal-50 hover:text-teal-900"}`}

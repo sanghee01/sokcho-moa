@@ -55,7 +55,7 @@ export default async function AdminPage({
         </div>
         <div className="overflow-x-auto rounded-2xl bg-white ring-1 ring-slate-200">
           <table className="min-w-full text-left text-sm">
-            <thead className="bg-slate-50 text-slate-600"><tr><th className="px-4 py-3">행사</th><th className="px-4 py-3">상태</th><th className="px-4 py-3">출처</th><th className="px-4 py-3">작업</th></tr></thead>
+            <thead className="bg-slate-50 text-slate-600"><tr><th className="px-4 py-3">행사</th><th className="px-4 py-3 text-right">조회수</th><th className="px-4 py-3">상태</th><th className="px-4 py-3">출처</th><th className="px-4 py-3">작업</th></tr></thead>
             <tbody>
               {events.map((row) => (
                 <EventReviewRow
@@ -65,11 +65,12 @@ export default async function AdminPage({
                     slug: String(row.slug),
                     title: String(row.title),
                     sourceName: String(row.source_name),
+                    viewCount: Number(row.view_count ?? 0),
                     reviewStatus: String(row.review_status) as "pending" | "published" | "rejected",
                   }}
                 />
               ))}
-              {events.length === 0 && <tr><td colSpan={4} className="px-4 py-12 text-center text-slate-500">이 상태의 행사가 없습니다.</td></tr>}
+              {events.length === 0 && <tr><td colSpan={5} className="px-4 py-12 text-center text-slate-500">이 상태의 행사가 없습니다.</td></tr>}
             </tbody>
           </table>
         </div>

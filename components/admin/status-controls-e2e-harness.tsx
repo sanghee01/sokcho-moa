@@ -28,14 +28,14 @@ export function StatusControlsE2EHarness() {
       </fieldset>
       <div className="overflow-x-auto rounded-2xl bg-white ring-1 ring-slate-200">
         <table className="min-w-full text-left text-sm">
-          <thead className="bg-slate-50 text-slate-600"><tr><th className="px-4 py-3">행사</th><th className="px-4 py-3">상태</th><th className="px-4 py-3">출처</th><th className="px-4 py-3">작업</th></tr></thead>
+          <thead className="bg-slate-50 text-slate-600"><tr><th className="px-4 py-3">행사</th><th className="px-4 py-3 text-right">조회수</th><th className="px-4 py-3">상태</th><th className="px-4 py-3">출처</th><th className="px-4 py-3">작업</th></tr></thead>
           <tbody>
             <EventReviewRow
-              event={{ id: "10000000-0000-4000-8000-000000000091", slug: "e2e-current", title: "현재 행사", sourceName: "속초시", reviewStatus: "pending" }}
+              event={{ id: "10000000-0000-4000-8000-000000000091", slug: "e2e-current", title: "현재 행사", sourceName: "속초시", viewCount: 1234, reviewStatus: "pending" }}
               performStatusChangeAction={performStatusChangeAction}
             />
             <EventReviewRow
-              event={{ id: "10000000-0000-4000-8000-000000000092", slug: "e2e-adjacent", title: "인접 행사", sourceName: "속초문화재단", reviewStatus: "pending" }}
+              event={{ id: "10000000-0000-4000-8000-000000000092", slug: "e2e-adjacent", title: "인접 행사", sourceName: "속초문화재단", viewCount: 7, reviewStatus: "pending" }}
               performStatusChangeAction={performStatusChangeAction}
             />
           </tbody>

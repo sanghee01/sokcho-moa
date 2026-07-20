@@ -370,9 +370,13 @@ test("필터 응답이 늦어도 클릭 즉시 진행 상태를 알린다", asyn
 test("행사 목록에서 최신·조회·게시 기준으로 정렬할 수 있다", async ({ page }) => {
   await page.goto("/");
   const sort = page.getByRole("navigation", { name: "행사 정렬" });
+  await sort.scrollIntoViewIfNeeded();
+  const initialScrollY = await page.evaluate(() => window.scrollY);
+  expect(initialScrollY).toBeGreaterThan(0);
 
   await sort.getByRole("link", { name: "조회순" }).click();
   await expect(page).toHaveURL(/sort=views/);
+  await expect.poll(() => page.evaluate((expected) => Math.abs(window.scrollY - expected), initialScrollY)).toBeLessThanOrEqual(2);
   await expect(sort.getByRole("link", { name: "조회순" })).toHaveAttribute("aria-current", "page");
 
   await sort.getByRole("link", { name: "게시순" }).click();

@@ -39,6 +39,7 @@ test("실제 관리자 상태 컴포넌트가 저장·성공·실패 rollback �
   const currentRow = page.getByRole("row").filter({ hasText: "현재 행사" });
   const controls = currentRow.getByLabel("공개 상태 변경");
   const publishButton = currentRow.getByRole("button", { name: "공개", exact: true });
+  await expect(currentRow.getByRole("cell", { name: "1,234회" })).toBeVisible();
   await controls.scrollIntoViewIfNeeded();
   const baseline = await boxes(page);
 
