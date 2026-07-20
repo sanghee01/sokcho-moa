@@ -1,6 +1,9 @@
 "use server";
 
-import { eventReportSchema } from "@/lib/domain/report";
+import { revalidatePath } from "next/cache";
+import { requireAdmin } from "@/lib/admin/auth";
+import { eventReportDeleteSchema, eventReportReviewSchema, eventReportSchema } from "@/lib/domain/report";
+import { createAuthenticatedSupabaseClient } from "@/lib/supabase/auth-server";
 import { createPublicSupabaseClient } from "@/lib/supabase/server";
 
 export type EventReportActionState = {
@@ -49,4 +52,31 @@ export async function submitEventReportAction(
   }
 
   return { error: null, success: true };
+}
+
+export async function setEventReportReviewStatusAction(input: unknown) {
+  const parsed = eventReportReviewSchema.safeParse(input);
+  if (!parsed.success) throw new Error("변경할 제보 상태를 확인해 주세요.");
+  await requireAdmin();
+  const client = await createAuthenticatedSupabaseClient();
+  if (!client) throw new Error("Supabase 관리자 연결이 없습니다.");
+  const { error } = await client
+    .from("event_reports")
+    .update({ review_status: parsed.data.status })
+    .eq("id", parsed.data.id);
+  if (error) throw new Error(`제보 상태를 변경하지 못했습니다: ${error.message}`);
+  revalidatePath("/admin");
+  return { status: parsed.data.status };
+}
+
+export async function deleteEventReportAction(input: unknown) {
+  const parsed = eventReportDeleteSchema.safeParse(input);
+  if (!parsed.success) throw new Error("삭제할 제보를 확인해 주세요.");
+  await requireAdmin();
+  const client = await createAuthenticatedSupabaseClient();
+  if (!client) throw new Error("Supabase 관리자 연결이 없습니다.");
+  const { error } = await client.from("event_reports").delete().eq("id", parsed.data.id);
+  if (error) throw new Error(`제보를 삭제하지 못했습니다: ${error.message}`);
+  revalidatePath("/admin");
+  return { deleted: true as const };
 }

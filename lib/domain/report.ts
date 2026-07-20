@@ -6,3 +6,14 @@ export const eventReportSchema = z.object({
   sourceUrl: z.string().trim().min(1, "링크를 입력해 주세요.").url("링크를 올바른 주소로 입력해 주세요.").max(2048, "링크가 너무 깁니다."),
   website: z.string().max(0),
 });
+
+export const eventReportReviewSchema = z.object({
+  id: z.string().uuid(),
+  status: z.enum(["reviewed", "rejected"]),
+});
+
+export const eventReportDeleteSchema = z.object({
+  id: z.string().uuid(),
+});
+
+export type EventReportReviewStatus = "pending" | "reviewed" | "rejected";

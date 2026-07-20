@@ -1,5 +1,6 @@
 import { ActionFeedback } from "@/components/admin/action-feedback";
 import { AdminShell } from "@/components/admin/admin-shell";
+import { EventReportCard } from "@/components/admin/event-report-card";
 import { EventReviewRow } from "@/components/admin/event-review-row";
 import { TransitionLink } from "@/components/transition-link";
 import { requireAdmin } from "@/lib/admin/auth";
@@ -80,17 +81,17 @@ export default async function AdminPage({
         </div>
         <div className="space-y-3">
           {reports.map((report) => (
-            <article key={String(report.id)} className="rounded-2xl bg-white p-5 ring-1 ring-slate-200">
-              <div className="flex flex-wrap items-start justify-between gap-2">
-                <h3 className="text-lg font-black text-slate-950">{String(report.title)}</h3>
-                <span className="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-900">검토 대기</span>
-              </div>
-              <p className="mt-3 whitespace-pre-line leading-7 text-slate-700">{String(report.body)}</p>
-              <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
-                {report.source_url && <a href={String(report.source_url)} target="_blank" rel="noreferrer" className="font-bold text-teal-700 underline underline-offset-4">제보 링크 <span className="sr-only">(새 창)</span></a>}
-                <time className="text-slate-500" dateTime={String(report.created_at)}>{new Intl.DateTimeFormat("ko-KR", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Seoul" }).format(new Date(String(report.created_at)))}</time>
-              </div>
-            </article>
+            <EventReportCard
+              key={String(report.id)}
+              report={{
+                id: String(report.id),
+                title: String(report.title),
+                body: String(report.body),
+                sourceUrl: report.source_url ? String(report.source_url) : null,
+                reviewStatus: String(report.review_status) as "pending" | "reviewed" | "rejected",
+                createdAt: String(report.created_at),
+              }}
+            />
           ))}
           {reports.length === 0 && <p className="rounded-2xl bg-white px-5 py-10 text-center text-slate-500 ring-1 ring-slate-200">접수된 제보가 없습니다.</p>}
         </div>
