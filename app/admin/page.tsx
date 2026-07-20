@@ -1,10 +1,10 @@
 import { ActionFeedback } from "@/components/admin/action-feedback";
 import { AdminShell } from "@/components/admin/admin-shell";
-import { EventReportCard } from "@/components/admin/event-report-card";
+import { SubmissionReviewCard } from "@/components/admin/submission-review-card";
 import { EventReviewRow } from "@/components/admin/event-review-row";
 import { TransitionLink } from "@/components/transition-link";
 import { requireAdmin } from "@/lib/admin/auth";
-import { getAdminEventReports, getAdminEvents, getAdminPlaces } from "@/lib/admin/queries";
+import { getAdminEventReports, getAdminEvents, getAdminPlaces, getAdminSiteFeedback } from "@/lib/admin/queries";
 
 const statusLabels: Record<string, string> = { pending: "검수 대기", published: "공개", rejected: "반려" };
 
@@ -13,12 +13,13 @@ export default async function AdminPage({
 }: {
   searchParams: Promise<{ status?: string; deleted?: string }>;
 }) {
-  const [admin, { status, deleted }, allEvents, places, reports] = await Promise.all([
+  const [admin, { status, deleted }, allEvents, places, reports, feedback] = await Promise.all([
     requireAdmin(),
     searchParams,
     getAdminEvents(),
     getAdminPlaces(),
     getAdminEventReports(),
+    getAdminSiteFeedback(),
   ]);
   const events = status && statusLabels[status]
     ? allEvents.filter((row) => row.review_status === status)
@@ -81,19 +82,45 @@ export default async function AdminPage({
         </div>
         <div className="space-y-3">
           {reports.map((report) => (
-            <EventReportCard
+            <SubmissionReviewCard
               key={String(report.id)}
-              report={{
+              kind="event_report"
+              submission={{
                 id: String(report.id),
                 title: String(report.title),
                 body: String(report.body),
-                sourceUrl: report.source_url ? String(report.source_url) : null,
+                linkUrl: report.source_url ? String(report.source_url) : null,
+                imageUrl: null,
                 reviewStatus: String(report.review_status) as "pending" | "reviewed" | "rejected",
                 createdAt: String(report.created_at),
               }}
             />
           ))}
           {reports.length === 0 && <p className="rounded-2xl bg-white px-5 py-10 text-center text-slate-500 ring-1 ring-slate-200">접수된 제보가 없습니다.</p>}
+        </div>
+      </section>
+
+      <section className="mt-10" aria-labelledby="admin-feedback-title">
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <h2 id="admin-feedback-title" className="text-2xl font-black text-slate-950">접수된 의견 {feedback.length}건</h2>
+        </div>
+        <div className="space-y-3">
+          {feedback.map((item) => (
+            <SubmissionReviewCard
+              key={String(item.id)}
+              kind="site_feedback"
+              submission={{
+                id: String(item.id),
+                title: String(item.title),
+                body: String(item.body),
+                linkUrl: item.link_url ? String(item.link_url) : null,
+                imageUrl: item.image_url ? String(item.image_url) : null,
+                reviewStatus: String(item.review_status) as "pending" | "reviewed" | "rejected",
+                createdAt: String(item.created_at),
+              }}
+            />
+          ))}
+          {feedback.length === 0 && <p className="rounded-2xl bg-white px-5 py-10 text-center text-slate-500 ring-1 ring-slate-200">접수된 의견이 없습니다.</p>}
         </div>
       </section>
 

@@ -25,7 +25,7 @@ export function TransitionLink({
   pendingLabel?: string;
   showPendingIndicator?: boolean;
   scroll?: boolean;
-} & Partial<AnalyticsDataAttributes>) {
+} & Partial<AnalyticsDataAttributes> & { "aria-current"?: "page" }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 

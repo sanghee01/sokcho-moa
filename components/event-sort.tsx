@@ -1,26 +1,17 @@
 import Link from "next/link";
 import { analyticsData } from "@/lib/analytics/events";
 import type { EventFilters } from "@/lib/domain/event";
+import { buildEventBrowseHref, type EventSearchParams } from "@/lib/domain/event-navigation";
 
-type SortParams = Record<string, string | string[] | undefined>;
-
-function sortHref(params: SortParams, sort: EventFilters["sort"]) {
-  const search = new URLSearchParams();
-  for (const [name, raw] of Object.entries(params)) {
-    if (name === "sort") continue;
-    const value = Array.isArray(raw) ? raw[0] : raw;
-    if (value) search.set(name, value);
-  }
-  if (sort && sort !== "published") search.set("sort", sort);
-  const query = search.toString();
-  return query ? `/?${query}` : "/";
+function sortHref(params: EventSearchParams, sort: EventFilters["sort"]) {
+  return buildEventBrowseHref(params, { sort: sort === "published" ? undefined : sort });
 }
 
-export function EventSort({ params, activeSort }: { params: SortParams; activeSort: EventFilters["sort"] }) {
+export function EventSort({ params, activeSort }: { params: EventSearchParams; activeSort: EventFilters["sort"] }) {
   const resolvedSort = activeSort ?? "published";
 
   return (
-    <nav aria-label="행사 정렬" className="inline-flex w-fit rounded-xl border border-slate-200 bg-white p-1 shadow-sm">
+    <nav aria-label="행사 정렬" className="grid w-full grid-cols-3 rounded-xl border border-slate-200 bg-white p-1 shadow-sm sm:inline-flex sm:w-fit">
       <Link
         href={sortHref(params, "published")}
         scroll={false}

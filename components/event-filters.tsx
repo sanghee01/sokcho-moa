@@ -6,9 +6,13 @@ import { useTransition, type FormEvent, type MouseEvent, type ReactNode } from "
 import { LoadingSpinner } from "@/components/loading-spinner";
 import { audienceLabels, categoryLabels } from "@/lib/domain/format";
 import type { EventAudience, EventCategory, EventFilters } from "@/lib/domain/event";
+import {
+  buildEventBrowseHref,
+  clearEventFiltersHref,
+  type EventSearchParams,
+} from "@/lib/domain/event-navigation";
 import { analyticsData, trackAnalyticsEvent } from "@/lib/analytics/events";
 
-type FilterParams = Record<string, string | string[] | undefined>;
 type Navigate = (event: MouseEvent<HTMLAnchorElement>, href: string) => void;
 
 const times = [
@@ -19,17 +23,9 @@ const times = [
 const categories: EventCategory[] = ["performance", "festival", "experience", "education", "exhibition", "other"];
 const audiences: EventAudience[] = ["child", "youth", "family", "adult", "all"];
 
-function buildHref(params: FilterParams, key: string, value: string | undefined) {
-  const search = new URLSearchParams();
-  for (const [name, raw] of Object.entries(params)) {
-    if (name === "free") continue;
-    const current = Array.isArray(raw) ? raw[0] : raw;
-    if (current) search.set(name, current);
-  }
-  if (value == null || search.get(key) === value) search.delete(key);
-  else search.set(key, value);
-  const query = search.toString();
-  return query ? `/?${query}` : "/";
+function buildFilterHref(params: EventSearchParams, key: string, value: string | undefined) {
+  const current = Array.isArray(params[key]) ? params[key][0] : params[key];
+  return buildEventBrowseHref(params, { [key]: current === value ? undefined : value });
 }
 
 function buildSearchHref(form: HTMLFormElement) {
@@ -92,7 +88,7 @@ function FilterGroup({ id, title, className = "", children }: { id: string; titl
   );
 }
 
-export function EventFilters({ params, filters }: { params: FilterParams; filters: EventFilters }) {
+export function EventFilters({ params, filters }: { params: EventSearchParams; filters: EventFilters }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const activeFilterCount = [filters.when, filters.applicationOpen, filters.audience, filters.category, filters.query]
@@ -126,8 +122,8 @@ export function EventFilters({ params, filters }: { params: FilterParams; filter
           <h2 id="filter-title" className="mt-1 text-xl font-black text-slate-950">어떤 하루를 찾으세요?</h2>
         </div>
         <Link
-          href="/"
-          onClick={(event) => navigate(event, "/")}
+          href={clearEventFiltersHref(params)}
+          onClick={(event) => navigate(event, clearEventFiltersHref(params))}
           aria-disabled={isPending}
           {...(activeFilterCount > 0 ? analyticsData("filter_reset", { active_filter_count: activeFilterCount }) : {})}
           className="shrink-0 text-sm font-bold text-teal-700 underline underline-offset-4"
@@ -152,13 +148,13 @@ export function EventFilters({ params, filters }: { params: FilterParams; filter
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-[0.75fr_0.9fr_1.8fr]">
         <FilterGroup id="date-filter-title" title="날짜">
           <div className="flex flex-wrap gap-2">
-            {times.map(([value, label]) => <Chip key={value} href={buildHref(params, "when", value)} active={filters.when === value} label={label} filterType="date" filterValue={value} isPending={isPending} navigate={navigate} />)}
+            {times.map(([value, label]) => <Chip key={value} href={buildFilterHref(params, "when", value)} active={filters.when === value} label={label} filterType="date" filterValue={value} isPending={isPending} navigate={navigate} />)}
           </div>
         </FilterGroup>
 
         <FilterGroup id="application-filter-title" title="신청 가능 여부">
           <div className="flex flex-wrap gap-2">
-            <Chip href={buildHref(params, "application", "open")} active={filters.applicationOpen === true} label="신청 가능" filterType="application" filterValue="open" isPending={isPending} navigate={navigate} />
+            <Chip href={buildFilterHref(params, "application", "open")} active={filters.applicationOpen === true} label="신청 가능" filterType="application" filterValue="open" isPending={isPending} navigate={navigate} />
           </div>
         </FilterGroup>
 
@@ -166,13 +162,13 @@ export function EventFilters({ params, filters }: { params: FilterParams; filter
           <div>
             <p className="mb-2 text-xs font-bold text-slate-500">주제</p>
             <div className="flex flex-wrap gap-2">
-              {categories.map((value) => <Chip key={value} href={buildHref(params, "category", value)} active={filters.category === value} label={categoryLabels[value]} filterType="category" filterValue={value} isPending={isPending} navigate={navigate} />)}
+              {categories.map((value) => <Chip key={value} href={buildFilterHref(params, "category", value)} active={filters.category === value} label={categoryLabels[value]} filterType="category" filterValue={value} isPending={isPending} navigate={navigate} />)}
             </div>
           </div>
           <div className="mt-3 border-t border-slate-200 pt-3">
             <p className="mb-2 text-xs font-bold text-slate-500">대상</p>
             <div className="flex flex-wrap gap-2">
-              {audiences.map((value) => <Chip key={value} href={buildHref(params, "audience", value)} active={filters.audience === value} label={audienceLabels[value]} filterType="audience" filterValue={value} isPending={isPending} navigate={navigate} />)}
+              {audiences.map((value) => <Chip key={value} href={buildFilterHref(params, "audience", value)} active={filters.audience === value} label={audienceLabels[value]} filterType="audience" filterValue={value} isPending={isPending} navigate={navigate} />)}
             </div>
           </div>
         </FilterGroup>

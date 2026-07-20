@@ -10,7 +10,7 @@ export function EventCard({ event, contentSource = "event_list" }: { event: Even
   const isApplicationClosed = applicationState === "closed";
 
   return (
-    <article className={`group overflow-hidden rounded-3xl border shadow-sm transition hover:-translate-y-1 hover:shadow-xl ${isApplicationClosed ? "border-slate-300 bg-slate-100" : "border-teal-900/10 bg-white"}`}>
+    <article className={`group h-full overflow-hidden rounded-3xl border shadow-sm transition hover:-translate-y-1 hover:shadow-xl ${isApplicationClosed ? "border-slate-300 bg-slate-100" : "border-teal-900/10 bg-white"}`}>
       <Link
         href={`/events/${event.slug}`}
         {...analyticsData("select_content", {
@@ -19,7 +19,7 @@ export function EventCard({ event, contentSource = "event_list" }: { event: Even
           content_source: contentSource,
           event_category: event.category,
         })}
-        className="block focus-visible:ring-4 focus-visible:ring-teal-300"
+        className="flex h-full flex-col focus-visible:ring-4 focus-visible:ring-teal-300"
       >
         <div className="relative aspect-[16/9] overflow-hidden">
           <EventImage src={event.imageUrl} alt={event.title} muted={isApplicationClosed} />
@@ -32,7 +32,7 @@ export function EventCard({ event, contentSource = "event_list" }: { event: Even
             </p>
           )}
         </div>
-        <div className="space-y-3 p-5">
+        <div className="flex flex-1 flex-col gap-3 p-5">
           <div className="flex flex-wrap items-center gap-1.5" aria-label="행사 주제와 참여 대상">
             <span className={`rounded-full px-3 py-1.5 text-sm font-black leading-none shadow-sm ${isApplicationClosed ? "bg-slate-700 text-white" : "bg-teal-700 text-white"}`}>
               {categoryLabels[event.category]}
@@ -64,7 +64,7 @@ export function EventCard({ event, contentSource = "event_list" }: { event: Even
               </div>
             )}
           </dl>
-          <p className="border-t border-slate-100 pt-3 text-xs text-slate-500">출처: {event.sourceName}</p>
+          <p className="mt-auto border-t border-slate-100 pt-3 text-xs text-slate-500">출처: {event.sourceName}</p>
         </div>
       </Link>
     </article>

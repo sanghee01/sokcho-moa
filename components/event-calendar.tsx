@@ -7,6 +7,7 @@ import { applicationStateLabels } from "@/lib/domain/format";
 import { analyticsData } from "@/lib/analytics/events";
 import type { ApplicationState } from "@/lib/domain/event";
 import type { CalendarDay, CalendarEvent, CalendarMonth, CalendarWeek } from "@/lib/domain/calendar";
+import { buildEventBrowseHref, type EventSearchParams } from "@/lib/domain/event-navigation";
 
 const weekdays = ["일", "월", "화", "수", "목", "금", "토"] as const;
 const legendStates: ApplicationState[] = ["open", "closing_today", "closed", "upcoming", "not_applicable"];
@@ -35,7 +36,7 @@ const indicatorTone: Record<ApplicationState, string> = {
   not_applicable: "bg-teal-400",
 };
 
-export function EventCalendar({ month }: { month: CalendarMonth }) {
+export function EventCalendar({ month, params }: { month: CalendarMonth; params: EventSearchParams }) {
   const eventsById = new Map(month.events.map((event) => [event.id, event]));
   const firstEventDate = month.days.find((day) => day.inCurrentMonth && day.eventIds.length > 0)?.dateKey;
   const firstMonthDate = month.days.find((day) => day.inCurrentMonth)?.dateKey ?? `${month.monthKey}-01`;
@@ -47,14 +48,17 @@ export function EventCalendar({ month }: { month: CalendarMonth }) {
 
   return (
     <section aria-labelledby="calendar-month-title" className="space-y-6">
-      <CalendarToolbar month={month} />
+      <CalendarToolbar month={month} params={params} />
       <CalendarLegend />
 
       {month.eventCount === 0 && (
         <div className="rounded-3xl border border-dashed border-teal-300 bg-white px-6 py-10 text-center">
           <p className="text-xl font-black text-slate-950">이 달에 등록된 행사가 아직 없어요.</p>
           <p className="mt-2 text-sm leading-6 text-slate-600">이전 달이나 다음 달을 살펴보거나 행사 목록에서 다른 조건을 찾아보세요.</p>
-          <TransitionLink href="/" className="mt-5 inline-flex min-h-11 items-center rounded-2xl bg-teal-800 px-5 py-3 font-bold text-white">
+          <TransitionLink
+            href={buildEventBrowseHref(params, { view: undefined, month: undefined })}
+            className="mt-5 inline-flex min-h-11 items-center rounded-2xl bg-teal-800 px-5 py-3 font-bold text-white"
+          >
             행사 목록으로 돌아가기
           </TransitionLink>
         </div>
@@ -86,7 +90,7 @@ export function EventCalendar({ month }: { month: CalendarMonth }) {
   );
 }
 
-function CalendarToolbar({ month }: { month: CalendarMonth }) {
+function CalendarToolbar({ month, params }: { month: CalendarMonth; params: EventSearchParams }) {
   return (
     <div className="flex flex-col gap-4 rounded-3xl bg-white p-4 shadow-sm ring-1 ring-teal-900/10 sm:flex-row sm:items-center sm:justify-between sm:p-5">
       <div>
@@ -96,7 +100,7 @@ function CalendarToolbar({ month }: { month: CalendarMonth }) {
       </div>
       <nav aria-label="달력 월 이동" className="grid grid-cols-3 gap-2 sm:flex sm:items-center">
         <TransitionLink
-          href={`/calendar?month=${month.previousMonthKey}`}
+          href={buildEventBrowseHref(params, { view: "calendar", month: month.previousMonthKey })}
           {...analyticsData("calendar_month_changed", { direction: "previous", target_month: month.previousMonthKey })}
           pendingLabel="이전 달 불러오는 중"
           scroll={false}
@@ -110,7 +114,7 @@ function CalendarToolbar({ month }: { month: CalendarMonth }) {
           </span>
         ) : (
           <TransitionLink
-            href={`/calendar?month=${month.todayMonthKey}`}
+            href={buildEventBrowseHref(params, { view: "calendar", month: month.todayMonthKey })}
             {...analyticsData("calendar_month_changed", { direction: "current", target_month: month.todayMonthKey })}
             pendingLabel="이번 달 불러오는 중"
             scroll={false}
@@ -120,7 +124,7 @@ function CalendarToolbar({ month }: { month: CalendarMonth }) {
           </TransitionLink>
         )}
         <TransitionLink
-          href={`/calendar?month=${month.nextMonthKey}`}
+          href={buildEventBrowseHref(params, { view: "calendar", month: month.nextMonthKey })}
           {...analyticsData("calendar_month_changed", { direction: "next", target_month: month.nextMonthKey })}
           pendingLabel="다음 달 불러오는 중"
           scroll={false}

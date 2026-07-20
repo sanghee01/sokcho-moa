@@ -1,10 +1,18 @@
 import Image from "next/image";
 import Link from "next/link";
 import { EventCard } from "@/components/event-card";
+import { EventCalendar } from "@/components/event-calendar";
 import { EventFilters } from "@/components/event-filters";
 import { EventSort } from "@/components/event-sort";
+import { TransitionLink } from "@/components/transition-link";
 import { getAllPublicEvents } from "@/lib/data/events";
+import { buildCalendarMonth, resolveCalendarMonth } from "@/lib/domain/calendar";
 import { filterEvents, parseEventFilters, sortEvents } from "@/lib/domain/event";
+import {
+  buildEventBrowseHref,
+  clearEventFiltersHref,
+  isCalendarEventView,
+} from "@/lib/domain/event-navigation";
 import desktopBannerImage from "@/public/sokchomoa-banner-desktop-bg.webp";
 import mobileBannerImage from "@/public/sokchomoa-banner-bg.webp";
 
@@ -29,8 +37,14 @@ function HeroBurst({ side }: { side: "left" | "right" }) {
 
 export default async function HomePage({ searchParams }: HomePageProps) {
   const [params, allEvents] = await Promise.all([searchParams, getAllPublicEvents()]);
+  const now = new Date();
   const filters = parseEventFilters(params);
-  const events = sortEvents(filterEvents(allEvents, filters), filters.sort);
+  const filteredEvents = filterEvents(allEvents, filters, now);
+  const events = sortEvents(filteredEvents, filters.sort, now);
+  const calendarView = isCalendarEventView(params);
+  const calendar = calendarView
+    ? buildCalendarMonth(filteredEvents, resolveCalendarMonth(params.month, now), now)
+    : null;
   const demoMode = allEvents.some((event) => event.isDemo);
 
   return (
@@ -80,14 +94,38 @@ export default async function HomePage({ searchParams }: HomePageProps) {
 
         <EventFilters params={params} filters={filters} />
 
-        <section aria-labelledby="event-list-title">
-          <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <h2 id="event-list-title" className="text-2xl font-black text-slate-950 sm:text-3xl">찾은 행사 {events.length}개</h2>
+        <section aria-labelledby="event-results-title" data-event-view={calendarView ? "calendar" : "list"}>
+          <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex min-w-0 flex-wrap items-center gap-3">
+              <h2 id="event-results-title" className="text-2xl font-black text-slate-950 sm:text-3xl">찾은 행사 {filteredEvents.length}개</h2>
+              <nav aria-label="행사 보기 방식" className="inline-flex shrink-0 items-center border-b border-slate-300">
+                <TransitionLink
+                  href={buildEventBrowseHref(params, { view: undefined, month: undefined })}
+                  pendingLabel="행사 목록 불러오는 중"
+                  showPendingIndicator={false}
+                  scroll={false}
+                  aria-current={!calendarView ? "page" : undefined}
+                  className={`-mb-px inline-flex min-h-11 items-center justify-center border-b-2 px-3 text-base font-black ${!calendarView ? "border-teal-700 text-teal-800" : "border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-800"}`}
+                >
+                  목록
+                </TransitionLink>
+                <TransitionLink
+                  href={buildEventBrowseHref(params, { view: "calendar" })}
+                  pendingLabel="행사 캘린더 불러오는 중"
+                  showPendingIndicator={false}
+                  scroll={false}
+                  aria-current={calendarView ? "page" : undefined}
+                  className={`-mb-px inline-flex min-h-11 items-center justify-center border-b-2 px-3 text-base font-black ${calendarView ? "border-teal-700 text-teal-800" : "border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-800"}`}
+                >
+                  캘린더
+                </TransitionLink>
+              </nav>
             </div>
-            <EventSort params={params} activeSort={filters.sort} />
+            {!calendarView && <EventSort params={params} activeSort={filters.sort} />}
           </div>
-          {events.length > 0 ? (
+          {calendar ? (
+            <EventCalendar key={calendar.monthKey} month={calendar} params={params} />
+          ) : events.length > 0 ? (
             <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
               {events.map((event) => <EventCard key={event.id} event={event} contentSource="event_list" />)}
             </div>
@@ -95,7 +133,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
             <div className="rounded-3xl border border-dashed border-teal-300 bg-white px-6 py-16 text-center">
               <p className="text-xl font-black text-slate-900">조건에 맞는 행사가 아직 없어요.</p>
               <p className="mt-2 text-slate-600">기간이나 대상 필터를 하나 줄여 다시 찾아보세요.</p>
-              <Link href="/" className="mt-6 inline-block rounded-2xl bg-teal-800 px-5 py-3 font-bold text-white">모든 행사 보기</Link>
+              <Link href={clearEventFiltersHref(params)} className="mt-6 inline-block rounded-2xl bg-teal-800 px-5 py-3 font-bold text-white">모든 행사 보기</Link>
             </div>
           )}
         </section>

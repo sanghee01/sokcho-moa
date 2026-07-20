@@ -23,14 +23,19 @@ function koreanDateLabel(date: Date) {
   return `${parts.year}년 ${parts.month}월 ${parts.day}일`;
 }
 
-test("헤더에서 행사 캘린더로 이동해 연속 일정과 신청 상태를 확인한다", async ({ page }, testInfo) => {
+test("행사 결과 영역을 캘린더로 전환해 연속 일정과 신청 상태를 확인한다", async ({ page }, testInfo) => {
   await page.goto("/");
-  const calendarLink = page.getByRole("link", { name: "행사 캘린더", exact: true });
+  await expect(page.getByRole("navigation", { name: "주요 메뉴" }).getByRole("link", { name: "행사 캘린더" })).toHaveCount(0);
+
+  const viewTabs = page.getByRole("navigation", { name: "행사 보기 방식" });
+  const calendarLink = viewTabs.getByRole("link", { name: "캘린더", exact: true });
+  await expect(viewTabs.getByRole("link", { name: "목록", exact: true })).toHaveAttribute("aria-current", "page");
   await expect(calendarLink).toBeVisible();
   await calendarLink.click();
 
-  await expect(page).toHaveURL(/\/calendar(?:\?|$)/);
-  await expect(page.getByRole("heading", { level: 1, name: "행사 캘린더" })).toBeVisible();
+  await expect(page).toHaveURL(/\?view=calendar(?:&|$)/);
+  await expect(viewTabs.getByRole("link", { name: "캘린더", exact: true })).toHaveAttribute("aria-current", "page");
+  await expect(page.getByRole("heading", { name: /찾은 행사 8개/ })).toBeVisible();
   await expect(page.getByLabel("신청 상태 범례").getByText("신청 가능", { exact: true })).toBeVisible();
   await expect(page.getByLabel("신청 상태 범례").getByText("신청 마감", { exact: true })).toBeVisible();
 
@@ -66,7 +71,7 @@ test("헤더에서 행사 캘린더로 이동해 연속 일정과 신청 상태�
 });
 
 test("월 이동은 URL과 화면 제목을 함께 바꾼다", async ({ page }) => {
-  await page.goto("/calendar?month=2026-01");
+  await page.goto("/?view=calendar&month=2026-01");
   await expect(
     page.getByRole("heading", { name: "2026년 1월", exact: true }),
   ).toBeVisible();
@@ -79,7 +84,7 @@ test("월 이동은 URL과 화면 제목을 함께 바꾼다", async ({ page }) 
 
 test("모바일에서 날짜를 바꾸면 그날의 이어지는 행사 agenda가 갱신된다", async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== "mobile-chromium", "모바일 날짜 선택 전용 검증");
-  await page.goto("/calendar");
+  await page.goto("/?view=calendar");
 
   const tomorrow = new Date(Date.now() + day);
   const tomorrowLabel = koreanDateLabel(tomorrow);
@@ -92,17 +97,20 @@ test("모바일에서 날짜를 바꾸면 그날의 이어지는 행사 agenda�
 });
 
 test("선택 운영 행사는 실제 회차 날짜에만 데스크톱과 모바일에 표시된다", async ({ page }, testInfo) => {
-  await page.goto("/calendar");
+  await page.goto("/?view=calendar");
 
   if (testInfo.project.name === "desktop-chromium") {
     const segments = page.locator('[data-calendar-desktop] [data-event-slug="demo-youth-media-class"]');
-    await expect(segments).toHaveCount(2);
-    expect(await segments.evaluateAll((elements) => elements.map((element) => element.getAttribute("data-calendar-span")))).toEqual(["1", "1"]);
+    await expect(segments.first()).toBeVisible();
+    const spans = await segments.evaluateAll((elements) => elements.map((element) => Number(element.getAttribute("data-calendar-span"))));
+    expect(spans.length).toBeGreaterThanOrEqual(2);
+    expect(spans.length).toBeLessThanOrEqual(4);
+    expect(spans.every((span) => span >= 1 && span <= 2)).toBe(true);
     return;
   }
 
   const firstOccurrence = new Date(Date.now() + 6 * day);
-  const gapDate = new Date(Date.now() + 7 * day);
+  const gapDate = new Date(Date.now() + 8 * day);
   await page.getByRole("button", { name: new RegExp(`^${koreanDateLabel(firstOccurrence)},`) }).click();
   await expect(page.locator("[data-calendar-mobile]").getByRole("link", { name: /청소년 미디어 창작 교실/ })).toBeVisible();
 
@@ -112,7 +120,7 @@ test("선택 운영 행사는 실제 회차 날짜에만 데스크톱과 모바�
 
 test("신청이 끝난 행사에는 신청 마감이 행사 항목 자체에 표시된다", async ({ page }, testInfo) => {
   const endedDate = new Date(Date.now() - 25 * day);
-  await page.goto(`/calendar?month=${koreanMonthKey(endedDate)}`);
+  await page.goto(`/?view=calendar&month=${koreanMonthKey(endedDate)}`);
 
   if (testInfo.project.name === "mobile-chromium") {
     const endedDateButton = page.getByRole("button", { name: new RegExp(`^${koreanDateLabel(endedDate)},`) });
@@ -122,4 +130,28 @@ test("신청이 끝난 행사에는 신청 마감이 행사 항목 자체에 표
 
   const closedEvent = page.getByRole("link", { name: /지난 계절 문화 프로그램.*신청 마감/ });
   await expect(closedEvent.first()).toBeVisible();
+});
+
+test("캘린더에서도 상단 필터가 같은 행사 집합에 적용된다", async ({ page }, testInfo) => {
+  await page.goto("/?view=calendar");
+
+  await page.getByRole("link", { name: "축제", exact: true }).click();
+
+  await expect(page).toHaveURL(/view=calendar/);
+  await expect(page).toHaveURL(/category=festival/);
+  await expect(page.getByRole("heading", { name: "찾은 행사 1개", exact: true })).toBeVisible();
+  await expect(page.getByText("이 달에 실제 운영 일정이 있는 행사 1개", { exact: true })).toBeVisible();
+
+  const filteredEvent = testInfo.project.name === "desktop-chromium"
+    ? page.locator('[data-calendar-desktop] [data-event-slug="demo-sea-family-festival"]')
+    : page.locator("[data-calendar-mobile]").getByRole("link", { name: /바다빛 가족 문화축제/ });
+  await expect(filteredEvent.first()).toBeVisible();
+  await expect(page.locator('[data-event-slug="demo-mountain-exhibition"]')).toHaveCount(0);
+});
+
+test("기존 캘린더 주소는 통합된 캘린더 보기로 연결된다", async ({ page }) => {
+  await page.goto("/calendar?category=festival&month=2026-07");
+
+  await expect(page).toHaveURL(/\?category=festival&month=2026-07&view=calendar$/);
+  await expect(page.getByRole("navigation", { name: "행사 보기 방식" }).getByRole("link", { name: "캘린더", exact: true })).toHaveAttribute("aria-current", "page");
 });

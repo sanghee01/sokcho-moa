@@ -87,7 +87,7 @@ pnpm dev
 | `NEXT_PUBLIC_SITE_URL` | canonical URL, 사이트맵, robots 기준 주소 | 공개 |
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase 프로젝트 URL | 공개 |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | RLS가 적용되는 publishable key | 공개 |
-| `SUPABASE_SERVICE_ROLE_KEY` | 향후 서버 전용 자동 수집 기능용 키 | 비공개 |
+| `SUPABASE_SERVICE_ROLE_KEY` | 서버 전용 사진 업로드·자동 수집 기능용 키 | 비공개 |
 | `REVALIDATE_SECRET` | 외부 작업의 캐시 갱신 요청 인증값 | 비공개 |
 
 `SUPABASE_SERVICE_ROLE_KEY`와 `REVALIDATE_SECRET`에는 `NEXT_PUBLIC_` 접두사를 붙이지 마세요. 두 값은 브라우저 코드나 공개 저장소에 포함하면 안 됩니다.
@@ -96,7 +96,7 @@ pnpm dev
 
 실제 운영 데이터를 사용하려면 Supabase 프로젝트에 스키마와 운영자 계정을 설정합니다:
 
-1. SQL Editor에서 `supabase/migrations/202607190001_initial_schema.sql`을 실행합니다.
+1. SQL Editor에서 `supabase/migrations`의 SQL 파일을 파일명 순서대로 실행합니다.
 2. Authentication의 **Users**에서 이메일과 비밀번호를 사용하는 운영자를 만듭니다.
 3. 운영자의 사용자 ID와 이메일을 `public.admin_users`에 등록합니다.
 4. `.env.local`에 프로젝트 URL과 publishable key를 입력합니다.
@@ -151,6 +151,7 @@ Vercel에서 이 저장소를 가져오고 Production 환경 변수를 등록합
 3. `/sitemap.xml`과 `/robots.txt` 응답을 확인합니다.
 4. 운영자로 로그인해 행사 등록과 상태 변경을 확인합니다.
 5. 공개 상태 변경이 방문자 화면에 반영되는지 확인합니다.
+6. 의견 보내기에서 사진을 첨부하고 관리자 화면에서 비공개 이미지가 보이는지 확인합니다.
 
 ## 앞으로의 방향
 

@@ -64,12 +64,12 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
                 className="h-auto w-36 object-contain sm:w-44 lg:h-14 lg:object-cover lg:object-center"
               />
             </Link>
-            <nav aria-label="주요 메뉴" className="grid w-full grid-cols-2 gap-2 text-xs font-semibold sm:flex sm:w-auto sm:items-center sm:gap-3 sm:text-sm">
-              <TransitionLink href="/calendar" pendingLabel="행사 캘린더 불러오는 중" showPendingIndicator={false} className="inline-flex min-h-11 items-center justify-center rounded-2xl bg-teal-800 px-2 py-2 text-center font-black text-white shadow-sm hover:bg-teal-900 active:scale-[0.98] sm:rounded-full sm:px-4">
-                행사 캘린더
-              </TransitionLink>
-              <TransitionLink href="/report" pendingLabel="제보 페이지 불러오는 중" showPendingIndicator={false} className="inline-flex min-h-11 items-center justify-center rounded-2xl border border-teal-800 px-2 py-2 text-center font-black text-teal-800 hover:bg-teal-50 active:scale-[0.98] sm:rounded-full sm:px-4">
+            <nav aria-label="주요 메뉴" className="flex w-full flex-wrap justify-end gap-2 text-xs font-semibold sm:w-auto sm:items-center sm:gap-3 sm:text-sm">
+              <TransitionLink href="/report" pendingLabel="제보 페이지 불러오는 중" showPendingIndicator={false} className="inline-flex min-h-11 items-center justify-center rounded-2xl border border-teal-800/55 px-2 py-2 text-center font-black text-teal-800/80 hover:bg-teal-50/70 active:scale-[0.98] sm:rounded-full sm:px-4">
                 행사 제보하기
+              </TransitionLink>
+              <TransitionLink href="/feedback" pendingLabel="의견 페이지 불러오는 중" showPendingIndicator={false} className="inline-flex min-h-11 items-center justify-center rounded-2xl border border-teal-800/55 px-2 py-2 text-center font-black text-teal-800/80 hover:bg-teal-50/70 active:scale-[0.98] sm:rounded-full sm:px-4">
+                의견 보내기
               </TransitionLink>
               {admin && (
                 <TransitionLink href="/admin" showPendingIndicator={false} className="inline-flex min-h-11 items-center justify-center rounded-2xl border border-teal-900/15 px-2 py-2 text-center hover:bg-teal-50 active:scale-[0.98] sm:rounded-full sm:px-3">
@@ -85,7 +85,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
           <div className="mx-auto flex max-w-6xl flex-col gap-5 px-4 py-10 text-sm leading-6 text-slate-600 sm:flex-row sm:items-end sm:justify-between sm:px-6">
             <div>
               <p className="font-bold text-teal-900">속초모아</p>
-              <p>행사 정보는 변경될 수 있습니다. 방문·신청 전 반드시 각 카드의 원문 출처를 확인하세요.</p>
+              <p>속초 시민이 행사 탐색의 불편을 줄이고자 만든 사이트입니다. 정보가 실제 공고와 다를 수 있으니 방문·신청 전 반드시 원문을 확인해 주세요.</p>
             </div>
             <div className="shrink-0 sm:text-right">
               <p>

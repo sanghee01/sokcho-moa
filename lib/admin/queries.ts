@@ -59,3 +59,24 @@ export async function getAdminEventReports() {
   if (error) throw new Error(`제보 목록을 불러오지 못했습니다: ${error.message}`);
   return data ?? [];
 }
+
+export async function getAdminSiteFeedback() {
+  const client = await createAuthenticatedSupabaseClient();
+  if (!client) return [];
+  const { data, error } = await client
+    .from("site_feedback")
+    .select("id, title, body, link_url, image_path, review_status, created_at")
+    .order("created_at", { ascending: false });
+  if (error) throw new Error(`의견 목록을 불러오지 못했습니다: ${error.message}`);
+  return Promise.all((data ?? []).map(async (feedback) => {
+    if (!feedback.image_path) return { ...feedback, image_url: null };
+    const { data: image, error: imageError } = await client.storage
+      .from("feedback-images")
+      .createSignedUrl(feedback.image_path, 60 * 60);
+    if (imageError) {
+      console.error("Site feedback image URL creation failed", imageError.message);
+      return { ...feedback, image_url: null };
+    }
+    return { ...feedback, image_url: image.signedUrl };
+  }));
+}
