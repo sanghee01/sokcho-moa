@@ -38,11 +38,12 @@ export function ShareEventButton({ slug }: { slug: string }) {
 
   useEffect(() => {
     if (status === "idle") return;
-    const timeoutId = window.setTimeout(() => setStatus("idle"), 2_500);
+    const timeoutId = window.setTimeout(() => setStatus("idle"), 4_000);
     return () => window.clearTimeout(timeoutId);
   }, [status]);
 
   async function handleShare() {
+    setStatus("idle");
     const url = eventShareUrl(slug);
     const isTouchDevice = window.matchMedia("(pointer: coarse)").matches;
     const canShareNatively = isTouchDevice
@@ -69,21 +70,22 @@ export function ShareEventButton({ slug }: { slug: string }) {
     }
   }
 
-  const label = status === "copied"
-    ? "링크 복사됨"
+  const feedback = status === "copied"
+    ? {
+        message: "링크가 복사되었습니다!",
+        tone: "bg-teal-900 text-white",
+      }
     : status === "shared"
-      ? "공유 완료"
+      ? {
+          message: "공유가 완료되었습니다!",
+          tone: "bg-teal-900 text-white",
+        }
       : status === "error"
-        ? "복사 실패"
-        : "공유하기";
-
-  const announcement = status === "copied"
-    ? "행사 링크가 복사되었습니다."
-    : status === "shared"
-      ? "행사 링크를 공유했습니다."
-      : status === "error"
-        ? "링크를 복사하지 못했습니다. 다시 시도해 주세요."
-        : "";
+        ? {
+            message: "링크를 복사하지 못했습니다. 다시 눌러 주세요.",
+            tone: "bg-rose-800 text-white",
+          }
+        : null;
 
   return (
     <>
@@ -92,9 +94,18 @@ export function ShareEventButton({ slug }: { slug: string }) {
         onClick={handleShare}
         className="min-h-12 min-w-[7rem] rounded-2xl border border-teal-800 bg-white px-5 py-3 font-bold text-teal-800 transition hover:bg-teal-50 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-teal-300"
       >
-        {label}
+        공유하기
       </button>
-      <span aria-live="polite" className="sr-only">{announcement}</span>
+      {feedback && (
+        <div
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+          className={`fixed inset-x-4 bottom-6 z-50 mx-auto max-w-sm rounded-2xl px-5 py-4 text-center text-base font-black shadow-2xl sm:text-lg ${feedback.tone}`}
+        >
+          {feedback.message}
+        </div>
+      )}
     </>
   );
 }

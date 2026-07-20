@@ -19,6 +19,18 @@ async function visibleBox(locator: Locator): Promise<ElementBox> {
   return box!;
 }
 
+async function documentBox(locator: Locator): Promise<ElementBox> {
+  return locator.evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    return {
+      x: rect.x + window.scrollX,
+      y: rect.y + window.scrollY,
+      width: rect.width,
+      height: rect.height,
+    };
+  });
+}
+
 function expectSameDimensions(actual: ElementBox, expected: ElementBox) {
   expect(Math.abs(actual.width - expected.width)).toBeLessThanOrEqual(1);
   expect(Math.abs(actual.height - expected.height)).toBeLessThanOrEqual(1);
@@ -99,7 +111,7 @@ test("행사 상세는 지도 SDK나 인라인 미리보기 없이 장소·주�
   expect(mapSdkRequests).toEqual([]);
 });
 
-test("공유하기는 데스크톱에서 행사 링크만 복사하고 모바일에서는 네이티브 공유 창을 연다", async ({ page }, testInfo) => {
+test("공유하기는 레이아웃을 유지하며 데스크톱 복사와 모바일 네이티브 공유 결과를 알린다", async ({ page }, testInfo) => {
   const isMobile = testInfo.project.name === "mobile-chromium";
 
   await page.addInitScript((mobile) => {
@@ -130,12 +142,21 @@ test("공유하기는 데스크톱에서 행사 링크만 복사하고 모바일
   }, isMobile);
 
   await page.goto("/events/demo-sea-family-festival?from=search#facts-title");
-  await page.getByRole("button", { name: "공유하기" }).click();
+  const shareButton = page.getByRole("button", { name: "공유하기" });
+  await expect(shareButton).toBeVisible();
+  const buttonBoxBefore = await documentBox(shareButton);
+  await shareButton.click();
+  const buttonBoxAfter = await documentBox(shareButton);
+  for (const key of ["x", "y", "width", "height"] as const) {
+    expect(Math.abs(buttonBoxAfter[key] - buttonBoxBefore[key]), `share button ${key}`).toBeLessThanOrEqual(1);
+  }
 
   const expectedUrl = "http://127.0.0.1:3100/events/demo-sea-family-festival";
   if (isMobile) {
     await expect.poll(() => page.evaluate(() => (window as Window & { __sharedEventUrl?: string }).__sharedEventUrl)).toBe(expectedUrl);
-    await expect(page.getByRole("button", { name: "공유 완료" })).toBeVisible();
+    await expect(shareButton).toBeVisible();
+    const feedback = page.getByRole("status");
+    await expect(feedback).toHaveText("공유가 완료되었습니다!");
     await expect.poll(async () => (await capturedAnalyticsEvents(page)).some((event) => (
       event.name === "share" && event.params.method === "native_share" && event.params.item_id === "demo-sea-family-festival"
     ))).toBe(true);
@@ -143,7 +164,11 @@ test("공유하기는 데스크톱에서 행사 링크만 복사하고 모바일
   }
 
   await expect.poll(() => page.evaluate(() => (window as Window & { __copiedEventUrl?: string }).__copiedEventUrl)).toBe(expectedUrl);
-  await expect(page.getByRole("button", { name: "링크 복사됨" })).toBeVisible();
+  await expect(shareButton).toBeVisible();
+  const feedback = page.getByRole("status");
+  await expect(feedback).toHaveText("링크가 복사되었습니다!");
+  await page.waitForTimeout(4_100);
+  await expect(feedback).toBeHidden();
   await expect.poll(async () => (await capturedAnalyticsEvents(page)).some((event) => (
     event.name === "share" && event.params.method === "link_copy" && event.params.item_id === "demo-sea-family-festival"
   ))).toBe(true);
