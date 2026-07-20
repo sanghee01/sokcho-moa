@@ -1,4 +1,12 @@
-import type { Event, EventAudience, EventCategory, Place, ReviewStatus } from "@/lib/domain/event";
+import type {
+  Event,
+  EventAudience,
+  EventCategory,
+  EventOccurrence,
+  EventScheduleMode,
+  Place,
+  ReviewStatus,
+} from "@/lib/domain/event";
 
 export function mapEventRow(row: Record<string, unknown>): Event {
   return {
@@ -12,6 +20,8 @@ export function mapEventRow(row: Record<string, unknown>): Event {
     eventStartAt: String(row.event_start_at),
     eventEndAt: nullableString(row.event_end_at),
     operatingHours: nullableString(row.operating_hours),
+    scheduleMode: scheduleMode(row.schedule_mode),
+    occurrences: occurrenceRows(row.event_occurrences),
     applicationStartAt: nullableString(row.application_start_at),
     applicationEndAt: nullableString(row.application_end_at),
     locationName: nullableString(row.location_name),
@@ -60,4 +70,21 @@ function nullableString(value: unknown) {
 
 function nullableNumber(value: unknown) {
   return value == null ? null : Number(value);
+}
+
+function scheduleMode(value: unknown): EventScheduleMode {
+  return value === "occurrences" ? "occurrences" : "continuous";
+}
+
+function occurrenceRows(value: unknown): EventOccurrence[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .filter((row): row is Record<string, unknown> => row != null && typeof row === "object")
+    .map((row) => ({
+      id: String(row.id),
+      startsAt: String(row.starts_at),
+      endsAt: nullableString(row.ends_at),
+    }))
+    .filter((occurrence) => !Number.isNaN(new Date(occurrence.startsAt).getTime()))
+    .sort((a, b) => a.startsAt.localeCompare(b.startsAt) || (a.endsAt ?? "").localeCompare(b.endsAt ?? ""));
 }

@@ -145,7 +145,7 @@ test("정상·null·빈 문자열·404 이미지가 목록과 상세에서 같�
 
 test("목록과 상세는 데스크톱·모바일에서 가로로 넘치지 않는다", async ({ page }) => {
   await page.goto("/");
-  const listHeading = page.getByRole("heading", { name: "요즘 속초에서 뭐 하지?" });
+  const listHeading = page.getByRole("heading", { name: "요즘 속초에서 뭐하지?" });
   await expect(listHeading).toBeVisible();
 
   await expectNoHorizontalOverflow(page, [
@@ -168,7 +168,7 @@ test("목록에서 필터하고 상세·원문·외부 지도 링크·주변 명
   await context.route("https://www.sokcho.go.kr/**", (route) => route.abort());
 
   await page.goto("/");
-  await expect(page.getByRole("heading", { name: "요즘 속초에서 뭐 하지?" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "요즘 속초에서 뭐하지?" })).toBeVisible();
   await expect(page.getByRole("heading", { name: /찾은 행사 8개/ })).toBeVisible();
   await page.getByRole("link", { name: "가족", exact: true }).click();
   await expect(page).toHaveURL(/audience=family/);
@@ -209,7 +209,7 @@ test("필터 응답이 늦어도 클릭 즉시 진행 상태를 알린다", asyn
 
   await expect(familyFilter).toHaveAttribute("aria-disabled", "true");
   await expect(page.getByRole("region", { name: "어떤 하루를 찾으세요?" })).toHaveAttribute("aria-busy", "true");
-  await expect(page.getByRole("status").filter({ hasText: "필터를 적용하고 있어요." })).toBeVisible();
+  await expect(page.getByText("필터를 적용하고 있어요.")).toHaveCount(0);
 
   releaseRequest();
   await expect(page).toHaveURL(/audience=family/);

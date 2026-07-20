@@ -92,6 +92,59 @@ describe("buildCalendarMonth", () => {
     expect(calendar.days.find((day) => day.dateKey === "2026-08-02")?.eventIds).toContain(event.id);
   });
 
+  it("선택 운영 행사는 구조화된 실제 회차 날짜에만 표시한다", () => {
+    const movieNight = makeEvent({
+      id: "00000000-0000-4000-8000-000000000030",
+      slug: "movie-night",
+      title: "풀이음친구랑 무비 나잇",
+      eventStartAt: "2026-07-22T19:00:00+09:00",
+      eventEndAt: "2026-07-29T21:00:00+09:00",
+      scheduleMode: "occurrences",
+      occurrences: [
+        { id: "occurrence-1", startsAt: "2026-07-22T19:00:00+09:00", endsAt: "2026-07-22T21:00:00+09:00" },
+        { id: "occurrence-2", startsAt: "2026-07-29T19:00:00+09:00", endsAt: "2026-07-29T21:00:00+09:00" },
+      ],
+    });
+    const calendar = buildCalendarMonth([movieNight], "2026-07", now);
+    const shownDates = calendar.days
+      .filter((day) => day.eventIds.includes(movieNight.id))
+      .map((day) => day.dateKey);
+    const segments = calendar.weeks.flatMap((week) => week.segments);
+
+    expect(shownDates).toEqual(["2026-07-22", "2026-07-29"]);
+    expect(segments).toHaveLength(2);
+    expect(segments.every((segment) => segment.columnSpan === 1)).toBe(true);
+    expect(calendar.days.find((day) => day.dateKey === "2026-07-25")?.eventIds).not.toContain(movieNight.id);
+  });
+
+  it("같은 날 여러 회차는 행사 하나로 세고 캘린더 막대도 중복하지 않는다", () => {
+    const event = makeEvent({
+      scheduleMode: "occurrences",
+      occurrences: [
+        { id: "morning", startsAt: "2026-07-24T10:00:00+09:00", endsAt: "2026-07-24T12:00:00+09:00" },
+        { id: "evening", startsAt: "2026-07-24T18:00:00+09:00", endsAt: "2026-07-24T20:00:00+09:00" },
+      ],
+    });
+    const calendar = buildCalendarMonth([event], "2026-07", now);
+
+    expect(calendar.eventCount).toBe(1);
+    expect(calendar.days.find((day) => day.dateKey === "2026-07-24")?.eventIds).toEqual([event.id]);
+    expect(calendar.weeks.flatMap((week) => week.segments)).toHaveLength(1);
+  });
+
+  it("회차 모드인데 유효한 회차가 없으면 전체 행사기간으로 추측하지 않는다", () => {
+    const event = makeEvent({
+      eventStartAt: "2026-07-01T09:00:00+09:00",
+      eventEndAt: "2026-07-31T18:00:00+09:00",
+      scheduleMode: "occurrences",
+      occurrences: [],
+    });
+    const calendar = buildCalendarMonth([event], "2026-07", now);
+
+    expect(calendar.eventCount).toBe(0);
+    expect(calendar.weeks.flatMap((week) => week.segments)).toHaveLength(0);
+  });
+
   it("기존 신청 상태 파생 규칙을 캘린더 표시 모델의 source of truth로 사용한다", () => {
     const open = makeEvent({
       id: "00000000-0000-4000-8000-000000000010",

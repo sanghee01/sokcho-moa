@@ -91,6 +91,25 @@ test("모바일에서 날짜를 바꾸면 그날의 이어지는 행사 agenda�
   await expect(page.locator("[data-calendar-mobile]").getByRole("link", { name: /산과 사람 기획전/ })).toBeVisible();
 });
 
+test("선택 운영 행사는 실제 회차 날짜에만 데스크톱과 모바일에 표시된다", async ({ page }, testInfo) => {
+  await page.goto("/calendar");
+
+  if (testInfo.project.name === "desktop-chromium") {
+    const segments = page.locator('[data-calendar-desktop] [data-event-slug="demo-youth-media-class"]');
+    await expect(segments).toHaveCount(2);
+    expect(await segments.evaluateAll((elements) => elements.map((element) => element.getAttribute("data-calendar-span")))).toEqual(["1", "1"]);
+    return;
+  }
+
+  const firstOccurrence = new Date(Date.now() + 6 * day);
+  const gapDate = new Date(Date.now() + 7 * day);
+  await page.getByRole("button", { name: new RegExp(`^${koreanDateLabel(firstOccurrence)},`) }).click();
+  await expect(page.locator("[data-calendar-mobile]").getByRole("link", { name: /청소년 미디어 창작 교실/ })).toBeVisible();
+
+  await page.getByRole("button", { name: new RegExp(`^${koreanDateLabel(gapDate)},`) }).click();
+  await expect(page.locator("[data-calendar-mobile]").getByRole("link", { name: /청소년 미디어 창작 교실/ })).toHaveCount(0);
+});
+
 test("신청이 끝난 행사에는 신청 마감이 행사 항목 자체에 표시된다", async ({ page }, testInfo) => {
   const endedDate = new Date(Date.now() - 25 * day);
   await page.goto(`/calendar?month=${koreanMonthKey(endedDate)}`);

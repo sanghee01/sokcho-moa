@@ -34,4 +34,12 @@ describe("filterEvents", () => {
     expect(slugs).toContain("demo-mountain-exhibition");
     expect(slugs).not.toContain("demo-ended-winter-program");
   });
+
+  it("선택 운영 행사는 행사기간 중간의 비운영일 날짜 필터에서 제외한다", () => {
+    const events = getDemoEvents();
+    const gapDay = new Date(Date.now() + 7 * 24 * 60 * 60 * 1_000);
+    const slugs = filterEvents(events, { when: "today" }, gapDay).map((event) => event.slug);
+
+    expect(slugs).not.toContain("demo-youth-media-class");
+  });
 });

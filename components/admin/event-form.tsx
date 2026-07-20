@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import { AdminActionForm } from "@/components/admin/admin-action-form";
 import { FormSubmitButton } from "@/components/admin/form-submit-button";
 import { deleteEventAction, saveEventAction, uploadEventImageAction } from "@/lib/actions/admin";
@@ -15,10 +18,40 @@ const dateValue = (row: Row, key: string) => {
   return raw ? isoToSeoulDatetimeLocal(raw) : "";
 };
 
+type OccurrenceDraft = { key: string; startsAt: string; endsAt: string };
+
+function initialOccurrences(row: Row): OccurrenceDraft[] {
+  const values = Array.isArray(row?.event_occurrences)
+    ? row.event_occurrences.filter((value): value is Record<string, unknown> => value != null && typeof value === "object")
+    : [];
+  return values
+    .map((occurrence, index) => ({
+      key: String(occurrence.id ?? index),
+      startsAt: occurrence.starts_at ? isoToSeoulDatetimeLocal(String(occurrence.starts_at)) : "",
+      endsAt: occurrence.ends_at ? isoToSeoulDatetimeLocal(String(occurrence.ends_at)) : "",
+    }))
+    .sort((a, b) => a.startsAt.localeCompare(b.startsAt));
+}
+
 export function EventForm({ row }: { row: Row }) {
   const audiences = Array.isArray(row?.audiences) ? row.audiences.map(String) : [];
   const id = text(row, "id");
   const slug = text(row, "slug");
+  const [scheduleMode, setScheduleMode] = useState<"continuous" | "occurrences">(
+    text(row, "schedule_mode") === "occurrences" ? "occurrences" : "continuous",
+  );
+  const [occurrences, setOccurrences] = useState<OccurrenceDraft[]>(() => initialOccurrences(row));
+  const selectScheduleMode = (value: "continuous" | "occurrences") => {
+    setScheduleMode(value);
+    if (value === "occurrences" && occurrences.length === 0) {
+      setOccurrences([{ key: "new-0", startsAt: "", endsAt: "" }]);
+    }
+  };
+  const addOccurrence = () => setOccurrences((current) => [
+    ...current,
+    { key: `new-${Date.now()}`, startsAt: "", endsAt: "" },
+  ]);
+  const removeOccurrence = (key: string) => setOccurrences((current) => current.filter((item) => item.key !== key));
   return (
     <div className="space-y-6">
       <AdminActionForm action={saveEventAction} className="space-y-7 rounded-3xl bg-white p-5 ring-1 ring-slate-200 sm:p-8">
@@ -40,6 +73,49 @@ export function EventForm({ row }: { row: Row }) {
           <label className={`${label} sm:col-span-2`}>행사 소개<textarea name="description" defaultValue={text(row, "description")} rows={6} className={input} /></label>
           <label className={label}>행사 시작<input type="datetime-local" name="eventStartAt" defaultValue={dateValue(row, "event_start_at")} className={input} /></label>
           <label className={label}>행사 종료<input type="datetime-local" name="eventEndAt" defaultValue={dateValue(row, "event_end_at")} className={input} /></label>
+          <label className={`${label} sm:col-span-2`}>
+            캘린더 운영 방식
+            <select
+              name="scheduleMode"
+              value={scheduleMode}
+              onChange={(event) => selectScheduleMode(event.target.value as "continuous" | "occurrences")}
+              className={input}
+            >
+              <option value="continuous">행사기간 동안 계속 운영</option>
+              <option value="occurrences">지정한 운영 회차에만 운영</option>
+            </select>
+            <span className="mt-1 block text-xs font-normal leading-5 text-slate-500">
+              매일 이어지는 행사는 행사기간을, 특정 날짜·요일에만 열리면 실제 운영 회차를 선택하세요.
+            </span>
+          </label>
+          {scheduleMode === "occurrences" && (
+            <fieldset className="space-y-3 rounded-2xl border border-teal-200 bg-teal-50/50 p-4 sm:col-span-2">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <legend className={label}>실제 운영 회차</legend>
+                  <p className="mt-1 text-xs font-normal leading-5 text-slate-600">캘린더에는 아래 날짜만 표시됩니다. 같은 날 여러 회차도 각각 입력할 수 있어요.</p>
+                </div>
+                <button type="button" onClick={addOccurrence} className="min-h-11 rounded-xl border border-teal-300 bg-white px-4 py-2 text-sm font-bold text-teal-800 hover:bg-teal-50">
+                  회차 추가
+                </button>
+              </div>
+              {occurrences.length === 0 ? (
+                <p className="rounded-xl bg-white px-4 py-3 text-sm text-slate-600">회차 추가를 눌러 실제 운영 일시를 입력해 주세요.</p>
+              ) : (
+                <div className="space-y-3">
+                  {occurrences.map((occurrence, index) => (
+                    <div key={occurrence.key} className="grid gap-3 rounded-xl bg-white p-3 ring-1 ring-slate-200 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
+                      <label className={label}>회차 {index + 1} 시작<input required type="datetime-local" name="occurrenceStartsAt" defaultValue={occurrence.startsAt} className={input} /></label>
+                      <label className={label}>회차 {index + 1} 종료<input type="datetime-local" name="occurrenceEndsAt" defaultValue={occurrence.endsAt} className={input} /></label>
+                      <button type="button" onClick={() => removeOccurrence(occurrence.key)} aria-label={`회차 ${index + 1} 삭제`} className="min-h-11 rounded-xl border border-rose-200 px-3 py-2 text-sm font-bold text-rose-700 hover:bg-rose-50">
+                        삭제
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </fieldset>
+          )}
           <label className={label}>신청 시작<input type="datetime-local" name="applicationStartAt" defaultValue={dateValue(row, "application_start_at")} className={input} /></label>
           <label className={label}>신청 종료<input type="datetime-local" name="applicationEndAt" defaultValue={dateValue(row, "application_end_at")} className={input} /></label>
           <label className={label}>운영일정<input name="operatingHours" defaultValue={text(row, "operating_hours")} placeholder="예: 매주 수요일 16:00~19:00 · 총 10회" className={input} /><span className="mt-1 block text-xs font-normal leading-5 text-slate-500">행사기간을 반복하지 말고 실제 운영일·요일·회차·시간만 적어 주세요.</span></label>

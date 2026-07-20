@@ -32,6 +32,14 @@ function nullableNumberValue(formData: FormData, key: string) {
   return raw ? raw : null;
 }
 
+function occurrenceValues(formData: FormData) {
+  const starts = formData.getAll("occurrenceStartsAt").map((item) => typeof item === "string" ? item : "");
+  const ends = formData.getAll("occurrenceEndsAt").map((item) => typeof item === "string" ? item : "");
+  return starts
+    .map((startsAt, index) => ({ startsAt, endsAt: ends[index] ?? "" }))
+    .filter((occurrence) => occurrence.startsAt.trim() || occurrence.endsAt.trim());
+}
+
 function fail(error: z.ZodError): never {
   throw new Error(`입력값을 확인하세요. ${z.prettifyError(error)}`);
 }
@@ -47,9 +55,14 @@ function actionFailed(message: string): AdminActionState {
   return { error: message };
 }
 
+function isMissingScheduleSchema(message: string) {
+  return message.includes("schedule_mode") || message.includes("replace_event_occurrences");
+}
+
 function revalidatePublicEventPaths(slug?: string | null) {
   updateTag(PUBLIC_EVENTS_CACHE_TAG);
   revalidatePath("/");
+  revalidatePath("/calendar");
   revalidatePath("/sitemap.xml");
   if (slug) revalidatePath(`/events/${slug}`);
 }
@@ -103,6 +116,8 @@ export async function saveEventAction(
     eventStartAt: value(formData, "eventStartAt"),
     eventEndAt: value(formData, "eventEndAt"),
     operatingHours: value(formData, "operatingHours"),
+    scheduleMode: value(formData, "scheduleMode") || "continuous",
+    occurrences: occurrenceValues(formData),
     applicationStartAt: value(formData, "applicationStartAt"),
     applicationEndAt: value(formData, "applicationEndAt"),
     locationName: value(formData, "locationName"),
@@ -135,6 +150,7 @@ export async function saveEventAction(
     event_start_at: event.eventStartAt,
     event_end_at: event.eventEndAt,
     operating_hours: event.operatingHours,
+    schedule_mode: event.scheduleMode,
     application_start_at: event.applicationStartAt,
     application_end_at: event.applicationEndAt,
     location_name: event.locationName,
@@ -157,10 +173,35 @@ export async function saveEventAction(
   };
   const client = await createAuthenticatedSupabaseClient();
   if (!client) return actionFailed("운영자 데이터 연결을 확인해 주세요.");
-  const result = event.id
+  let legacyScheduleSchema = false;
+  let result = event.id
     ? await client.from("events").update(payload).eq("id", event.id).select("id").single()
     : await client.from("events").insert({ ...payload, review_status: "pending" }).select("id").single();
+  if (result.error && isMissingScheduleSchema(result.error.message)) {
+    if (event.scheduleMode === "occurrences") {
+      return actionFailed("실제 운영 회차 기능을 사용하려면 먼저 데이터베이스 업데이트가 필요합니다.");
+    }
+    const legacyPayload: Partial<typeof payload> = { ...payload };
+    delete legacyPayload.schedule_mode;
+    result = event.id
+      ? await client.from("events").update(legacyPayload).eq("id", event.id).select("id").single()
+      : await client.from("events").insert({ ...legacyPayload, review_status: "pending" }).select("id").single();
+    legacyScheduleSchema = true;
+  }
   if (result.error) return actionFailed("행사를 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.");
+  if (!legacyScheduleSchema) {
+    const occurrenceResult = await client.rpc("replace_event_occurrences", {
+      p_event_id: result.data.id,
+      p_occurrences: event.scheduleMode === "occurrences"
+        ? event.occurrences.map((occurrence) => ({ starts_at: occurrence.startsAt, ends_at: occurrence.endsAt }))
+        : [],
+    });
+    if (occurrenceResult.error) {
+      return actionFailed(isMissingScheduleSchema(occurrenceResult.error.message)
+        ? "실제 운영 회차 기능을 사용하려면 먼저 데이터베이스 업데이트가 필요합니다."
+        : "행사 기본 정보는 저장했지만 운영 회차를 저장하지 못했습니다. 다시 시도해 주세요.");
+    }
+  }
   const sourcePayload = {
     event_id: result.data.id,
     provider: event.sourceName,

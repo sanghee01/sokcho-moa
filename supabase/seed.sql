@@ -33,6 +33,18 @@ values
   ('10000000-0000-4000-8000-000000000008', 'demo-ended-winter-program', '[샘플] 지난 계절 문화 프로그램', '종료·신청 마감 상세 유지 상태를 검증하는 샘플입니다.', '실제 행사가 아닌 UI 검증용 샘플입니다.', 'other', array['all'], now() - interval '25 days', now() - interval '20 days', null, now() - interval '40 days', now() - interval '30 days', '속초시 일원(샘플)', null, 38.207000, 128.591000, '무료(샘플)', true, '속초모아 데모', null, null, null, null, '속초모아 샘플 데이터', 'https://www.sokcho.go.kr/', 'published', false, true, now(), now())
 on conflict (slug) do nothing;
 
+update public.events
+set schedule_mode = 'occurrences'
+where slug = 'demo-youth-media-class';
+
+insert into public.event_occurrences (event_id, starts_at, ends_at)
+select id, now() + interval '6 days', now() + interval '6 days 3 hours'
+from public.events where slug = 'demo-youth-media-class'
+union all
+select id, now() + interval '13 days', now() + interval '13 days 3 hours'
+from public.events where slug = 'demo-youth-media-class'
+on conflict (event_id, starts_at) do update set ends_at = excluded.ends_at;
+
 insert into public.event_sources (event_id, provider, original_url, last_checked_at)
 select id, 'sokcho-moa-demo', source_url, now()
 from public.events

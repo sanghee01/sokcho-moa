@@ -91,7 +91,7 @@ function CalendarToolbar({ month }: { month: CalendarMonth }) {
       <div>
         <p className="text-sm font-bold text-teal-700">월간 일정</p>
         <h2 id="calendar-month-title" className="mt-1 text-2xl font-black text-slate-950 sm:text-3xl">{month.label}</h2>
-        <p className="mt-1 text-sm text-slate-600">이 달에 이어지는 행사 {month.eventCount}개</p>
+        <p className="mt-1 text-sm text-slate-600">이 달에 실제 운영 일정이 있는 행사 {month.eventCount}개</p>
       </div>
       <nav aria-label="달력 월 이동" className="grid grid-cols-3 gap-2 sm:flex sm:items-center">
         <TransitionLink
@@ -177,9 +177,9 @@ function DesktopCalendarWeek({ week, eventsById }: { week: CalendarWeek; eventsB
               : "rounded-none";
         return (
           <Link
-            key={`${week.startDateKey}-${event.id}`}
+            key={segment.key}
             href={`/events/${event.slug}`}
-            aria-label={`${event.title}, ${formatDateRange(event.startDateKey, event.endDateKey)}, ${applicationStateLabels[event.applicationState]}`}
+            aria-label={`${event.title}, ${formatDateRange(segment.startDateKey, segment.endDateKey)}, ${applicationStateLabels[event.applicationState]}`}
             data-event-slug={event.slug}
             data-calendar-span={segment.columnSpan}
             className={`relative z-10 mx-0.5 flex h-8 min-w-0 items-center gap-1 self-center overflow-hidden px-2.5 text-xs font-black shadow-sm focus-visible:z-20 ${rounded} ${segmentTone[event.applicationState]}`}
@@ -189,7 +189,7 @@ function DesktopCalendarWeek({ week, eventsById }: { week: CalendarWeek; eventsB
             <span className="ml-auto shrink-0 rounded bg-white/80 px-1.5 py-0.5 text-[10px] leading-none text-slate-900">
               {applicationStateLabels[event.applicationState]}
             </span>
-            <span className="sr-only">, {formatDateRange(event.startDateKey, event.endDateKey)}</span>
+            <span className="sr-only">, {formatDateRange(segment.startDateKey, segment.endDateKey)}</span>
           </Link>
         );
       })}
@@ -273,7 +273,7 @@ function MobileAgenda({ day, eventsById }: { day: CalendarDay; eventsById: Map<s
                     {applicationStateLabels[event.applicationState]}
                   </span>
                 </div>
-                <span className="mt-2 block text-sm leading-6 text-slate-600">{formatDateRange(event.startDateKey, event.endDateKey)}</span>
+                <span className="mt-2 block text-sm leading-6 text-slate-600">{formatAgendaDateRange(event, day.dateKey)}</span>
               </Link>
             </li>
           ))}
@@ -307,4 +307,12 @@ function formatKoreanDate(dateKey: string) {
 function formatDateRange(startDateKey: string, endDateKey: string) {
   if (startDateKey === endDateKey) return formatKoreanDate(startDateKey);
   return `${formatKoreanDate(startDateKey)} ~ ${formatKoreanDate(endDateKey)}`;
+}
+
+function formatAgendaDateRange(event: CalendarEvent, selectedDateKey: string) {
+  if (event.scheduleMode === "continuous") return formatDateRange(event.startDateKey, event.endDateKey);
+  const range = event.dateRanges.find((candidate) => (
+    candidate.startDateKey <= selectedDateKey && candidate.endDateKey >= selectedDateKey
+  ));
+  return range ? formatDateRange(range.startDateKey, range.endDateKey) : formatKoreanDate(selectedDateKey);
 }

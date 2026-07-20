@@ -20,7 +20,15 @@ export async function getAdminEvents(status?: string) {
 export async function getAdminEvent(id: string) {
   const client = await createAuthenticatedSupabaseClient();
   if (!client) return null;
-  const { data, error } = await client.from("events").select("*").eq("id", id).maybeSingle();
+  const result = await client
+    .from("events")
+    .select("*, event_occurrences(id, starts_at, ends_at)")
+    .eq("id", id)
+    .maybeSingle();
+  const fallback = result.error && result.error.message.includes("event_occurrences")
+    ? await client.from("events").select("*").eq("id", id).maybeSingle()
+    : null;
+  const { data, error } = fallback ?? result;
   if (error) throw new Error(`행사를 불러오지 못했습니다: ${error.message}`);
   return data;
 }

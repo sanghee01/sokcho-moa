@@ -15,6 +15,13 @@ export const eventAudiences = ["child", "youth", "family", "adult", "all"] as co
 export type EventCategory = (typeof eventCategories)[number];
 export type EventAudience = (typeof eventAudiences)[number];
 export type ReviewStatus = "pending" | "published" | "rejected";
+export type EventScheduleMode = "continuous" | "occurrences";
+
+export type EventOccurrence = {
+  id: string;
+  startsAt: string;
+  endsAt: string | null;
+};
 
 export type Event = {
   id: string;
@@ -27,6 +34,9 @@ export type Event = {
   eventStartAt: string;
   eventEndAt: string | null;
   operatingHours: string | null;
+  /** Defaults to continuous for legacy/demo rows that predate structured schedules. */
+  scheduleMode?: EventScheduleMode;
+  occurrences?: EventOccurrence[];
   applicationStartAt: string | null;
   applicationEndAt: string | null;
   locationName: string | null;
@@ -183,9 +193,10 @@ export function filterEvents(events: Event[], filters: EventFilters, now = new D
       if (!isAvailable || deriveEventState(event, now) === "ended") return false;
     }
     if (range) {
-      const start = new Date(event.eventStartAt);
-      const end = new Date(event.eventEndAt ?? event.eventStartAt);
-      if (end < range.start || start >= range.end) return false;
+      const overlapsActualSchedule = eventScheduleRanges(event).some(({ start, end }) => (
+        end >= range.start && start < range.end
+      ));
+      if (!overlapsActualSchedule) return false;
     }
     if (query) {
       const haystack = [event.title, event.summary, event.locationName, event.sourceName]
@@ -195,6 +206,20 @@ export function filterEvents(events: Event[], filters: EventFilters, now = new D
       if (!haystack.includes(query)) return false;
     }
     return true;
+  });
+}
+
+function eventScheduleRanges(event: Event) {
+  const values = event.scheduleMode === "occurrences"
+    ? (event.occurrences ?? []).map((occurrence) => ({ startsAt: occurrence.startsAt, endsAt: occurrence.endsAt }))
+    : [{ startsAt: event.eventStartAt, endsAt: event.eventEndAt }];
+
+  return values.flatMap(({ startsAt, endsAt }) => {
+    const start = new Date(startsAt);
+    if (Number.isNaN(start.getTime())) return [];
+    const rawEnd = new Date(endsAt ?? startsAt);
+    const end = Number.isNaN(rawEnd.getTime()) || rawEnd < start ? start : rawEnd;
+    return [{ start, end }];
   });
 }
 

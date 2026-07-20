@@ -23,6 +23,11 @@ const optionalDate = z.string().trim().transform((value, context) => {
   }
 });
 
+const occurrenceSchema = z.object({
+  startsAt: optionalDate,
+  endsAt: optionalDate,
+});
+
 export const eventFormSchema = z.object({
   id: z.string().uuid().optional(),
   slug: z.string().trim().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "영문 소문자·숫자·하이픈만 사용하세요."),
@@ -34,6 +39,8 @@ export const eventFormSchema = z.object({
   eventStartAt: optionalDate,
   eventEndAt: optionalDate,
   operatingHours: optionalText,
+  scheduleMode: z.enum(["continuous", "occurrences"]).default("continuous"),
+  occurrences: z.array(occurrenceSchema).max(100, "운영 회차는 한 번에 100개까지 저장할 수 있습니다.").default([]),
   applicationStartAt: optionalDate,
   applicationEndAt: optionalDate,
   locationName: optionalText,
@@ -54,6 +61,23 @@ export const eventFormSchema = z.object({
   isFeatured: z.boolean(),
   lastVerifiedAt: optionalDate,
 }).superRefine((event, context) => {
+  if (event.eventStartAt && event.eventEndAt && new Date(event.eventEndAt) < new Date(event.eventStartAt)) {
+    context.addIssue({ code: "custom", path: ["eventEndAt"], message: "행사 종료는 시작보다 빠를 수 없습니다." });
+  }
+
+  if (event.scheduleMode === "occurrences" && event.occurrences.length === 0) {
+    context.addIssue({ code: "custom", path: ["occurrences"], message: "실제 운영 회차를 한 개 이상 입력해 주세요." });
+  }
+  event.occurrences.forEach((occurrence, index) => {
+    if (!occurrence.startsAt) {
+      context.addIssue({ code: "custom", path: ["occurrences", index, "startsAt"], message: "회차 시작 일시를 입력해 주세요." });
+      return;
+    }
+    if (occurrence.endsAt && new Date(occurrence.endsAt) < new Date(occurrence.startsAt)) {
+      context.addIssue({ code: "custom", path: ["occurrences", index, "endsAt"], message: "회차 종료는 시작보다 빠를 수 없습니다." });
+    }
+  });
+
   const hasLatitude = event.latitude != null;
   const hasLongitude = event.longitude != null;
   if (hasLatitude !== hasLongitude) {

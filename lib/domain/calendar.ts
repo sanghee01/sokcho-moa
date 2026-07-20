@@ -1,4 +1,4 @@
-import { deriveApplicationState, type ApplicationState, type Event } from "./event";
+import { deriveApplicationState, type ApplicationState, type Event, type EventScheduleMode } from "./event";
 
 const calendarMonthPattern = /^(\d{4})-(\d{2})$/;
 const koreanDateFormatter = new Intl.DateTimeFormat("en-CA", {
@@ -14,7 +14,14 @@ export type CalendarEvent = {
   title: string;
   startDateKey: string;
   endDateKey: string;
+  scheduleMode: EventScheduleMode;
+  dateRanges: CalendarDateRange[];
   applicationState: ApplicationState;
+};
+
+export type CalendarDateRange = {
+  startDateKey: string;
+  endDateKey: string;
 };
 
 export type CalendarDay = {
@@ -26,7 +33,10 @@ export type CalendarDay = {
 };
 
 export type CalendarSegment = {
+  key: string;
   eventId: string;
+  startDateKey: string;
+  endDateKey: string;
   columnStart: number;
   columnSpan: number;
   lane: number;
@@ -116,12 +126,14 @@ export function buildCalendarMonth(events: Event[], monthKey: string, now = new 
     .filter((event) => event.reviewStatus === "published")
     .map((event) => toCalendarEvent(event, now))
     .filter((event): event is CalendarEvent => event != null)
-    .filter((event) => rangesOverlap(event.startDateKey, event.endDateKey, gridStartKey, gridEndKey))
+    .filter((event) => event.dateRanges.some((range) => (
+      rangesOverlap(range.startDateKey, range.endDateKey, gridStartKey, gridEndKey)
+    )))
     .sort(compareCalendarEvents);
 
   for (const day of days) {
     day.eventIds = calendarEvents
-      .filter((event) => event.startDateKey <= day.dateKey && event.endDateKey >= day.dateKey)
+      .filter((event) => event.dateRanges.some((range) => range.startDateKey <= day.dateKey && range.endDateKey >= day.dateKey))
       .map((event) => event.id);
   }
 
@@ -129,9 +141,9 @@ export function buildCalendarMonth(events: Event[], monthKey: string, now = new 
     const weekDays = days.slice(index * 7, index * 7 + 7);
     return buildCalendarWeek(weekDays, calendarEvents);
   });
-  const eventCount = calendarEvents.filter((event) => (
-    rangesOverlap(event.startDateKey, event.endDateKey, monthStartKey, monthEndKey)
-  )).length;
+  const eventCount = calendarEvents.filter((event) => event.dateRanges.some((range) => (
+    rangesOverlap(range.startDateKey, range.endDateKey, monthStartKey, monthEndKey)
+  ))).length;
 
   return {
     monthKey: normalizedMonth,
@@ -148,34 +160,65 @@ export function buildCalendarMonth(events: Event[], monthKey: string, now = new 
 }
 
 function toCalendarEvent(event: Event, now: Date): CalendarEvent | null {
-  const startDateKey = toKoreanDateKey(event.eventStartAt);
-  if (!startDateKey) return null;
-  const rawEndDateKey = toKoreanDateKey(event.eventEndAt ?? event.eventStartAt) ?? startDateKey;
-  const endDateKey = rawEndDateKey < startDateKey ? startDateKey : rawEndDateKey;
+  const scheduleMode = event.scheduleMode === "occurrences" ? "occurrences" : "continuous";
+  const dateRanges = scheduleMode === "occurrences"
+    ? occurrenceDateRanges(event)
+    : continuousDateRanges(event);
+  if (dateRanges.length === 0) return null;
+  const startDateKey = dateRanges[0].startDateKey;
+  const endDateKey = dateRanges.reduce(
+    (latest, range) => range.endDateKey > latest ? range.endDateKey : latest,
+    dateRanges[0].endDateKey,
+  );
   return {
     id: event.id,
     slug: event.slug,
     title: event.title,
     startDateKey,
     endDateKey,
+    scheduleMode,
+    dateRanges,
     applicationState: deriveApplicationState(event, now),
   };
+}
+
+function continuousDateRanges(event: Event): CalendarDateRange[] {
+  const startDateKey = toKoreanDateKey(event.eventStartAt);
+  if (!startDateKey) return [];
+  const rawEndDateKey = toKoreanDateKey(event.eventEndAt ?? event.eventStartAt) ?? startDateKey;
+  return [{ startDateKey, endDateKey: rawEndDateKey < startDateKey ? startDateKey : rawEndDateKey }];
+}
+
+function occurrenceDateRanges(event: Event): CalendarDateRange[] {
+  const unique = new Map<string, CalendarDateRange>();
+  for (const occurrence of event.occurrences ?? []) {
+    const startDateKey = toKoreanDateKey(occurrence.startsAt);
+    if (!startDateKey) continue;
+    const rawEndDateKey = toKoreanDateKey(occurrence.endsAt ?? occurrence.startsAt) ?? startDateKey;
+    const endDateKey = rawEndDateKey < startDateKey ? startDateKey : rawEndDateKey;
+    unique.set(`${startDateKey}:${endDateKey}`, { startDateKey, endDateKey });
+  }
+  return [...unique.values()].sort((a, b) => (
+    a.startDateKey.localeCompare(b.startDateKey) || a.endDateKey.localeCompare(b.endDateKey)
+  ));
 }
 
 function buildCalendarWeek(days: CalendarDay[], events: CalendarEvent[]): CalendarWeek {
   const startDateKey = days[0]?.dateKey ?? "1970-01-01";
   const endDateKey = days.at(-1)?.dateKey ?? startDateKey;
   const candidates = events
-    .filter((event) => rangesOverlap(event.startDateKey, event.endDateKey, startDateKey, endDateKey))
-    .map((event) => {
-      const segmentStart = event.startDateKey < startDateKey ? startDateKey : event.startDateKey;
-      const segmentEnd = event.endDateKey > endDateKey ? endDateKey : event.endDateKey;
-      const columnStart = daysBetween(startDateKey, segmentStart);
+    .flatMap((event) => event.dateRanges.map((range, rangeIndex) => ({ event, range, rangeIndex })))
+    .filter(({ range }) => rangesOverlap(range.startDateKey, range.endDateKey, startDateKey, endDateKey))
+    .map(({ event, range, rangeIndex }) => {
+      const segmentStart = range.startDateKey < startDateKey ? startDateKey : range.startDateKey;
+      const segmentEnd = range.endDateKey > endDateKey ? endDateKey : range.endDateKey;
       return {
         event,
+        range,
+        rangeIndex,
         segmentStart,
         segmentEnd,
-        columnStart,
+        columnStart: daysBetween(startDateKey, segmentStart),
         columnSpan: daysBetween(segmentStart, segmentEnd) + 1,
       };
     })
@@ -183,6 +226,8 @@ function buildCalendarWeek(days: CalendarDay[], events: CalendarEvent[]): Calend
       a.columnStart - b.columnStart
       || b.columnSpan - a.columnSpan
       || compareCalendarEvents(a.event, b.event)
+      || a.range.startDateKey.localeCompare(b.range.startDateKey)
+      || a.range.endDateKey.localeCompare(b.range.endDateKey)
     ));
 
   const laneEnds: number[] = [];
@@ -191,12 +236,15 @@ function buildCalendarWeek(days: CalendarDay[], events: CalendarEvent[]): Calend
     if (lane === -1) lane = laneEnds.length;
     laneEnds[lane] = candidate.columnStart + candidate.columnSpan - 1;
     return {
+      key: `${candidate.event.id}:${candidate.rangeIndex}:${candidate.segmentStart}`,
       eventId: candidate.event.id,
+      startDateKey: candidate.range.startDateKey,
+      endDateKey: candidate.range.endDateKey,
       columnStart: candidate.columnStart,
       columnSpan: candidate.columnSpan,
       lane,
-      startsEvent: candidate.segmentStart === candidate.event.startDateKey,
-      endsEvent: candidate.segmentEnd === candidate.event.endDateKey,
+      startsEvent: candidate.segmentStart === candidate.range.startDateKey,
+      endsEvent: candidate.segmentEnd === candidate.range.endDateKey,
     } satisfies CalendarSegment;
   });
 

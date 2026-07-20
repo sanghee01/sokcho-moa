@@ -9,14 +9,27 @@ import { mapEventRow, mapPlaceRow } from "./mappers";
 const getCachedPublicEvents = unstable_cache(async (): Promise<Event[]> => {
   const client = createPublicSupabaseClient();
   if (!client) return [];
-  const { data, error } = await client
+  const result = await client
     .from("events")
-    .select("*")
+    .select("*, event_occurrences(id, starts_at, ends_at)")
     .eq("review_status", "published")
     .order("event_start_at", { ascending: true });
+  const fallback = result.error && isMissingOccurrenceRelation(result.error.message)
+    ? await client
+      .from("events")
+      .select("*")
+      .eq("review_status", "published")
+      .order("event_start_at", { ascending: true })
+    : null;
+  const { data, error } = fallback ?? result;
   if (error) throw new Error(`공개 행사 데이터를 불러오지 못했습니다: ${error.message}`);
   return (data ?? []).map((row) => mapEventRow(row as Record<string, unknown>));
 }, ["published-events"], { revalidate: 300, tags: [PUBLIC_EVENTS_CACHE_TAG] });
+
+function isMissingOccurrenceRelation(message: string) {
+  return message.includes("event_occurrences")
+    && (message.includes("relationship") || message.includes("schema cache"));
+}
 
 const getCachedPublicPlaces = unstable_cache(async (): Promise<Place[]> => {
   const client = createPublicSupabaseClient();

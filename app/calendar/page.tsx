@@ -6,7 +6,7 @@ import { buildCalendarMonth, resolveCalendarMonth } from "@/lib/domain/calendar"
 
 export const metadata: Metadata = {
   title: "행사 캘린더",
-  description: "속초의 행사를 날짜별로 살펴보고 신청 가능 여부와 이어지는 행사 기간을 한눈에 확인하세요.",
+  description: "속초 행사의 실제 운영일정과 신청 가능 여부를 날짜별로 한눈에 확인하세요.",
   alternates: { canonical: "/calendar" },
 };
 
@@ -29,7 +29,7 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
           <p className="text-sm font-black text-teal-700">날짜로 찾는 속초의 요즘</p>
           <h1 className="mt-2 text-3xl font-black tracking-tight text-slate-950 sm:text-5xl">행사 캘린더</h1>
           <p className="mt-3 max-w-2xl leading-7 text-slate-600">
-            여러 날 이어지는 행사는 하나의 일정으로 살펴보고, 지금 신청할 수 있는지도 함께 확인하세요.
+            행사기간과 운영일이 다른 일정도 실제로 열리는 날짜에 맞춰 확인하고, 신청 상태도 함께 살펴보세요.
           </p>
         </div>
         <Link href="/" className="inline-flex min-h-11 shrink-0 items-center justify-center self-start rounded-2xl border border-teal-200 bg-white px-4 py-2.5 text-sm font-black text-teal-800 shadow-sm hover:bg-teal-50 sm:self-auto">

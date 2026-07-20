@@ -87,6 +87,19 @@ export function getDemoEvents(): Event[] {
       eventStartAt: fromNow(6 * day),
       eventEndAt: fromNow(20 * day),
       operatingHours: "샘플 일정: 토요일 13:00–16:00",
+      scheduleMode: "occurrences",
+      occurrences: [
+        {
+          id: "30000000-0000-4000-8000-000000000001",
+          startsAt: fromNow(6 * day),
+          endsAt: fromNow(6 * day + 3 * hour),
+        },
+        {
+          id: "30000000-0000-4000-8000-000000000002",
+          startsAt: fromNow(13 * day),
+          endsAt: fromNow(13 * day + 3 * hour),
+        },
+      ],
       applicationStartAt: fromNow(-7 * day),
       applicationEndAt: fromNow(6 * hour),
       locationName: "속초시 청소년 시설(샘플)",
