@@ -6,6 +6,10 @@ const migration = readFileSync(
   resolve(process.cwd(), "supabase/migrations/202607200002_backfill_event_occurrences.sql"),
   "utf8",
 );
+const rollback = readFileSync(
+  resolve(process.cwd(), "supabase/rollbacks/20260720_event_occurrences.sql"),
+  "utf8",
+);
 const valuesSection = migration.split("insert into public.event_occurrences (event_id, starts_at, ends_at)")[1]
   ?.split("on conflict (event_id, starts_at)")[0] ?? "";
 
@@ -75,5 +79,15 @@ describe("production occurrence backfill migration", () => {
     expect(migration).toContain("if invalid_count <> 0 then");
     expect(migration).toContain("Data rollback");
     expect(migration).toContain("set schedule_mode = 'occurrences'");
+  });
+
+  it("provides a transactional rollback that refuses to delete later administrator data", () => {
+    expect(rollback).toContain("begin;");
+    expect(rollback).toContain("set schedule_mode = 'continuous'");
+    expect(rollback).toContain("if protected_occurrences <> 0 then");
+    expect(rollback).toContain("Rollback aborted");
+    expect(rollback).toContain("drop function if exists public.replace_event_occurrences(uuid, jsonb)");
+    expect(rollback).toContain("drop column if exists schedule_mode");
+    expect(rollback).toContain("commit;");
   });
 });
