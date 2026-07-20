@@ -80,21 +80,21 @@ test("행사 상세는 지도 SDK나 인라인 미리보기 없이 장소·주�
 
   await page.goto("/events/demo-sea-family-festival");
 
-  const locationCard = page.getByRole("region", { name: "속초해수욕장 인근(샘플)" });
-  await expect(locationCard.getByText("강원특별자치도 속초시 해오름로 190", { exact: true })).toBeVisible();
-  const locationCardBox = await visibleBox(locationCard);
-  expect(locationCardBox.height).toBeLessThan(288);
+  const factsSection = page.getByRole("region", { name: "핵심 정보" });
+  await expect(factsSection.getByText("강원특별자치도 속초시 해오름로 190", { exact: true })).toBeVisible();
+  await expect(page.getByText("행사 AI 요약", { exact: true })).toHaveCount(0);
+  await expect(page.getByText("위치 및 길찾기", { exact: true })).toHaveCount(0);
   await expect(page.getByRole("img", { name: /위치 지도/ })).toHaveCount(0);
   await expect(page.getByText("지도를 불러오는 중입니다.")).toHaveCount(0);
   await expect(page.getByText("지도를 불러오지 못했습니다.")).toHaveCount(0);
 
-  const mapLink = page.getByRole("link", { name: /네이버 지도에서 위치 확인/ });
+  const mapLink = factsSection.getByRole("link", { name: /네이버 지도/ });
   await expect(mapLink).toBeVisible();
   await expect(mapLink).toHaveAttribute("href", /^https:\/\/map\.naver\.com\/p\/search\//);
   await expect(mapLink).toHaveAttribute("target", "_blank");
   await expect(mapLink).toHaveAttribute("rel", "noreferrer");
   await expect(mapLink).toHaveAttribute("data-analytics-event", "map_link_clicked");
-  await expect(mapLink).toHaveAccessibleName("네이버 지도에서 위치 확인 (새 창)");
+  await expect(mapLink).toHaveAccessibleName("네이버 지도 (새 창)");
 
   await page.waitForLoadState("networkidle");
   await page.evaluate(() => new Promise<void>((resolve) => {
@@ -106,7 +106,7 @@ test("행사 상세는 지도 SDK나 인라인 미리보기 없이 장소·주�
     }
   }));
 
-  await expect(locationCard.locator("iframe")).toHaveCount(0);
+  await expect(factsSection.locator("iframe")).toHaveCount(0);
   await expect(page.locator('script[src*="oapi.map.naver.com"], script[src*="dapi.kakao.com"]')).toHaveCount(0);
   expect(mapSdkRequests).toEqual([]);
 });
@@ -366,7 +366,7 @@ test("목록에서 필터하고 상세·원문·외부 지도 링크·주변 명
   const popup = await popupPromise;
   await popup.close();
 
-  await expect(page.getByRole("link", { name: /네이버 지도에서 위치 확인/ })).toBeVisible();
+  await expect(page.getByRole("link", { name: /네이버 지도/ })).toBeVisible();
   const nearby = page.getByRole("region", { name: "주변 명소 둘러보기" });
   await expect(nearby.getByRole("article")).toHaveCount(4);
   await expect(nearby.getByRole("link", { name: /지도에서 보기/ }).first()).toBeVisible();
