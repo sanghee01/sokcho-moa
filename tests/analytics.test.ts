@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { analyticsData, parseAnalyticsProperties } from "@/lib/analytics/events";
+import { shouldCollectGoogleAnalytics } from "@/lib/analytics/google-analytics";
 
 describe("analytics event contract", () => {
   it("정의된 이벤트와 분석 가능한 값만 DOM 속성으로 직렬화한다", () => {
@@ -22,5 +23,14 @@ describe("analytics event contract", () => {
   it("깨진 데이터 속성은 이벤트 수집을 방해하지 않고 빈 파라미터로 처리한다", () => {
     expect(parseAnalyticsProperties("{broken-json")).toEqual({});
     expect(parseAnalyticsProperties("[]")).toEqual({});
+  });
+});
+
+describe("Google Analytics collection environment", () => {
+  it("Vercel 운영 배포에서만 외부 수집을 활성화한다", () => {
+    expect(shouldCollectGoogleAnalytics("production")).toBe(true);
+    expect(shouldCollectGoogleAnalytics("preview")).toBe(false);
+    expect(shouldCollectGoogleAnalytics("development")).toBe(false);
+    expect(shouldCollectGoogleAnalytics(undefined)).toBe(false);
   });
 });

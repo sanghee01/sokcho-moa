@@ -193,6 +193,12 @@ test("공유하기는 레이아웃을 유지하며 데스크톱 복사와 모바
 test("GA 이벤트는 탐색부터 상세 도달까지 구조화된 파라미터로 수집한다", async ({ page }) => {
   await page.goto("/");
 
+  await expect(page.locator('script[src*="googletagmanager.com/gtag/js"]')).toHaveCount(0);
+  expect(await page.evaluate(() => {
+    const dataLayer = (window as Window & { dataLayer?: Array<ArrayLike<unknown>> }).dataLayer ?? [];
+    return dataLayer.some((entry) => Array.from(entry)[0] === "config");
+  })).toBe(false);
+
   await page.getByRole("link", { name: "가족", exact: true }).click();
   await expect(page).toHaveURL(/audience=family/);
   await expect.poll(async () => (await capturedAnalyticsEvents(page)).some((event) => (

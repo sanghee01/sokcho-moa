@@ -6,12 +6,13 @@ import type { ReactNode } from "react";
 import { AnalyticsRuntime } from "@/components/analytics/analytics-runtime";
 import { ScrollToTopButton } from "@/components/scroll-to-top-button";
 import { TransitionLink } from "@/components/transition-link";
+import { googleAnalyticsId, shouldCollectGoogleAnalytics } from "@/lib/analytics/google-analytics";
 import { getPublicEnv } from "@/lib/config/env";
 import headerLogo from "@/public/sokchomoa-header.webp";
 import "./globals.css";
 
-const googleAnalyticsId = "G-9KN84HHJKD";
 const siteUrl = getPublicEnv().NEXT_PUBLIC_SITE_URL;
+const collectGoogleAnalytics = shouldCollectGoogleAnalytics();
 const defaultTitle = "속초모아 | 요즘 속초에서 뭐 하지?";
 const description = "속초의 행사·공연·축제·체험·교육 프로그램을 한곳에서 비교하세요.";
 
@@ -97,18 +98,26 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
           </div>
         </footer>
         <ScrollToTopButton />
-        <Script id="google-analytics" strategy="beforeInteractive">
+        <Script id="analytics-event-queue" strategy="beforeInteractive">
           {`
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', '${googleAnalyticsId}');
           `}
         </Script>
-        <Script
-          src={`https://www.googletagmanager.com/gtag/js?id=${googleAnalyticsId}`}
-          strategy="afterInteractive"
-        />
+        {collectGoogleAnalytics && (
+          <>
+            <Script id="google-analytics-config" strategy="beforeInteractive">
+              {`
+                gtag('js', new Date());
+                gtag('config', '${googleAnalyticsId}');
+              `}
+            </Script>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${googleAnalyticsId}`}
+              strategy="afterInteractive"
+            />
+          </>
+        )}
       </body>
     </html>
   );
