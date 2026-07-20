@@ -8,7 +8,6 @@ import { audienceLabels, categoryLabels } from "@/lib/domain/format";
 import type { EventAudience, EventCategory, EventFilters } from "@/lib/domain/event";
 
 type FilterParams = Record<string, string | string[] | undefined>;
-type ChipTone = "default" | "application";
 type Navigate = (event: MouseEvent<HTMLAnchorElement>, href: string) => void;
 
 const times = [
@@ -47,12 +46,7 @@ function shouldUseNativeNavigation(event: MouseEvent<HTMLAnchorElement>) {
   return event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey;
 }
 
-function Chip({ href, active, label, tone = "default", isPending, navigate }: { href: string; active: boolean; label: string; tone?: ChipTone; isPending: boolean; navigate: Navigate }) {
-  const activeClass = tone === "application" ? "bg-emerald-700 text-white ring-emerald-700" : "bg-teal-800 text-white ring-teal-800";
-  const inactiveClass = tone === "application"
-    ? "bg-white text-emerald-800 ring-emerald-200 hover:bg-emerald-100"
-    : "bg-white text-slate-700 ring-slate-200 hover:bg-teal-50";
-
+function Chip({ href, active, label, isPending, navigate }: { href: string; active: boolean; label: string; isPending: boolean; navigate: Navigate }) {
   return (
     <Link
       href={href}
@@ -61,7 +55,7 @@ function Chip({ href, active, label, tone = "default", isPending, navigate }: { 
       aria-disabled={isPending}
       data-analytics-event="filter_used"
       data-analytics-label={label}
-      className={`inline-flex min-h-11 items-center justify-center gap-1.5 rounded-full px-4 py-2 text-sm font-bold ring-1 transition ${active ? activeClass : inactiveClass} ${isPending ? "opacity-60" : "active:scale-[0.98]"}`}
+      className={`inline-flex min-h-11 items-center justify-center gap-1.5 rounded-full px-4 py-2 text-sm font-bold ring-1 transition ${active ? "bg-teal-800 text-white ring-teal-800" : "bg-white text-slate-700 ring-slate-200 hover:bg-teal-50"} ${isPending ? "opacity-60" : "active:scale-[0.98]"}`}
     >
       {active && <span aria-hidden="true">✓</span>}
       {label}
@@ -132,9 +126,9 @@ export function EventFilters({ params, filters }: { params: FilterParams; filter
           </div>
         </FilterGroup>
 
-        <FilterGroup id="application-filter-title" title="신청 가능 여부" description="접수 중이거나 별도 신청이 필요 없는 행사예요.">
+        <FilterGroup id="application-filter-title" title="신청 가능 여부" description="지금 참여할 수 있는 행사만 모아보세요.">
           <div className="flex flex-wrap gap-2">
-            <Chip href={buildHref(params, "application", "open")} active={filters.applicationOpen === true} label="신청 가능 · 신청 불필요" tone="application" isPending={isPending} navigate={navigate} />
+            <Chip href={buildHref(params, "application", "open")} active={filters.applicationOpen === true} label="신청 가능" isPending={isPending} navigate={navigate} />
           </div>
         </FilterGroup>
 
