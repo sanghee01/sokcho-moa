@@ -156,7 +156,9 @@ test("공유하기는 레이아웃을 유지하며 데스크톱 복사와 모바
     await expect.poll(() => page.evaluate(() => (window as Window & { __sharedEventUrl?: string }).__sharedEventUrl)).toBe(expectedUrl);
     await expect(shareButton).toBeVisible();
     const feedback = page.getByRole("status");
-    await expect(feedback).toHaveText("공유가 완료되었습니다!");
+    await expect(feedback).toHaveText("공유 완료!");
+    const feedbackBox = await documentBox(feedback);
+    expect(feedbackBox.y).toBeGreaterThanOrEqual(buttonBoxAfter.y + buttonBoxAfter.height);
     await expect.poll(async () => (await capturedAnalyticsEvents(page)).some((event) => (
       event.name === "share" && event.params.method === "native_share" && event.params.item_id === "demo-sea-family-festival"
     ))).toBe(true);
@@ -166,8 +168,10 @@ test("공유하기는 레이아웃을 유지하며 데스크톱 복사와 모바
   await expect.poll(() => page.evaluate(() => (window as Window & { __copiedEventUrl?: string }).__copiedEventUrl)).toBe(expectedUrl);
   await expect(shareButton).toBeVisible();
   const feedback = page.getByRole("status");
-  await expect(feedback).toHaveText("링크가 복사되었습니다!");
-  await page.waitForTimeout(4_100);
+  await expect(feedback).toHaveText("링크 복사 완료!");
+  const feedbackBox = await documentBox(feedback);
+  expect(feedbackBox.y).toBeGreaterThanOrEqual(buttonBoxAfter.y + buttonBoxAfter.height);
+  await page.waitForTimeout(3_100);
   await expect(feedback).toBeHidden();
   await expect.poll(async () => (await capturedAnalyticsEvents(page)).some((event) => (
     event.name === "share" && event.params.method === "link_copy" && event.params.item_id === "demo-sea-family-festival"

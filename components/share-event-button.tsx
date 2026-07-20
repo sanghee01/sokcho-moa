@@ -38,7 +38,7 @@ export function ShareEventButton({ slug }: { slug: string }) {
 
   useEffect(() => {
     if (status === "idle") return;
-    const timeoutId = window.setTimeout(() => setStatus("idle"), 4_000);
+    const timeoutId = window.setTimeout(() => setStatus("idle"), 3_000);
     return () => window.clearTimeout(timeoutId);
   }, [status]);
 
@@ -72,23 +72,23 @@ export function ShareEventButton({ slug }: { slug: string }) {
 
   const feedback = status === "copied"
     ? {
-        message: "링크가 복사되었습니다!",
-        tone: "bg-teal-900 text-white",
+        message: "링크 복사 완료!",
+        tone: "text-teal-700",
       }
     : status === "shared"
       ? {
-          message: "공유가 완료되었습니다!",
-          tone: "bg-teal-900 text-white",
+          message: "공유 완료!",
+          tone: "text-teal-700",
         }
       : status === "error"
         ? {
-            message: "링크를 복사하지 못했습니다. 다시 눌러 주세요.",
-            tone: "bg-rose-800 text-white",
+            message: "복사 실패. 다시 눌러 주세요.",
+            tone: "text-rose-700",
           }
         : null;
 
   return (
-    <>
+    <div className="relative self-start pb-6">
       <button
         type="button"
         onClick={handleShare}
@@ -101,11 +101,11 @@ export function ShareEventButton({ slug }: { slug: string }) {
           role="status"
           aria-live="polite"
           aria-atomic="true"
-          className={`fixed inset-x-4 bottom-6 z-50 mx-auto max-w-sm rounded-2xl px-5 py-4 text-center text-base font-black shadow-2xl sm:text-lg ${feedback.tone}`}
+          className={`absolute left-1/2 top-12 mt-1 -translate-x-1/2 whitespace-nowrap text-sm font-black ${feedback.tone}`}
         >
           {feedback.message}
         </div>
       )}
-    </>
+    </div>
   );
 }
