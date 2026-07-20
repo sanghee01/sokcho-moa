@@ -20,6 +20,40 @@ const dateValue = (row: Row, key: string) => {
 
 type OccurrenceDraft = { key: string; startsAt: string; endsAt: string };
 
+function dateTimeParts(value: string) {
+  const [date = "", time = ""] = value.split("T");
+  return { date, time };
+}
+
+function DateTimeField({
+  labelText,
+  name,
+  defaultValue,
+  requiredDate = false,
+}: {
+  labelText: string;
+  name: string;
+  defaultValue: string;
+  requiredDate?: boolean;
+}) {
+  const parts = dateTimeParts(defaultValue);
+  return (
+    <fieldset className="min-w-0">
+      <legend className={label}>{labelText}</legend>
+      <div className="mt-1 grid grid-cols-[minmax(0,1fr)_7.5rem] gap-2">
+        <label className="text-xs font-medium text-slate-600">
+          날짜
+          <input required={requiredDate} type="date" name={name} defaultValue={parts.date} className={input} />
+        </label>
+        <label className="text-xs font-medium text-slate-600">
+          시간 (선택)
+          <input type="time" name={`${name}Time`} defaultValue={parts.time} className={input} />
+        </label>
+      </div>
+    </fieldset>
+  );
+}
+
 function initialOccurrences(row: Row): OccurrenceDraft[] {
   const values = Array.isArray(row?.event_occurrences)
     ? row.event_occurrences.filter((value): value is Record<string, unknown> => value != null && typeof value === "object")
@@ -71,8 +105,8 @@ export function EventForm({ row }: { row: Row }) {
         <section className="grid gap-5 sm:grid-cols-2">
           <label className={`${label} sm:col-span-2`}>한 줄 요약<textarea name="summary" defaultValue={text(row, "summary")} rows={2} className={input} /></label>
           <label className={`${label} sm:col-span-2`}>행사 소개<textarea name="description" defaultValue={text(row, "description")} rows={6} className={input} /></label>
-          <label className={label}>행사 시작<input type="datetime-local" name="eventStartAt" defaultValue={dateValue(row, "event_start_at")} className={input} /></label>
-          <label className={label}>행사 종료<input type="datetime-local" name="eventEndAt" defaultValue={dateValue(row, "event_end_at")} className={input} /></label>
+          <DateTimeField labelText="행사 시작" name="eventStartAt" defaultValue={dateValue(row, "event_start_at")} />
+          <DateTimeField labelText="행사 종료" name="eventEndAt" defaultValue={dateValue(row, "event_end_at")} />
           <label className={`${label} sm:col-span-2`}>
             캘린더 운영 방식
             <select
@@ -100,13 +134,13 @@ export function EventForm({ row }: { row: Row }) {
                 </button>
               </div>
               {occurrences.length === 0 ? (
-                <p className="rounded-xl bg-white px-4 py-3 text-sm text-slate-600">회차 추가를 눌러 실제 운영 일시를 입력해 주세요.</p>
+                <p className="rounded-xl bg-white px-4 py-3 text-sm text-slate-600">회차 추가를 눌러 실제 운영 날짜를 입력해 주세요.</p>
               ) : (
                 <div className="space-y-3">
                   {occurrences.map((occurrence, index) => (
                     <div key={occurrence.key} className="grid gap-3 rounded-xl bg-white p-3 ring-1 ring-slate-200 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
-                      <label className={label}>회차 {index + 1} 시작<input required type="datetime-local" name="occurrenceStartsAt" defaultValue={occurrence.startsAt} className={input} /></label>
-                      <label className={label}>회차 {index + 1} 종료<input type="datetime-local" name="occurrenceEndsAt" defaultValue={occurrence.endsAt} className={input} /></label>
+                      <DateTimeField labelText={`회차 ${index + 1} 시작`} name="occurrenceStartsAt" defaultValue={occurrence.startsAt} requiredDate />
+                      <DateTimeField labelText={`회차 ${index + 1} 종료`} name="occurrenceEndsAt" defaultValue={occurrence.endsAt} />
                       <button type="button" onClick={() => removeOccurrence(occurrence.key)} aria-label={`회차 ${index + 1} 삭제`} className="min-h-11 rounded-xl border border-rose-200 px-3 py-2 text-sm font-bold text-rose-700 hover:bg-rose-50">
                         삭제
                       </button>
@@ -116,8 +150,8 @@ export function EventForm({ row }: { row: Row }) {
               )}
             </fieldset>
           )}
-          <label className={label}>신청 시작<input type="datetime-local" name="applicationStartAt" defaultValue={dateValue(row, "application_start_at")} className={input} /></label>
-          <label className={label}>신청 종료<input type="datetime-local" name="applicationEndAt" defaultValue={dateValue(row, "application_end_at")} className={input} /></label>
+          <DateTimeField labelText="신청 시작" name="applicationStartAt" defaultValue={dateValue(row, "application_start_at")} />
+          <DateTimeField labelText="신청 종료" name="applicationEndAt" defaultValue={dateValue(row, "application_end_at")} />
           <label className={label}>운영일정<input name="operatingHours" defaultValue={text(row, "operating_hours")} placeholder="예: 매주 수요일 16:00~19:00 · 총 10회" className={input} /><span className="mt-1 block text-xs font-normal leading-5 text-slate-500">행사기간을 반복하지 말고 실제 운영일·요일·회차·시간만 적어 주세요.</span></label>
           <label className={label}>요금 문구<input name="priceText" defaultValue={text(row, "price_text")} className={input} /></label>
         </section>
@@ -128,7 +162,10 @@ export function EventForm({ row }: { row: Row }) {
           <label className={label}>위도<input type="number" step="any" name="latitude" defaultValue={text(row, "latitude")} className={input} /></label>
           <label className={label}>경도<input type="number" step="any" name="longitude" defaultValue={text(row, "longitude")} className={input} /></label>
           <label className={label}>위치 근거 URL<input type="url" name="locationSourceUrl" defaultValue={text(row, "location_source_url")} className={input} /><span className="mt-1 block text-xs font-normal leading-5 text-slate-500">장소와 좌표를 확인할 수 있는 공개 원문을 입력하세요.</span></label>
-          <label className={label}>위치 확인 시각<input type="datetime-local" name="locationVerifiedAt" defaultValue={dateValue(row, "location_verified_at")} className={input} /><span className="mt-1 block text-xs font-normal leading-5 text-slate-500">위치 근거 URL을 직접 확인한 시각입니다.</span></label>
+          <div>
+            <DateTimeField labelText="위치 확인일" name="locationVerifiedAt" defaultValue={dateValue(row, "location_verified_at")} />
+            <span className="mt-1 block text-xs font-normal leading-5 text-slate-500">위치 근거 URL을 직접 확인한 날짜입니다.</span>
+          </div>
         </section>
 
         <section className="grid gap-5 sm:grid-cols-2">
@@ -137,7 +174,7 @@ export function EventForm({ row }: { row: Row }) {
           <label className={label}>공식 안내 URL<input type="url" name="officialUrl" defaultValue={text(row, "official_url")} className={input} /><span className="mt-1 block text-xs font-normal leading-5 text-slate-500">주최기관 또는 행사 공식 안내 주소입니다.</span></label>
           <label className={label}>신청·예매 URL<input type="url" name="applicationUrl" defaultValue={text(row, "application_url")} className={input} /><span className="mt-1 block text-xs font-normal leading-5 text-slate-500">신청이나 예매를 실제로 시작할 수 있는 주소만 입력하세요.</span></label>
           <label className={label}>대표 이미지 URL<input type="url" name="imageUrl" defaultValue={text(row, "image_url")} className={input} /><span className="mt-1 block text-xs font-normal leading-5 text-rose-700">행사 공식 이미지이며 재사용 허가·공공누리 조건을 확인한 경우에만 입력하세요.</span></label>
-          <label className={label}>마지막 확인일<input type="datetime-local" name="lastVerifiedAt" defaultValue={dateValue(row, "last_verified_at")} className={input} /></label>
+          <DateTimeField labelText="마지막 확인일" name="lastVerifiedAt" defaultValue={dateValue(row, "last_verified_at")} />
           <label className={label}>출처 기관<input required name="sourceName" defaultValue={text(row, "source_name")} className={input} /></label>
           <label className={label}>공식 원문 URL<input required type="url" name="sourceUrl" defaultValue={text(row, "source_url")} className={input} /><span className="mt-1 block text-xs font-normal leading-5 text-slate-500">기관 대표 홈이나 목록이 아니라 해당 행사를 직접 설명하는 상세 원문을 입력하세요.</span></label>
         </section>

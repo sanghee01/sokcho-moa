@@ -1,7 +1,15 @@
 const SEOUL_OFFSET_MS = 9 * 60 * 60 * 1_000;
+const dateOnlyPattern = /^(\d{4})-(\d{2})-(\d{2})$/;
 const datetimeLocalPattern = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/;
 
 const pad = (value: number) => String(value).padStart(2, "0");
+
+/** Combines the separate date and optional time controls used by administrator forms. */
+export function combineDateAndOptionalTime(date: string, time: string) {
+  if (!date) return time ? `T${time}` : "";
+  if (date.includes("T") || !time) return date;
+  return `${date}T${time}`;
+}
 
 /** Converts an Asia/Seoul wall-clock value from datetime-local into a UTC ISO timestamp. */
 export function seoulDatetimeLocalToIso(value: string) {
@@ -23,6 +31,15 @@ export function seoulDatetimeLocalToIso(value: string) {
     throw new Error("올바른 날짜와 시간을 입력하세요.");
   }
   return instant.toISOString();
+}
+
+/** Converts either a date or a local datetime into a UTC ISO timestamp. */
+export function seoulDateOrDatetimeToIso(value: string, dateOnlyBoundary: "start" | "end" = "start") {
+  if (datetimeLocalPattern.test(value)) return seoulDatetimeLocalToIso(value);
+  if (!dateOnlyPattern.test(value)) throw new Error("올바른 날짜를 입력하세요.");
+  const boundary = seoulDatetimeLocalToIso(`${value}T${dateOnlyBoundary === "end" ? "23:59" : "00:00"}`);
+  if (dateOnlyBoundary === "start") return boundary;
+  return new Date(new Date(boundary).getTime() + 59_999).toISOString();
 }
 
 /** Converts a stored ISO timestamp into the minute-precision value expected by datetime-local. */

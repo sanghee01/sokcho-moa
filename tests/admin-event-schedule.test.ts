@@ -67,6 +67,17 @@ describe("administrator structured event schedule", () => {
     if (!result.success) expect(result.error.issues[0]?.message).toContain("종료");
   });
 
+  it("시간이 없는 회차는 해당 날짜 전체 일정으로 저장한다", () => {
+    const parsed = eventFormSchema.parse(form({
+      occurrences: [{ startsAt: "2026-07-22", endsAt: "2026-07-22" }],
+    }));
+
+    expect(parsed.occurrences).toEqual([{
+      startsAt: "2026-07-21T15:00:00.000Z",
+      endsAt: "2026-07-22T14:59:59.999Z",
+    }]);
+  });
+
   it("기존 연속 일정은 구조화 회차 없이도 안전하게 유지한다", () => {
     const parsed = eventFormSchema.parse(form({ scheduleMode: "continuous", occurrences: [] }));
 

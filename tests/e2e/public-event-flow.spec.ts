@@ -102,12 +102,14 @@ test("정상·null·빈 문자열·404 이미지가 목록과 상세에서 같�
   const youthCard = page.getByRole("article").filter({ hasText: "청소년 미디어 창작 교실" });
   const normalListImage = youthCard.getByRole("img", { name: "[샘플] 청소년 미디어 창작 교실" });
   await expect.poll(() => normalListImage.evaluate((image) => (image as HTMLImageElement).naturalWidth)).toBe(1);
+  await expect(normalListImage).toHaveCSS("object-fit", "cover");
   const normalListBox = await visibleBox(normalListImage);
   expect(normalListBox.width / normalListBox.height).toBeCloseTo(16 / 9, 1);
 
   await page.goto("/events/demo-youth-media-class");
   const normalDetailImage = page.getByRole("img", { name: "[샘플] 청소년 미디어 창작 교실" });
   await expect.poll(() => normalDetailImage.evaluate((image) => (image as HTMLImageElement).naturalWidth)).toBe(1);
+  await expect(normalDetailImage).toHaveCSS("object-fit", "contain");
   const normalDetailBox = await visibleBox(normalDetailImage);
 
   imageResponse = "missing";
@@ -162,6 +164,45 @@ test("목록과 상세는 데스크톱·모바일에서 가로로 넘치지 않�
     page.locator("article").first(),
     locationSection,
   ]);
+});
+
+test("행사 카드에서 주제와 참여 대상을 크고 분명한 배지로 구분한다", async ({ page }) => {
+  await page.goto("/");
+  const familyCard = page.getByRole("article").filter({ hasText: "[샘플] 바다빛 가족 문화축제" });
+  const taxonomy = familyCard.getByLabel("행사 주제와 참여 대상");
+
+  await expect(taxonomy).toContainText("주제축제");
+  await expect(taxonomy).toContainText("대상가족");
+
+  const categoryBadge = taxonomy.getByText("축제", { exact: true });
+  const audienceBadge = taxonomy.getByText("가족", { exact: true });
+  await expect(categoryBadge).toHaveCSS("font-size", "14px");
+  await expect(audienceBadge).toHaveCSS("font-size", "14px");
+  await expect(categoryBadge).toHaveCSS("color", "rgb(255, 255, 255)");
+  const categoryColors = await categoryBadge.evaluate((element) => {
+    const style = getComputedStyle(element);
+    return { color: style.color, backgroundColor: style.backgroundColor };
+  });
+  const audienceColors = await audienceBadge.evaluate((element) => {
+    const style = getComputedStyle(element);
+    return { color: style.color, backgroundColor: style.backgroundColor };
+  });
+  expect(audienceColors).not.toEqual(categoryColors);
+});
+
+test("일정 거리 스크롤하면 오른쪽 하단 버튼으로 페이지 맨 위에 돌아간다", async ({ page }) => {
+  await page.goto("/");
+  const scrollToTop = page.getByTestId("scroll-to-top");
+
+  await expect(scrollToTop).toHaveAttribute("aria-hidden", "true");
+  await page.evaluate(() => window.scrollTo(0, 900));
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThanOrEqual(600);
+  await expect(scrollToTop).toHaveAttribute("aria-hidden", "false");
+  await expect(scrollToTop).toBeVisible();
+
+  await scrollToTop.click();
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThan(2);
+  await expect(scrollToTop).toHaveAttribute("aria-hidden", "true");
 });
 
 test("목록에서 필터하고 상세·원문·외부 지도 링크·주변 명소를 확인한다", async ({ context, page }) => {

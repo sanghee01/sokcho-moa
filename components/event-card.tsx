@@ -23,10 +23,23 @@ export function EventCard({ event }: { event: Event }) {
           )}
         </div>
         <div className="space-y-3 p-5">
-          <div className={`flex items-center gap-2 text-xs font-bold ${isApplicationClosed ? "text-slate-600" : "text-teal-700"}`}>
-            <span>{categoryLabels[event.category]}</span>
-            <span aria-hidden="true">·</span>
-            <span>{event.audiences.map((audience) => audienceLabels[audience]).join(" · ")}</span>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2" aria-label="행사 주제와 참여 대상">
+            <div className="flex items-center gap-2">
+              <span className={`text-xs font-black ${isApplicationClosed ? "text-slate-500" : "text-teal-700"}`}>주제</span>
+              <span className={`rounded-full px-3 py-1.5 text-sm font-black leading-none shadow-sm ${isApplicationClosed ? "bg-slate-700 text-white" : "bg-teal-700 text-white"}`}>
+                {categoryLabels[event.category]}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className={`text-xs font-black ${isApplicationClosed ? "text-slate-500" : "text-teal-700"}`}>대상</span>
+              <div className="flex flex-wrap gap-1.5">
+                {event.audiences.map((audience) => (
+                  <span key={audience} className={`rounded-full px-3 py-1.5 text-sm font-black leading-none ring-1 ring-inset ${isApplicationClosed ? "bg-white text-slate-700 ring-slate-300" : "bg-cyan-50 text-teal-900 ring-teal-200"}`}>
+                    {audienceLabels[audience]}
+                  </span>
+                ))}
+              </div>
+            </div>
           </div>
           <h2 className={`text-xl font-black leading-snug ${isApplicationClosed ? "text-slate-700 group-hover:text-slate-950" : "text-slate-950 group-hover:text-teal-800"}`}>{event.title}</h2>
           <dl className="grid gap-2 text-sm text-slate-600">

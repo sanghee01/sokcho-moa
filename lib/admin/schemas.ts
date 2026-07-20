@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { seoulDatetimeLocalToIso } from "@/lib/admin/datetime";
+import { seoulDateOrDatetimeToIso } from "@/lib/admin/datetime";
 import { eventAudiences, eventCandidateSchema, eventCategories } from "@/lib/domain/event";
 import { isLikelyEventDetailUrl } from "@/lib/domain/source";
 
@@ -13,19 +13,22 @@ const optionalUrl = z.string().trim().transform((value, context) => {
   }
   return parsed.data;
 });
-const optionalDate = z.string().trim().transform((value, context) => {
+const optionalDate = (dateOnlyBoundary: "start" | "end" = "start") => z.string().trim().transform((value, context) => {
   if (!value) return null;
   try {
-    return seoulDatetimeLocalToIso(value);
+    return seoulDateOrDatetimeToIso(value, dateOnlyBoundary);
   } catch {
-    context.addIssue({ code: "custom", message: "올바른 날짜와 시간을 입력하세요." });
+    context.addIssue({ code: "custom", message: "올바른 날짜를 입력하세요." });
     return z.NEVER;
   }
 });
 
+const optionalStartDate = optionalDate();
+const optionalEndDate = optionalDate("end");
+
 const occurrenceSchema = z.object({
-  startsAt: optionalDate,
-  endsAt: optionalDate,
+  startsAt: optionalStartDate,
+  endsAt: optionalEndDate,
 });
 
 export const eventFormSchema = z.object({
@@ -36,19 +39,19 @@ export const eventFormSchema = z.object({
   description: optionalText,
   category: z.enum(eventCategories),
   audiences: z.array(z.enum(eventAudiences)).min(1),
-  eventStartAt: optionalDate,
-  eventEndAt: optionalDate,
+  eventStartAt: optionalStartDate,
+  eventEndAt: optionalEndDate,
   operatingHours: optionalText,
   scheduleMode: z.enum(["continuous", "occurrences"]).default("continuous"),
   occurrences: z.array(occurrenceSchema).max(100, "운영 회차는 한 번에 100개까지 저장할 수 있습니다.").default([]),
-  applicationStartAt: optionalDate,
-  applicationEndAt: optionalDate,
+  applicationStartAt: optionalStartDate,
+  applicationEndAt: optionalEndDate,
   locationName: optionalText,
   address: optionalText,
   latitude: z.coerce.number().min(-90).max(90).nullable(),
   longitude: z.coerce.number().min(-180).max(180).nullable(),
   locationSourceUrl: optionalUrl,
-  locationVerifiedAt: optionalDate,
+  locationVerifiedAt: optionalStartDate,
   priceText: optionalText,
   isFree: z.enum(["true", "false", "unknown"]).transform((value) => value === "unknown" ? null : value === "true"),
   organizer: optionalText,
@@ -59,7 +62,7 @@ export const eventFormSchema = z.object({
   sourceName: z.string().trim().min(1).max(200),
   sourceUrl: z.string().trim().url().refine(isLikelyEventDetailUrl, "기관 대표 홈이나 목록이 아닌 행사별 공식 원문 URL을 입력하세요."),
   isFeatured: z.boolean(),
-  lastVerifiedAt: optionalDate,
+  lastVerifiedAt: optionalStartDate,
 }).superRefine((event, context) => {
   if (event.eventStartAt && event.eventEndAt && new Date(event.eventEndAt) < new Date(event.eventStartAt)) {
     context.addIssue({ code: "custom", path: ["eventEndAt"], message: "행사 종료는 시작보다 빠를 수 없습니다." });
@@ -70,7 +73,7 @@ export const eventFormSchema = z.object({
   }
   event.occurrences.forEach((occurrence, index) => {
     if (!occurrence.startsAt) {
-      context.addIssue({ code: "custom", path: ["occurrences", index, "startsAt"], message: "회차 시작 일시를 입력해 주세요." });
+      context.addIssue({ code: "custom", path: ["occurrences", index, "startsAt"], message: "회차 시작 날짜를 입력해 주세요." });
       return;
     }
     if (occurrence.endsAt && new Date(occurrence.endsAt) < new Date(occurrence.startsAt)) {

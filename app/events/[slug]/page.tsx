@@ -106,8 +106,8 @@ export default async function EventDetailPage({ params }: EventPageProps) {
 
       <article>
         <div className="grid overflow-hidden rounded-[2rem] bg-white shadow-xl ring-1 ring-teal-900/10 lg:grid-cols-2">
-          <div className="relative min-h-72 lg:min-h-[32rem]">
-            <EventImage src={event.imageUrl} alt={event.title} priority />
+          <div className="relative min-h-72 bg-slate-100 lg:min-h-[32rem]">
+            <EventImage src={event.imageUrl} alt={event.title} priority fit="contain" />
           </div>
           <div className="flex flex-col justify-center p-6 sm:p-10">
             <StatusBadges event={event} />

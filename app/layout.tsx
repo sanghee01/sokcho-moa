@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import Script from "next/script";
 import type { ReactNode } from "react";
+import { ScrollToTopButton } from "@/components/scroll-to-top-button";
 import { TransitionLink } from "@/components/transition-link";
 import { getPublicEnv } from "@/lib/config/env";
 import headerLogo from "@/public/sokchomoa-header.webp";
@@ -47,7 +48,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
           본문으로 건너뛰기
         </a>
         <header className="border-b border-teal-900/10 bg-white/85 backdrop-blur">
-          <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-4">
+          <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-4 lg:py-0">
             <Link href="/" className="block overflow-hidden rounded-2xl ring-teal-700/30 focus-visible:ring-4">
               <Image
                 src={headerLogo}
@@ -55,7 +56,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
                 priority
                 placeholder="blur"
                 sizes="(min-width: 640px) 176px, 144px"
-                className="h-auto w-36 object-contain sm:w-44"
+                className="h-auto w-36 object-contain sm:w-44 lg:h-14 lg:object-cover lg:object-center"
               />
             </Link>
             <nav aria-label="주요 메뉴" className="grid w-full grid-cols-2 gap-2 text-xs font-semibold sm:flex sm:w-auto sm:items-center sm:gap-3 sm:text-sm">
@@ -86,6 +87,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
             </div>
           </div>
         </footer>
+        <ScrollToTopButton />
         <Script
           src={`https://www.googletagmanager.com/gtag/js?id=${googleAnalyticsId}`}
           strategy="afterInteractive"

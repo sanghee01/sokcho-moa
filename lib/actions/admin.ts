@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { after } from "next/server";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/admin/auth";
+import { combineDateAndOptionalTime } from "@/lib/admin/datetime";
 import { candidateJsonSchema, eventFormSchema, placeFormSchema } from "@/lib/admin/schemas";
 import { PUBLIC_EVENTS_CACHE_TAG, PUBLIC_PLACES_CACHE_TAG } from "@/lib/data/cache-tags";
 import { extractSourceExternalId } from "@/lib/domain/source";
@@ -32,11 +33,20 @@ function nullableNumberValue(formData: FormData, key: string) {
   return raw ? raw : null;
 }
 
+function dateTimeValue(formData: FormData, key: string) {
+  return combineDateAndOptionalTime(value(formData, key), value(formData, `${key}Time`));
+}
+
 function occurrenceValues(formData: FormData) {
   const starts = formData.getAll("occurrenceStartsAt").map((item) => typeof item === "string" ? item : "");
+  const startTimes = formData.getAll("occurrenceStartsAtTime").map((item) => typeof item === "string" ? item : "");
   const ends = formData.getAll("occurrenceEndsAt").map((item) => typeof item === "string" ? item : "");
+  const endTimes = formData.getAll("occurrenceEndsAtTime").map((item) => typeof item === "string" ? item : "");
   return starts
-    .map((startsAt, index) => ({ startsAt, endsAt: ends[index] ?? "" }))
+    .map((startsAt, index) => ({
+      startsAt: combineDateAndOptionalTime(startsAt, startTimes[index] ?? ""),
+      endsAt: combineDateAndOptionalTime(ends[index] ?? "", endTimes[index] ?? ""),
+    }))
     .filter((occurrence) => occurrence.startsAt.trim() || occurrence.endsAt.trim());
 }
 
@@ -113,19 +123,19 @@ export async function saveEventAction(
     description: value(formData, "description"),
     category: value(formData, "category"),
     audiences: formData.getAll("audiences").filter((item): item is string => typeof item === "string"),
-    eventStartAt: value(formData, "eventStartAt"),
-    eventEndAt: value(formData, "eventEndAt"),
+    eventStartAt: dateTimeValue(formData, "eventStartAt"),
+    eventEndAt: dateTimeValue(formData, "eventEndAt"),
     operatingHours: value(formData, "operatingHours"),
     scheduleMode: value(formData, "scheduleMode") || "continuous",
     occurrences: occurrenceValues(formData),
-    applicationStartAt: value(formData, "applicationStartAt"),
-    applicationEndAt: value(formData, "applicationEndAt"),
+    applicationStartAt: dateTimeValue(formData, "applicationStartAt"),
+    applicationEndAt: dateTimeValue(formData, "applicationEndAt"),
     locationName: value(formData, "locationName"),
     address: value(formData, "address"),
     latitude: nullableNumberValue(formData, "latitude"),
     longitude: nullableNumberValue(formData, "longitude"),
     locationSourceUrl: value(formData, "locationSourceUrl"),
-    locationVerifiedAt: value(formData, "locationVerifiedAt"),
+    locationVerifiedAt: dateTimeValue(formData, "locationVerifiedAt"),
     priceText: value(formData, "priceText"),
     isFree: value(formData, "isFree") || "unknown",
     organizer: value(formData, "organizer"),
@@ -136,7 +146,7 @@ export async function saveEventAction(
     sourceName: value(formData, "sourceName"),
     sourceUrl: value(formData, "sourceUrl"),
     isFeatured: formData.get("isFeatured") === "on",
-    lastVerifiedAt: value(formData, "lastVerifiedAt"),
+    lastVerifiedAt: dateTimeValue(formData, "lastVerifiedAt"),
   });
   if (!parsed.success) return invalidFields(parsed.error);
   const event = parsed.data;
