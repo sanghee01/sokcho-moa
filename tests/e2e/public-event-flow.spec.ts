@@ -166,13 +166,15 @@ test("목록과 상세는 데스크톱·모바일에서 가로로 넘치지 않�
   ]);
 });
 
-test("행사 카드에서 주제와 참여 대상을 크고 분명한 배지로 구분한다", async ({ page }) => {
+test("행사 카드에서 주제와 참여 대상을 라벨 없이 배지로 표시한다", async ({ page }) => {
   await page.goto("/");
   const familyCard = page.getByRole("article").filter({ hasText: "[샘플] 바다빛 가족 문화축제" });
   const taxonomy = familyCard.getByLabel("행사 주제와 참여 대상");
 
-  await expect(taxonomy).toContainText("주제축제");
-  await expect(taxonomy).toContainText("대상가족");
+  await expect(taxonomy).toContainText("축제");
+  await expect(taxonomy).toContainText("가족");
+  await expect(taxonomy.getByText("주제", { exact: true })).toHaveCount(0);
+  await expect(taxonomy.getByText("대상", { exact: true })).toHaveCount(0);
 
   const categoryBadge = taxonomy.getByText("축제", { exact: true });
   const audienceBadge = taxonomy.getByText("가족", { exact: true });
