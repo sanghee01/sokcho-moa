@@ -58,14 +58,11 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
                 className="h-auto w-36 object-contain sm:w-44"
               />
             </Link>
-            <nav aria-label="주요 메뉴" className="grid w-full grid-cols-3 gap-2 text-xs font-semibold sm:flex sm:w-auto sm:items-center sm:gap-3 sm:text-sm">
-              <TransitionLink href="/?when=today" className="inline-flex min-h-11 items-center justify-center rounded-2xl px-2 py-2 text-center hover:bg-teal-50 active:scale-[0.98] sm:rounded-full sm:px-3">
-                오늘 행사
-              </TransitionLink>
-              <TransitionLink href="/calendar" pendingLabel="행사 캘린더 불러오는 중" className="inline-flex min-h-11 items-center justify-center rounded-2xl bg-teal-800 px-2 py-2 text-center font-black text-white shadow-sm hover:bg-teal-900 active:scale-[0.98] sm:rounded-full sm:px-4">
+            <nav aria-label="주요 메뉴" className="grid w-full grid-cols-2 gap-2 text-xs font-semibold sm:flex sm:w-auto sm:items-center sm:gap-3 sm:text-sm">
+              <TransitionLink href="/calendar" pendingLabel="행사 캘린더 불러오는 중" showPendingIndicator={false} className="inline-flex min-h-11 items-center justify-center rounded-2xl bg-teal-800 px-2 py-2 text-center font-black text-white shadow-sm hover:bg-teal-900 active:scale-[0.98] sm:rounded-full sm:px-4">
                 행사 캘린더
               </TransitionLink>
-              <TransitionLink href="/admin" className="inline-flex min-h-11 items-center justify-center rounded-2xl border border-teal-900/15 px-2 py-2 text-center hover:bg-teal-50 active:scale-[0.98] sm:rounded-full sm:px-3">
+              <TransitionLink href="/admin" showPendingIndicator={false} className="inline-flex min-h-11 items-center justify-center rounded-2xl border border-teal-900/15 px-2 py-2 text-center hover:bg-teal-50 active:scale-[0.98] sm:rounded-full sm:px-3">
                 운영자
               </TransitionLink>
             </nav>

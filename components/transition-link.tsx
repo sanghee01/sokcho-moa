@@ -14,12 +14,14 @@ export function TransitionLink({
   children,
   className = "",
   pendingLabel = "페이지 이동 중",
+  showPendingIndicator = true,
   scroll,
 }: {
   href: string;
   children: ReactNode;
   className?: string;
   pendingLabel?: string;
+  showPendingIndicator?: boolean;
   scroll?: boolean;
 }) {
   const router = useRouter();
@@ -36,13 +38,17 @@ export function TransitionLink({
   }
 
   return (
-    <Link href={href} onClick={handleClick} aria-busy={isPending} className={`relative ${className}`}>
+    <Link href={href} onClick={handleClick} aria-busy={isPending} className={`relative transition-opacity aria-busy:opacity-70 ${className}`}>
       {children}
       {isPending && (
-        <span className="pointer-events-none absolute right-1.5 top-1.5 rounded-full bg-current/10 p-1">
-          <LoadingSpinner className="size-3" />
+        <>
+          {showPendingIndicator && (
+            <span className="pointer-events-none absolute right-1.5 top-1.5 rounded-full bg-current/10 p-1">
+              <LoadingSpinner className="size-3" />
+            </span>
+          )}
           <span className="sr-only">{pendingLabel}</span>
-        </span>
+        </>
       )}
     </Link>
   );

@@ -63,13 +63,10 @@ function Chip({ href, active, label, isPending, navigate }: { href: string; acti
   );
 }
 
-function FilterGroup({ id, title, description, className = "", children }: { id: string; title: string; description: string; className?: string; children: ReactNode }) {
+function FilterGroup({ id, title, className = "", children }: { id: string; title: string; className?: string; children: ReactNode }) {
   return (
     <div role="group" aria-labelledby={id} className={`rounded-2xl border border-slate-200 bg-slate-50/80 p-4 ${className}`}>
-      <div className="mb-3">
-        <h3 id={id} className="text-sm font-black text-slate-950">{title}</h3>
-        <p className="mt-0.5 text-xs leading-5 text-slate-500">{description}</p>
-      </div>
+      <h3 id={id} className="mb-3 text-sm font-black text-slate-950">{title}</h3>
       {children}
     </div>
   );
@@ -102,9 +99,6 @@ export function EventFilters({ params, filters }: { params: FilterParams; filter
         </div>
         <Link href="/" onClick={(event) => navigate(event, "/")} aria-disabled={isPending} className="shrink-0 text-sm font-bold text-teal-700 underline underline-offset-4">필터 초기화</Link>
       </div>
-      <div className="min-h-6" aria-live="polite">
-        {isPending && <p role="status" className="flex items-center gap-2 text-sm font-bold text-teal-700"><LoadingSpinner />필터를 적용하고 있어요.</p>}
-      </div>
       <form action="/" method="get" role="search" onSubmit={submitSearch}>
         {Object.entries(params).map(([key, raw]) => {
           const value = Array.isArray(raw) ? raw[0] : raw;
@@ -120,19 +114,19 @@ export function EventFilters({ params, filters }: { params: FilterParams; filter
         </div>
       </form>
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-[0.75fr_0.9fr_1.8fr]">
-        <FilterGroup id="date-filter-title" title="날짜" description="가까운 일정부터 살펴보세요.">
+        <FilterGroup id="date-filter-title" title="날짜">
           <div className="flex flex-wrap gap-2">
             {times.map(([value, label]) => <Chip key={value} href={buildHref(params, "when", value)} active={filters.when === value} label={label} isPending={isPending} navigate={navigate} />)}
           </div>
         </FilterGroup>
 
-        <FilterGroup id="application-filter-title" title="신청 가능 여부" description="지금 참여할 수 있는 행사만 모아보세요.">
+        <FilterGroup id="application-filter-title" title="신청 가능 여부">
           <div className="flex flex-wrap gap-2">
             <Chip href={buildHref(params, "application", "open")} active={filters.applicationOpen === true} label="신청 가능" isPending={isPending} navigate={navigate} />
           </div>
         </FilterGroup>
 
-        <FilterGroup id="topic-filter-title" title="주제·대상" description="관심 있는 활동과 함께할 대상을 골라보세요." className="sm:col-span-2 xl:col-span-1">
+        <FilterGroup id="topic-filter-title" title="주제·대상" className="sm:col-span-2 xl:col-span-1">
           <div>
             <p className="mb-2 text-xs font-bold text-slate-500">주제</p>
             <div className="flex flex-wrap gap-2">

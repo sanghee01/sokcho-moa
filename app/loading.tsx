@@ -2,7 +2,7 @@ export default function Loading() {
   return (
     <main id="main-content" aria-busy="true" aria-label="속초 행사 정보 불러오는 중">
       <section className="overflow-hidden bg-cyan-50" aria-label="배너 불러오는 중">
-        <div className="relative h-[10.8rem] overflow-hidden bg-cyan-100 sm:h-[min(33.77vw,24rem)]">
+        <div className="relative h-[10.8rem] overflow-hidden bg-cyan-100 sm:h-[min(33.77vw,24rem)] lg:mx-auto lg:aspect-[5/1] lg:h-auto lg:max-w-[120rem]">
           <div className="absolute inset-0 animate-pulse bg-gradient-to-b from-cyan-200 via-amber-50 to-cyan-300" />
           <div className="absolute inset-0 flex animate-pulse items-center justify-center px-8" aria-hidden="true">
             <div className="w-full max-w-3xl space-y-4 sm:space-y-6">
