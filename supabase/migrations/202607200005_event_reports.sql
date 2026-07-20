@@ -2,7 +2,7 @@ create table if not exists public.event_reports (
   id uuid primary key default gen_random_uuid(),
   title text not null check (char_length(title) between 2 and 200),
   body text not null check (char_length(body) between 10 and 5000),
-  source_url text check (source_url is null or char_length(source_url) <= 2048),
+  source_url text not null check (char_length(source_url) between 1 and 2048),
   review_status text not null default 'pending' check (review_status in ('pending', 'reviewed', 'rejected')),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()

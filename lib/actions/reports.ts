@@ -41,7 +41,7 @@ export async function submitEventReportAction(
   const { error } = await client.from("event_reports").insert({
     title: parsed.data.title,
     body: parsed.data.body,
-    source_url: parsed.data.sourceUrl || null,
+    source_url: parsed.data.sourceUrl,
   });
   if (error) {
     console.error("Event report insert failed", error.message);

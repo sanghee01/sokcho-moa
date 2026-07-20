@@ -29,7 +29,7 @@ export function EventReportForm() {
           name="title"
           autoComplete="off"
           placeholder="행사나 프로그램 이름을 입력해 주세요"
-          className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-950 placeholder:text-slate-400"
+          className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-normal text-slate-950 placeholder:font-normal placeholder:text-slate-400"
         />
       </label>
 
@@ -42,21 +42,22 @@ export function EventReportForm() {
           name="body"
           rows={9}
           placeholder="일정, 장소, 신청 방법 등 알고 있는 내용을 적어 주세요"
-          className="mt-2 w-full resize-y rounded-2xl border border-slate-300 bg-white px-4 py-3 text-base leading-7 text-slate-950 placeholder:text-slate-400"
+          className="mt-2 w-full resize-y rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-normal leading-6 text-slate-950 placeholder:font-normal placeholder:text-slate-400"
         />
       </label>
 
       <label className="block text-sm font-bold text-slate-700">
-        링크 <span className="font-normal text-slate-500">(선택)</span>
+        링크 <span className="text-rose-600" aria-hidden="true">*</span>
         <input
+          required
           type="url"
           maxLength={2048}
           name="sourceUrl"
           inputMode="url"
           placeholder="https://..."
-          className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-950 placeholder:text-slate-400"
+          className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-normal text-slate-950 placeholder:font-normal placeholder:text-slate-400"
         />
-        <span className="mt-2 block font-normal leading-6 text-slate-500">공식 안내 페이지나 신청 페이지가 있다면 함께 보내주세요.</span>
+        <span className="mt-2 block font-normal leading-6 text-slate-500">공식 안내 페이지나 신청 페이지 링크를 입력해 주세요.</span>
       </label>
 
       <div className="absolute -left-[9999px]" aria-hidden="true">
