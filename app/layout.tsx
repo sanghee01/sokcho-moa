@@ -31,11 +31,13 @@ export const metadata: Metadata = {
     siteName: "속초모아",
     title: defaultTitle,
     description,
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "속초모아" }],
   },
   twitter: {
     card: "summary_large_image",
     title: defaultTitle,
     description,
+    images: ["/opengraph-image"],
   },
 };
 
