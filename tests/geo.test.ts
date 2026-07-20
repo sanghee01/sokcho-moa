@@ -59,7 +59,7 @@ describe("findNearbyPlaces", () => {
 });
 
 describe("createEventMapLinks", () => {
-  it("층과 실 정보는 제외하고 건물명으로 지도에서 검색한다", () => {
+  it("층과 실 정보는 제외하고, 주소가 있으면 도로명주소로 지도에서 검색한다", () => {
     expect(createMapSearchName("속초시립도서관 3층 시청각실")).toBe("속초시립도서관");
     expect(createMapSearchName("속초시립도서관(지하 1층 다목적실)")).toBe("속초시립도서관");
     expect(createMapSearchName("속초문화예술회관 대공연장")).toBe("속초문화예술회관");
@@ -87,8 +87,21 @@ describe("createEventMapLinks", () => {
     );
     const coordinateQuery = decodeURIComponent(linksWithCoordinates!.naver.split("/search/")[1].split("?")[0]);
 
-    expect(naverQuery).toBe("속초시립도서관");
-    expect(coordinateQuery).toBe("속초시립도서관");
+    expect(naverQuery).toBe("강원특별자치도 속초시 조양로 89");
+    expect(coordinateQuery).toBe("강원특별자치도 속초시 조양로 89");
+  });
+
+  it("장소명에 내부 전시실이 포함되어도 도로명주소로 길찾기 위치를 연다", () => {
+    const links = createEventMapLinks(
+      "속초시립박물관 제2기획전시실",
+      "강원특별자치도 속초시 신흥2길 16",
+      38.2406,
+      128.5663,
+    );
+
+    const query = decodeURIComponent(links!.naver.split("/search/")[1].split("?")[0]);
+
+    expect(query).toBe("강원특별자치도 속초시 신흥2길 16");
   });
 
   it("검증된 전체 주소만 있어도 지도 검색 링크를 만든다", () => {

@@ -127,11 +127,10 @@ export function createEventMapLinks(
   if (!address && !hasVerifiedCoordinates) return null;
 
   const searchName = createMapSearchName(name);
-  const searchAddress = address ? createMapSearchName(address) : null;
-  const hasInteriorDetails = searchName !== name.trim();
-  const query = encodeURIComponent(
-    (hasInteriorDetails ? [searchName] : [searchName, searchAddress]).filter(Boolean).join(" "),
-  );
+  // 행사 세부 공간명은 네이버 지도에 별도 장소로 등록되지 않은 경우가 많다.
+  // 도로명주소가 있으면 이를 우선 검색해 실제 방문 위치를 안정적으로 연다.
+  const searchQuery = address?.trim() || searchName;
+  const query = encodeURIComponent(searchQuery);
   if (!hasVerifiedCoordinates) {
     return {
       naver: `https://map.naver.com/p/search/${query}`,
@@ -140,7 +139,7 @@ export function createEventMapLinks(
   }
 
   return {
-    naver: createNaverMapUrl(searchName, latitude, longitude),
+    naver: createNaverMapUrl(searchQuery, latitude, longitude),
     hasVerifiedCoordinates: true,
   };
 }
