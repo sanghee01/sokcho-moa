@@ -17,17 +17,15 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   const events = filterEvents(allEvents, filters).sort(
     (a, b) => Number(b.isFeatured) - Number(a.isFeatured) || a.eventStartAt.localeCompare(b.eventStartAt),
   );
-  const todayCount = filterEvents(allEvents, { when: "today" }).length;
-  const applicationCount = filterEvents(allEvents, { applicationOpen: true }).length;
   const demoMode = allEvents.some((event) => event.isDemo);
 
   return (
     <main id="main-content">
       <AnalyticsRuntime />
-      <section aria-labelledby="home-hero-title" className="overflow-hidden bg-cyan-50 pb-6 sm:pb-8">
+      <section aria-labelledby="home-hero-title" className="overflow-hidden bg-cyan-50">
         <h1 id="home-hero-title" className="sr-only">요즘 속초에서 뭐 하지?</h1>
         <p className="sr-only">행사·공연·체험·교육 정보를 한눈에 확인하세요.</p>
-        <div className="relative h-72 overflow-hidden bg-cyan-100 sm:h-[min(56.28vw,40rem)]">
+        <div className="relative h-[10.8rem] overflow-hidden bg-cyan-100 sm:h-[min(33.77vw,24rem)]">
           <Image
             src={bannerImage}
             alt=""
@@ -37,16 +35,6 @@ export default async function HomePage({ searchParams }: HomePageProps) {
             sizes="100vw"
             className="object-cover object-center"
           />
-        </div>
-        <div className="relative z-10 mx-auto -mt-4 grid max-w-xl grid-cols-2 gap-3 px-4 sm:-mt-10 sm:px-6">
-          <div className="rounded-3xl bg-white p-5 text-teal-950 shadow-xl ring-1 ring-teal-900/10">
-            <p className="text-sm font-bold text-teal-700">오늘 열리는 행사</p>
-            <p className="mt-2 text-4xl font-black">{todayCount}<span className="ml-1 text-lg">개</span></p>
-          </div>
-          <div className="rounded-3xl bg-amber-300 p-5 text-amber-950 shadow-xl">
-            <p className="text-sm font-bold">현재 신청 가능</p>
-            <p className="mt-2 text-4xl font-black">{applicationCount}<span className="ml-1 text-lg">개</span></p>
-          </div>
         </div>
       </section>
 

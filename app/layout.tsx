@@ -59,9 +59,6 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
               />
             </Link>
             <nav aria-label="주요 메뉴" className="flex items-center gap-3 text-sm font-semibold">
-              <TransitionLink href="/?when=today" className="rounded-full px-3 py-2 hover:bg-teal-50 active:scale-[0.98]">
-                오늘 행사
-              </TransitionLink>
               <TransitionLink href="/admin" className="rounded-full border border-teal-900/15 px-3 py-2 hover:bg-teal-50 active:scale-[0.98]">
                 운영자
               </TransitionLink>

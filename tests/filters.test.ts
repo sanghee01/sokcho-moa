@@ -8,7 +8,6 @@ describe("parseEventFilters", () => {
       when: "today",
       audience: "family",
       category: undefined,
-      free: true,
       applicationOpen: undefined,
       query: undefined,
     });
@@ -16,20 +15,23 @@ describe("parseEventFilters", () => {
 });
 
 describe("filterEvents", () => {
-  it("카테고리, 대상, 무료, 검색어를 함께 적용한다", () => {
+  it("카테고리, 대상, 검색어를 함께 적용한다", () => {
     const result = filterEvents(getDemoEvents(), {
       category: "festival",
       audience: "family",
-      free: true,
       query: "바다빛",
     });
     expect(result.map((event) => event.slug)).toEqual(["demo-sea-family-festival"]);
   });
 
-  it("신청 가능한 행사에 오늘 마감을 포함한다", () => {
+  it("신청 가능한 행사에 오늘 마감과 별도 신청 없음을 포함한다", () => {
     const now = new Date();
     const result = filterEvents(getDemoEvents(), { applicationOpen: true }, now);
+    const slugs = result.map((event) => event.slug);
     expect(result.length).toBeGreaterThan(0);
-    expect(result.every((event) => event.applicationEndAt == null || new Date(event.applicationEndAt) >= now)).toBe(true);
+    expect(slugs).toContain("demo-youth-media-class");
+    expect(slugs).toContain("demo-sea-family-festival");
+    expect(slugs).toContain("demo-mountain-exhibition");
+    expect(slugs).not.toContain("demo-ended-winter-program");
   });
 });

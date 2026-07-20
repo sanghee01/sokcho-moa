@@ -22,6 +22,7 @@ const audiences: EventAudience[] = ["child", "youth", "family", "adult", "all"];
 function buildHref(params: FilterParams, key: string, value: string | undefined) {
   const search = new URLSearchParams();
   for (const [name, raw] of Object.entries(params)) {
+    if (name === "free") continue;
     const current = Array.isArray(raw) ? raw[0] : raw;
     if (current) search.set(name, current);
   }
@@ -113,7 +114,7 @@ export function EventFilters({ params, filters }: { params: FilterParams; filter
       <form action="/" method="get" role="search" onSubmit={submitSearch}>
         {Object.entries(params).map(([key, raw]) => {
           const value = Array.isArray(raw) ? raw[0] : raw;
-          return key !== "q" && value ? <input key={key} type="hidden" name={key} value={value} /> : null;
+          return key !== "q" && key !== "free" && value ? <input key={key} type="hidden" name={key} value={value} /> : null;
         })}
         <label htmlFor="event-search" className="mb-2 block text-sm font-bold text-slate-800">키워드 검색</label>
         <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
@@ -131,10 +132,9 @@ export function EventFilters({ params, filters }: { params: FilterParams; filter
           </div>
         </FilterGroup>
 
-        <FilterGroup id="application-filter-title" title="신청 가능 여부" description="지금 참여할 수 있는 행사만 모아보세요.">
+        <FilterGroup id="application-filter-title" title="신청 가능 여부" description="접수 중이거나 별도 신청이 필요 없는 행사예요.">
           <div className="flex flex-wrap gap-2">
-            <Chip href={buildHref(params, "application", "open")} active={filters.applicationOpen === true} label="신청 가능한 행사" tone="application" isPending={isPending} navigate={navigate} />
-            <Chip href={buildHref(params, "free", "true")} active={filters.free === true} label="무료 행사" isPending={isPending} navigate={navigate} />
+            <Chip href={buildHref(params, "application", "open")} active={filters.applicationOpen === true} label="신청 가능 · 신청 불필요" tone="application" isPending={isPending} navigate={navigate} />
           </div>
         </FilterGroup>
 

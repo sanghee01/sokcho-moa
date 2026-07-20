@@ -149,7 +149,6 @@ export function deriveApplicationState(
 export type EventFilters = {
   when?: "today" | "week" | "month";
   applicationOpen?: boolean;
-  free?: boolean;
   audience?: EventAudience;
   category?: EventCategory;
   query?: string;
@@ -164,7 +163,6 @@ export function parseEventFilters(params: Record<string, string | string[] | und
   return {
     when: when === "today" || when === "week" || when === "month" ? when : undefined,
     applicationOpen: one(params.application) === "open" || undefined,
-    free: one(params.free) === "true" || undefined,
     audience: eventAudiences.includes(audience as EventAudience) ? (audience as EventAudience) : undefined,
     category: eventCategories.includes(category as EventCategory) ? (category as EventCategory) : undefined,
     query: query || undefined,
@@ -177,12 +175,12 @@ export function filterEvents(events: Event[], filters: EventFilters, now = new D
 
   return events.filter((event) => {
     if (event.reviewStatus !== "published") return false;
-    if (filters.free && event.isFree !== true) return false;
     if (filters.category && event.category !== filters.category) return false;
     if (filters.audience && !event.audiences.includes(filters.audience) && !event.audiences.includes("all")) return false;
     if (filters.applicationOpen) {
       const state = deriveApplicationState(event, now);
-      if (state !== "open" && state !== "closing_today") return false;
+      const isAvailable = state === "not_applicable" || state === "open" || state === "closing_today";
+      if (!isAvailable || deriveEventState(event, now) === "ended") return false;
     }
     if (range) {
       const start = new Date(event.eventStartAt);

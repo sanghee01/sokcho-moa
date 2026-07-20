@@ -1,8 +1,8 @@
 export default function Loading() {
   return (
     <main id="main-content" aria-busy="true" aria-label="속초 행사 정보 불러오는 중">
-      <section className="overflow-hidden bg-cyan-50 pb-6 sm:pb-8" aria-label="배너 불러오는 중">
-        <div className="relative h-72 overflow-hidden bg-cyan-100 sm:h-[min(56.28vw,40rem)]">
+      <section className="overflow-hidden bg-cyan-50" aria-label="배너 불러오는 중">
+        <div className="relative h-[10.8rem] overflow-hidden bg-cyan-100 sm:h-[min(33.77vw,24rem)]">
           <div className="absolute inset-0 animate-pulse bg-gradient-to-b from-cyan-200 via-amber-50 to-cyan-300" />
           <div className="absolute inset-0 flex animate-pulse items-center justify-center px-8" aria-hidden="true">
             <div className="w-full max-w-3xl space-y-4 sm:space-y-6">
@@ -10,11 +10,6 @@ export default function Loading() {
               <div className="mx-auto h-5 w-1/2 rounded-full bg-white/55 sm:h-8" />
             </div>
           </div>
-        </div>
-        <div className="relative z-10 mx-auto -mt-4 grid max-w-xl animate-pulse grid-cols-2 gap-3 px-4 sm:-mt-10 sm:px-6" aria-hidden="true">
-          {[1, 2].map((item) => (
-            <div key={item} className="h-[6.75rem] rounded-3xl bg-white shadow-xl ring-1 ring-teal-900/5 sm:h-[7.25rem]" />
-          ))}
         </div>
       </section>
 
