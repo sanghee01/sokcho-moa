@@ -5,6 +5,12 @@ import { trackAnalyticsEvent } from "@/lib/analytics/events";
 
 type ShareStatus = "idle" | "copied" | "shared" | "error";
 
+const feedbackByStatus: Record<Exclude<ShareStatus, "idle">, { message: string; tone: string }> = {
+  copied: { message: "링크 복사 완료!", tone: "text-teal-700" },
+  shared: { message: "공유 완료!", tone: "text-teal-700" },
+  error: { message: "복사 실패. 다시 눌러 주세요.", tone: "text-rose-700" },
+};
+
 function eventShareUrl(slug: string) {
   const url = new URL(`/events/${encodeURIComponent(slug)}`, window.location.origin);
   url.search = "";
@@ -70,22 +76,7 @@ export function ShareEventButton({ slug }: { slug: string }) {
     }
   }
 
-  const feedback = status === "copied"
-    ? {
-        message: "링크 복사 완료!",
-        tone: "text-teal-700",
-      }
-    : status === "shared"
-      ? {
-          message: "공유 완료!",
-          tone: "text-teal-700",
-        }
-      : status === "error"
-        ? {
-            message: "복사 실패. 다시 눌러 주세요.",
-            tone: "text-rose-700",
-          }
-        : null;
+  const feedback = status === "idle" ? null : feedbackByStatus[status];
 
   return (
     <div className="relative self-start pb-6">

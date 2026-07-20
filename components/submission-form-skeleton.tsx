@@ -2,7 +2,7 @@ type SubmissionFormSkeletonProps = {
   kind: "report" | "feedback";
 };
 
-const pulse = "animate-pulse rounded-xl bg-slate-200 motion-reduce:animate-none";
+const placeholder = "rounded-xl bg-slate-200";
 
 export function SubmissionFormSkeleton({ kind }: SubmissionFormSkeletonProps) {
   const isFeedback = kind === "feedback";
@@ -26,17 +26,17 @@ export function SubmissionFormSkeleton({ kind }: SubmissionFormSkeletonProps) {
 
         <div className="mt-9 space-y-6 rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200 sm:p-8">
           <div>
-            <div className={`${pulse} h-4 w-14`} />
-            <div className={`${pulse} mt-2 h-12 w-full`} />
+            <div className={`${placeholder} h-4 w-14`} />
+            <div className={`${placeholder} mt-2 h-12 w-full`} />
           </div>
           <div>
-            <div className={`${pulse} h-4 w-14`} />
-            <div className={`${pulse} mt-2 h-56 w-full rounded-2xl`} />
+            <div className={`${placeholder} h-4 w-14`} />
+            <div className={`${placeholder} mt-2 h-56 w-full rounded-2xl`} />
           </div>
           {additionalFields.map((field) => (
             <div key={field}>
-              <div className={`${pulse} h-4 w-20`} />
-              <div className={`${pulse} mt-2 h-12 w-full`} />
+              <div className={`${placeholder} h-4 w-20`} />
+              <div className={`${placeholder} mt-2 h-12 w-full`} />
               <div className="mt-2 h-3 w-2/3 rounded-full bg-slate-100" />
             </div>
           ))}

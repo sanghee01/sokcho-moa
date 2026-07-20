@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { FormSubmitButton } from "@/components/admin/form-submit-button";
 import { signInAction, type AdminActionState } from "@/lib/actions/admin";
 
@@ -8,12 +8,21 @@ const initialState: AdminActionState = { error: null };
 
 export function AdminLoginForm({ disabled }: { disabled: boolean }) {
   const [state, formAction] = useActionState(signInAction, initialState);
+  const [email, setEmail] = useState("");
 
   return (
     <form action={formAction} className="mt-8 space-y-5 rounded-3xl bg-white p-6 ring-1 ring-slate-200">
       <label className="block text-sm font-bold text-slate-700">
         이메일
-        <input required type="email" name="email" autoComplete="email" className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2.5" />
+        <input
+          required
+          type="email"
+          name="email"
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
+          autoComplete="email"
+          className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2.5"
+        />
       </label>
       <label className="block text-sm font-bold text-slate-700">
         비밀번호

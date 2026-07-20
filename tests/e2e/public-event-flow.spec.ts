@@ -69,6 +69,18 @@ async function capturedAnalyticsEvents(page: Page): Promise<CapturedAnalyticsEve
   });
 }
 
+test("없는 페이지와 없는 행사를 각각 이해하기 쉬운 화면으로 안내한다", async ({ page }) => {
+  await page.goto("/존재하지-않는-페이지");
+  await expect(page.getByRole("heading", { level: 1, name: "페이지를 찾을 수 없어요." })).toBeVisible();
+  await expect(page.getByRole("link", { name: "행사 목록으로" })).toHaveAttribute("href", "/");
+  const footerBox = await visibleBox(page.getByRole("contentinfo"));
+  expect(footerBox.y + footerBox.height).toBeGreaterThanOrEqual(page.viewportSize()!.height - 1);
+
+  await page.goto("/events/존재하지-않는-행사");
+  await expect(page.getByRole("heading", { level: 1, name: "공개된 행사를 찾을 수 없어요." })).toBeVisible();
+  await expect(page.getByText(/비공개로 전환됐거나 주소가 바뀌었을 수 있습니다/)).toBeVisible();
+});
+
 test("행사 상세는 지도 SDK나 인라인 미리보기 없이 장소·주소·외부 링크를 제공한다", async ({ page }) => {
   const mapSdkRequests: string[] = [];
   page.on("request", (request) => {
@@ -238,7 +250,11 @@ test("정상·null·빈 문자열·404 이미지가 목록과 상세에서 같�
   await page.goto("/");
   const youthCard = page.getByRole("article").filter({ hasText: "청소년 미디어 창작 교실" });
   const normalListImage = youthCard.getByRole("img", { name: "[샘플] 청소년 미디어 창작 교실" });
-  await expect.poll(() => normalListImage.evaluate((image) => (image as HTMLImageElement).naturalWidth)).toBe(1);
+  await normalListImage.scrollIntoViewIfNeeded();
+  await expect.poll(
+    () => normalListImage.evaluate((image) => (image as HTMLImageElement).naturalWidth),
+    { timeout: 10_000 },
+  ).toBe(1);
   await expect(normalListImage).toHaveCSS("object-fit", "cover");
   const normalListBox = await visibleBox(normalListImage);
   expect(normalListBox.width / normalListBox.height).toBeCloseTo(16 / 9, 1);
@@ -259,6 +275,7 @@ test("정상·null·빈 문자열·404 이미지가 목록과 상세에서 같�
   ];
   for (const title of fallbackTitles) {
     const card = page.getByRole("article").filter({ hasText: title });
+    await card.scrollIntoViewIfNeeded();
     const imageFallback = card.getByRole("img", { name: `${title} 대표 이미지` });
     await expect(imageFallback).toBeEmpty();
     const fallbackBox = await visibleBox(imageFallback);
@@ -288,6 +305,7 @@ test("목록과 상세는 데스크톱·모바일에서 가로로 넘치지 않�
   await expect(listHeading).toBeVisible();
 
   await expectNoHorizontalOverflow(page, [
+    page.getByRole("banner"),
     page.getByRole("main").filter({ has: listHeading }),
     page.getByRole("region", { name: "어떤 하루를 찾으세요?" }),
     page.getByRole("article").first(),
@@ -295,7 +313,7 @@ test("목록과 상세는 데스크톱·모바일에서 가로로 넘치지 않�
 
   await page.goto("/events/demo-sea-family-festival");
   const detailHeading = page.getByRole("heading", { level: 1, name: /바다빛 가족 문화축제/ });
-  const locationSection = page.getByRole("heading", { name: "속초해수욕장 인근(샘플)" }).locator("..");
+  const locationSection = page.getByRole("region", { name: "핵심 정보" });
   await expectNoHorizontalOverflow(page, [
     page.getByRole("main").filter({ has: detailHeading }),
     page.locator("article").first(),

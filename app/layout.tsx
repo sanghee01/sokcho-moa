@@ -41,46 +41,39 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
+export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   const currentYear = new Date().getFullYear();
-  const { getAdminIdentity } = await import("@/lib/admin/auth");
-  const admin = await getAdminIdentity();
 
   return (
     <html lang="ko" data-scroll-behavior="smooth">
-      <body>
+      <body className="flex min-h-svh flex-col">
         <a href="#main-content" className="fixed left-3 top-3 z-50 -translate-y-24 rounded-xl bg-white px-4 py-3 font-bold text-teal-900 shadow-lg focus:translate-y-0">
           본문으로 건너뛰기
         </a>
         <header className="border-b border-teal-900/10 bg-white/85 backdrop-blur">
-          <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-4 lg:py-0">
-            <Link href="/" className="block overflow-hidden rounded-2xl ring-teal-700/30 focus-visible:ring-4">
+          <div className="mx-auto flex max-w-6xl items-center justify-between gap-2 px-4 py-2.5 sm:gap-3 sm:px-6 sm:py-4 lg:py-0">
+            <Link href="/" className="block shrink-0 overflow-hidden rounded-2xl ring-teal-700/30 focus-visible:ring-4">
               <Image
                 src={headerLogo}
                 alt="속초모아"
                 priority
                 placeholder="blur"
-                sizes="(min-width: 640px) 176px, 144px"
-                className="h-auto w-36 object-contain sm:w-44 lg:h-14 lg:object-cover lg:object-center"
+                sizes="(min-width: 640px) 176px, (min-width: 380px) 112px, 96px"
+                className="h-auto w-24 object-contain min-[380px]:w-28 sm:w-44 lg:h-14 lg:object-cover lg:object-center"
               />
             </Link>
-            <nav aria-label="주요 메뉴" className="flex w-full flex-wrap justify-end gap-2 text-xs font-semibold sm:w-auto sm:items-center sm:gap-3 sm:text-sm">
-              <TransitionLink href="/report" pendingLabel="제보 페이지 불러오는 중" showPendingIndicator={false} className="inline-flex min-h-11 items-center justify-center rounded-2xl border border-teal-800/55 px-2 py-2 text-center font-black text-teal-800/80 hover:bg-teal-50/70 active:scale-[0.98] sm:rounded-full sm:px-4">
-                행사 제보하기
+            <nav aria-label="주요 메뉴" className="grid min-w-0 flex-1 grid-cols-2 gap-1.5 text-xs font-semibold sm:flex sm:w-auto sm:flex-none sm:items-center sm:gap-3 sm:text-sm">
+              <TransitionLink href="/report" aria-label="행사 제보하기" pendingLabel="제보 페이지 불러오는 중" showPendingIndicator={false} className="inline-flex min-h-11 min-w-0 items-center justify-center whitespace-nowrap rounded-xl border border-teal-800/45 bg-teal-50/50 px-1.5 py-2 text-center font-black text-teal-800/85 hover:bg-teal-50 active:scale-[0.98] sm:rounded-full sm:bg-transparent sm:px-4">
+                행사 제보<span className="hidden min-[380px]:inline">하기</span><span className="sr-only min-[380px]:hidden">하기</span>
               </TransitionLink>
-              <TransitionLink href="/feedback" pendingLabel="의견 페이지 불러오는 중" showPendingIndicator={false} className="inline-flex min-h-11 items-center justify-center rounded-2xl border border-teal-800/55 px-2 py-2 text-center font-black text-teal-800/80 hover:bg-teal-50/70 active:scale-[0.98] sm:rounded-full sm:px-4">
+              <TransitionLink href="/feedback" pendingLabel="의견 페이지 불러오는 중" showPendingIndicator={false} className="inline-flex min-h-11 min-w-0 items-center justify-center whitespace-nowrap rounded-xl border border-teal-800/45 bg-teal-50/50 px-1.5 py-2 text-center font-black text-teal-800/85 hover:bg-teal-50 active:scale-[0.98] sm:rounded-full sm:bg-transparent sm:px-4">
                 의견 보내기
               </TransitionLink>
-              {admin && (
-                <TransitionLink href="/admin" showPendingIndicator={false} className="inline-flex min-h-11 items-center justify-center rounded-2xl border border-teal-900/15 px-2 py-2 text-center hover:bg-teal-50 active:scale-[0.98] sm:rounded-full sm:px-3">
-                  운영자
-                </TransitionLink>
-              )}
             </nav>
           </div>
         </header>
         <AnalyticsRuntime />
-        {children}
+        <div className="flex-1">{children}</div>
         <footer className="mt-20 border-t border-teal-900/10 bg-white">
           <div className="mx-auto flex max-w-6xl flex-col gap-5 px-4 py-10 text-sm leading-6 text-slate-600 sm:flex-row sm:items-end sm:justify-between sm:px-6">
             <div>

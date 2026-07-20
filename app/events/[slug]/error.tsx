@@ -1,11 +1,15 @@
 "use client";
 
-export default function EventError({ reset }: { error: Error & { digest?: string }; reset: () => void }) {
+import { PageErrorState } from "@/components/page-error-state";
+
+export default function EventError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   return (
-    <main id="main-content" className="mx-auto max-w-2xl px-4 py-20 text-center">
-      <h1 className="text-3xl font-black text-slate-950">행사 상세를 불러오지 못했습니다.</h1>
-      <p className="mt-4 text-slate-600">연결 설정을 확인하거나 잠시 뒤 다시 시도해 주세요.</p>
-      <button type="button" onClick={reset} className="mt-8 rounded-2xl bg-teal-800 px-5 py-3 font-bold text-white">다시 시도</button>
-    </main>
+    <PageErrorState
+      error={error}
+      reset={reset}
+      eyebrow="행사 정보를 불러오지 못했습니다"
+      title="상세 내용을 확인할 수 없어요."
+      description="잠시 후 다시 시도하거나 행사 목록에서 다른 행사를 살펴보세요."
+    />
   );
 }

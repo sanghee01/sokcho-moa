@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { FormSubmitButton } from "@/components/admin/form-submit-button";
 import { submitEventReportAction, type EventReportActionState } from "@/lib/actions/reports";
 
@@ -8,6 +8,7 @@ const initialState: EventReportActionState = { error: null, success: false };
 
 export function EventReportForm() {
   const [state, formAction] = useActionState(submitEventReportAction, initialState);
+  const [draft, setDraft] = useState({ title: "", body: "", sourceUrl: "" });
 
   if (state.success) {
     return (
@@ -27,6 +28,8 @@ export function EventReportForm() {
           minLength={2}
           maxLength={200}
           name="title"
+          value={draft.title}
+          onChange={(event) => setDraft((current) => ({ ...current, title: event.target.value }))}
           autoComplete="off"
           placeholder="행사나 프로그램 이름을 입력해 주세요"
           className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-normal text-slate-950 placeholder:font-normal placeholder:text-slate-400"
@@ -40,6 +43,8 @@ export function EventReportForm() {
           minLength={10}
           maxLength={5000}
           name="body"
+          value={draft.body}
+          onChange={(event) => setDraft((current) => ({ ...current, body: event.target.value }))}
           rows={9}
           placeholder="일정, 장소, 신청 방법 등 알고 있는 내용을 적어 주세요"
           className="mt-2 w-full resize-y rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-normal leading-6 text-slate-950 placeholder:font-normal placeholder:text-slate-400"
@@ -53,6 +58,8 @@ export function EventReportForm() {
           type="url"
           maxLength={2048}
           name="sourceUrl"
+          value={draft.sourceUrl}
+          onChange={(event) => setDraft((current) => ({ ...current, sourceUrl: event.target.value }))}
           inputMode="url"
           placeholder="https://..."
           className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-normal text-slate-950 placeholder:font-normal placeholder:text-slate-400"

@@ -15,8 +15,8 @@ test("헤더에서 의견 보내기 폼으로 이동하고 링크 없이 의견�
 
   const title = page.getByLabel(/제목/);
   const body = page.getByLabel(/본문/);
-  const link = page.getByLabel(/관련 링크/);
-  const image = page.getByLabel(/사진 첨부/);
+  const link = page.getByRole("textbox", { name: /^관련 링크/ });
+  const image = page.getByLabel(/^사진 첨부/);
   await expect(title).toHaveAttribute("required", "");
   await expect(body).toHaveAttribute("required", "");
   await expect(link).not.toHaveAttribute("required", "");
@@ -29,8 +29,25 @@ test("헤더에서 의견 보내기 폼으로 이동하고 링크 없이 의견�
   await link.fill("https://example.com/feedback");
   await page.getByRole("button", { name: "의견 보내기", exact: true }).click();
 
-  await expect(page.getByRole("alert")).toHaveText("현재 의견 접수를 준비 중입니다. 잠시 후 다시 이용해 주세요.");
+  await expect(page.locator("form").getByRole("alert")).toHaveText("현재 의견 접수를 준비 중입니다. 잠시 후 다시 이용해 주세요.");
   await expect(title).toHaveValue("필터 사용 의견");
   await expect(body).toHaveValue("필터를 적용한 상태가 캘린더에서도 유지되어서 편리합니다.");
   await expect(link).toHaveValue("https://example.com/feedback");
+});
+
+test("행사 제보 전송에 실패해도 작성한 내용이 유지된다", async ({ page }) => {
+  await page.goto("/report");
+
+  const title = page.getByLabel(/제목/);
+  const body = page.getByLabel(/본문/);
+  const sourceUrl = page.getByLabel(/^링크/);
+  await title.fill("속초 시민 행사 제보");
+  await body.fill("다음 달 시민회관에서 열리는 행사 정보를 제보합니다.");
+  await sourceUrl.fill("https://example.com/event");
+  await page.getByRole("button", { name: "제보 보내기", exact: true }).click();
+
+  await expect(page.locator("form").getByRole("alert")).toHaveText("현재 제보 접수를 준비 중입니다. 잠시 후 다시 이용해 주세요.");
+  await expect(title).toHaveValue("속초 시민 행사 제보");
+  await expect(body).toHaveValue("다음 달 시민회관에서 열리는 행사 정보를 제보합니다.");
+  await expect(sourceUrl).toHaveValue("https://example.com/event");
 });
