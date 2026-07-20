@@ -41,8 +41,10 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
+export default async function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   const currentYear = new Date().getFullYear();
+  const { getAdminIdentity } = await import("@/lib/admin/auth");
+  const admin = await getAdminIdentity();
 
   return (
     <html lang="ko" data-scroll-behavior="smooth">
@@ -66,9 +68,14 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
               <TransitionLink href="/calendar" pendingLabel="행사 캘린더 불러오는 중" showPendingIndicator={false} className="inline-flex min-h-11 items-center justify-center rounded-2xl bg-teal-800 px-2 py-2 text-center font-black text-white shadow-sm hover:bg-teal-900 active:scale-[0.98] sm:rounded-full sm:px-4">
                 행사 캘린더
               </TransitionLink>
-              <TransitionLink href="/admin" showPendingIndicator={false} className="inline-flex min-h-11 items-center justify-center rounded-2xl border border-teal-900/15 px-2 py-2 text-center hover:bg-teal-50 active:scale-[0.98] sm:rounded-full sm:px-3">
-                운영자
+              <TransitionLink href="/report" pendingLabel="제보 페이지 불러오는 중" showPendingIndicator={false} className="inline-flex min-h-11 items-center justify-center rounded-2xl border border-teal-800 px-2 py-2 text-center font-black text-teal-800 hover:bg-teal-50 active:scale-[0.98] sm:rounded-full sm:px-4">
+                제보하기
               </TransitionLink>
+              {admin && (
+                <TransitionLink href="/admin" showPendingIndicator={false} className="inline-flex min-h-11 items-center justify-center rounded-2xl border border-teal-900/15 px-2 py-2 text-center hover:bg-teal-50 active:scale-[0.98] sm:rounded-full sm:px-3">
+                  운영자
+                </TransitionLink>
+              )}
             </nav>
           </div>
         </header>
