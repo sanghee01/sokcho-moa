@@ -51,22 +51,22 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
           본문으로 건너뛰기
         </a>
         <header className="border-b border-teal-900/10 bg-white/85 backdrop-blur">
-          <div className="mx-auto flex max-w-6xl items-center justify-between gap-2 px-4 py-2.5 sm:gap-3 sm:px-6 sm:py-4 lg:py-0">
+          <div className="mx-auto flex max-w-6xl flex-col items-center gap-2 px-4 py-2.5 sm:flex-row sm:justify-between sm:gap-3 sm:px-6 sm:py-4 lg:py-0">
             <Link href="/" className="block shrink-0 overflow-hidden rounded-2xl ring-teal-700/30 focus-visible:ring-4">
               <Image
                 src={headerLogo}
                 alt="속초모아"
                 priority
                 placeholder="blur"
-                sizes="(min-width: 640px) 176px, (min-width: 380px) 112px, 96px"
-                className="h-auto w-24 object-contain min-[380px]:w-28 sm:w-44 lg:h-14 lg:object-cover lg:object-center"
+                sizes="(min-width: 640px) 176px, 128px"
+                className="h-auto w-32 object-contain sm:w-44 lg:h-14 lg:object-cover lg:object-center"
               />
             </Link>
-            <nav aria-label="주요 메뉴" className="grid min-w-0 flex-1 grid-cols-2 gap-1.5 text-xs font-semibold sm:flex sm:w-auto sm:flex-none sm:items-center sm:gap-3 sm:text-sm">
-              <TransitionLink href="/report" aria-label="행사 제보하기" pendingLabel="제보 페이지 불러오는 중" showPendingIndicator={false} className="inline-flex min-h-11 min-w-0 items-center justify-center whitespace-nowrap rounded-xl border border-teal-800/45 bg-teal-50/50 px-1.5 py-2 text-center font-black text-teal-800/85 hover:bg-teal-50 active:scale-[0.98] sm:rounded-full sm:bg-transparent sm:px-4">
-                행사 제보<span className="hidden min-[380px]:inline">하기</span><span className="sr-only min-[380px]:hidden">하기</span>
+            <nav aria-label="주요 메뉴" className="grid w-full grid-cols-2 divide-x divide-teal-800/20 overflow-hidden rounded-xl border border-teal-800/25 bg-teal-50/50 text-xs font-semibold sm:flex sm:w-auto sm:items-center sm:gap-3 sm:divide-x-0 sm:overflow-visible sm:rounded-none sm:border-0 sm:bg-transparent sm:text-sm">
+              <TransitionLink href="/report" pendingLabel="제보 페이지 불러오는 중" showPendingIndicator={false} className="inline-flex min-h-11 min-w-0 items-center justify-center whitespace-nowrap px-3 py-2 text-center font-black text-teal-800/85 hover:bg-teal-100/60 active:bg-teal-100 sm:rounded-full sm:border sm:border-teal-800/45 sm:bg-transparent sm:px-4 sm:hover:bg-teal-50">
+                행사 제보하기
               </TransitionLink>
-              <TransitionLink href="/feedback" pendingLabel="의견 페이지 불러오는 중" showPendingIndicator={false} className="inline-flex min-h-11 min-w-0 items-center justify-center whitespace-nowrap rounded-xl border border-teal-800/45 bg-teal-50/50 px-1.5 py-2 text-center font-black text-teal-800/85 hover:bg-teal-50 active:scale-[0.98] sm:rounded-full sm:bg-transparent sm:px-4">
+              <TransitionLink href="/feedback" pendingLabel="의견 페이지 불러오는 중" showPendingIndicator={false} className="inline-flex min-h-11 min-w-0 items-center justify-center whitespace-nowrap px-3 py-2 text-center font-black text-teal-800/85 hover:bg-teal-100/60 active:bg-teal-100 sm:rounded-full sm:border sm:border-teal-800/45 sm:bg-transparent sm:px-4 sm:hover:bg-teal-50">
                 의견 보내기
               </TransitionLink>
             </nav>
