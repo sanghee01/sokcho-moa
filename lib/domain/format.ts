@@ -70,7 +70,13 @@ export function formatDateRange(start: string | null, end: string | null) {
 }
 
 export function formatOperatingSchedule(value: string | null) {
-  return value?.trim().replace(/\s+/g, " ") || "공식 원문 확인";
+  if (!value?.trim()) return "행사 안내 확인";
+  return value
+    .trim()
+    .split(/\r?\n/)
+    .map((line) => line.trim().replace(/[ \t]+/g, " "))
+    .filter(Boolean)
+    .join("\n");
 }
 
 function getDateParts(formatter: Intl.DateTimeFormat, value: string) {

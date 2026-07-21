@@ -4,8 +4,8 @@ import Link from "next/link";
 import Script from "next/script";
 import type { ReactNode } from "react";
 import { AnalyticsRuntime } from "@/components/analytics/analytics-runtime";
+import { HeaderNavigation } from "@/components/header-navigation";
 import { ScrollToTopButton } from "@/components/scroll-to-top-button";
-import { TransitionLink } from "@/components/transition-link";
 import { googleAnalyticsId, shouldCollectGoogleAnalytics } from "@/lib/analytics/google-analytics";
 import { getPublicEnv } from "@/lib/config/env";
 import headerLogo from "@/public/sokchomoa-header.webp";
@@ -63,14 +63,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
                 className="h-auto w-32 object-contain sm:w-44 lg:h-14 lg:object-cover lg:object-center"
               />
             </Link>
-            <nav aria-label="주요 메뉴" className="grid w-full grid-cols-2 divide-x divide-teal-800/20 overflow-hidden rounded-xl border border-teal-800/25 bg-teal-50/50 text-xs font-semibold sm:flex sm:w-auto sm:items-center sm:gap-3 sm:divide-x-0 sm:overflow-visible sm:rounded-none sm:border-0 sm:bg-transparent sm:text-sm">
-              <TransitionLink href="/report" pendingLabel="제보 페이지 불러오는 중" showPendingIndicator={false} className="inline-flex min-h-11 min-w-0 items-center justify-center whitespace-nowrap px-3 py-2 text-center font-black text-teal-800/85 hover:bg-teal-100/60 active:bg-teal-100 sm:rounded-full sm:border sm:border-teal-800/45 sm:bg-transparent sm:px-4 sm:hover:bg-teal-50">
-                행사 제보하기
-              </TransitionLink>
-              <TransitionLink href="/feedback" pendingLabel="의견 페이지 불러오는 중" showPendingIndicator={false} className="inline-flex min-h-11 min-w-0 items-center justify-center whitespace-nowrap px-3 py-2 text-center font-black text-teal-800/85 hover:bg-teal-100/60 active:bg-teal-100 sm:rounded-full sm:border sm:border-teal-800/45 sm:bg-transparent sm:px-4 sm:hover:bg-teal-50">
-                의견 보내기
-              </TransitionLink>
-            </nav>
+            <HeaderNavigation />
           </div>
         </header>
         <AnalyticsRuntime />

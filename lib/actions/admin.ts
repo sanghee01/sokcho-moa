@@ -6,6 +6,8 @@ import { after } from "next/server";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/admin/auth";
 import { combineDateAndOptionalTime } from "@/lib/admin/datetime";
+import { validateEventImage } from "@/lib/admin/event-image";
+import { buildEventPayload, buildEventSourcePayload, createEventSlug, eventSavedRedirect } from "@/lib/admin/event-write";
 import { candidateJsonSchema, eventFormSchema, placeFormSchema } from "@/lib/admin/schemas";
 import { PUBLIC_EVENTS_CACHE_TAG, PUBLIC_PLACES_CACHE_TAG } from "@/lib/data/cache-tags";
 import { extractSourceExternalId } from "@/lib/domain/source";
@@ -26,11 +28,6 @@ const deleteSchema = z.object({
 function value(formData: FormData, key: string) {
   const raw = formData.get(key);
   return typeof raw === "string" ? raw : "";
-}
-
-function nullableNumberValue(formData: FormData, key: string) {
-  const raw = value(formData, key).trim();
-  return raw ? raw : null;
 }
 
 function dateTimeValue(formData: FormData, key: string) {
@@ -55,6 +52,13 @@ function fail(error: z.ZodError): never {
 }
 
 export type AdminActionState = { error: string | null };
+export type EventImageUploadState = {
+  error: string | null;
+  publicUrl: string | null;
+  uploadedPath: string | null;
+  selectionToken: string | null;
+  fileName: string | null;
+};
 
 function invalidFields(error: z.ZodError): AdminActionState {
   const firstIssue = error.issues[0];
@@ -63,6 +67,35 @@ function invalidFields(error: z.ZodError): AdminActionState {
 
 function actionFailed(message: string): AdminActionState {
   return { error: message };
+}
+
+const eventImageExtensions = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+} as const;
+
+function eventImageFile(formData: FormData) {
+  const file = formData.get("image");
+  if (!(file instanceof File) || file.size === 0) return { file: null, error: null };
+  const error = validateEventImage(file);
+  if (error) return { file: null, error };
+  return { file, error: null };
+}
+
+function imageUploadFailed(
+  previousState: EventImageUploadState,
+  formData: FormData,
+  message: string,
+): EventImageUploadState {
+  const file = formData.get("image");
+  return {
+    error: message,
+    publicUrl: null,
+    uploadedPath: previousState.uploadedPath,
+    selectionToken: value(formData, "imageSelectionToken") || null,
+    fileName: file instanceof File && file.size > 0 ? file.name : null,
+  };
 }
 
 function isMissingScheduleSchema(message: string) {
@@ -110,14 +143,50 @@ export async function signOutAction() {
   redirect("/admin/login");
 }
 
+export async function uploadEventImageAction(
+  previousState: EventImageUploadState,
+  formData: FormData,
+): Promise<EventImageUploadState> {
+  await requireAdmin();
+  const image = eventImageFile(formData);
+  if (image.error) return imageUploadFailed(previousState, formData, image.error);
+  if (!image.file) return imageUploadFailed(previousState, formData, "업로드할 이미지를 선택하세요.");
+  const selectionToken = value(formData, "imageSelectionToken");
+  if (!selectionToken) return imageUploadFailed(previousState, formData, "이미지를 다시 선택해 주세요.");
+
+  const client = await createAuthenticatedSupabaseClient();
+  if (!client) return imageUploadFailed(previousState, formData, "운영자 데이터 연결을 확인해 주세요.");
+  const extension = eventImageExtensions[image.file.type as keyof typeof eventImageExtensions];
+  const path = `events/${crypto.randomUUID()}.${extension}`;
+  const { error: uploadError } = await client.storage
+    .from("event-images")
+    .upload(path, await image.file.arrayBuffer(), { contentType: image.file.type, upsert: false });
+  if (uploadError) return imageUploadFailed(previousState, formData, "이미지를 업로드하지 못했습니다. 잠시 후 다시 시도해 주세요.");
+
+  const previousPath = value(formData, "previousUploadedImagePath");
+  if (previousPath.startsWith("events/") && previousPath !== path) {
+    await client.storage.from("event-images").remove([previousPath]);
+  }
+  const { data } = client.storage.from("event-images").getPublicUrl(path);
+  return {
+    error: null,
+    publicUrl: data.publicUrl,
+    uploadedPath: path,
+    selectionToken,
+    fileName: image.file.name,
+  };
+}
+
 export async function saveEventAction(
   _previousState: AdminActionState,
   formData: FormData,
 ): Promise<AdminActionState> {
   await requireAdmin();
+  const isEditing = Boolean(value(formData, "id"));
+  const uploadedImageUrl = value(formData, "uploadedImageUrl");
   const parsed = eventFormSchema.safeParse({
     id: value(formData, "id") || undefined,
-    slug: value(formData, "slug"),
+    slug: value(formData, "slug") || createEventSlug(),
     title: value(formData, "title"),
     summary: value(formData, "summary"),
     description: value(formData, "description"),
@@ -132,57 +201,36 @@ export async function saveEventAction(
     applicationEndAt: dateTimeValue(formData, "applicationEndAt"),
     locationName: value(formData, "locationName"),
     address: value(formData, "address"),
-    latitude: nullableNumberValue(formData, "latitude"),
-    longitude: nullableNumberValue(formData, "longitude"),
-    locationSourceUrl: value(formData, "locationSourceUrl"),
-    locationVerifiedAt: dateTimeValue(formData, "locationVerifiedAt"),
     priceText: value(formData, "priceText"),
     isFree: value(formData, "isFree") || "unknown",
     organizer: value(formData, "organizer"),
     contact: value(formData, "contact"),
-    officialUrl: value(formData, "officialUrl"),
     applicationUrl: value(formData, "applicationUrl"),
-    imageUrl: value(formData, "imageUrl"),
+    imageUrl: uploadedImageUrl || value(formData, "imageUrl"),
     sourceName: value(formData, "sourceName"),
     sourceUrl: value(formData, "sourceUrl"),
     isFeatured: formData.get("isFeatured") === "on",
-    lastVerifiedAt: dateTimeValue(formData, "lastVerifiedAt"),
   });
   if (!parsed.success) return invalidFields(parsed.error);
+  const image = uploadedImageUrl ? { file: null, error: null } : eventImageFile(formData);
+  if (image.error) return actionFailed(image.error);
   const event = parsed.data;
-  const payload = {
-    slug: event.slug,
-    title: event.title,
-    summary: event.summary,
-    description: event.description,
-    category: event.category,
-    audiences: event.audiences,
-    event_start_at: event.eventStartAt,
-    event_end_at: event.eventEndAt,
-    operating_hours: event.operatingHours,
-    schedule_mode: event.scheduleMode,
-    application_start_at: event.applicationStartAt,
-    application_end_at: event.applicationEndAt,
-    location_name: event.locationName,
-    address: event.address,
-    latitude: event.latitude,
-    longitude: event.longitude,
-    location_source_url: event.locationSourceUrl,
-    location_verified_at: event.locationVerifiedAt,
-    price_text: event.priceText,
-    is_free: event.isFree,
-    organizer: event.organizer,
-    contact: event.contact,
-    official_url: event.officialUrl,
-    application_url: event.applicationUrl,
-    image_url: event.imageUrl,
-    source_name: event.sourceName,
-    source_url: event.sourceUrl,
-    is_featured: event.isFeatured,
-    last_verified_at: event.lastVerifiedAt,
-  };
+  const verifiedAt = new Date().toISOString();
+  const payload = buildEventPayload(event, verifiedAt);
   const client = await createAuthenticatedSupabaseClient();
   if (!client) return actionFailed("운영자 데이터 연결을 확인해 주세요.");
+  let uploadedImagePath: string | null = null;
+  if (image.file) {
+    const extension = eventImageExtensions[image.file.type as keyof typeof eventImageExtensions];
+    const path = `events/${crypto.randomUUID()}.${extension}`;
+    const { error: uploadError } = await client.storage
+      .from("event-images")
+      .upload(path, await image.file.arrayBuffer(), { contentType: image.file.type, upsert: false });
+    if (uploadError) return actionFailed("이미지를 업로드하지 못했습니다. 잠시 후 다시 시도해 주세요.");
+    const { data } = client.storage.from("event-images").getPublicUrl(path);
+    payload.image_url = data.publicUrl;
+    uploadedImagePath = path;
+  }
   let legacyScheduleSchema = false;
   let result = event.id
     ? await client.from("events").update(payload).eq("id", event.id).select("id").single()
@@ -198,7 +246,10 @@ export async function saveEventAction(
       : await client.from("events").insert({ ...legacyPayload, review_status: "pending" }).select("id").single();
     legacyScheduleSchema = true;
   }
-  if (result.error) return actionFailed("행사를 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.");
+  if (result.error) {
+    if (uploadedImagePath) await client.storage.from("event-images").remove([uploadedImagePath]);
+    return actionFailed("행사를 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.");
+  }
   if (!legacyScheduleSchema) {
     const occurrenceResult = await client.rpc("replace_event_occurrences", {
       p_event_id: result.data.id,
@@ -212,20 +263,14 @@ export async function saveEventAction(
         : "행사 기본 정보는 저장했지만 운영 회차를 저장하지 못했습니다. 다시 시도해 주세요.");
     }
   }
-  const sourcePayload = {
-    event_id: result.data.id,
-    provider: event.sourceName,
-    original_url: event.sourceUrl,
-    external_id: extractSourceExternalId(event.sourceUrl),
-    last_checked_at: event.lastVerifiedAt,
-  };
+  const sourcePayload = buildEventSourcePayload(result.data.id, event, verifiedAt);
   const sourceResult = await client
     .from("event_sources")
     .upsert(sourcePayload, { onConflict: "event_id,provider,original_url" });
   const sourceError = sourceResult.error;
   if (sourceError) return actionFailed("행사 출처를 저장하지 못했습니다. 입력한 출처를 확인해 주세요.");
   revalidateEventPaths(event.slug);
-  redirect(`/admin/events/${result.data.id}?saved=1`);
+  redirect(eventSavedRedirect(isEditing));
 }
 
 export async function setEventReviewStatusAction(input: unknown) {
@@ -241,30 +286,6 @@ export async function setEventReviewStatusAction(input: unknown) {
   if (error) throw new Error(`공개 상태를 바꾸지 못했습니다: ${error.message}`);
   after(() => revalidatePublicEventPaths(parsed.data.slug));
   return { status: parsed.data.status };
-}
-
-export async function uploadEventImageAction(
-  _previousState: AdminActionState,
-  formData: FormData,
-): Promise<AdminActionState> {
-  await requireAdmin();
-  const parsed = z.object({ id: z.string().uuid(), slug: z.string().min(1) }).safeParse({ id: value(formData, "id"), slug: value(formData, "slug") });
-  if (!parsed.success) return invalidFields(parsed.error);
-  const file = formData.get("image");
-  if (!(file instanceof File) || file.size === 0) return actionFailed("업로드할 이미지를 선택하세요.");
-  if (!new Set(["image/jpeg", "image/png", "image/webp"]).has(file.type)) return actionFailed("JPG, PNG, WebP 이미지만 업로드할 수 있습니다.");
-  if (file.size > 5 * 1024 * 1024) return actionFailed("이미지는 5MB 이하여야 합니다.");
-  const client = await createAuthenticatedSupabaseClient();
-  if (!client) return actionFailed("운영자 데이터 연결을 확인해 주세요.");
-  const extension = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" }[file.type];
-  const path = `events/${crypto.randomUUID()}.${extension}`;
-  const { error: uploadError } = await client.storage.from("event-images").upload(path, await file.arrayBuffer(), { contentType: file.type, upsert: false });
-  if (uploadError) return actionFailed("이미지를 업로드하지 못했습니다. 잠시 후 다시 시도해 주세요.");
-  const { data } = client.storage.from("event-images").getPublicUrl(path);
-  const { error: updateError } = await client.from("events").update({ image_url: data.publicUrl }).eq("id", parsed.data.id);
-  if (updateError) return actionFailed("업로드한 이미지 정보를 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.");
-  revalidateEventPaths(parsed.data.slug);
-  redirect(`/admin/events/${parsed.data.id}?uploaded=1`);
 }
 
 export async function deleteEventAction(

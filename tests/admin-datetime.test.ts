@@ -58,7 +58,6 @@ describe("admin Asia/Seoul datetime round trip", () => {
     });
 
     expect(parsed.eventStartAt).toBe("2026-07-19T05:30:00.000Z");
-    expect(parsed.lastVerifiedAt).toBe("2026-07-19T00:00:00.000Z");
   });
 
   it("treats date-only starts as the beginning of the day and ends as the end of the day", () => {
@@ -96,6 +95,5 @@ describe("admin Asia/Seoul datetime round trip", () => {
     expect(parsed.eventStartAt).toBe("2026-07-18T15:00:00.000Z");
     expect(parsed.eventEndAt).toBe("2026-07-20T14:59:59.999Z");
     expect(parsed.applicationEndAt).toBe("2026-07-18T14:59:59.999Z");
-    expect(parsed.lastVerifiedAt).toBe("2026-07-18T15:00:00.000Z");
   });
 });

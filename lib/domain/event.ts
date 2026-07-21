@@ -164,7 +164,7 @@ export type EventFilters = {
   audience?: EventAudience;
   category?: EventCategory;
   query?: string;
-  sort?: "latest" | "views" | "published";
+  sort?: "latest" | "deadline" | "views" | "published";
 };
 
 export function parseEventFilters(params: Record<string, string | string[] | undefined>): EventFilters {
@@ -180,7 +180,7 @@ export function parseEventFilters(params: Record<string, string | string[] | und
     audience: eventAudiences.includes(audience as EventAudience) ? (audience as EventAudience) : undefined,
     category: eventCategories.includes(category as EventCategory) ? (category as EventCategory) : undefined,
     query: query || undefined,
-    sort: sort === "latest" || sort === "views" || sort === "published" ? sort : undefined,
+    sort: sort === "latest" || sort === "deadline" || sort === "views" || sort === "published" ? sort : undefined,
   };
 }
 
@@ -232,16 +232,36 @@ export function sortEvents(events: Event[], sort: EventFilters["sort"] = "publis
       if (scheduleDifference !== 0) return scheduleDifference;
     }
 
+    if (sort === "deadline") {
+      const deadlineDifference = compareApplicationDeadline(a, b, now);
+      if (deadlineDifference !== 0) return deadlineDifference;
+    }
+
     if (publishDifference !== 0) return publishDifference;
 
     return a.eventStartAt.localeCompare(b.eventStartAt) || a.title.localeCompare(b.title, "ko-KR");
   });
 }
 
+function compareApplicationDeadline(a: Event, b: Event, now: Date) {
+  const aDeadline = actionableApplicationDeadline(a, now);
+  const bDeadline = actionableApplicationDeadline(b, now);
+  if (aDeadline !== bDeadline) return aDeadline - bDeadline;
+  return compareLatestSchedule(a, b, now);
+}
+
+function actionableApplicationDeadline(event: Event, now: Date) {
+  if (!event.applicationEndAt || deriveEventState(event, now) === "ended") return Number.POSITIVE_INFINITY;
+  const applicationState = deriveApplicationState(event, now);
+  if (applicationState !== "open" && applicationState !== "closing_today") return Number.POSITIVE_INFINITY;
+  const deadline = dateTimestamp(event.applicationEndAt);
+  return deadline >= now.getTime() ? deadline : Number.POSITIVE_INFINITY;
+}
+
 function compareLatestSchedule(a: Event, b: Event, now: Date) {
   const aState = deriveEventState(a, now);
   const bState = deriveEventState(b, now);
-  const statePriority: Record<EventState, number> = { ongoing: 0, upcoming: 1, ended: 2 };
+  const statePriority: Record<EventState, number> = { upcoming: 0, ongoing: 1, ended: 2 };
   const stateDifference = statePriority[aState] - statePriority[bState];
   if (stateDifference !== 0) return stateDifference;
 

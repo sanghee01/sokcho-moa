@@ -382,9 +382,10 @@ test("목록에서 필터하고 상세·원문·외부 지도 링크·주변 명
   await expect(page).toHaveURL(/\/events\/demo-sea-family-festival$/);
   await expect(page.getByRole("heading", { level: 1, name: /바다빛 가족 문화축제/ })).toBeVisible();
 
-  const sourceLink = page.getByRole("link", { name: /공식 원문/ }).first();
+  const sourceLink = page.getByRole("link", { name: /행사 안내/ });
   await expect(sourceLink).toHaveAttribute("href", "https://www.sokcho.go.kr/");
-  await expect(sourceLink).toHaveAccessibleName("공식 원문 (새 창)");
+  await expect(sourceLink).toHaveAccessibleName("행사 안내 (새 창)");
+  await expect(page.getByText("관련 링크", { exact: true })).toHaveCount(0);
   const popupPromise = page.waitForEvent("popup");
   await sourceLink.click();
   const popup = await popupPromise;
@@ -420,20 +421,29 @@ test("필터 응답이 늦어도 클릭 즉시 진행 상태를 알린다", asyn
   await expect(page.getByRole("heading", { name: /찾은 행사 7개/ })).toBeVisible();
 });
 
-test("행사 목록에서 게시·최신·조회 기준으로 정렬할 수 있다", async ({ page }) => {
+test("행사 목록에서 게시·행사일·마감일·조회 기준으로 정렬할 수 있다", async ({ page }) => {
   await page.goto("/");
   const sort = page.getByRole("navigation", { name: "행사 정렬" });
-  await expect(sort.getByRole("link")).toHaveText(["게시순", "최신순", "조회순"]);
+  await expect(sort.getByRole("link")).toHaveText(["게시순", "행사일순", "마감일순", "조회순"]);
+  const sortButtonRows = await sort.getByRole("link").evaluateAll((links) => (
+    new Set(links.map((link) => Math.round(link.getBoundingClientRect().top))).size
+  ));
+  expect(sortButtonRows).toBe(1);
   await expect(sort.getByRole("link", { name: "게시순" })).toHaveAttribute("aria-current", "page");
   await sort.scrollIntoViewIfNeeded();
   const initialScrollY = await page.evaluate(() => window.scrollY);
   expect(initialScrollY).toBeGreaterThan(0);
 
-  await sort.getByRole("link", { name: "최신순" }).click();
+  await sort.getByRole("link", { name: "행사일순" }).click();
   await expect(page).toHaveURL(/sort=latest/);
   await expect.poll(() => page.evaluate((expected) => Math.abs(window.scrollY - expected), initialScrollY)).toBeLessThanOrEqual(2);
-  await expect(sort.getByRole("link", { name: "최신순" })).toHaveAttribute("aria-current", "page");
-  await expect(page.getByRole("article").first()).toContainText("바다빛 가족 문화축제");
+  await expect(sort.getByRole("link", { name: "행사일순" })).toHaveAttribute("aria-current", "page");
+  await expect(page.getByRole("article").first()).toContainText("아바이마을 이야기 산책");
+
+  await sort.getByRole("link", { name: "마감일순" }).click();
+  await expect(page).toHaveURL(/sort=deadline/);
+  await expect(sort.getByRole("link", { name: "마감일순" })).toHaveAttribute("aria-current", "page");
+  await expect(page.getByRole("article").first()).toContainText("청소년 미디어 창작 교실");
 
   await sort.getByRole("link", { name: "조회순" }).click();
   await expect(page).toHaveURL(/sort=views/);

@@ -19,6 +19,7 @@ describe("공식 행사 날짜 표시", () => {
   it("날짜·시간과 운영일정 공백을 일관되게 표시한다", () => {
     expect(formatDateTime("2026-07-22T19:00:00+09:00")).toBe("2026.07.22 19:00");
     expect(formatOperatingSchedule("  매주 수요일   16:00~19:00  · 총 10회 ")).toBe("매주 수요일 16:00~19:00 · 총 10회");
-    expect(formatOperatingSchedule(null)).toBe("공식 원문 확인");
+    expect(formatOperatingSchedule("매주 수요일   16:00~19:00\n\n7월 27일은   휴무")).toBe("매주 수요일 16:00~19:00\n7월 27일은 휴무");
+    expect(formatOperatingSchedule(null)).toBe("행사 안내 확인");
   });
 });

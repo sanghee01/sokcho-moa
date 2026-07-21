@@ -40,6 +40,11 @@ select {
   outline-offset: 3px;
 }
 
+.event-form :where(input, textarea, select):focus-visible {
+  outline: revert;
+  outline-offset: revert;
+}
+
 p,
 dd,
 a {

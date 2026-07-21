@@ -11,7 +11,6 @@ import { getAllPublicEvents, getPublicEventBySlug, getPublicPlaces, getRelatedEv
 import { audienceLabels, applicationStateLabels, categoryLabels, formatDateRange, formatOperatingSchedule } from "@/lib/domain/format";
 import { deriveApplicationState, deriveEventState } from "@/lib/domain/event";
 import { createEventMapLinks, findNearbyPlaces, getNearbyPlacesLabel } from "@/lib/domain/geo";
-import { isKnownUnavailableOfficialUrl, isSameSourceUrl } from "@/lib/domain/source";
 import { analyticsData } from "@/lib/analytics/events";
 
 export const revalidate = 3600;
@@ -53,12 +52,6 @@ export default async function EventDetailPage({ params }: EventPageProps) {
     event.latitude,
     event.longitude,
   );
-  const availableOfficialUrl = event.officialUrl && !isKnownUnavailableOfficialUrl(event.officialUrl)
-    ? event.officialUrl
-    : null;
-  const distinctOfficialUrl = availableOfficialUrl && !isSameSourceUrl(availableOfficialUrl, event.sourceUrl)
-    ? availableOfficialUrl
-    : null;
   const eventJsonLd = {
     "@context": "https://schema.org",
     "@type": "Event",
@@ -76,7 +69,7 @@ export default async function EventDetailPage({ params }: EventPageProps) {
     } : undefined,
     organizer: event.organizer ? { "@type": "Organization", name: event.organizer } : undefined,
     image: event.imageUrl ? [event.imageUrl] : undefined,
-    url: availableOfficialUrl ?? undefined,
+    url: event.sourceUrl,
     isAccessibleForFree: event.isFree ?? undefined,
   };
 
@@ -124,7 +117,7 @@ export default async function EventDetailPage({ params }: EventPageProps) {
             <p className="mt-5 text-lg leading-8 text-slate-600">{event.summary ?? "핵심 정보와 원문 출처를 확인하세요."}</p>
             <div className="mt-7 flex flex-wrap items-start gap-3">
               {event.applicationUrl && <a href={event.applicationUrl} target="_blank" rel="noreferrer" {...analyticsData("application_link_clicked", { event_slug: event.slug, event_category: event.category, link_position: "hero" })} className="rounded-2xl bg-rose-600 px-5 py-3 font-bold text-white">신청·예매 <span className="sr-only">(새 창)</span></a>}
-              <a href={event.sourceUrl} target="_blank" rel="noreferrer" {...analyticsData("source_link_clicked", { event_slug: event.slug, event_category: event.category, link_position: "hero", source_type: "primary" })} className="rounded-2xl bg-teal-800 px-5 py-3 font-bold text-white">공식 원문 <span className="sr-only">(새 창)</span></a>
+              <a href={event.sourceUrl} target="_blank" rel="noreferrer" {...analyticsData("source_link_clicked", { event_slug: event.slug, event_category: event.category, link_position: "hero", source_type: "primary" })} className="rounded-2xl bg-teal-800 px-5 py-3 font-bold text-white">행사 안내 <span className="sr-only">(새 창)</span></a>
               <ShareEventButton slug={event.slug} />
             </div>
           </div>
@@ -140,21 +133,13 @@ export default async function EventDetailPage({ params }: EventPageProps) {
               <div key={label} className={`grid gap-1 px-5 py-4 sm:grid-cols-[10rem_1fr] sm:gap-5 ${index > 0 ? "border-t border-slate-100" : ""}`}>
                 <dt className="font-bold text-slate-700">{label}</dt>
                 <dd className="flex flex-wrap items-center gap-x-3 gap-y-1 text-slate-950">
-                  <span>{value}</span>
+                  <span className={label === "운영일정" ? "whitespace-pre-line" : undefined}>{value}</span>
                   {label === "상세 주소" && mapLinks && (
                     <a href={mapLinks.naver} target="_blank" rel="noreferrer" {...analyticsData("map_link_clicked", { event_slug: event.slug, event_category: event.category, link_position: "facts_address", map_method: mapLinks.hasVerifiedCoordinates ? "verified_location" : "search" })} className="font-bold text-teal-700 underline underline-offset-4">네이버 지도 <span className="sr-only">(새 창)</span></a>
                   )}
                 </dd>
               </div>
             ))}
-            <div className="grid gap-2 border-t border-slate-100 px-5 py-4 sm:grid-cols-[10rem_1fr] sm:gap-5">
-              <dt className="font-bold text-slate-700">관련 링크</dt>
-              <dd className="flex flex-wrap gap-3 font-bold text-teal-700">
-                <a href={event.sourceUrl} target="_blank" rel="noreferrer" {...analyticsData("source_link_clicked", { event_slug: event.slug, event_category: event.category, link_position: "facts", source_type: "primary" })} className="underline underline-offset-4">공식 원문 <span className="sr-only">(새 창)</span></a>
-                {distinctOfficialUrl && <a href={distinctOfficialUrl} target="_blank" rel="noreferrer" {...analyticsData("source_link_clicked", { event_slug: event.slug, event_category: event.category, link_position: "facts", source_type: "official_guide" })} className="underline underline-offset-4">공식 안내 <span className="sr-only">(새 창)</span></a>}
-                {event.applicationUrl && <a href={event.applicationUrl} target="_blank" rel="noreferrer" {...analyticsData("application_link_clicked", { event_slug: event.slug, event_category: event.category, link_position: "facts" })} className="underline underline-offset-4">신청·예매 <span className="sr-only">(새 창)</span></a>}
-              </dd>
-            </div>
           </dl>
         </section>
       </article>

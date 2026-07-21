@@ -1,7 +1,6 @@
 import { z } from "zod";
 import { seoulDateOrDatetimeToIso } from "@/lib/admin/datetime";
 import { eventAudiences, eventCandidateSchema, eventCategories } from "@/lib/domain/event";
-import { isLikelyEventDetailUrl } from "@/lib/domain/source";
 
 const optionalText = z.string().trim().transform((value) => value || null);
 const optionalUrl = z.string().trim().transform((value, context) => {
@@ -13,6 +12,17 @@ const optionalUrl = z.string().trim().transform((value, context) => {
   }
   return parsed.data;
 });
+const requiredHttpsUrl = z.string()
+  .trim()
+  .min(1, "행사 안내 URL을 입력하세요.")
+  .url("올바른 행사 안내 URL을 입력하세요.")
+  .refine((value) => {
+    try {
+      return new URL(value).protocol === "https:";
+    } catch {
+      return false;
+    }
+  }, "HTTPS 행사 안내 URL을 입력하세요.");
 const optionalDate = (dateOnlyBoundary: "start" | "end" = "start") => z.string().trim().transform((value, context) => {
   if (!value) return null;
   try {
@@ -34,11 +44,11 @@ const occurrenceSchema = z.object({
 export const eventFormSchema = z.object({
   id: z.string().uuid().optional(),
   slug: z.string().trim().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "영문 소문자·숫자·하이픈만 사용하세요."),
-  title: z.string().trim().min(1).max(200),
+  title: z.string().trim().min(1, "행사명을 입력하세요.").max(200),
   summary: optionalText,
   description: optionalText,
   category: z.enum(eventCategories),
-  audiences: z.array(z.enum(eventAudiences)).min(1),
+  audiences: z.array(z.enum(eventAudiences)).min(1, "참여 대상을 한 개 이상 선택하세요."),
   eventStartAt: optionalStartDate,
   eventEndAt: optionalEndDate,
   operatingHours: optionalText,
@@ -48,21 +58,15 @@ export const eventFormSchema = z.object({
   applicationEndAt: optionalEndDate,
   locationName: optionalText,
   address: optionalText,
-  latitude: z.coerce.number().min(-90).max(90).nullable(),
-  longitude: z.coerce.number().min(-180).max(180).nullable(),
-  locationSourceUrl: optionalUrl,
-  locationVerifiedAt: optionalStartDate,
   priceText: optionalText,
   isFree: z.enum(["true", "false", "unknown"]).transform((value) => value === "unknown" ? null : value === "true"),
   organizer: optionalText,
   contact: optionalText,
-  officialUrl: optionalUrl,
   applicationUrl: optionalUrl,
   imageUrl: optionalUrl,
-  sourceName: z.string().trim().min(1).max(200),
-  sourceUrl: z.string().trim().url().refine(isLikelyEventDetailUrl, "기관 대표 홈이나 목록이 아닌 행사별 공식 원문 URL을 입력하세요."),
+  sourceName: z.string().trim().min(1, "출처 기관을 입력하세요.").max(200),
+  sourceUrl: requiredHttpsUrl,
   isFeatured: z.boolean(),
-  lastVerifiedAt: optionalStartDate,
 }).superRefine((event, context) => {
   if (event.eventStartAt && event.eventEndAt && new Date(event.eventEndAt) < new Date(event.eventStartAt)) {
     context.addIssue({ code: "custom", path: ["eventEndAt"], message: "행사 종료는 시작보다 빠를 수 없습니다." });
@@ -81,21 +85,9 @@ export const eventFormSchema = z.object({
     }
   });
 
-  const hasLatitude = event.latitude != null;
-  const hasLongitude = event.longitude != null;
-  if (hasLatitude !== hasLongitude) {
-    context.addIssue({ code: "custom", path: [hasLatitude ? "longitude" : "latitude"], message: "위도와 경도를 모두 입력하거나 모두 비워 주세요." });
-  }
-
-  const hasLocationSource = event.locationSourceUrl != null;
-  const hasLocationVerifiedAt = event.locationVerifiedAt != null;
-  if (hasLocationSource !== hasLocationVerifiedAt) {
-    context.addIssue({ code: "custom", path: [hasLocationSource ? "locationVerifiedAt" : "locationSourceUrl"], message: "위치 근거 URL과 위치 확인 시각을 함께 입력해 주세요." });
-  }
-  if ((hasLocationSource || hasLocationVerifiedAt) && (!hasLatitude || !hasLongitude)) {
-    context.addIssue({ code: "custom", path: ["latitude"], message: "위치 근거를 등록하려면 위도와 경도가 모두 필요합니다." });
-  }
 });
+
+export type EventFormValues = z.infer<typeof eventFormSchema>;
 
 export const placeFormSchema = z.object({
   id: z.string().uuid().optional(),

@@ -16,6 +16,7 @@ describe("parseEventFilters", () => {
 
   it("지원하는 정렬 파라미터만 허용한다", () => {
     expect(parseEventFilters({ sort: "latest" }).sort).toBe("latest");
+    expect(parseEventFilters({ sort: "deadline" }).sort).toBe("deadline");
     expect(parseEventFilters({ sort: "views" }).sort).toBe("views");
     expect(parseEventFilters({ sort: "published" }).sort).toBe("published");
     expect(parseEventFilters({ sort: "invalid" }).sort).toBeUndefined();
@@ -38,7 +39,7 @@ describe("sortEvents", () => {
     ]);
   });
 
-  it("최신순은 진행 중·가까운 예정·먼 예정·종료 행사 순서로 보여준다", () => {
+  it("행사일순은 가까운 예정·먼 예정·진행 중·최근 종료 행사 순서로 보여준다", () => {
     const [first, second, third, fourth] = getDemoEvents();
     const now = new Date("2026-07-20T00:00:00.000Z");
     const events = [
@@ -49,9 +50,9 @@ describe("sortEvents", () => {
     ];
 
     expect(sortEvents(events, "latest", now).map((event) => event.slug)).toEqual([
-      third.slug,
       second.slug,
       first.slug,
+      third.slug,
       fourth.slug,
     ]);
   });
@@ -65,6 +66,24 @@ describe("sortEvents", () => {
 
     expect(sortEvents(events, "published").map((event) => event.slug)).toEqual([second.slug, first.slug]);
     expect(sortEvents(events).map((event) => event.slug)).toEqual([second.slug, first.slug]);
+  });
+
+  it("마감일순은 신청 가능한 가까운 마감을 먼저, 나머지는 행사일순으로 보여준다", () => {
+    const [first, second, third, fourth] = getDemoEvents();
+    const now = new Date("2026-07-20T00:00:00.000Z");
+    const events = [
+      { ...first, eventStartAt: "2026-07-21T00:00:00.000Z", eventEndAt: "2026-07-21T03:00:00.000Z", applicationStartAt: null, applicationEndAt: null, applicationUrl: null },
+      { ...second, eventStartAt: "2026-08-01T00:00:00.000Z", eventEndAt: "2026-08-01T03:00:00.000Z", applicationStartAt: "2026-07-01T00:00:00.000Z", applicationEndAt: "2026-07-20T06:00:00.000Z", applicationUrl: "https://example.com/apply/urgent" },
+      { ...third, eventStartAt: "2026-07-22T00:00:00.000Z", eventEndAt: "2026-07-22T03:00:00.000Z", applicationStartAt: "2026-07-01T00:00:00.000Z", applicationEndAt: "2026-07-21T00:00:00.000Z", applicationUrl: "https://example.com/apply/later" },
+      { ...fourth, eventStartAt: "2026-07-19T00:00:00.000Z", eventEndAt: "2026-07-19T03:00:00.000Z", applicationStartAt: "2026-07-01T00:00:00.000Z", applicationEndAt: "2026-07-19T00:00:00.000Z", applicationUrl: "https://example.com/apply/closed" },
+    ];
+
+    expect(sortEvents(events, "deadline", now).map((event) => event.slug)).toEqual([
+      second.slug,
+      third.slug,
+      first.slug,
+      fourth.slug,
+    ]);
   });
 });
 

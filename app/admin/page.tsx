@@ -4,6 +4,7 @@ import { SubmissionReviewCard } from "@/components/admin/submission-review-card"
 import { EventReviewRow } from "@/components/admin/event-review-row";
 import { TransitionLink } from "@/components/transition-link";
 import { requireAdmin } from "@/lib/admin/auth";
+import { getAdminDashboardFeedback } from "@/lib/admin/dashboard-feedback";
 import { getAdminEventReports, getAdminEvents, getAdminPlaces, getAdminSiteFeedback } from "@/lib/admin/queries";
 
 const statusLabels: Record<string, string> = { pending: "검수 대기", published: "공개", rejected: "반려" };
@@ -11,9 +12,9 @@ const statusLabels: Record<string, string> = { pending: "검수 대기", publish
 export default async function AdminPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string; deleted?: string }>;
+  searchParams: Promise<{ status?: string; deleted?: string; saved?: string }>;
 }) {
-  const [admin, { status, deleted }, allEvents, places, reports, feedback] = await Promise.all([
+  const [admin, { status, deleted, saved }, allEvents, places, reports, feedback] = await Promise.all([
     requireAdmin(),
     searchParams,
     getAdminEvents(),
@@ -30,15 +31,11 @@ export default async function AdminPage({
       allEvents.filter((row) => row.review_status === key).length,
     ]),
   );
-  const deletedMessage = deleted === "event"
-    ? "행사를 삭제했습니다."
-    : deleted === "place"
-      ? "명소를 삭제했습니다."
-      : undefined;
+  const feedbackMessage = getAdminDashboardFeedback({ saved, deleted });
 
   return (
     <AdminShell email={admin.email}>
-      <ActionFeedback message={deletedMessage} />
+      <ActionFeedback message={feedbackMessage} />
       <section className="grid gap-4 sm:grid-cols-3">
         {Object.entries(statusLabels).map(([key, label]) => (
           <TransitionLink key={key} href={`/admin?status=${key}`} className={`rounded-2xl p-5 ring-1 ${status === key ? "bg-teal-800 text-white ring-teal-800" : "bg-white ring-slate-200"}`}>
