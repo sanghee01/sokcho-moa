@@ -109,7 +109,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
             <Script id="google-analytics-config" strategy="beforeInteractive">
               {`
                 gtag('js', new Date());
-                gtag('config', '${googleAnalyticsId}');
+                gtag('config', '${googleAnalyticsId}', { send_page_view: false });
               `}
             </Script>
             <Script

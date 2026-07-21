@@ -16,6 +16,11 @@ export const analyticsEvents = [
 
 export type AnalyticsEvent = (typeof analyticsEvents)[number];
 export type AnalyticsProperties = Record<string, string | number | boolean | null | undefined>;
+export type PageViewProperties = {
+  page_title: string;
+  page_location: string;
+  page_referrer?: string;
+};
 export type AnalyticsDataAttributes = {
   "data-analytics-event": AnalyticsEvent;
   "data-analytics-properties"?: string;
@@ -30,6 +35,11 @@ declare global {
 export function trackAnalyticsEvent(name: AnalyticsEvent, properties: AnalyticsProperties = {}) {
   if (typeof window === "undefined") return;
   window.gtag?.("event", name, compactProperties(properties));
+}
+
+export function trackPageView(properties: PageViewProperties) {
+  if (typeof window === "undefined") return;
+  window.gtag?.("event", "page_view", compactProperties(properties));
 }
 
 export function analyticsData(name: AnalyticsEvent, properties: AnalyticsProperties = {}): AnalyticsDataAttributes {
