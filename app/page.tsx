@@ -46,6 +46,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
     ? buildCalendarMonth(filteredEvents, resolveCalendarMonth(params.month, now), now)
     : null;
   const demoMode = allEvents.some((event) => event.isDemo);
+  const resultTitle = filters.applicationOpen ? "참여 가능 행사" : "행사 목록";
 
   return (
     <main id="main-content">
@@ -97,7 +98,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         <section aria-labelledby="event-results-title" data-event-view={calendarView ? "calendar" : "list"}>
           <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex min-w-0 flex-wrap items-center gap-3">
-              <h2 id="event-results-title" className="text-2xl font-black text-slate-950 sm:text-3xl">찾은 행사 {filteredEvents.length}개</h2>
+              <h2 id="event-results-title" className="text-2xl font-black text-slate-950 sm:text-3xl">{resultTitle} {filteredEvents.length}개</h2>
               <nav aria-label="행사 보기 방식" className="inline-flex shrink-0 items-center border-b border-slate-300">
                 <TransitionLink
                   href={buildEventBrowseHref(params, { view: undefined, month: undefined })}

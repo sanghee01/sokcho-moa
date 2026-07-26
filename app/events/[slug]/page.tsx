@@ -148,9 +148,6 @@ export default async function EventDetailPage({ params }: EventPageProps) {
         <section aria-labelledby="nearby-title" className="mt-14">
           <p className="text-sm font-bold text-teal-700">{nearbyPlacesLabel.eyebrow}</p>
           <h2 id="nearby-title" className="mt-1 text-2xl font-black text-slate-950 sm:text-3xl">{nearbyPlacesLabel.title}</h2>
-          {nearbyPlacesLabel.isRegionalFallback && (
-            <p className="mt-2 text-sm leading-6 text-slate-600">행사의 정확한 좌표가 없어 같은 지역의 다양한 명소를 추천해요.</p>
-          )}
           <div className="mt-5 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             {nearbyPlaces.map((place) => <PlaceCard key={place.id} place={place} />)}
           </div>

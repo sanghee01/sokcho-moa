@@ -35,7 +35,7 @@ test("행사 결과 영역을 캘린더로 전환해 연속 일정과 신청 상
 
   await expect(page).toHaveURL(/\?view=calendar(?:&|$)/);
   await expect(viewTabs.getByRole("link", { name: "캘린더", exact: true })).toHaveAttribute("aria-current", "page");
-  await expect(page.getByRole("heading", { name: /찾은 행사 8개/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /행사 목록 8개/ })).toBeVisible();
   await expect(page.getByLabel("신청 상태 범례").getByText("신청 가능", { exact: true })).toBeVisible();
   await expect(page.getByLabel("신청 상태 범례").getByText("신청 마감", { exact: true })).toBeVisible();
 
@@ -139,7 +139,7 @@ test("캘린더에서도 상단 필터가 같은 행사 집합에 적용된다",
 
   await expect(page).toHaveURL(/view=calendar/);
   await expect(page).toHaveURL(/category=festival/);
-  await expect(page.getByRole("heading", { name: "찾은 행사 1개", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "행사 목록 1개", exact: true })).toBeVisible();
   await expect(page.getByText("이 달에 실제 운영 일정이 있는 행사 1개", { exact: true })).toBeVisible();
 
   const filteredEvent = testInfo.project.name === "desktop-chromium"

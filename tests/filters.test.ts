@@ -108,6 +108,22 @@ describe("filterEvents", () => {
     expect(slugs).not.toContain("demo-ended-winter-program");
   });
 
+  it("신청 가능 결과는 마감 시각이 지나면 제외된다", () => {
+    const [sample] = getDemoEvents();
+    const event = {
+      ...sample,
+      reviewStatus: "published" as const,
+      eventStartAt: "2026-08-01T00:00:00.000Z",
+      eventEndAt: "2026-08-01T03:00:00.000Z",
+      applicationStartAt: "2026-07-01T00:00:00.000Z",
+      applicationEndAt: "2026-07-26T03:00:00.000Z",
+      applicationUrl: "https://example.com/apply",
+    };
+
+    expect(filterEvents([event], { applicationOpen: true }, new Date("2026-07-26T02:59:59.000Z"))).toHaveLength(1);
+    expect(filterEvents([event], { applicationOpen: true }, new Date("2026-07-26T03:00:01.000Z"))).toHaveLength(0);
+  });
+
   it("선택 운영 행사는 행사기간 중간의 비운영일 날짜 필터에서 제외한다", () => {
     const events = getDemoEvents();
     const gapDay = new Date(Date.now() + 8 * 24 * 60 * 60 * 1_000);

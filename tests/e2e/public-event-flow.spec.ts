@@ -373,10 +373,10 @@ test("목록에서 필터하고 상세·원문·외부 지도 링크·주변 명
 
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "요즘 속초에서 뭐하지?" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: /찾은 행사 8개/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /행사 목록 8개/ })).toBeVisible();
   await page.getByRole("link", { name: "가족", exact: true }).click();
   await expect(page).toHaveURL(/audience=family/);
-  await expect(page.getByRole("heading", { name: /찾은 행사 7개/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /행사 목록 7개/ })).toBeVisible();
 
   await page.getByRole("link", { name: /바다빛 가족 문화축제/ }).click();
   await expect(page).toHaveURL(/\/events\/demo-sea-family-festival$/);
@@ -418,7 +418,15 @@ test("필터 응답이 늦어도 클릭 즉시 진행 상태를 알린다", asyn
 
   releaseRequest();
   await expect(page).toHaveURL(/audience=family/);
-  await expect(page.getByRole("heading", { name: /찾은 행사 7개/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /행사 목록 7개/ })).toBeVisible();
+});
+
+test("신청 가능 필터를 선택하면 결과 수의 의미를 참여 가능 행사로 안내한다", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("link", { name: "신청 가능", exact: true }).click();
+
+  await expect(page).toHaveURL(/application=open/);
+  await expect(page.getByRole("heading", { name: /참여 가능 행사 \d+개/ })).toBeVisible();
 });
 
 test("행사 목록에서 게시·행사일·마감일·조회 기준으로 정렬할 수 있다", async ({ page }) => {
