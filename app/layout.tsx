@@ -47,7 +47,8 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
 
   return (
     <html lang="ko" data-scroll-behavior="smooth">
-      <body className="flex min-h-svh flex-col">
+      {/* 브라우저 확장 프로그램이 hydration 전에 body 속성을 주입해도 앱 내부 오류와 구분한다. */}
+      <body suppressHydrationWarning className="flex min-h-svh flex-col">
         <a href="#main-content" className="fixed left-3 top-3 z-50 -translate-y-24 rounded-xl bg-white px-4 py-3 font-bold text-teal-900 shadow-lg focus:translate-y-0">
           본문으로 건너뛰기
         </a>

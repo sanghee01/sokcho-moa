@@ -9,9 +9,16 @@ describe("parseEventFilters", () => {
       audience: "family",
       category: undefined,
       applicationOpen: undefined,
+      status: "active",
       query: undefined,
       sort: undefined,
     });
+  });
+
+  it("기본은 진행중 행사로 보고 closed 값만 마감 탭으로 해석한다", () => {
+    expect(parseEventFilters({}).status).toBe("active");
+    expect(parseEventFilters({ status: "closed" }).status).toBe("closed");
+    expect(parseEventFilters({ status: "unknown" }).status).toBe("active");
   });
 
   it("지원하는 정렬 파라미터만 허용한다", () => {
@@ -88,6 +95,15 @@ describe("sortEvents", () => {
 });
 
 describe("filterEvents", () => {
+  it("진행중과 마감 행사를 신청·행사 종료 상태로 나눈다", () => {
+    const events = getDemoEvents();
+    const now = new Date();
+
+    expect(filterEvents(events, { status: "active" }, now)).toHaveLength(7);
+    expect(filterEvents(events, { status: "closed" }, now).map((event) => event.slug))
+      .toEqual(["demo-ended-winter-program"]);
+  });
+
   it("카테고리, 대상, 검색어를 함께 적용한다", () => {
     const result = filterEvents(getDemoEvents(), {
       category: "festival",

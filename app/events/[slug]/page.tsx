@@ -5,6 +5,7 @@ import { EventCard } from "@/components/event-card";
 import { EventDetailAnalytics } from "@/components/analytics/event-detail-analytics";
 import { EventImage } from "@/components/event-image";
 import { PlaceCard } from "@/components/place-card";
+import { SaveEventButton } from "@/components/save-event-button";
 import { ShareEventButton } from "@/components/share-event-button";
 import { StatusBadges } from "@/components/status-badges";
 import { getAllPublicEvents, getPublicEventBySlug, getPublicPlaces, getRelatedEvents } from "@/lib/data/events";
@@ -118,6 +119,15 @@ export default async function EventDetailPage({ params }: EventPageProps) {
             <div className="mt-7 flex flex-wrap items-start gap-3">
               {event.applicationUrl && <a href={event.applicationUrl} target="_blank" rel="noreferrer" {...analyticsData("application_link_clicked", { event_slug: event.slug, event_category: event.category, link_position: "hero" })} className="rounded-2xl bg-rose-600 px-5 py-3 font-bold text-white">신청·예매 <span className="sr-only">(새 창)</span></a>}
               <a href={event.sourceUrl} target="_blank" rel="noreferrer" {...analyticsData("source_link_clicked", { event_slug: event.slug, event_category: event.category, link_position: "hero", source_type: "primary" })} className="rounded-2xl bg-teal-800 px-5 py-3 font-bold text-white">행사 안내 <span className="sr-only">(새 창)</span></a>
+              <SaveEventButton event={{
+                slug: event.slug,
+                title: event.title,
+                category: event.category,
+                audiences: event.audiences,
+                eventStartAt: event.eventStartAt,
+                eventEndAt: event.eventEndAt,
+                applicationEndAt: event.applicationEndAt,
+              }} />
               <ShareEventButton slug={event.slug} />
             </div>
           </div>

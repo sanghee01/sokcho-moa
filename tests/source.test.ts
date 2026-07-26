@@ -9,6 +9,7 @@ import {
 describe("공식 원문 URL", () => {
   it("알려진 쿼리·경로·공식 파일에서 외부 식별자를 추출한다", () => {
     expect(extractSourceExternalId("https://sokcho.go.kr/sc/event/program?eventSeq=669")).toBe("669");
+    expect(extractSourceExternalId("https://www.sokcho.go.kr/ct/tour/attraction?contentSeq=168")).toBe("168");
     expect(extractSourceExternalId("https://library.sokcho.go.kr/sokcho/menu/259/board/51/post/1079")).toBe("1079");
     expect(extractSourceExternalId("https://www.sokcho.go.kr/upload/popupzone/event-poster.jpg")).toBe("event-poster.jpg");
   });
@@ -21,6 +22,10 @@ describe("공식 원문 URL", () => {
     expect(isLikelyEventDetailUrl("https://www.sokcho.go.kr/ct/museum/archives/notice/news?articleSeq=817624")).toBe(true);
     expect(isLikelyEventDetailUrl("https://www.sokcho.go.kr/sc/portal/sokchonews/notice?articleSeq=817294")).toBe(true);
     expect(isLikelyEventDetailUrl("https://www.sokcho.go.kr/sc/portal/sokchonews/pressrelease?articleSeq=817391")).toBe(true);
+    expect(isLikelyEventDetailUrl("https://www.sokcho.go.kr/ct/tour/tour_guide/news?articleSeq=817450")).toBe(true);
+    expect(isLikelyEventDetailUrl("https://www.sokcho.go.kr/ct/tour/attraction?contentSeq=168")).toBe(true);
+    expect(isLikelyEventDetailUrl("https://www.sokcho.go.kr/ct/tour/attraction")).toBe(false);
+    expect(isLikelyEventDetailUrl("https://sokcho.go.kr/ct/culture/events/schedule")).toBe(true);
     expect(isLikelyEventDetailUrl("https://www.sokcho.go.kr/sc/upload/popupzone/PPSTPT01/event-poster.jpg")).toBe(true);
     expect(isLikelyEventDetailUrl("https://www.sokcho.go.kr/upload/popupzone/event-poster.jpg")).toBe(true);
     expect(isLikelyEventDetailUrl("https://www.sokcho.go.kr/upload/notice/event-poster.jpg")).toBe(false);

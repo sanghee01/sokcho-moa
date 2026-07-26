@@ -354,6 +354,7 @@ test("행사 카드에서 주제와 참여 대상을 라벨 없이 배지로 표
 });
 
 test("일정 거리 스크롤하면 오른쪽 하단 버튼으로 페이지 맨 위에 돌아간다", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 600 });
   await page.goto("/");
   const scrollToTop = page.getByTestId("scroll-to-top");
 
@@ -373,10 +374,10 @@ test("목록에서 필터하고 상세·원문·외부 지도 링크·주변 명
 
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "요즘 속초에서 뭐하지?" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: /행사 목록 8개/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /행사 목록 7개/ })).toBeVisible();
   await page.getByRole("link", { name: "가족", exact: true }).click();
   await expect(page).toHaveURL(/audience=family/);
-  await expect(page.getByRole("heading", { name: /행사 목록 7개/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /행사 목록 6개/ })).toBeVisible();
 
   await page.getByRole("link", { name: /바다빛 가족 문화축제/ }).click();
   await expect(page).toHaveURL(/\/events\/demo-sea-family-festival$/);
@@ -418,15 +419,29 @@ test("필터 응답이 늦어도 클릭 즉시 진행 상태를 알린다", asyn
 
   releaseRequest();
   await expect(page).toHaveURL(/audience=family/);
-  await expect(page.getByRole("heading", { name: /행사 목록 7개/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /행사 목록 6개/ })).toBeVisible();
 });
 
-test("신청 가능 필터를 선택하면 결과 수의 의미를 참여 가능 행사로 안내한다", async ({ page }) => {
+test("진행중과 마감 탭으로 참여 가능한 행사와 지난 기록을 분리한다", async ({ page }) => {
   await page.goto("/");
-  await page.getByRole("link", { name: "신청 가능", exact: true }).click();
+  const statusTabs = page.getByRole("navigation", { name: "행사 상태" });
+  const activeTab = statusTabs.getByRole("link", { name: "진행중", exact: true });
+  const closedTab = statusTabs.getByRole("link", { name: "마감", exact: true });
 
-  await expect(page).toHaveURL(/application=open/);
-  await expect(page.getByRole("heading", { name: /참여 가능 행사 \d+개/ })).toBeVisible();
+  await expect(activeTab).toHaveAttribute("aria-current", "page");
+  await expect(page.getByRole("heading", { name: "행사 목록 7개", exact: true })).toBeVisible();
+  await expect(page.getByRole("link", { name: /지난 계절 문화 프로그램/ })).toHaveCount(0);
+
+  await closedTab.click();
+
+  await expect(page).toHaveURL(/status=closed/);
+  await expect(closedTab).toHaveAttribute("aria-current", "page");
+  await expect(page.getByRole("heading", { name: "마감 행사 1개", exact: true })).toBeVisible();
+  const endedEvent = page.getByRole("link", { name: /지난 계절 문화 프로그램/ });
+  await expect(endedEvent).toBeVisible();
+  await expect(endedEvent.getByText("종료된 행사예요", { exact: true })).toBeVisible();
+  await expect(endedEvent.getByText("신청이 마감된 행사예요", { exact: true })).toHaveCount(0);
+  await expect(page.getByRole("link", { name: /바다빛 가족 문화축제/ })).toHaveCount(0);
 });
 
 test("행사 목록에서 게시·행사일·마감일·조회 기준으로 정렬할 수 있다", async ({ page }) => {
