@@ -1,0 +1,18 @@
+{
+  "expo": {
+    "name": "속초모아",
+    "slug": "sokcho-moa",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "sokchomoa",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.sokchomoa.app"
+    },
+    "android": {
+      "package": "com.sokchomoa.app",
+      "predictiveBackGestureEnabled": false
+    }
+  }
+}

@@ -135,6 +135,7 @@ export const eventCandidateSchema: z.ZodType<EventCandidate> = z.object({
 
 export type EventState = "upcoming" | "ongoing" | "ended";
 export type ApplicationState = "not_applicable" | "upcoming" | "open" | "closing_today" | "closed";
+export type EventUnavailableReason = "application_closed" | "event_ended";
 
 export function deriveEventState(event: Pick<Event, "eventStartAt" | "eventEndAt">, now = new Date()): EventState {
   const start = new Date(event.eventStartAt);
@@ -158,9 +159,16 @@ export function deriveApplicationState(
   return "open";
 }
 
+export function deriveEventUnavailableReason(event: Event, now = new Date()): EventUnavailableReason | null {
+  if (deriveApplicationState(event, now) === "closed") return "application_closed";
+  if (deriveEventState(event, now) === "ended") return "event_ended";
+  return null;
+}
+
 export type EventFilters = {
   when?: "today" | "week" | "month";
   applicationOpen?: boolean;
+  status?: "active" | "closed";
   audience?: EventAudience;
   category?: EventCategory;
   query?: string;
@@ -174,9 +182,11 @@ export function parseEventFilters(params: Record<string, string | string[] | und
   const category = one(params.category);
   const query = one(params.q)?.trim();
   const sort = one(params.sort);
+  const status = one(params.status);
   return {
     when: when === "today" || when === "week" || when === "month" ? when : undefined,
     applicationOpen: one(params.application) === "open" || undefined,
+    status: status === "closed" ? "closed" : "active",
     audience: eventAudiences.includes(audience as EventAudience) ? (audience as EventAudience) : undefined,
     category: eventCategories.includes(category as EventCategory) ? (category as EventCategory) : undefined,
     query: query || undefined,
@@ -190,6 +200,9 @@ export function filterEvents(events: Event[], filters: EventFilters, now = new D
 
   return events.filter((event) => {
     if (event.reviewStatus !== "published") return false;
+    const isClosed = isEventClosedForDiscovery(event, now);
+    if (filters.status === "active" && isClosed) return false;
+    if (filters.status === "closed" && !isClosed) return false;
     if (filters.category && event.category !== filters.category) return false;
     if (filters.audience && !event.audiences.includes(filters.audience) && !event.audiences.includes("all")) return false;
     if (filters.applicationOpen) {
@@ -212,6 +225,32 @@ export function filterEvents(events: Event[], filters: EventFilters, now = new D
     }
     return true;
   });
+}
+
+/**
+ * 기본 탐색과 추천에서 더 이상 참여할 수 없는 행사를 같은 기준으로 분리한다.
+ * 신청이 마감됐거나 행사 자체가 끝났다면 기록용 마감 행사로 본다.
+ */
+export function isEventClosedForDiscovery(event: Event, now = new Date()) {
+  return deriveEventUnavailableReason(event, now) !== null;
+}
+
+export function getRelatedEvents(current: Event, events: Event[], limit = 4, now = new Date()) {
+  const currentStart = new Date(current.eventStartAt).getTime();
+  const currentEnd = new Date(current.eventEndAt ?? current.eventStartAt).getTime();
+  return events
+    .filter((event) => event.id !== current.id && !isEventClosedForDiscovery(event, now))
+    .map((event) => {
+      const start = new Date(event.eventStartAt).getTime();
+      const end = new Date(event.eventEndAt ?? event.eventStartAt).getTime();
+      const overlaps = start <= currentEnd && end >= currentStart;
+      const sharesAudience = event.audiences.some((audience) => current.audiences.includes(audience));
+      return { event, score: (overlaps ? 4 : 0) + (event.category === current.category ? 2 : 0) + (sharesAudience ? 1 : 0) };
+    })
+    .filter(({ score }) => score > 0)
+    .sort((a, b) => b.score - a.score || a.event.eventStartAt.localeCompare(b.event.eventStartAt))
+    .slice(0, limit)
+    .map(({ event }) => event);
 }
 
 /**

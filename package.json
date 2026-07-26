@@ -8,11 +8,17 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
+    "lint:mobile": "pnpm --filter @sokcho-moa/mobile lint",
     "places:generate": "node scripts/generate-place-assets.mjs",
     "places:check": "node scripts/generate-place-assets.mjs --check",
     "typecheck": "tsc --noEmit",
+    "typecheck:mobile": "pnpm --filter @sokcho-moa/mobile typecheck",
     "test": "vitest run",
-    "test:e2e": "playwright test"
+    "test:mobile": "pnpm --filter @sokcho-moa/mobile test",
+    "test:e2e": "playwright test",
+    "mobile:start": "pnpm --filter @sokcho-moa/mobile start",
+    "mobile:ios": "pnpm --filter @sokcho-moa/mobile ios",
+    "mobile:android": "pnpm --filter @sokcho-moa/mobile android"
   },
   "dependencies": {
     "@supabase/ssr": "latest",

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { deriveApplicationState, deriveEventState, type Event } from "@/lib/domain/event";
+import { deriveApplicationState, deriveEventState, deriveEventUnavailableReason, type Event } from "@/lib/domain/event";
 
 const baseEvent: Event = {
   id: "00000000-0000-4000-8000-000000000001",
@@ -51,5 +51,24 @@ describe("deriveApplicationState", () => {
 
   it("별도 신청 정보가 없으면 not_applicable이다", () => {
     expect(deriveApplicationState({ applicationStartAt: null, applicationEndAt: null, applicationUrl: null })).toBe("not_applicable");
+  });
+});
+
+describe("deriveEventUnavailableReason", () => {
+  it("별도 신청이 없는 행사가 끝나면 행사 종료로 안내한다", () => {
+    const event = {
+      ...baseEvent,
+      applicationStartAt: null,
+      applicationEndAt: null,
+      applicationUrl: null,
+    };
+
+    expect(deriveEventUnavailableReason(event, new Date("2026-07-20T00:00:00+09:00")))
+      .toBe("event_ended");
+  });
+
+  it("신청과 행사가 모두 끝났다면 신청 마감 안내를 우선한다", () => {
+    expect(deriveEventUnavailableReason(baseEvent, new Date("2026-07-20T00:00:00+09:00")))
+      .toBe("application_closed");
   });
 });

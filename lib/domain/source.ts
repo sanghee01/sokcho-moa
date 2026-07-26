@@ -1,4 +1,4 @@
-const EVENT_ID_QUERY_KEYS = ["fstvlcntntsid", "eventseq", "articleseq", "pseq"];
+const EVENT_ID_QUERY_KEYS = ["fstvlcntntsid", "eventseq", "articleseq", "contentseq", "pseq"];
 const OFFICIAL_IMAGE_PATTERN = /\.(?:avif|gif|jpe?g|png|webp)$/i;
 const SOKCHO_HOSTS = new Set(["sokcho.go.kr", "www.sokcho.go.kr"]);
 const SOKCHO_FACILITIES_HOSTS = new Set(["sokchosiseol.or.kr", "www.sokchosiseol.or.kr"]);
@@ -8,6 +8,7 @@ const UNAVAILABLE_OFFICIAL_HOSTS = new Set(["sokchocf.or.kr", "www.sokchocf.or.k
 
 const SOKCHO_ARTICLE_PATHS = new Set([
   "/ct/museum/archives/notice/news",
+  "/ct/tour/tour_guide/news",
   "/sc/portal/sokchonews/notice",
   "/sc/portal/sokchonews/pressrelease",
 ]);
@@ -84,6 +85,8 @@ function hasQueryValue(url: URL, key: string) {
 function isSokchoDetailUrl(url: URL, path: string) {
   if (path.toLowerCase() === "/sc/event/program") return hasQueryValue(url, "eventSeq");
   if (SOKCHO_ARTICLE_PATHS.has(path.toLowerCase())) return hasQueryValue(url, "articleSeq");
+  if (path.toLowerCase() === "/ct/tour/attraction") return hasQueryValue(url, "contentSeq");
+  if (path.toLowerCase() === "/ct/culture/events/schedule") return true;
 
   return /^\/(?:sc\/)?upload\/popupzone\/(?:.+\/)?[^/]+\.(?:avif|gif|jpe?g|png|webp)$/i.test(path);
 }

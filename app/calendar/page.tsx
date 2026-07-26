@@ -14,5 +14,6 @@ type CalendarPageProps = {
 
 export default async function CalendarPage({ searchParams }: CalendarPageProps) {
   const params = await searchParams;
-  redirect(buildEventBrowseHref(params, { view: "calendar" }));
+  // 캘린더 공개 화면을 잠시 숨기는 동안 기존 북마크는 같은 필터의 진행중 목록으로 안내한다.
+  redirect(buildEventBrowseHref(params, { view: undefined, month: undefined, status: undefined }));
 }

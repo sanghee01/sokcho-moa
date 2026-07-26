@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, type ReactNode } from "react";
+import { useActionState, useState, type ReactNode } from "react";
 import type { AdminActionState } from "@/lib/actions/admin";
 
 type AdminFormAction = (
@@ -20,13 +20,19 @@ export function AdminActionForm({
   children: ReactNode;
 }) {
   const [state, formAction] = useActionState(action, initialState);
+  const [dismissedState, setDismissedState] = useState<AdminActionState | null>(null);
+  const error = dismissedState === state ? null : state.error;
+
+  const dismissCurrentError = () => {
+    if (state.error) setDismissedState(state);
+  };
 
   return (
-    <form action={formAction} className={className}>
+    <form action={formAction} className={className} onChange={dismissCurrentError} onSubmit={dismissCurrentError}>
       {children}
-      {state.error && (
+      {error && (
         <p role="alert" className="rounded-xl bg-rose-50 px-3 py-2.5 text-sm font-bold text-rose-900 ring-1 ring-rose-200">
-          {state.error}
+          {error}
         </p>
       )}
     </form>

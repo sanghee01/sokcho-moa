@@ -145,20 +145,14 @@ export function EventFilters({ params, filters }: { params: EventSearchParams; f
           </button>
         </div>
       </form>
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-[0.75fr_0.9fr_1.8fr]">
+      <div className="grid gap-3 xl:grid-cols-[0.75fr_1.8fr]">
         <FilterGroup id="date-filter-title" title="날짜">
           <div className="flex flex-wrap gap-2">
             {times.map(([value, label]) => <Chip key={value} href={buildFilterHref(params, "when", value)} active={filters.when === value} label={label} filterType="date" filterValue={value} isPending={isPending} navigate={navigate} />)}
           </div>
         </FilterGroup>
 
-        <FilterGroup id="application-filter-title" title="신청 가능 여부">
-          <div className="flex flex-wrap gap-2">
-            <Chip href={buildFilterHref(params, "application", "open")} active={filters.applicationOpen === true} label="신청 가능" filterType="application" filterValue="open" isPending={isPending} navigate={navigate} />
-          </div>
-        </FilterGroup>
-
-        <FilterGroup id="topic-filter-title" title="주제·대상" className="sm:col-span-2 xl:col-span-1">
+        <FilterGroup id="topic-filter-title" title="주제·대상">
           <div>
             <p className="mb-2 text-xs font-bold text-slate-500">주제</p>
             <div className="flex flex-wrap gap-2">

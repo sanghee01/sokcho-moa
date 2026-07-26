@@ -6,6 +6,8 @@ import { PUBLIC_EVENTS_CACHE_TAG, PUBLIC_PLACES_CACHE_TAG } from "./cache-tags";
 import { demoPlaces, getDemoEvents } from "./demo-data";
 import { mapEventRow, mapPlaceRow } from "./mappers";
 
+export { getRelatedEvents } from "@/lib/domain/event";
+
 const getCachedPublicEvents = unstable_cache(async (): Promise<Event[]> => {
   const client = createPublicSupabaseClient();
   if (!client) return [];
@@ -55,22 +57,4 @@ export async function getPublicEventBySlug(slug: string): Promise<Event | null> 
 export async function getPublicPlaces(): Promise<Place[]> {
   if (getPublicEnv().NEXT_PUBLIC_DATA_MODE === "demo") return demoPlaces;
   return getCachedPublicPlaces();
-}
-
-export function getRelatedEvents(current: Event, events: Event[], limit = 4) {
-  const currentStart = new Date(current.eventStartAt).getTime();
-  const currentEnd = new Date(current.eventEndAt ?? current.eventStartAt).getTime();
-  return events
-    .filter((event) => event.id !== current.id)
-    .map((event) => {
-      const start = new Date(event.eventStartAt).getTime();
-      const end = new Date(event.eventEndAt ?? event.eventStartAt).getTime();
-      const overlaps = start <= currentEnd && end >= currentStart;
-      const sharesAudience = event.audiences.some((audience) => current.audiences.includes(audience));
-      return { event, score: (overlaps ? 4 : 0) + (event.category === current.category ? 2 : 0) + (sharesAudience ? 1 : 0) };
-    })
-    .filter(({ score }) => score > 0)
-    .sort((a, b) => b.score - a.score || a.event.eventStartAt.localeCompare(b.event.eventStartAt))
-    .slice(0, limit)
-    .map(({ event }) => event);
 }
