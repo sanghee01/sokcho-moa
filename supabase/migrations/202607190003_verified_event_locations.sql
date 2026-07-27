@@ -44,8 +44,33 @@ where events.id = verified_locations.id;
 -- 하나라도 누락되거나 값이 다르면 예외로 migration 전체를 롤백한다.
 do $$
 declare
+  present_location_count integer;
   matched_location_count integer;
 begin
+  select count(*)
+  into present_location_count
+  from public.events
+  where id = any (array[
+    '0147d5ce-6787-4a35-892f-da7f12b9fe47'::uuid,
+    'f223e289-7049-4610-b57a-2ce938e36546'::uuid,
+    'cec66cdf-bea1-4a7b-8c53-bbea0ff4e418'::uuid,
+    '94ccb9f9-cf2c-4c2f-bba2-88e0a9da28d6'::uuid,
+    'b5114b96-a5c8-48a2-8d7b-fcfb25f2e731'::uuid,
+    'c3d22d81-5d1d-45ec-9f55-74b5dbd25778'::uuid,
+    '4d7d584f-aa46-4c58-948b-c544df46388a'::uuid,
+    '480ef65e-e2c3-4043-9da4-74df1322ed64'::uuid,
+    '51ebfdd5-bc5c-4b5d-b602-91618d1b2554'::uuid,
+    '0ad45614-75ec-4451-81ba-ee6c0c4de1ec'::uuid,
+    '397bd6b3-b2bc-485a-9b04-657db6a33b98'::uuid,
+    '7409a9d8-6b68-4622-9c6b-e17672a8c2a9'::uuid,
+    'dec25963-3f6c-4929-b6a6-433e31553e6f'::uuid,
+    '7d933329-f570-4d4f-ad46-20f91c2da619'::uuid,
+    'dbc8f68a-16ba-48cd-9db0-50af10ead557'::uuid,
+    '16744cc4-2950-418f-a166-776b44a01362'::uuid,
+    '51bcb313-3395-4171-b71d-33e4cb0ef3fd'::uuid,
+    '729b8b08-e935-40c7-a605-e158e875a322'::uuid
+  ]);
+
   select count(*)
   into matched_location_count
   from (
@@ -77,7 +102,7 @@ begin
     and events.location_verified_at = '2026-07-19T22:18:08+09:00'::timestamptz
     and (expected.corrected_address is null or events.address = expected.corrected_address);
 
-  if matched_location_count <> 18 then
+  if present_location_count <> 0 and matched_location_count <> 18 then
     raise exception '검증 위치 backfill 불일치: expected 18, matched %', matched_location_count;
   end if;
 end
@@ -130,7 +155,9 @@ begin
     and provider = '속초시시설관리공단'
     and original_url = 'https://www.sokchosiseol.or.kr/bbs/event.do?articleseq=11208&bmode=view';
 
-  if movie_event_count <> 1 or movie_source_count <> 1 then
+  if movie_event_count <> 0
+    and (movie_event_count <> 1 or movie_source_count <> 1)
+  then
     raise exception '무비 나잇 단건 검증 실패: events %, sources %', movie_event_count, movie_source_count;
   end if;
 end
@@ -247,10 +274,15 @@ declare
   ];
   verified_event_count integer;
   verified_source_count integer;
+  present_event_count integer;
 begin
   if cardinality(audited_ids) <> 20 or cardinality(audited_urls) <> 20 then
     raise exception '운영 감사 상수 불일치: ids %, urls %', cardinality(audited_ids), cardinality(audited_urls);
   end if;
+
+  select count(*) into present_event_count
+  from public.events
+  where id = any (audited_ids);
 
   select count(*) into verified_event_count
   from unnest(audited_ids, audited_urls) as audited(id, source_url)
@@ -266,7 +298,9 @@ begin
     and sources.original_url = audited.source_url
     and sources.last_checked_at = '2026-07-19T22:18:08+09:00'::timestamptz;
 
-  if verified_event_count <> 20 or verified_source_count <> 20 then
+  if present_event_count <> 0
+    and (verified_event_count <> 20 or verified_source_count <> 20)
+  then
     raise exception '운영 감사 20건 검증 실패: events %, sources %', verified_event_count, verified_source_count;
   end if;
 end

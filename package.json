@@ -15,7 +15,10 @@
     "typecheck:mobile": "pnpm --filter @sokcho-moa/mobile typecheck",
     "test": "vitest run",
     "test:mobile": "pnpm --filter @sokcho-moa/mobile test",
+    "test:notifications": "vitest run tests/notification-policy.test.ts tests/notification-migration.test.ts tests/notification-dispatch-function.test.ts",
     "test:e2e": "playwright test",
+    "notifications:dry-run": "node --experimental-strip-types scripts/notification-dry-run.mjs",
+    "verify:local-mobile-backend": "node scripts/verify-local-mobile-backend.mjs",
     "mobile:start": "pnpm --filter @sokcho-moa/mobile start",
     "mobile:ios": "pnpm --filter @sokcho-moa/mobile ios",
     "mobile:android": "pnpm --filter @sokcho-moa/mobile android"
