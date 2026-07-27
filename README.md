@@ -58,6 +58,7 @@
 | 영역 | 기술 |
 | --- | --- |
 | 웹 애플리케이션 | Next.js App Router, React, TypeScript, Tailwind CSS |
+| 모바일 애플리케이션 | Expo SDK 55, React Native, WebView, AsyncStorage |
 | 데이터 및 인증 | Supabase Postgres, Auth, Storage, Row Level Security (RLS) |
 | 입력 검증 | Zod |
 | 테스트 | Vitest, Playwright |
@@ -113,6 +114,34 @@ values ('00000000-0000-0000-0000-000000000000', 'operator@example.com');
 ```
 
 `supabase/seed.sql`은 화면 검증용 샘플 데이터를 추가합니다. 실제 운영 데이터베이스에는 필요한 경우에만 실행하세요.
+
+## 모바일 앱 개발하기
+
+`apps/mobile`에는 iOS·Android용 Expo 앱이 준비되어 있습니다. 기존 웹의 행사 탐색을
+WebView로 재사용하고, 관심 분야·알림 설정·저장 행사는 네이티브 화면으로 제공합니다.
+로그인 UI는 없으며 기기 저장을 우선하고, Supabase 환경 변수가 있을 때만 Anonymous
+Auth와 RLS로 선택적 백업을 수행합니다.
+
+```bash
+pnpm mobile:ios
+# 또는
+pnpm mobile:android
+```
+
+알림 백엔드는 `DRY_RUN`이 기본이어서 운영 자격증명 없이도 대상 계산과 중복 방지를
+검증할 수 있습니다.
+
+```bash
+pnpm dlx supabase@latest start
+pnpm verify:local-mobile-backend
+pnpm dlx supabase@latest stop
+```
+
+상세 실행 방법, 비용 없는 보관 전략, 실제 푸시 전환 절차는
+[`docs/mobile-app-runbook.md`](docs/mobile-app-runbook.md), 스토어 제출 전 게이트는
+[`docs/mobile-release-checklist.md`](docs/mobile-release-checklist.md)를 확인하세요.
+다음 Codex 세션에서 적은 맥락으로 이어갈 때는
+[`docs/mobile-next-session-handoff.md`](docs/mobile-next-session-handoff.md)부터 읽습니다.
 
 ## 운영 흐름
 

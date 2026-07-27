@@ -8,10 +8,12 @@
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": false,
+      "buildNumber": "1",
       "bundleIdentifier": "com.sokchomoa.app"
     },
     "android": {
       "package": "com.sokchomoa.app",
+      "versionCode": 1,
       "predictiveBackGestureEnabled": false
     }
   }
