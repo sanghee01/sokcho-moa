@@ -91,7 +91,7 @@ export function PreferencesScreen({
 
       <PreferenceSection
         title="알림 종류"
-        description="지금은 기기에 설정만 안전하게 저장하며, 실제 푸시는 출시 준비 때 연결합니다."
+        description="기기에 먼저 안전하게 저장하고, Supabase가 설정된 개발 환경에서는 익명으로 동기화합니다. 실제 푸시는 출시 준비 때 연결합니다."
       >
         <NotificationRow
           label="새 행사 알림"

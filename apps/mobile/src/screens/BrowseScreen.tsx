@@ -7,11 +7,12 @@ import {
   View,
 } from "react-native";
 import WebView, {
-  type WebViewMessageEvent,
   type WebViewNavigation,
 } from "react-native-webview";
 import {
-  parseMobileEventMessage,
+  isMobileEventSaveUrl,
+  MOBILE_APP_USER_AGENT,
+  parseMobileEventSaveUrl,
   type MobileEventSummary,
 } from "../../../../lib/mobile/event-bridge";
 import { isTrustedWebUrl } from "../web-url";
@@ -31,18 +32,21 @@ export function BrowseScreen({
 }: BrowseScreenProps) {
   const [feedback, setFeedback] = useState<Feedback>(null);
 
-  function handleMessage(event: WebViewMessageEvent) {
-    const message = parseMobileEventMessage(event.nativeEvent.data);
-    if (!message) {
-      setFeedback({ tone: "error", message: "저장 요청을 처리하지 못했어요." });
-      return;
-    }
-
-    onSaveEvent(message.event);
+  function saveEvent(event: MobileEventSummary) {
+    onSaveEvent(event);
     setFeedback({ tone: "success", message: "관심 행사에 저장했어요." });
   }
 
   function shouldStartRequest(request: WebViewNavigation) {
+    if (isMobileEventSaveUrl(request.url, trustedOrigin)) {
+      const saveMessage = parseMobileEventSaveUrl(request.url, trustedOrigin);
+      if (saveMessage) {
+        saveEvent(saveMessage.event);
+      } else {
+        setFeedback({ tone: "error", message: "저장 요청을 처리하지 못했어요." });
+      }
+      return false;
+    }
     if (request.url === "about:blank" || isTrustedWebUrl(request.url, trustedOrigin)) {
       return true;
     }
@@ -66,7 +70,8 @@ export function BrowseScreen({
       <WebView
         key={url}
         source={{ uri: url }}
-        onMessage={handleMessage}
+        applicationNameForUserAgent={MOBILE_APP_USER_AGENT}
+        cacheEnabled={!trustedOrigin.startsWith("http://")}
         onShouldStartLoadWithRequest={shouldStartRequest}
         onOpenWindow={(event) => openExternalUrl(event.nativeEvent.targetUrl)}
         originWhitelist={["https://*", "http://*"]}

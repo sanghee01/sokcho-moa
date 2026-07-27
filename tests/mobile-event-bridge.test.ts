@@ -1,11 +1,15 @@
 import { describe, expect, it } from "vitest";
 import {
+  createMobileEventSavePath,
   createSaveEventMessage,
+  isMobileEventSaveUrl,
   parseMobileEventMessage,
+  parseMobileEventSaveUrl,
   type MobileEventSummary,
 } from "@/lib/mobile/event-bridge";
 
 const event: MobileEventSummary = {
+  id: "10000000-0000-4000-8000-000000000001",
   slug: "summer-family-festival",
   title: "여름 가족 축제",
   category: "festival",
@@ -14,6 +18,7 @@ const event: MobileEventSummary = {
   eventEndAt: "2026-08-03T23:59:59+09:00",
   applicationEndAt: null,
 };
+const trustedOrigin = "https://sokcho-moa.example";
 
 describe("mobile event bridge", () => {
   it("round-trips the versioned save-event contract", () => {
@@ -24,11 +29,40 @@ describe("mobile event bridge", () => {
     });
   });
 
+  it("round-trips the native save URL contract", () => {
+    const saveUrl = new URL(
+      createMobileEventSavePath(event),
+      trustedOrigin,
+    ).toString();
+
+    expect(isMobileEventSaveUrl(saveUrl, trustedOrigin)).toBe(true);
+    expect(parseMobileEventSaveUrl(saveUrl, trustedOrigin)).toEqual({
+      version: 1,
+      type: "save_event",
+      event,
+    });
+  });
+
+  it.each([
+    "",
+    "https://evil.example/__mobile/save",
+    "https://sokcho-moa.example/events/save",
+    "https://sokcho-moa.example/__mobile/save",
+    "https://sokcho-moa.example/__mobile/save?message=not-json",
+  ])("rejects malformed or untrusted native save URLs", (raw) => {
+    expect(parseMobileEventSaveUrl(raw, trustedOrigin)).toBeNull();
+  });
+
   it.each([
     "",
     "not-json",
     JSON.stringify({ version: 2, type: "save_event", event }),
     JSON.stringify({ version: 1, type: "remove_event", event }),
+    JSON.stringify({
+      version: 1,
+      type: "save_event",
+      event: { ...event, id: "not-a-uuid" },
+    }),
     JSON.stringify({
       version: 1,
       type: "save_event",

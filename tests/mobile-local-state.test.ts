@@ -16,6 +16,7 @@ import {
 import type { MobileEventSummary } from "@/lib/mobile/event-bridge";
 
 const event: MobileEventSummary = {
+  id: "10000000-0000-4000-8000-000000000003",
   slug: "youth-coding-class",
   title: "청소년 코딩 교실",
   category: "education",

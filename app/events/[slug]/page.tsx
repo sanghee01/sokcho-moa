@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { EventCard } from "@/components/event-card";
@@ -13,6 +14,7 @@ import { audienceLabels, applicationStateLabels, categoryLabels, formatDateRange
 import { deriveApplicationState, deriveEventState } from "@/lib/domain/event";
 import { createEventMapLinks, findNearbyPlaces, getNearbyPlacesLabel } from "@/lib/domain/geo";
 import { analyticsData } from "@/lib/analytics/events";
+import { MOBILE_APP_USER_AGENT } from "@/lib/mobile/event-bridge";
 
 export const revalidate = 3600;
 
@@ -38,9 +40,17 @@ export async function generateMetadata({ params }: EventPageProps): Promise<Meta
 }
 
 export default async function EventDetailPage({ params }: EventPageProps) {
-  const [{ slug }, allEvents, places] = await Promise.all([params, getAllPublicEvents(), getPublicPlaces()]);
+  const [{ slug }, allEvents, places, requestHeaders] = await Promise.all([
+    params,
+    getAllPublicEvents(),
+    getPublicPlaces(),
+    headers(),
+  ]);
   const event = allEvents.find((item) => item.slug === slug) ?? null;
   if (!event) notFound();
+  const isMobileApp = requestHeaders
+    .get("user-agent")
+    ?.includes(MOBILE_APP_USER_AGENT) ?? false;
 
   const nearbyPlaces = findNearbyPlaces(event, places);
   const nearbyPlacesLabel = getNearbyPlacesLabel(event);
@@ -119,15 +129,18 @@ export default async function EventDetailPage({ params }: EventPageProps) {
             <div className="mt-7 flex flex-wrap items-start gap-3">
               {event.applicationUrl && <a href={event.applicationUrl} target="_blank" rel="noreferrer" {...analyticsData("application_link_clicked", { event_slug: event.slug, event_category: event.category, link_position: "hero" })} className="rounded-2xl bg-rose-600 px-5 py-3 font-bold text-white">신청·예매 <span className="sr-only">(새 창)</span></a>}
               <a href={event.sourceUrl} target="_blank" rel="noreferrer" {...analyticsData("source_link_clicked", { event_slug: event.slug, event_category: event.category, link_position: "hero", source_type: "primary" })} className="rounded-2xl bg-teal-800 px-5 py-3 font-bold text-white">행사 안내 <span className="sr-only">(새 창)</span></a>
-              <SaveEventButton event={{
-                slug: event.slug,
-                title: event.title,
-                category: event.category,
-                audiences: event.audiences,
-                eventStartAt: event.eventStartAt,
-                eventEndAt: event.eventEndAt,
-                applicationEndAt: event.applicationEndAt,
-              }} />
+              {isMobileApp && (
+                <SaveEventButton event={{
+                  id: event.id,
+                  slug: event.slug,
+                  title: event.title,
+                  category: event.category,
+                  audiences: event.audiences,
+                  eventStartAt: event.eventStartAt,
+                  eventEndAt: event.eventEndAt,
+                  applicationEndAt: event.applicationEndAt,
+                }} />
+              )}
               <ShareEventButton slug={event.slug} />
             </div>
           </div>

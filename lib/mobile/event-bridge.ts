@@ -1,6 +1,8 @@
 import type { Event, EventAudience, EventCategory } from "../domain/event";
 
 export const MOBILE_EVENT_BRIDGE_VERSION = 1 as const;
+export const MOBILE_APP_USER_AGENT = "SokchoMoaApp/1.0";
+export const MOBILE_EVENT_SAVE_PATH = "/__mobile/save";
 export const mobileEventCategories = [
   "performance",
   "festival",
@@ -19,6 +21,7 @@ export const mobileEventAudiences = [
 
 export type MobileEventSummary = Pick<
   Event,
+  | "id"
   | "slug"
   | "title"
   | "category"
@@ -35,6 +38,7 @@ export type SaveEventMessage = {
 };
 
 const MAX_MESSAGE_LENGTH = 8_192;
+const MAX_SAVE_URL_LENGTH = 12_000;
 const MAX_SLUG_LENGTH = 160;
 const MAX_TITLE_LENGTH = 200;
 const categorySet = new Set<string>(mobileEventCategories);
@@ -46,6 +50,35 @@ export function createSaveEventMessage(event: MobileEventSummary) {
     type: "save_event",
     event,
   } satisfies SaveEventMessage);
+}
+
+export function createMobileEventSavePath(event: MobileEventSummary) {
+  const url = new URL(MOBILE_EVENT_SAVE_PATH, "https://sokchomoa.invalid");
+  url.searchParams.set("message", createSaveEventMessage(event));
+  return `${url.pathname}${url.search}`;
+}
+
+export function isMobileEventSaveUrl(raw: unknown, trustedOrigin: string) {
+  if (typeof raw !== "string" || raw.length === 0 || raw.length > MAX_SAVE_URL_LENGTH) {
+    return false;
+  }
+
+  try {
+    const url = new URL(raw);
+    return url.origin === trustedOrigin && url.pathname === MOBILE_EVENT_SAVE_PATH;
+  } catch {
+    return false;
+  }
+}
+
+export function parseMobileEventSaveUrl(
+  raw: unknown,
+  trustedOrigin: string,
+): SaveEventMessage | null {
+  if (!isMobileEventSaveUrl(raw, trustedOrigin)) return null;
+
+  const url = new URL(raw as string);
+  return parseMobileEventMessage(url.searchParams.get("message"));
 }
 
 export function parseMobileEventMessage(raw: unknown): SaveEventMessage | null {
@@ -73,7 +106,11 @@ export function parseMobileEventMessage(raw: unknown): SaveEventMessage | null {
 
 export function isMobileEventSummary(value: unknown): value is MobileEventSummary {
   if (!isRecord(value)) return false;
-  if (!isSafeSlug(value.slug) || !isBoundedText(value.title, MAX_TITLE_LENGTH)) {
+  if (
+    !isUuid(value.id)
+    || !isSafeSlug(value.slug)
+    || !isBoundedText(value.title, MAX_TITLE_LENGTH)
+  ) {
     return false;
   }
   if (typeof value.category !== "string" || !categorySet.has(value.category)) {
@@ -92,6 +129,11 @@ export function isMobileEventSummary(value: unknown): value is MobileEventSummar
   return isIsoDate(value.eventStartAt)
     && isNullableIsoDate(value.eventEndAt)
     && isNullableIsoDate(value.applicationEndAt);
+}
+
+function isUuid(value: unknown): value is string {
+  return typeof value === "string"
+    && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 }
 
 function isSafeSlug(value: unknown) {

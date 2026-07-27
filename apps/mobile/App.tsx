@@ -17,6 +17,10 @@ import { PreferencesScreen } from "./src/screens/PreferencesScreen";
 import { SavedEventsScreen } from "./src/screens/SavedEventsScreen";
 import { useLocalAppState } from "./src/use-local-app-state";
 import {
+  useAnonymousSync,
+  type AnonymousSyncStatus,
+} from "./src/supabase/use-anonymous-sync";
+import {
   createEventWebUrl,
   resolveWebOrigin,
 } from "./src/web-url";
@@ -40,6 +44,7 @@ export default function App() {
     persistenceStatus,
     updateState,
   } = useLocalAppState();
+  const anonymousSyncStatus = useAnonymousSync(state, isLoading);
   const [activeTab, setActiveTab] = useState<Tab>("browse");
   const [browseUrl, setBrowseUrl] = useState(trustedOrigin);
 
@@ -82,7 +87,10 @@ export default function App() {
             <Text style={styles.brand}>속초모아</Text>
             <Text style={styles.subtitle}>속초의 행사를 한곳에서</Text>
           </View>
-          <PersistenceBadge status={persistenceStatus} />
+          <PersistenceBadge
+            localStatus={persistenceStatus}
+            syncStatus={anonymousSyncStatus}
+          />
         </View>
 
         <View style={styles.content}>
@@ -152,27 +160,50 @@ export default function App() {
 }
 
 function PersistenceBadge({
-  status,
+  localStatus,
+  syncStatus,
 }: {
-  status: "idle" | "saving" | "saved" | "error";
+  localStatus: "idle" | "saving" | "saved" | "error";
+  syncStatus: AnonymousSyncStatus;
 }) {
-  if (status === "idle") return null;
-  const message = {
-    saving: "저장 중",
-    saved: "기기에 저장됨",
-    error: "저장 확인 필요",
-  }[status];
+  const badge = getPersistenceBadge(localStatus, syncStatus);
+  if (!badge) return null;
 
   return (
     <View
       accessibilityLiveRegion="polite"
-      style={[styles.badge, status === "error" && styles.errorBadge]}
+      style={[styles.badge, badge.isError && styles.errorBadge]}
     >
-      <Text style={[styles.badgeText, status === "error" && styles.errorBadgeText]}>
-        {message}
+      <Text style={[styles.badgeText, badge.isError && styles.errorBadgeText]}>
+        {badge.message}
       </Text>
     </View>
   );
+}
+
+function getPersistenceBadge(
+  localStatus: "idle" | "saving" | "saved" | "error",
+  syncStatus: AnonymousSyncStatus,
+) {
+  if (localStatus === "error") {
+    return { message: "기기 저장 확인 필요", isError: true };
+  }
+  if (localStatus === "saving") {
+    return { message: "기기에 저장 중", isError: false };
+  }
+  if (syncStatus === "error") {
+    return { message: "기기 저장 · 서버 확인", isError: true };
+  }
+  if (syncStatus === "connecting" || syncStatus === "syncing") {
+    return { message: "서버 동기화 중", isError: false };
+  }
+  if (syncStatus === "synced") {
+    return { message: "기기·서버 저장됨", isError: false };
+  }
+  if (localStatus === "saved") {
+    return { message: "기기에 저장됨", isError: false };
+  }
+  return null;
 }
 
 const styles = StyleSheet.create({
