@@ -5,10 +5,26 @@ out
 coverage
 test-results
 playwright-report
+# Environment files may contain service-role keys, dispatch secrets, or tokens.
 .env
-.env.local
-.env.*.local
+.env.*
 !.env.example
+!**/.env.example
+
+# Native app signing credentials and platform service configuration.
+*.pem
+*.key
+*.p8
+*.p12
+*.jks
+*.keystore
+*.mobileprovision
+google-services.json
+GoogleService-Info.plist
+credentials.json
+service-account*.json
+.eas/
+
 *.log
 *.tsbuildinfo
 .DS_Store
