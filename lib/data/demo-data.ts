@@ -15,6 +15,8 @@ export function getDemoEvents(): Event[] {
     lastVerifiedAt: fromNow(-2 * day),
     locationSourceUrl: null,
     locationVerifiedAt: null,
+    performers: [],
+    organizerUrl: null,
   };
 
   return [

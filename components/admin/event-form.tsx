@@ -15,6 +15,9 @@ const input = "mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2
 const label = "text-sm font-bold text-slate-700";
 const section = "space-y-5 rounded-2xl border border-slate-200 bg-slate-50/60 p-4 sm:p-6";
 const text = (row: Row, key: string) => row?.[key] == null ? "" : String(row[key]);
+const listText = (row: Row, key: string) => Array.isArray(row?.[key])
+  ? row[key].map(String).join("\n")
+  : "";
 const checked = (row: Row, key: string) => row?.[key] === true;
 const dateValue = (row: Row, key: string) => {
   const raw = text(row, key);
@@ -380,6 +383,21 @@ export function EventForm({ row }: { row: Row }) {
           </aside>
           <div className="grid gap-5 sm:grid-cols-2">
             <label className={label}>주최·주관<input name="organizer" defaultValue={text(row, "organizer")} placeholder="예: 속초시·속초문화관광재단" className={input} /></label>
+            <label className={label}>
+              주최기관 홈페이지
+              <input type="url" name="organizerUrl" defaultValue={text(row, "organizer_url")} placeholder="예: https://www.sokcho.go.kr" className={input} />
+              <FieldHelp>행사 상세 페이지가 아니라 주최기관의 공식 홈페이지 주소를 입력하세요.</FieldHelp>
+            </label>
+            <label className={label}>
+              출연자
+              <textarea name="performerPeople" defaultValue={listText(row, "performer_people")} rows={3} placeholder={"예:\n홍길동\n김속초"} className={input} />
+              <FieldHelp>실제로 출연하는 사람을 한 줄에 한 명씩 입력하세요.</FieldHelp>
+            </label>
+            <label className={label}>
+              출연팀
+              <textarea name="performerGroups" defaultValue={listText(row, "performer_groups")} rows={3} placeholder={"예:\n속초시립합창단\n설악 앙상블"} className={input} />
+              <FieldHelp>실제로 출연하는 팀을 한 줄에 한 팀씩 입력하세요. 출연자가 없는 행사는 두 항목 모두 비워 두세요.</FieldHelp>
+            </label>
             <label className={label}>
               문의처 전화번호
               <input type="tel" name="contact" defaultValue={text(row, "contact")} placeholder="예: 033-639-0000" className={input} />

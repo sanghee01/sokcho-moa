@@ -47,6 +47,13 @@ function occurrenceValues(formData: FormData) {
     .filter((occurrence) => occurrence.startsAt.trim() || occurrence.endsAt.trim());
 }
 
+function listValues(formData: FormData, key: string) {
+  return value(formData, key)
+    .split(/[\n,]+/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
 function fail(error: z.ZodError): never {
   throw new Error(`입력값을 확인하세요. ${z.prettifyError(error)}`);
 }
@@ -203,7 +210,10 @@ export async function saveEventAction(
     address: value(formData, "address"),
     priceText: value(formData, "priceText"),
     isFree: value(formData, "isFree") || "unknown",
+    performerPeople: listValues(formData, "performerPeople"),
+    performerGroups: listValues(formData, "performerGroups"),
     organizer: value(formData, "organizer"),
+    organizerUrl: value(formData, "organizerUrl"),
     contact: value(formData, "contact"),
     applicationUrl: value(formData, "applicationUrl"),
     imageUrl: uploadedImageUrl || value(formData, "imageUrl"),
