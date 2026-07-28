@@ -41,12 +41,15 @@ function HeroBurst({ side }: { side: "left" | "right" }) {
 function EventHero({ topic }: { topic?: EventTopic }) {
   return (
     <section
-      {...(topic
-        ? { "aria-label": "속초모아 행사 안내" }
-        : { "aria-labelledby": "home-hero-title" })}
+      aria-labelledby={topic ? "topic-page-title" : "home-hero-title"}
       className="overflow-hidden bg-cyan-50"
     >
-      {!topic && (
+      {topic ? (
+        <>
+          <h1 id="topic-page-title" className="sr-only">{topic.heading}</h1>
+          <p className="sr-only">{topic.intro}</p>
+        </>
+      ) : (
         <>
           <h1 id="home-hero-title" className="sr-only">속초 행사·축제 정보를 한눈에, 속초모아</h1>
           <p className="sr-only">공연·체험·교육·전시를 포함한 속초의 최신 행사 정보를 확인하세요.</p>
@@ -83,20 +86,6 @@ function EventHero({ topic }: { topic?: EventTopic }) {
           </div>
         </div>
       </div>
-    </section>
-  );
-}
-
-function TopicIntroduction({ topic }: { topic: EventTopic }) {
-  return (
-    <section aria-labelledby="topic-title" className="rounded-3xl bg-gradient-to-br from-teal-900 to-teal-700 px-5 py-7 text-white shadow-lg sm:px-8 sm:py-9">
-      <nav aria-label="현재 위치" className="mb-4 text-sm text-teal-100">
-        <Link href="/" className="font-bold underline decoration-teal-300 underline-offset-4">속초모아</Link>
-        <span aria-hidden="true"> / </span>
-        <span>속초 {topic.label}</span>
-      </nav>
-      <h1 id="topic-title" className="text-3xl font-black tracking-tight sm:text-4xl">{topic.heading}</h1>
-      <p className="mt-3 max-w-3xl text-base leading-7 text-teal-50 sm:text-lg">{topic.intro}</p>
     </section>
   );
 }
@@ -139,8 +128,6 @@ export async function EventBrowsePage({
       <EventHero topic={topic} />
 
       <div className="mx-auto max-w-6xl space-y-9 px-4 py-8 sm:px-6 sm:py-12">
-        {topic && <TopicIntroduction topic={topic} />}
-
         {demoMode && (
           <aside className="rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-950" aria-label="샘플 데이터 안내">
             <strong>샘플 데이터로 보는 화면입니다.</strong> 제목에 [샘플]이 붙은 행사는 실제 운영 정보가 아닙니다. 실제 Supabase 연결 후 검수·공개된 행사만 노출됩니다.
