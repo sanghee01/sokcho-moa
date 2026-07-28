@@ -73,6 +73,7 @@ function Chip({
   return (
     <Link
       href={href}
+      rel={filterType === "category" ? undefined : "nofollow"}
       onClick={(event) => navigate(event, href)}
       aria-current={active ? "page" : undefined}
       aria-disabled={isPending}

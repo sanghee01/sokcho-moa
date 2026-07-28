@@ -1,12 +1,9 @@
 import type { Metadata } from "next";
 import { SiteFeedbackForm } from "@/components/site-feedback-form";
+import { feedbackPageMetadata } from "@/lib/seo/utility-page-metadata";
 import { isSiteFeedbackImageUploadAvailable } from "@/lib/supabase/service";
 
-export const metadata: Metadata = {
-  title: "의견 보내기",
-  description: "속초모아를 사용하며 느낀 불편한 점, 개선 아이디어와 사용평을 보내 주세요.",
-  alternates: { canonical: "/feedback" },
-};
+export const metadata: Metadata = feedbackPageMetadata;
 
 export default async function FeedbackPage() {
   const imageUploadEnabled = await isSiteFeedbackImageUploadAvailable();

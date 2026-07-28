@@ -146,6 +146,7 @@ export async function EventBrowsePage({
                   pendingLabel="진행중 행사 불러오는 중"
                   showPendingIndicator={false}
                   scroll={false}
+                  rel="nofollow"
                   aria-current={!closedView ? "page" : undefined}
                   className={`-mb-px inline-flex min-h-11 items-center justify-center border-b-2 px-3 text-base font-black ${!closedView ? "border-teal-700 text-teal-800" : "border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-800"}`}
                 >
@@ -156,6 +157,7 @@ export async function EventBrowsePage({
                   pendingLabel="마감 행사 불러오는 중"
                   showPendingIndicator={false}
                   scroll={false}
+                  rel="nofollow"
                   aria-current={closedView ? "page" : undefined}
                   className={`-mb-px inline-flex min-h-11 items-center justify-center border-b-2 px-3 text-base font-black ${closedView ? "border-teal-700 text-teal-800" : "border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-800"}`}
                 >
