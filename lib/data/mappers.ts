@@ -32,7 +32,12 @@ export function mapEventRow(row: Record<string, unknown>): Event {
     locationVerifiedAt: nullableString(row.location_verified_at),
     priceText: nullableString(row.price_text),
     isFree: typeof row.is_free === "boolean" ? row.is_free : null,
+    performers: [
+      ...stringArray(row.performer_people).map((name) => ({ name, type: "Person" as const })),
+      ...stringArray(row.performer_groups).map((name) => ({ name, type: "PerformingGroup" as const })),
+    ],
     organizer: nullableString(row.organizer),
+    organizerUrl: nullableString(row.organizer_url),
     contact: nullableString(row.contact),
     officialUrl: nullableString(row.official_url),
     applicationUrl: nullableString(row.application_url),
@@ -71,6 +76,12 @@ function nullableString(value: unknown) {
 
 function nullableNumber(value: unknown) {
   return value == null ? null : Number(value);
+}
+
+function stringArray(value: unknown) {
+  return Array.isArray(value)
+    ? value.map(String).map((item) => item.trim()).filter(Boolean)
+    : [];
 }
 
 function scheduleMode(value: unknown): EventScheduleMode {

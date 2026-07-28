@@ -23,6 +23,11 @@ export type EventOccurrence = {
   endsAt: string | null;
 };
 
+export type EventPerformer = {
+  name: string;
+  type: "Person" | "PerformingGroup";
+};
+
 export type Event = {
   id: string;
   slug: string;
@@ -47,7 +52,11 @@ export type Event = {
   locationVerifiedAt: string | null;
   priceText: string | null;
   isFree: boolean | null;
+  /** Verified people and groups used by Event structured data. */
+  performers?: EventPerformer[];
   organizer: string | null;
+  /** Official website for the event host or organizer. */
+  organizerUrl?: string | null;
   contact: string | null;
   officialUrl: string | null;
   applicationUrl: string | null;

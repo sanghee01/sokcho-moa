@@ -10,9 +10,11 @@ import { ShareEventButton } from "@/components/share-event-button";
 import { StatusBadges } from "@/components/status-badges";
 import { getAllPublicEvents, getPublicEventBySlug, getPublicPlaces, getRelatedEvents } from "@/lib/data/events";
 import { audienceLabels, applicationStateLabels, categoryLabels, formatDateRange, formatOperatingSchedule } from "@/lib/domain/format";
-import { deriveApplicationState, deriveEventState } from "@/lib/domain/event";
+import { deriveApplicationState } from "@/lib/domain/event";
 import { createEventMapLinks, findNearbyPlaces, getNearbyPlacesLabel } from "@/lib/domain/geo";
 import { analyticsData } from "@/lib/analytics/events";
+import { getPublicEnv } from "@/lib/config/env";
+import { buildEventStructuredData } from "@/lib/seo/event-structured-data";
 
 export const revalidate = 3600;
 
@@ -45,7 +47,6 @@ export default async function EventDetailPage({ params }: EventPageProps) {
   const nearbyPlaces = findNearbyPlaces(event, places);
   const nearbyPlacesLabel = getNearbyPlacesLabel(event);
   const relatedEvents = getRelatedEvents(event, allEvents);
-  const eventState = deriveEventState(event);
   const applicationState = deriveApplicationState(event);
   const mapLinks = createEventMapLinks(
     event.locationName ?? event.title,
@@ -53,26 +54,7 @@ export default async function EventDetailPage({ params }: EventPageProps) {
     event.latitude,
     event.longitude,
   );
-  const eventJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Event",
-    name: event.title,
-    description: event.summary,
-    startDate: event.eventStartAt,
-    endDate: event.eventEndAt ?? event.eventStartAt,
-    eventStatus: eventState === "ended" ? "https://schema.org/EventCompleted" : "https://schema.org/EventScheduled",
-    eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
-    location: event.locationName ? {
-      "@type": "Place",
-      name: event.locationName,
-      address: event.address,
-      geo: event.latitude != null && event.longitude != null ? { "@type": "GeoCoordinates", latitude: event.latitude, longitude: event.longitude } : undefined,
-    } : undefined,
-    organizer: event.organizer ? { "@type": "Organization", name: event.organizer } : undefined,
-    image: event.imageUrl ? [event.imageUrl] : undefined,
-    url: event.sourceUrl,
-    isAccessibleForFree: event.isFree ?? undefined,
-  };
+  const eventJsonLd = buildEventStructuredData(event, getPublicEnv().NEXT_PUBLIC_SITE_URL);
 
   const facts = [
     ["행사기간", formatDateRange(event.eventStartAt, event.eventEndAt)],
