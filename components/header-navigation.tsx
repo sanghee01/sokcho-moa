@@ -6,7 +6,7 @@ import { TransitionLink } from "@/components/transition-link";
 import { eventTopics } from "@/lib/domain/event-topic";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
-const navigationLinkClass = "inline-flex min-h-10 min-w-0 items-center justify-center whitespace-nowrap rounded-lg px-1.5 py-2 text-center font-black sm:min-h-11 sm:rounded-full sm:border sm:px-3";
+const navigationLinkClass = "inline-flex min-h-10 min-w-0 items-center justify-center whitespace-nowrap rounded-lg px-2.5 py-2 text-center text-sm font-semibold sm:min-h-12 sm:rounded-full sm:border sm:px-4 sm:text-[0.95rem]";
 const primaryNavigation = [
   { href: "/", label: "전체" },
   ...eventTopics.map((topic) => ({ href: topic.path, label: topic.label })),
@@ -16,7 +16,7 @@ export function HeaderNavigationLinks({ isAdmin }: { isAdmin: boolean }) {
   const pathname = usePathname();
 
   return (
-    <nav aria-label="주요 메뉴" className="grid w-full grid-cols-4 gap-1 rounded-xl border border-teal-800/20 bg-teal-50/50 p-1 text-xs sm:flex sm:w-auto sm:items-center sm:gap-1.5 sm:border-0 sm:bg-transparent sm:p-0 sm:text-sm">
+    <nav aria-label="주요 메뉴" className="grid w-full grid-cols-4 gap-1 rounded-xl border border-teal-800/20 bg-teal-50/50 p-1 text-sm sm:col-start-2 sm:flex sm:w-max sm:items-center sm:gap-2 sm:border-0 sm:bg-transparent sm:p-0">
       {primaryNavigation.map((item) => {
         const active = pathname === item.href;
 

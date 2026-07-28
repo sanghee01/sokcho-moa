@@ -135,7 +135,7 @@ export async function EventBrowsePage({
         )}
 
         <section aria-labelledby="event-results-title" data-event-view={closedView ? "closed" : "active"}>
-          <div className="mb-5 grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(17rem,22rem)_auto] xl:items-center">
+          <div className="mb-5 grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(18rem,23rem)_auto] xl:items-center xl:gap-5">
             <div className="flex min-w-0 flex-wrap items-center gap-3">
               <h2 id="event-results-title" className="text-2xl font-black text-slate-950 sm:text-3xl">{resultTitle} {filteredEvents.length}개</h2>
               <nav aria-label="행사 상태" className="inline-flex shrink-0 items-center border-b border-slate-300">
