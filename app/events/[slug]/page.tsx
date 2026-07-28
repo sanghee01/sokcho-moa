@@ -153,6 +153,12 @@ export default async function EventDetailPage({ params }: EventPageProps) {
           <div className="mt-5 grid gap-5 md:grid-cols-2 lg:grid-cols-4">{relatedEvents.map((item) => <EventCard key={item.id} event={item} contentSource="related_events" />)}</div>
         </section>
       )}
+
+      <div className="mt-14 flex justify-center border-t border-teal-900/10 pt-10">
+        <Link href="/" className="inline-flex min-h-11 items-center justify-center rounded-xl bg-teal-800 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-900 focus-visible:ring-4 focus-visible:ring-teal-300">
+          목록으로 돌아가기
+        </Link>
+      </div>
     </main>
   );
 }

@@ -371,6 +371,7 @@ test("목록에서 검색하고 상세·원문·외부 지도 링크·주변 명
   await page.getByRole("link", { name: /바다빛 가족 문화축제/ }).click();
   await expect(page).toHaveURL(/\/events\/demo-sea-family-festival$/);
   await expect(page.getByRole("heading", { level: 1, name: /바다빛 가족 문화축제/ })).toBeVisible();
+  await expect(page.getByRole("link", { name: "목록으로 돌아가기" })).toHaveAttribute("href", "/");
 
   const sourceLink = page.getByRole("link", { name: /행사 안내/ });
   await expect(sourceLink).toHaveAttribute("href", "https://www.sokcho.go.kr/");
