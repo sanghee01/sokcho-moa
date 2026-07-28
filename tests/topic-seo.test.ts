@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import { renderToStaticMarkup } from "react-dom/server";
 
 vi.mock("@/lib/config/env", () => ({
   getPublicEnv: () => ({
@@ -10,6 +11,22 @@ vi.mock("@/lib/data/events", () => ({
   getAllPublicEvents: vi.fn(async () => []),
 }));
 
+vi.mock("next/image", () => ({
+  default: () => null,
+}));
+
+vi.mock("@/components/event-filters", () => ({
+  EventFilters: () => null,
+}));
+
+vi.mock("@/components/event-sort", () => ({
+  EventSort: () => null,
+}));
+
+vi.mock("@/components/transition-link", () => ({
+  TransitionLink: () => null,
+}));
+
 import { generateMetadata as generateHomeMetadata } from "@/app/page";
 import sitemap from "@/app/sitemap";
 import {
@@ -17,6 +34,7 @@ import {
   generateMetadata as generateTopicMetadata,
   generateStaticParams,
 } from "@/app/topics/[topic]/page";
+import { EventBrowsePage } from "@/components/event-browse-page";
 import { eventCategories } from "@/lib/domain/event";
 import {
   eventTopics,
@@ -53,6 +71,23 @@ describe("event topic SEO", () => {
       description: expect.stringContaining("속초"),
       alternates: { canonical: "/topics/festival" },
     });
+  });
+
+  it("주제 이동 시 별도 소개 배너 없이 같은 탐색 레이아웃을 유지한다", async () => {
+    const topic = findEventTopicBySlug("performance");
+    expect(topic).toBeDefined();
+
+    const page = await EventBrowsePage({
+      searchParams: Promise.resolve({}),
+      topic,
+    });
+    const html = renderToStaticMarkup(page);
+
+    expect(html).toContain(
+      '<h1 id="topic-page-title" class="sr-only">속초 공연 한눈에 보기</h1>',
+    );
+    expect(html).not.toContain('aria-label="현재 위치"');
+    expect(html).not.toContain("from-teal-900");
   });
 
   it("없는 주제는 metadata 생성 단계에서 404로 중단한다", async () => {
