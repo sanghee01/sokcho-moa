@@ -9,8 +9,10 @@ import type { EventAudience, EventCategory, EventFilters } from "@/lib/domain/ev
 import {
   buildEventBrowseHref,
   clearEventFiltersHref,
+  eventBrowsePath,
   type EventSearchParams,
 } from "@/lib/domain/event-navigation";
+import { eventTopicPath } from "@/lib/domain/event-topic";
 import { analyticsData, trackAnalyticsEvent } from "@/lib/analytics/events";
 
 type Navigate = (event: MouseEvent<HTMLAnchorElement>, href: string) => void;
@@ -28,15 +30,23 @@ function buildFilterHref(params: EventSearchParams, key: string, value: string |
   return buildEventBrowseHref(params, { [key]: current === value ? undefined : value });
 }
 
-function buildSearchHref(form: HTMLFormElement) {
-  const search = new URLSearchParams();
+function buildSearchHref(form: HTMLFormElement, params: EventSearchParams) {
+  const nextParams: EventSearchParams = {};
   for (const [key, raw] of new FormData(form)) {
     if (typeof raw !== "string") continue;
     const value = raw.trim();
-    if (value) search.set(key, value);
+    if (value) nextParams[key] = value;
   }
-  const query = search.toString();
-  return query ? `/?${query}` : "/";
+  return buildEventBrowseHref(nextParams, {}, eventBrowsePath(params));
+}
+
+function buildCategoryHref(
+  params: EventSearchParams,
+  currentCategory: EventCategory | undefined,
+  category: EventCategory,
+) {
+  const pathname = currentCategory === category ? "/" : eventTopicPath(category);
+  return buildEventBrowseHref(params, { category: undefined }, pathname);
 }
 
 function shouldUseNativeNavigation(event: MouseEvent<HTMLAnchorElement>) {
@@ -110,7 +120,7 @@ export function EventFilters({ params, filters }: { params: EventSearchParams; f
       has_query: query.length > 0,
       active_filter_count: activeFilterCount - (filters.query ? 1 : 0),
     });
-    const href = buildSearchHref(event.currentTarget);
+    const href = buildSearchHref(event.currentTarget, params);
     startTransition(() => router.push(href, { scroll: false }));
   }
 
@@ -131,10 +141,12 @@ export function EventFilters({ params, filters }: { params: EventSearchParams; f
           필터 초기화
         </Link>
       </div>
-      <form action="/" method="get" role="search" onSubmit={submitSearch}>
+      <form action={eventBrowsePath(params)} method="get" role="search" onSubmit={submitSearch}>
         {Object.entries(params).map(([key, raw]) => {
           const value = Array.isArray(raw) ? raw[0] : raw;
-          return key !== "q" && key !== "free" && value ? <input key={key} type="hidden" name={key} value={value} /> : null;
+          return !key.startsWith("__") && key !== "q" && key !== "free" && value
+            ? <input key={key} type="hidden" name={key} value={value} />
+            : null;
         })}
         <label htmlFor="event-search" className="mb-2 block text-sm font-bold text-slate-800">키워드 검색</label>
         <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
@@ -156,7 +168,7 @@ export function EventFilters({ params, filters }: { params: EventSearchParams; f
           <div>
             <p className="mb-2 text-xs font-bold text-slate-500">주제</p>
             <div className="flex flex-wrap gap-2">
-              {categories.map((value) => <Chip key={value} href={buildFilterHref(params, "category", value)} active={filters.category === value} label={categoryLabels[value]} filterType="category" filterValue={value} isPending={isPending} navigate={navigate} />)}
+              {categories.map((value) => <Chip key={value} href={buildCategoryHref(params, filters.category, value)} active={filters.category === value} label={categoryLabels[value]} filterType="category" filterValue={value} isPending={isPending} navigate={navigate} />)}
             </div>
           </div>
           <div className="mt-3 border-t border-slate-200 pt-3">

@@ -3,7 +3,6 @@ const englishSiteName = "Sokcho Moa";
 
 export function buildSiteStructuredData(siteUrl: string) {
   const homeUrl = new URL("/", siteUrl).toString();
-  const hostname = new URL(homeUrl).hostname;
   const organizationId = `${homeUrl}#organization`;
   const websiteId = `${homeUrl}#website`;
 
@@ -28,7 +27,7 @@ export function buildSiteStructuredData(siteUrl: string) {
         "@id": websiteId,
         url: homeUrl,
         name: siteName,
-        alternateName: [englishSiteName, hostname],
+        alternateName: [englishSiteName],
         description: "속초의 행사·공연·축제·체험·교육 프로그램을 한곳에서 비교하세요.",
         inLanguage: "ko-KR",
         publisher: {
