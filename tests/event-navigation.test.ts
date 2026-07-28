@@ -3,6 +3,7 @@ import {
   buildEventBrowseHref,
   clearEventFiltersHref,
   isCalendarEventView,
+  withEventBrowsePath,
 } from "@/lib/domain/event-navigation";
 
 describe("event browse navigation", () => {
@@ -48,5 +49,32 @@ describe("event browse navigation", () => {
     expect(isCalendarEventView({ view: "calendar" })).toBe(true);
     expect(isCalendarEventView({ view: "list" })).toBe(false);
     expect(isCalendarEventView({ view: "unknown" })).toBe(false);
+  });
+
+  it("대표 주제 경로에서 세부 필터와 정렬을 유지한다", () => {
+    const params = withEventBrowsePath(
+      { when: "month", audience: "family" },
+      "/topics/festival",
+    );
+
+    expect(buildEventBrowseHref(params, { sort: "latest" }))
+      .toBe("/topics/festival?when=month&audience=family&sort=latest");
+    expect(buildEventBrowseHref(params, { status: "closed" }))
+      .toBe("/topics/festival?when=month&audience=family&status=closed");
+  });
+
+  it("주제 경로의 필터 초기화는 대표 경로와 정렬을 보존한다", () => {
+    const params = withEventBrowsePath(
+      { q: "바다", when: "week", audience: "all", sort: "views" },
+      "/topics/exhibition",
+    );
+
+    expect(clearEventFiltersHref(params)).toBe("/topics/exhibition?sort=views");
+  });
+
+  it("내부 경로 정보는 쿼리스트링에 노출하지 않는다", () => {
+    expect(buildEventBrowseHref(
+      withEventBrowsePath({}, "/topics/education"),
+    )).toBe("/topics/education");
   });
 });

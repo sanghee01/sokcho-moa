@@ -26,7 +26,7 @@ describe("buildSiteStructuredData", () => {
           "@id": "https://sokcho-moa.vercel.app/#website",
           url: "https://sokcho-moa.vercel.app/",
           name: "속초모아",
-          alternateName: ["Sokcho Moa", "sokcho-moa.vercel.app"],
+          alternateName: ["Sokcho Moa"],
           description: "속초의 행사·공연·축제·체험·교육 프로그램을 한곳에서 비교하세요.",
           inLanguage: "ko-KR",
           publisher: {
@@ -41,6 +41,6 @@ describe("buildSiteStructuredData", () => {
     const result = buildSiteStructuredData("https://example.com/preview");
 
     expect(result["@graph"][0].url).toBe("https://example.com/");
-    expect(result["@graph"][1].alternateName).toContain("example.com");
+    expect(result["@graph"][1].alternateName).toEqual(["Sokcho Moa"]);
   });
 });
