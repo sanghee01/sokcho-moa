@@ -155,7 +155,7 @@ export default async function EventDetailPage({ params }: EventPageProps) {
       )}
 
       <div className="mt-14 flex justify-center border-t border-teal-900/10 pt-10">
-        <Link href="/" className="inline-flex min-h-11 items-center justify-center rounded-xl bg-teal-800 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-900 focus-visible:ring-4 focus-visible:ring-teal-300">
+        <Link href="/" className="inline-flex min-h-11 w-4/5 items-center justify-center rounded-xl bg-teal-800 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-900 focus-visible:ring-4 focus-visible:ring-teal-300">
           목록으로 돌아가기
         </Link>
       </div>
