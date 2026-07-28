@@ -6,7 +6,7 @@ import { TransitionLink } from "@/components/transition-link";
 import { eventTopics } from "@/lib/domain/event-topic";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
-const navigationLinkClass = "inline-flex min-h-10 min-w-0 items-center justify-center whitespace-nowrap rounded-lg px-2.5 py-2 text-center text-sm font-semibold sm:min-h-12 sm:rounded-full sm:border sm:px-4 sm:text-[0.95rem]";
+const navigationLinkClass = "inline-flex min-h-10 min-w-0 items-center justify-center whitespace-nowrap rounded-lg px-2.5 py-2 text-center text-sm font-semibold sm:min-h-11 sm:rounded-xl sm:border sm:px-5 sm:py-1.5 sm:text-[0.95rem]";
 const primaryNavigation = [
   { href: "/", label: "전체" },
   ...eventTopics.map((topic) => ({ href: topic.path, label: topic.label })),
