@@ -5,11 +5,13 @@ import { EventFilters } from "@/components/event-filters";
 import { EventSort } from "@/components/event-sort";
 import { TransitionLink } from "@/components/transition-link";
 import { getAllPublicEvents } from "@/lib/data/events";
+import { getPublicEnv } from "@/lib/config/env";
 import { filterEvents, parseEventFilters, sortEvents } from "@/lib/domain/event";
 import {
   buildEventBrowseHref,
   clearEventFiltersHref,
 } from "@/lib/domain/event-navigation";
+import { buildSiteStructuredData } from "@/lib/seo/site-structured-data";
 import desktopBannerImage from "@/public/sokchomoa-banner-desktop-bg.webp";
 import mobileBannerImage from "@/public/sokchomoa-banner-bg.webp";
 
@@ -37,6 +39,7 @@ function HeroBurst({ side }: { side: "left" | "right" }) {
 
 export default async function HomePage({ searchParams }: HomePageProps) {
   const [params, allEvents] = await Promise.all([searchParams, getAllPublicEvents()]);
+  const siteJsonLd = buildSiteStructuredData(getPublicEnv().NEXT_PUBLIC_SITE_URL);
   const now = new Date();
   const filters = parseEventFilters(params);
   const filteredEvents = filterEvents(allEvents, filters, now);
@@ -47,8 +50,12 @@ export default async function HomePage({ searchParams }: HomePageProps) {
 
   return (
     <main id="main-content">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(siteJsonLd).replace(/</g, "\\u003c") }}
+      />
       <section aria-labelledby="home-hero-title" className="overflow-hidden bg-cyan-50">
-        <h1 id="home-hero-title" className="sr-only">요즘 속초에서 뭐하지?</h1>
+        <h1 id="home-hero-title" className="sr-only">속초모아 - 요즘 속초에서 뭐 하지?</h1>
         <p className="sr-only">행사·공연·체험·교육 정보를 한눈에 확인하세요.</p>
         <div className="relative h-[10.8rem] overflow-hidden bg-cyan-100 sm:h-[min(33.77vw,24rem)] lg:mx-auto lg:aspect-[5/1] lg:h-auto lg:max-w-[120rem]">
           <picture className="absolute inset-x-0 top-0 bottom-0 lg:-top-2">
