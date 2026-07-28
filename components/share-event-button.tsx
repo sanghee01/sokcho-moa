@@ -3,11 +3,10 @@
 import { useEffect, useState } from "react";
 import { trackAnalyticsEvent } from "@/lib/analytics/events";
 
-type ShareStatus = "idle" | "copied" | "shared" | "error";
+type ShareStatus = "idle" | "copied" | "error";
 
 const feedbackByStatus: Record<Exclude<ShareStatus, "idle">, { message: string; tone: string }> = {
-  copied: { message: "링크 복사 완료!", tone: "text-teal-700" },
-  shared: { message: "공유 완료!", tone: "text-teal-700" },
+  copied: { message: "링크를 복사했어요.", tone: "text-teal-700" },
   error: { message: "복사 실패. 다시 눌러 주세요.", tone: "text-rose-700" },
 };
 
@@ -58,9 +57,8 @@ export function ShareEventButton({ slug }: { slug: string }) {
 
     if (canShareNatively) {
       try {
+        trackAnalyticsEvent("share", { method: "native_share_sheet", content_type: "event", item_id: slug });
         await navigator.share({ url });
-        trackAnalyticsEvent("share", { method: "native_share", content_type: "event", item_id: slug });
-        setStatus("shared");
         return;
       } catch (error) {
         if (error instanceof DOMException && error.name === "AbortError") return;
