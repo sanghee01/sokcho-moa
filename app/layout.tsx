@@ -18,6 +18,7 @@ const description = "속초의 행사·공연·축제·체험·교육 프로그�
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
+  applicationName: "속초모아",
   title: { default: defaultTitle, template: "%s | 속초모아" },
   description,
   alternates: { canonical: "/" },
