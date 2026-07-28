@@ -1,11 +1,8 @@
 import type { Metadata } from "next";
 import { EventReportForm } from "@/components/event-report-form";
+import { reportPageMetadata } from "@/lib/seo/utility-page-metadata";
 
-export const metadata: Metadata = {
-  title: "행사 제보하기",
-  description: "속초모아에 아직 없는 행사·축제·프로그램을 제보해 주세요.",
-  alternates: { canonical: "/report" },
-};
+export const metadata: Metadata = reportPageMetadata;
 
 export default function ReportPage() {
   return (

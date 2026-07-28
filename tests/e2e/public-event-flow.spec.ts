@@ -445,6 +445,7 @@ test("행사 목록에서 게시·행사일·마감일·조회 기준으로 정�
   await page.goto("/");
   const sort = page.getByRole("navigation", { name: "행사 정렬" });
   await expect(sort.getByRole("link")).toHaveText(["게시순", "행사일순", "마감일순", "조회순"]);
+  await expect(sort.getByRole("link")).toHaveAttribute("rel", "nofollow");
   const sortButtonRows = await sort.getByRole("link").evaluateAll((links) => (
     new Set(links.map((link) => Math.round(link.getBoundingClientRect().top))).size
   ));

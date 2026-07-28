@@ -1,11 +1,11 @@
 import { expect, test } from "@playwright/test";
 
-test("헤더에서 의견 보내기 폼으로 이동하고 링크 없이 의견을 작성할 수 있다", async ({ page }) => {
+test("푸터에서 의견 보내기 폼으로 이동하고 링크 없이 의견을 작성할 수 있다", async ({ page }) => {
   await page.goto("/");
 
-  const header = page.getByRole("banner");
-  await expect(header.getByRole("link", { name: "행사 제보하기", exact: true })).toBeVisible();
-  const feedbackLink = header.getByRole("link", { name: "의견 보내기", exact: true });
+  const footer = page.getByRole("contentinfo");
+  await expect(footer.getByRole("link", { name: "행사 제보하기", exact: true })).toBeVisible();
+  const feedbackLink = footer.getByRole("link", { name: "의견 보내기", exact: true });
   await expect(feedbackLink).toBeVisible();
   await feedbackLink.click();
 

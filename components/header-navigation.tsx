@@ -1,21 +1,38 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { TransitionLink } from "@/components/transition-link";
+import { eventTopics } from "@/lib/domain/event-topic";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
-const navigationLinkClass = "inline-flex min-h-11 min-w-0 items-center justify-center whitespace-nowrap px-2 py-2 text-center font-black sm:rounded-full sm:border sm:px-4";
-const publicLinkClass = `${navigationLinkClass} text-teal-800/85 hover:bg-teal-100/60 active:bg-teal-100 sm:border-teal-800/45 sm:bg-transparent sm:hover:bg-teal-50`;
+const navigationLinkClass = "inline-flex min-h-10 min-w-0 items-center justify-center whitespace-nowrap rounded-lg px-1.5 py-2 text-center font-black sm:min-h-11 sm:rounded-full sm:border sm:px-3";
+const primaryNavigation = [
+  { href: "/", label: "전체" },
+  ...eventTopics.map((topic) => ({ href: topic.path, label: topic.label })),
+];
 
 export function HeaderNavigationLinks({ isAdmin }: { isAdmin: boolean }) {
+  const pathname = usePathname();
+
   return (
-    <nav aria-label="주요 메뉴" className={`grid w-full ${isAdmin ? "grid-cols-3" : "grid-cols-2"} divide-x divide-teal-800/20 overflow-hidden rounded-xl border border-teal-800/25 bg-teal-50/50 text-xs font-semibold sm:flex sm:w-auto sm:items-center sm:gap-3 sm:divide-x-0 sm:overflow-visible sm:rounded-none sm:border-0 sm:bg-transparent sm:text-sm`}>
-      <TransitionLink href="/report" pendingLabel="제보 페이지 불러오는 중" showPendingIndicator={false} className={publicLinkClass}>
-        행사 제보하기
-      </TransitionLink>
-      <TransitionLink href="/feedback" pendingLabel="의견 페이지 불러오는 중" showPendingIndicator={false} className={publicLinkClass}>
-        의견 보내기
-      </TransitionLink>
+    <nav aria-label="주요 메뉴" className="grid w-full grid-cols-4 gap-1 rounded-xl border border-teal-800/20 bg-teal-50/50 p-1 text-xs sm:flex sm:w-auto sm:items-center sm:gap-1.5 sm:border-0 sm:bg-transparent sm:p-0 sm:text-sm">
+      {primaryNavigation.map((item) => {
+        const active = pathname === item.href;
+
+        return (
+          <TransitionLink
+            key={item.href}
+            href={item.href}
+            pendingLabel={`${item.label} 불러오는 중`}
+            showPendingIndicator={false}
+            aria-current={active ? "page" : undefined}
+            className={`${navigationLinkClass} ${active ? "bg-teal-800 text-white shadow-sm sm:border-teal-800" : "text-teal-900 hover:bg-teal-100 active:bg-teal-200 sm:border-transparent sm:hover:border-teal-800/25 sm:hover:bg-teal-50"}`}
+          >
+            {item.label}
+          </TransitionLink>
+        );
+      })}
       {isAdmin && (
         <TransitionLink href="/admin" pendingLabel="운영자 대시보드 불러오는 중" showPendingIndicator={false} className={`${navigationLinkClass} bg-teal-800 text-white hover:bg-teal-900 active:bg-teal-950 sm:border-teal-800`}>
           운영자

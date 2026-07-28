@@ -17,6 +17,7 @@ export function TransitionLink({
   pendingLabel = "페이지 이동 중",
   showPendingIndicator = true,
   scroll,
+  rel,
   ...analyticsAttributes
 }: {
   href: string;
@@ -25,6 +26,7 @@ export function TransitionLink({
   pendingLabel?: string;
   showPendingIndicator?: boolean;
   scroll?: boolean;
+  rel?: string;
 } & Partial<AnalyticsDataAttributes> & {
   "aria-current"?: "page";
   "aria-label"?: string;
@@ -43,7 +45,7 @@ export function TransitionLink({
   }
 
   return (
-    <Link href={href} onClick={handleClick} aria-busy={isPending} {...analyticsAttributes} className={`relative transition-opacity aria-busy:opacity-70 ${className}`}>
+    <Link href={href} onClick={handleClick} aria-busy={isPending} rel={rel} {...analyticsAttributes} className={`relative transition-opacity aria-busy:opacity-70 ${className}`}>
       {children}
       {isPending && (
         <>

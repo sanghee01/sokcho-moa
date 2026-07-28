@@ -77,6 +77,14 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
               <p>속초 시민이 행사 탐색의 불편을 줄이고자 만든 사이트입니다. 정보가 실제 공고와 다를 수 있으니 방문·신청 전 반드시 원문을 확인해 주세요.</p>
             </div>
             <div className="shrink-0 sm:text-right">
+              <nav aria-label="사이트 이용" className="mb-2 flex flex-wrap gap-x-4 gap-y-1 sm:justify-end">
+                <Link href="/report" className="font-bold text-teal-800 underline decoration-teal-300 underline-offset-4 hover:text-teal-600">
+                  행사 제보하기
+                </Link>
+                <Link href="/feedback" className="font-bold text-teal-800 underline decoration-teal-300 underline-offset-4 hover:text-teal-600">
+                  의견 보내기
+                </Link>
+              </nav>
               <p>
                 문의:{" "}
                 <a
