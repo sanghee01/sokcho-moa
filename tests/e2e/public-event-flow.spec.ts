@@ -123,7 +123,7 @@ test("행사 상세는 지도 SDK나 인라인 미리보기 없이 장소·주�
   expect(mapSdkRequests).toEqual([]);
 });
 
-test("공유하기는 레이아웃을 유지하며 데스크톱 복사와 모바일 네이티브 공유 결과를 알린다", async ({ page }, testInfo) => {
+test("공유하기는 레이아웃을 유지하며 직접 수행한 링크 복사만 완료로 알린다", async ({ page }, testInfo) => {
   const isMobile = testInfo.project.name === "mobile-chromium";
 
   await page.addInitScript((mobile) => {
@@ -167,12 +167,9 @@ test("공유하기는 레이아웃을 유지하며 데스크톱 복사와 모바
   if (isMobile) {
     await expect.poll(() => page.evaluate(() => (window as Window & { __sharedEventUrl?: string }).__sharedEventUrl)).toBe(expectedUrl);
     await expect(shareButton).toBeVisible();
-    const feedback = page.getByRole("status");
-    await expect(feedback).toHaveText("공유 완료!");
-    const feedbackBox = await documentBox(feedback);
-    expect(feedbackBox.y).toBeGreaterThanOrEqual(buttonBoxAfter.y + buttonBoxAfter.height);
+    await expect(page.getByRole("status")).toHaveCount(0);
     await expect.poll(async () => (await capturedAnalyticsEvents(page)).some((event) => (
-      event.name === "share" && event.params.method === "native_share" && event.params.item_id === "demo-sea-family-festival"
+      event.name === "share" && event.params.method === "native_share_sheet" && event.params.item_id === "demo-sea-family-festival"
     ))).toBe(true);
     return;
   }
@@ -180,7 +177,7 @@ test("공유하기는 레이아웃을 유지하며 데스크톱 복사와 모바
   await expect.poll(() => page.evaluate(() => (window as Window & { __copiedEventUrl?: string }).__copiedEventUrl)).toBe(expectedUrl);
   await expect(shareButton).toBeVisible();
   const feedback = page.getByRole("status");
-  await expect(feedback).toHaveText("링크 복사 완료!");
+  await expect(feedback).toHaveText("링크를 복사했어요.");
   const feedbackBox = await documentBox(feedback);
   expect(feedbackBox.y).toBeGreaterThanOrEqual(buttonBoxAfter.y + buttonBoxAfter.height);
   await page.waitForTimeout(3_100);
