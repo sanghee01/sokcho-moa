@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { EventCard } from "@/components/event-card";
-import { EventFilters } from "@/components/event-filters";
+import { EventSearch } from "@/components/event-search";
 import { EventSort } from "@/components/event-sort";
 import { TransitionLink } from "@/components/transition-link";
 import { getPublicEnv } from "@/lib/config/env";
@@ -134,10 +134,8 @@ export async function EventBrowsePage({
           </aside>
         )}
 
-        <EventFilters params={navigationParams} filters={filters} />
-
         <section aria-labelledby="event-results-title" data-event-view={closedView ? "closed" : "active"}>
-          <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="mb-5 grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(17rem,22rem)_auto] xl:items-center">
             <div className="flex min-w-0 flex-wrap items-center gap-3">
               <h2 id="event-results-title" className="text-2xl font-black text-slate-950 sm:text-3xl">{resultTitle} {filteredEvents.length}개</h2>
               <nav aria-label="행사 상태" className="inline-flex shrink-0 items-center border-b border-slate-300">
@@ -165,6 +163,7 @@ export async function EventBrowsePage({
                 </TransitionLink>
               </nav>
             </div>
+            <EventSearch params={navigationParams} query={filters.query} />
             <EventSort params={navigationParams} activeSort={filters.sort} />
           </div>
           {events.length > 0 ? (
@@ -174,8 +173,8 @@ export async function EventBrowsePage({
           ) : (
             <div className="rounded-3xl border border-dashed border-teal-300 bg-white px-6 py-16 text-center">
               <p className="text-xl font-black text-slate-900">{closedView ? "조건에 맞는 마감 행사가 없어요." : "조건에 맞는 진행중 행사가 아직 없어요."}</p>
-              <p className="mt-2 text-slate-600">기간이나 대상 필터를 하나 줄여 다시 찾아보세요.</p>
-              <Link href={clearEventFiltersHref(navigationParams)} className="mt-6 inline-block rounded-2xl bg-teal-800 px-5 py-3 font-bold text-white">필터 초기화</Link>
+              <p className="mt-2 text-slate-600">검색어를 바꾸거나 선택 조건을 지우고 다시 찾아보세요.</p>
+              <Link href={clearEventFiltersHref(navigationParams)} className="mt-6 inline-block rounded-2xl bg-teal-800 px-5 py-3 font-bold text-white">조건 초기화</Link>
             </div>
           )}
         </section>
