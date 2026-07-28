@@ -54,8 +54,8 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
           본문으로 건너뛰기
         </a>
         <header className="border-b border-teal-900/10 bg-white/85 backdrop-blur">
-          <div className="mx-auto flex max-w-6xl flex-col items-center gap-2 px-4 py-2.5 sm:flex-row sm:justify-between sm:gap-3 sm:px-6 sm:py-4 lg:py-0">
-            <Link href="/" className="block shrink-0 overflow-hidden rounded-2xl ring-teal-700/30 focus-visible:ring-4">
+          <div className="mx-auto flex max-w-6xl flex-col items-center gap-2 px-4 py-2.5 sm:grid sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:items-center sm:gap-3 sm:px-6 sm:py-4 lg:py-0">
+            <Link href="/" className="block shrink-0 overflow-hidden rounded-2xl ring-teal-700/30 focus-visible:ring-4 sm:justify-self-start">
               <Image
                 src={headerLogo}
                 alt="속초모아"

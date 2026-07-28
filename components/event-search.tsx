@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTransition, type FormEvent } from "react";
 import { LoadingSpinner } from "@/components/loading-spinner";
@@ -55,7 +54,7 @@ export function EventSearch({
       aria-label="행사 검색"
       aria-busy={isPending}
       onSubmit={submitSearch}
-      className="flex min-w-0 items-center gap-2"
+      className="w-full min-w-0"
     >
       {Object.entries(params).map(([key, raw]) => {
         const value = Array.isArray(raw) ? raw[0] : raw;
@@ -63,32 +62,25 @@ export function EventSearch({
           ? <input key={key} type="hidden" name={key} value={value} />
           : null;
       })}
-      <label htmlFor="event-search" className="sr-only">행사명, 장소, 기관 검색</label>
-      <input
-        id="event-search"
-        name="q"
-        type="search"
-        defaultValue={query}
-        placeholder="행사명, 장소 검색"
-        className="min-h-11 min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-base outline-none transition focus:border-teal-700 focus:ring-2 focus:ring-teal-700/20"
-      />
-      {query && (
-        <Link
-          href={buildEventBrowseHref(params, { q: undefined })}
-          scroll={false}
-          className="inline-flex min-h-11 shrink-0 items-center justify-center px-1 text-sm font-bold text-slate-600 underline decoration-slate-300 underline-offset-4 hover:text-teal-800"
+      <div className="relative">
+        <label htmlFor="event-search" className="sr-only">행사명, 장소, 기관 검색</label>
+        <input
+          id="event-search"
+          name="q"
+          type="search"
+          defaultValue={query}
+          placeholder="행사명, 장소 검색"
+          className="min-h-10 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 pr-20 text-base outline-none transition focus:border-teal-700 focus:ring-2 focus:ring-teal-700/20 sm:min-h-11"
+        />
+        <button
+          type="submit"
+          disabled={isPending}
+          className="absolute bottom-1 right-1 top-1 inline-flex items-center justify-center gap-1 rounded-lg bg-teal-800 px-3 text-sm font-semibold text-white hover:bg-teal-900 disabled:cursor-wait disabled:opacity-70"
         >
-          지우기
-        </Link>
-      )}
-      <button
-        type="submit"
-        disabled={isPending}
-        className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl bg-teal-800 px-4 py-2 text-sm font-bold text-white hover:bg-teal-900 disabled:cursor-wait disabled:opacity-70"
-      >
-        {isPending && <LoadingSpinner />}
-        {isPending ? "검색 중" : "검색"}
-      </button>
+          {isPending && <LoadingSpinner className="size-3" />}
+          {isPending ? "검색 중" : "검색"}
+        </button>
+      </div>
     </form>
   );
 }
