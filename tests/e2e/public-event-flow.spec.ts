@@ -196,22 +196,13 @@ test("GA 이벤트는 탐색부터 상세 도달까지 구조화된 파라미터
     return dataLayer.some((entry) => Array.from(entry)[0] === "config");
   })).toBe(false);
 
-  await page.getByRole("link", { name: "가족", exact: true }).click();
-  await expect(page).toHaveURL(/audience=family/);
-  await expect.poll(async () => (await capturedAnalyticsEvents(page)).some((event) => (
-    event.name === "filter_used"
-      && event.params.filter_type === "audience"
-      && event.params.filter_value === "family"
-      && event.params.filter_action === "apply"
-  ))).toBe(true);
-
-  await page.getByLabel("키워드 검색").fill("바다빛");
+  await page.getByLabel("행사명, 장소, 기관 검색").fill("바다빛");
   await page.getByRole("button", { name: "검색", exact: true }).click();
   await expect(page).toHaveURL(/q=/);
   await expect.poll(async () => (await capturedAnalyticsEvents(page)).find((event) => event.name === "search_submitted")?.params).toMatchObject({
     query_length: 3,
     has_query: true,
-    active_filter_count: 1,
+    active_filter_count: 0,
   });
   const searchEvent = (await capturedAnalyticsEvents(page)).find((event) => event.name === "search_submitted");
   expect(searchEvent?.params).not.toHaveProperty("search_term");
@@ -310,7 +301,7 @@ test("목록과 상세는 데스크톱·모바일에서 가로로 넘치지 않�
   await expectNoHorizontalOverflow(page, [
     page.getByRole("banner"),
     page.getByRole("main").filter({ has: listHeading }),
-    page.getByRole("region", { name: "어떤 하루를 찾으세요?" }),
+    page.getByRole("search", { name: "행사 검색" }),
     page.getByRole("article").first(),
   ]);
 
@@ -366,15 +357,16 @@ test("일정 거리 스크롤하면 오른쪽 하단 버튼으로 페이지 맨 
   await expect(scrollToTop).toHaveAttribute("aria-hidden", "true");
 });
 
-test("목록에서 필터하고 상세·원문·외부 지도 링크·주변 명소를 확인한다", async ({ context, page }) => {
+test("목록에서 검색하고 상세·원문·외부 지도 링크·주변 명소를 확인한다", async ({ context, page }) => {
   await context.route("https://www.sokcho.go.kr/**", (route) => route.abort());
 
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "요즘 속초에서 뭐하지?" })).toBeVisible();
   await expect(page.getByRole("heading", { name: /행사 목록 7개/ })).toBeVisible();
-  await page.getByRole("link", { name: "가족", exact: true }).click();
-  await expect(page).toHaveURL(/audience=family/);
-  await expect(page.getByRole("heading", { name: /행사 목록 6개/ })).toBeVisible();
+  await page.getByLabel("행사명, 장소, 기관 검색").fill("바다빛");
+  await page.getByRole("button", { name: "검색", exact: true }).click();
+  await expect(page).toHaveURL(/q=/);
+  await expect(page.getByRole("heading", { name: /행사 목록 1개/ })).toBeVisible();
 
   await page.getByRole("link", { name: /바다빛 가족 문화축제/ }).click();
   await expect(page).toHaveURL(/\/events\/demo-sea-family-festival$/);
@@ -395,28 +387,28 @@ test("목록에서 필터하고 상세·원문·외부 지도 링크·주변 명
   await expect(nearby.getByRole("link", { name: /지도에서 보기/ }).first()).toBeVisible();
 });
 
-test("필터 응답이 늦어도 클릭 즉시 진행 상태를 알린다", async ({ page }) => {
+test("검색 응답이 늦어도 제출 즉시 진행 상태를 알린다", async ({ page }) => {
   let releaseRequest = () => {};
   const delayedResponse = new Promise<void>((resolve) => {
     releaseRequest = resolve;
   });
 
-  await page.route("**/*audience=family*", async (route) => {
+  await page.route("**/*q=%EB%B0%94%EB%8B%A4%EB%B9%9B*", async (route) => {
     if (route.request().headers().rsc) await delayedResponse;
     await route.continue();
   });
 
   await page.goto("/");
-  const familyFilter = page.getByRole("link", { name: "가족", exact: true });
-  await familyFilter.click();
+  const search = page.getByRole("search", { name: "행사 검색" });
+  await search.getByRole("searchbox").fill("바다빛");
+  await search.getByRole("button", { name: "검색", exact: true }).click();
 
-  await expect(familyFilter).toHaveAttribute("aria-disabled", "true");
-  await expect(page.getByRole("region", { name: "어떤 하루를 찾으세요?" })).toHaveAttribute("aria-busy", "true");
-  await expect(page.getByText("필터를 적용하고 있어요.")).toHaveCount(0);
+  await expect(search).toHaveAttribute("aria-busy", "true");
+  await expect(search.getByRole("button")).toBeDisabled();
 
   releaseRequest();
-  await expect(page).toHaveURL(/audience=family/);
-  await expect(page.getByRole("heading", { name: /행사 목록 6개/ })).toBeVisible();
+  await expect(page).toHaveURL(/q=/);
+  await expect(page.getByRole("heading", { name: /행사 목록 1개/ })).toBeVisible();
 });
 
 test("진행중과 마감 탭으로 참여 가능한 행사와 지난 기록을 분리한다", async ({ page }) => {

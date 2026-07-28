@@ -15,8 +15,8 @@ vi.mock("next/image", () => ({
   default: () => null,
 }));
 
-vi.mock("@/components/event-filters", () => ({
-  EventFilters: () => null,
+vi.mock("@/components/event-search", () => ({
+  EventSearch: () => null,
 }));
 
 vi.mock("@/components/event-sort", () => ({
