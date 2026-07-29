@@ -24,7 +24,7 @@ export async function generateMetadata({ searchParams }: HomePageProps): Promise
   }
 
   return {
-    title: "속초 행사·축제 정보",
+    title: "속초모아 | 요즘 속초에서 뭐하지?",
     description: "속초의 행사·공연·축제·체험·교육·전시 일정을 날짜, 장소와 신청 정보로 한눈에 확인하세요.",
     alternates: { canonical: "/" },
   };
