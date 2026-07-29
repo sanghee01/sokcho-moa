@@ -13,7 +13,7 @@ import "./globals.css";
 
 const siteUrl = getPublicEnv().NEXT_PUBLIC_SITE_URL;
 const collectGoogleAnalytics = shouldCollectGoogleAnalytics();
-const defaultTitle = "속초모아 | 요즘 속초에서 뭐 하지?";
+const defaultTitle = "속초모아 | 요즘 속초에서 뭐하지?";
 const description = "속초의 행사·공연·축제·체험·교육 프로그램을 한곳에서 비교하세요.";
 
 export const metadata: Metadata = {

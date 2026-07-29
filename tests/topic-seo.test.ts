@@ -112,7 +112,7 @@ describe("event topic SEO", () => {
       alternates: { canonical: "/topics/performance" },
     });
     expect(homeMetadata).toMatchObject({
-      title: "속초 행사·축제 정보",
+      title: "속초모아 | 요즘 속초에서 뭐하지?",
       alternates: { canonical: "/" },
     });
   });
