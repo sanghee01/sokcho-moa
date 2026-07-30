@@ -72,6 +72,14 @@ export type Event = {
   publishedAt: string | null;
 };
 
+/**
+ * The public event introduction is stored in `summary`. `description` remains
+ * as a read-only fallback for rows created before the fields were combined.
+ */
+export function getEventIntroduction(event: Pick<Event, "summary" | "description">) {
+  return event.summary ?? event.description;
+}
+
 export type Place = {
   id: string;
   slug: string;
@@ -226,7 +234,7 @@ export function filterEvents(events: Event[], filters: EventFilters, now = new D
       if (!overlapsActualSchedule) return false;
     }
     if (query) {
-      const haystack = [event.title, event.summary, event.locationName, event.sourceName]
+      const haystack = [event.title, getEventIntroduction(event), event.locationName, event.sourceName]
         .filter(Boolean)
         .join(" ")
         .toLocaleLowerCase("ko-KR");

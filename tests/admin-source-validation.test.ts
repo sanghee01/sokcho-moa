@@ -5,8 +5,7 @@ function form(sourceUrl: string) {
   return {
     slug: "operator-source-url",
     title: "운영자 링크 검증 행사",
-    summary: "",
-    description: "",
+    introduction: "",
     category: "other",
     audiences: ["all"],
     eventStartAt: "",

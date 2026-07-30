@@ -10,8 +10,7 @@ export function buildEventPayload(event: EventFormValues, verifiedAt: string) {
   return {
     slug: event.slug,
     title: event.title,
-    summary: event.summary,
-    description: event.description,
+    summary: event.introduction,
     category: event.category,
     audiences: event.audiences,
     event_start_at: event.eventStartAt,
