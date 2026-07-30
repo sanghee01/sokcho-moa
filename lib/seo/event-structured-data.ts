@@ -1,5 +1,5 @@
 import type { Event } from "@/lib/domain/event";
-import { deriveEventState } from "@/lib/domain/event";
+import { deriveEventState, getEventIntroduction } from "@/lib/domain/event";
 
 type EventStructuredData = Record<string, unknown>;
 
@@ -20,7 +20,7 @@ export function buildEventStructuredData(
     "@context": "https://schema.org",
     "@type": "Event",
     name: event.title,
-    description: event.summary ?? event.description,
+    description: getEventIntroduction(event),
     startDate: event.eventStartAt,
     endDate: event.eventEndAt ?? event.eventStartAt,
     eventStatus: deriveEventState(event, now) === "ended"

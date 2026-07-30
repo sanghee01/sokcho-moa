@@ -29,8 +29,7 @@ describe("admin Asia/Seoul datetime round trip", () => {
     const parsed = eventFormSchema.parse({
       slug: "test-event",
       title: "테스트 행사",
-      summary: "",
-      description: "",
+      introduction: "",
       category: "other",
       audiences: ["all"],
       eventStartAt: "2026-07-19T14:30",
@@ -64,8 +63,7 @@ describe("admin Asia/Seoul datetime round trip", () => {
     const parsed = eventFormSchema.parse({
       slug: "date-only-event",
       title: "날짜만 있는 행사",
-      summary: "",
-      description: "",
+      introduction: "",
       category: "other",
       audiences: ["all"],
       eventStartAt: "2026-07-19",

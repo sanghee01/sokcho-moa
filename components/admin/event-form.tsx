@@ -8,7 +8,7 @@ import { deleteEventAction, saveEventAction, uploadEventImageAction, type EventI
 import { isoToSeoulDatetimeLocal } from "@/lib/admin/datetime";
 import { EVENT_IMAGE_ACCEPT, validateEventImage } from "@/lib/admin/event-image";
 import { audienceLabels, categoryLabels } from "@/lib/domain/format";
-import { eventAudiences, eventCategories } from "@/lib/domain/event";
+import { eventAudiences, eventCategories, getEventIntroduction } from "@/lib/domain/event";
 
 type Row = Record<string, unknown> | null;
 const input = "mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5";
@@ -304,12 +304,9 @@ export function EventForm({ row }: { row: Row }) {
               </div>
             </fieldset>
             <label className={`${label} sm:col-span-2`}>
-              한 줄 요약
-              <textarea name="summary" defaultValue={text(row, "summary")} rows={2} placeholder="예: 온 가족이 함께 즐기는 속초 해변 문화축제" className={input} />
-            </label>
-            <label className={`${label} sm:col-span-2`}>
               행사 소개
-              <textarea name="description" defaultValue={text(row, "description")} rows={6} placeholder="예: 주요 프로그램, 행사 특징, 준비물 등 방문 전에 알아야 할 내용을 적어 주세요." className={input} />
+              <textarea name="introduction" defaultValue={getEventIntroduction({ summary: text(row, "summary") || null, description: text(row, "description") || null }) ?? ""} rows={6} maxLength={5_000} placeholder="예: 주요 프로그램, 행사 특징, 준비물 등 방문 전에 알아야 할 내용을 적어 주세요." className={input} />
+              <FieldHelp>행사 목록 검색, 상세 페이지, 공유 미리보기에 같은 내용으로 표시됩니다.</FieldHelp>
             </label>
           </div>
         </section>

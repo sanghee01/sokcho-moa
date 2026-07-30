@@ -5,8 +5,7 @@ function form(overrides: Record<string, unknown> = {}) {
   return {
     slug: "structured-schedule",
     title: "구조화 일정 테스트",
-    summary: "",
-    description: "",
+    introduction: "",
     category: "education",
     audiences: ["all"],
     eventStartAt: "2026-07-22T09:00",

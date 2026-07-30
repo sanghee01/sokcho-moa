@@ -10,7 +10,7 @@ import { ShareEventButton } from "@/components/share-event-button";
 import { StatusBadges } from "@/components/status-badges";
 import { getAllPublicEvents, getPublicEventBySlug, getPublicPlaces, getRelatedEvents } from "@/lib/data/events";
 import { audienceLabels, applicationStateLabels, categoryLabels, formatDateRange, formatOperatingSchedule } from "@/lib/domain/format";
-import { deriveApplicationState } from "@/lib/domain/event";
+import { deriveApplicationState, getEventIntroduction } from "@/lib/domain/event";
 import { createEventMapLinks, findNearbyPlaces, getNearbyPlacesLabel } from "@/lib/domain/geo";
 import { analyticsData } from "@/lib/analytics/events";
 import { getPublicEnv } from "@/lib/config/env";
@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: EventPageProps): Promise<Meta
   const { slug } = await params;
   const event = await getPublicEventBySlug(slug);
   if (!event) return { title: "행사를 찾을 수 없습니다" };
-  const description = event.summary ?? `${event.title}의 기간, 장소, 신청 정보와 주변 명소를 확인하세요.`;
+  const description = getEventIntroduction(event) ?? `${event.title}의 기간, 장소, 신청 정보와 주변 명소를 확인하세요.`;
   return {
     title: event.title,
     description,
@@ -97,7 +97,7 @@ export default async function EventDetailPage({ params }: EventPageProps) {
             <StatusBadges event={event} />
             <p className="mt-6 text-sm font-black text-teal-700">{categoryLabels[event.category]} · {event.audiences.map((audience) => audienceLabels[audience]).join(" · ")}</p>
             <h1 className="mt-3 text-3xl font-black leading-tight tracking-tight text-slate-950 sm:text-5xl">{event.title}</h1>
-            <p className="mt-5 text-lg leading-8 text-slate-600">{event.summary ?? "핵심 정보와 원문 출처를 확인하세요."}</p>
+            <p className="mt-5 text-lg leading-8 text-slate-600">{getEventIntroduction(event) ?? "핵심 정보와 원문 출처를 확인하세요."}</p>
             <div className="mt-7 flex flex-wrap items-start gap-3">
               {event.applicationUrl && <a href={event.applicationUrl} target="_blank" rel="noreferrer" {...analyticsData("application_link_clicked", { event_slug: event.slug, event_category: event.category, link_position: "hero" })} className="rounded-2xl bg-rose-600 px-5 py-3 font-bold text-white">신청·예매 <span className="sr-only">(새 창)</span></a>}
               <a href={event.sourceUrl} target="_blank" rel="noreferrer" {...analyticsData("source_link_clicked", { event_slug: event.slug, event_category: event.category, link_position: "hero", source_type: "primary" })} className="rounded-2xl bg-teal-800 px-5 py-3 font-bold text-white">행사 안내 <span className="sr-only">(새 창)</span></a>

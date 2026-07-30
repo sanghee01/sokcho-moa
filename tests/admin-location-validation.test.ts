@@ -5,8 +5,7 @@ import { eventFormSchema } from "@/lib/admin/schemas";
 const legacyLocationForm = {
   slug: "test-event",
   title: "테스트 행사",
-  summary: "",
-  description: "",
+  introduction: "",
   category: "other" as const,
   audiences: ["all" as const],
   eventStartAt: "",
@@ -59,6 +58,14 @@ describe("administrator event technical metadata preservation", () => {
     const payload = buildEventPayload(event, "2026-07-21T05:30:00.000Z");
 
     expect(payload).not.toHaveProperty("official_url");
+  });
+
+  it("행사 소개만 단일 공개 소개값으로 저장한다", () => {
+    const event = eventFormSchema.parse({ ...legacyLocationForm, introduction: "행사 소개" });
+    const payload = buildEventPayload(event, "2026-07-21T05:30:00.000Z");
+
+    expect(payload.summary).toBe("행사 소개");
+    expect(payload).not.toHaveProperty("description");
   });
 
   it("새 행사는 좌표 없이 저장 payload를 만들 수 있다", () => {
