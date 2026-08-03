@@ -21,4 +21,9 @@ describe("administrator event write helpers", () => {
     expect(getAdminDashboardFeedback({ saved: "event-updated" })).toBe("행사 정보를 수정했습니다.");
   });
 
+  it("삭제와 재수집 허용 결과를 구분해 안내한다", () => {
+    expect(getAdminDashboardFeedback({ deleted: "event" })).toBe("행사를 삭제하고 재수집에서 제외했습니다.");
+    expect(getAdminDashboardFeedback({ released: "event-exclusion" })).toBe("행사의 재수집 제외를 해제했습니다.");
+  });
+
 });

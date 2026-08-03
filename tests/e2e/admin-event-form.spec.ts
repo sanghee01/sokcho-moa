@@ -77,6 +77,14 @@ test("행사 수정 폼은 기존 slug를 내부에서 유지하고 문맥에 �
   await expect(page.locator('input[type="file"][name="image"]')).toHaveCount(1);
   await expect(page.getByRole("button", { name: "Storage에 업로드" })).toHaveCount(0);
 
+  await page.getByRole("button", { name: "삭제", exact: true }).click();
+  const deleteDialog = page.getByRole("dialog", { name: "기존 행사 수정 테스트 삭제" });
+  await expect(deleteDialog).toBeVisible();
+  await expect(deleteDialog.getByRole("checkbox")).toHaveCount(0);
+  await expect(deleteDialog.getByText("같은 행사가 다시 수집되지 않도록", { exact: false })).toBeVisible();
+  await deleteDialog.getByRole("button", { name: "취소", exact: true }).click();
+  await expect(deleteDialog).not.toBeVisible();
+
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   await page.screenshot({ path: testInfo.outputPath("admin-event-form-edit.png"), fullPage: true });
 });

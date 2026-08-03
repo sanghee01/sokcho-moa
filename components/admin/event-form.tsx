@@ -3,8 +3,9 @@
 import Image from "next/image";
 import { startTransition, useActionState, useEffect, useId, useRef, useState, type ChangeEvent, type ReactNode } from "react";
 import { AdminActionForm } from "@/components/admin/admin-action-form";
+import { EventDeleteControl } from "@/components/admin/event-delete-control";
 import { FormSubmitButton } from "@/components/admin/form-submit-button";
-import { deleteEventAction, saveEventAction, uploadEventImageAction, type EventImageUploadState } from "@/lib/actions/admin";
+import { saveEventAction, uploadEventImageAction, type EventImageUploadState } from "@/lib/actions/admin";
 import { isoToSeoulDatetimeLocal } from "@/lib/admin/datetime";
 import { EVENT_IMAGE_ACCEPT, validateEventImage } from "@/lib/admin/event-image";
 import { audienceLabels, categoryLabels } from "@/lib/domain/format";
@@ -441,13 +442,11 @@ export function EventForm({ row }: { row: Row }) {
       </AdminActionForm>
 
       {id && (
-        <AdminActionForm action={deleteEventAction} className="space-y-4 rounded-3xl bg-rose-50 p-5 ring-1 ring-rose-200 sm:p-6">
-          <input type="hidden" name="id" value={id} /><input type="hidden" name="slug" value={slug} />
+        <section className="space-y-4 rounded-3xl bg-rose-50 p-5 ring-1 ring-rose-200 sm:p-6">
           <p className="font-black text-rose-950">행사 삭제</p>
-          <p className="mt-1 text-sm leading-6 text-rose-900">행사와 연결된 출처 기록이 영구 삭제됩니다.</p>
-          <label className="flex items-center gap-2 text-sm font-bold text-rose-950"><input required type="checkbox" name="confirmation" value="delete" /> 삭제 내용을 확인했습니다.</label>
-          <FormSubmitButton idleLabel="행사 삭제" pendingLabel="삭제 중…" className="rounded-xl bg-rose-800 px-4 py-2.5 text-sm font-bold text-white" />
-        </AdminActionForm>
+          <p className="mt-1 text-sm leading-6 text-rose-900">행사와 연결된 출처 기록이 영구 삭제되고, 같은 행사는 재수집 제외 목록에 저장됩니다.</p>
+          <EventDeleteControl event={{ id, slug, title: text(row, "title") || "행사" }} />
+        </section>
       )}
     </div>
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { EventDeleteControl } from "@/components/admin/event-delete-control";
 import { StatusControls } from "@/components/admin/status-controls";
 import { statusControlStyles } from "@/components/admin/status-control-styles";
 import { TransitionLink } from "@/components/transition-link";
@@ -33,7 +34,12 @@ export function EventReviewRow({
       <td className="px-4 py-4 text-right font-bold tabular-nums text-slate-700">{Math.max(0, event.viewCount).toLocaleString("ko-KR")}회</td>
       <td className="px-4 py-4"><span className={statusControlStyles.badge}>{statusLabels[reviewStatus]}</span></td>
       <td className="px-4 py-4 text-slate-600">{event.sourceName}</td>
-      <td className={statusControlStyles.actionCell}><StatusControls id={event.id} slug={event.slug} current={reviewStatus} onStatusChange={setReviewStatus} performStatusChangeAction={performStatusChangeAction} /></td>
+      <td className={statusControlStyles.actionCell}>
+        <div className="flex items-start gap-2">
+          <StatusControls id={event.id} slug={event.slug} current={reviewStatus} onStatusChange={setReviewStatus} performStatusChangeAction={performStatusChangeAction} />
+          <EventDeleteControl event={event} />
+        </div>
+      </td>
     </tr>
   );
 }

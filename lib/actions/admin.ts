@@ -10,7 +10,7 @@ import { validateEventImage } from "@/lib/admin/event-image";
 import { buildEventPayload, buildEventSourcePayload, createEventSlug, eventSavedRedirect } from "@/lib/admin/event-write";
 import { candidateJsonSchema, eventFormSchema, placeFormSchema } from "@/lib/admin/schemas";
 import { PUBLIC_EVENTS_CACHE_TAG, PUBLIC_PLACES_CACHE_TAG } from "@/lib/data/cache-tags";
-import { extractSourceExternalId } from "@/lib/domain/source";
+import { canonicalizeSourceUrl, extractSourceExternalId } from "@/lib/domain/source";
 import { createAuthenticatedSupabaseClient } from "@/lib/supabase/auth-server";
 
 const reviewSchema = z.object({
@@ -23,6 +23,15 @@ const deleteSchema = z.object({
   id: z.string().uuid(),
   slug: z.string().min(1),
   confirmation: z.literal("delete"),
+});
+
+const eventDeleteSchema = z.object({
+  id: z.string().uuid(),
+  confirmation: z.literal("delete"),
+});
+
+const eventCollectionExclusionSchema = z.object({
+  id: z.string().uuid(),
 });
 
 function value(formData: FormData, key: string) {
@@ -74,6 +83,33 @@ function invalidFields(error: z.ZodError): AdminActionState {
 
 function actionFailed(message: string): AdminActionState {
   return { error: message };
+}
+
+type AuthenticatedSupabaseClient = NonNullable<Awaited<ReturnType<typeof createAuthenticatedSupabaseClient>>>;
+
+function isEventCollectionExcludedError(message: string) {
+  const normalizedMessage = message.toLowerCase();
+  return normalizedMessage.includes("event_collection_excluded")
+    || normalizedMessage.includes("event collection excluded")
+    || message.includes("재수집 제외");
+}
+
+async function checkEventCollectionExclusion(
+  client: AuthenticatedSupabaseClient,
+  input: { slug: string; sourceUrl: string },
+): Promise<AdminActionState | null> {
+  const { data, error } = await client.rpc("is_event_collection_excluded", {
+    p_slug: input.slug,
+    p_source_url: input.sourceUrl,
+    p_external_id: extractSourceExternalId(input.sourceUrl),
+  });
+  if (error) {
+    return actionFailed("재수집 제외 목록을 확인하지 못했습니다. 데이터베이스 업데이트 상태를 확인해 주세요.");
+  }
+  if (data === true) {
+    return actionFailed("이 행사는 이전에 삭제되어 재수집 제외 중입니다. 관리자 대시보드에서 먼저 재수집을 허용해 주세요.");
+  }
+  return null;
 }
 
 const eventImageExtensions = {
@@ -228,6 +264,11 @@ export async function saveEventAction(
   const payload = buildEventPayload(event, verifiedAt);
   const client = await createAuthenticatedSupabaseClient();
   if (!client) return actionFailed("운영자 데이터 연결을 확인해 주세요.");
+  const exclusionFailure = await checkEventCollectionExclusion(client, {
+    slug: event.slug,
+    sourceUrl: payload.source_url,
+  });
+  if (exclusionFailure) return exclusionFailure;
   let uploadedImagePath: string | null = null;
   if (image.file) {
     const extension = eventImageExtensions[image.file.type as keyof typeof eventImageExtensions];
@@ -240,44 +281,64 @@ export async function saveEventAction(
     payload.image_url = data.publicUrl;
     uploadedImagePath = path;
   }
-  let legacyScheduleSchema = false;
-  let result = event.id
-    ? await client.from("events").update(payload).eq("id", event.id).select("id").single()
-    : await client.from("events").insert({ ...payload, review_status: "pending" }).select("id").single();
-  if (result.error && isMissingScheduleSchema(result.error.message)) {
-    if (event.scheduleMode === "occurrences") {
-      return actionFailed("실제 운영 회차 기능을 사용하려면 먼저 데이터베이스 업데이트가 필요합니다.");
-    }
-    const legacyPayload: Partial<typeof payload> = { ...payload };
-    delete legacyPayload.schedule_mode;
-    result = event.id
-      ? await client.from("events").update(legacyPayload).eq("id", event.id).select("id").single()
-      : await client.from("events").insert({ ...legacyPayload, review_status: "pending" }).select("id").single();
-    legacyScheduleSchema = true;
-  }
-  if (result.error) {
-    if (uploadedImagePath) await client.storage.from("event-images").remove([uploadedImagePath]);
-    return actionFailed("행사를 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.");
-  }
-  if (!legacyScheduleSchema) {
-    const occurrenceResult = await client.rpc("replace_event_occurrences", {
-      p_event_id: result.data.id,
-      p_occurrences: event.scheduleMode === "occurrences"
-        ? event.occurrences.map((occurrence) => ({ starts_at: occurrence.startsAt, ends_at: occurrence.endsAt }))
-        : [],
+  const occurrences = event.scheduleMode === "occurrences"
+    ? event.occurrences.map((occurrence) => ({ starts_at: occurrence.startsAt, ends_at: occurrence.endsAt }))
+    : [];
+
+  if (!isEditing) {
+    const { data: createdEventId, error: createError } = await client.rpc("create_event_with_source", {
+      p_event: payload,
+      p_occurrences: occurrences,
+      p_source_checked_at: verifiedAt,
     });
-    if (occurrenceResult.error) {
-      return actionFailed(isMissingScheduleSchema(occurrenceResult.error.message)
-        ? "실제 운영 회차 기능을 사용하려면 먼저 데이터베이스 업데이트가 필요합니다."
-        : "행사 기본 정보는 저장했지만 운영 회차를 저장하지 못했습니다. 다시 시도해 주세요.");
+    if (createError || typeof createdEventId !== "string") {
+      if (uploadedImagePath) await client.storage.from("event-images").remove([uploadedImagePath]);
+      const message = createError?.message ?? "신규 행사 생성 결과를 확인하지 못했습니다.";
+      return actionFailed(isEventCollectionExcludedError(message)
+        ? "이 행사는 이전에 삭제되어 재수집 제외 중입니다. 관리자 대시보드에서 먼저 재수집을 허용해 주세요."
+        : message.includes("create_event_with_source")
+          ? "신규 행사 저장 기능을 사용하려면 먼저 데이터베이스 업데이트가 필요합니다."
+          : "행사를 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.");
+    }
+  } else {
+    let legacyScheduleSchema = false;
+    let result = await client.from("events").update(payload).eq("id", event.id).select("id").single();
+    if (result.error && isMissingScheduleSchema(result.error.message)) {
+      if (event.scheduleMode === "occurrences") {
+        return actionFailed("실제 운영 회차 기능을 사용하려면 먼저 데이터베이스 업데이트가 필요합니다.");
+      }
+      const legacyPayload: Partial<typeof payload> = { ...payload };
+      delete legacyPayload.schedule_mode;
+      result = await client.from("events").update(legacyPayload).eq("id", event.id).select("id").single();
+      legacyScheduleSchema = true;
+    }
+    if (result.error) {
+      if (uploadedImagePath) await client.storage.from("event-images").remove([uploadedImagePath]);
+      return actionFailed(isEventCollectionExcludedError(result.error.message)
+        ? "이 행사는 이전에 삭제되어 재수집 제외 중입니다. 관리자 대시보드에서 먼저 재수집을 허용해 주세요."
+        : "행사를 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.");
+    }
+    if (!legacyScheduleSchema) {
+      const occurrenceResult = await client.rpc("replace_event_occurrences", {
+        p_event_id: result.data.id,
+        p_occurrences: occurrences,
+      });
+      if (occurrenceResult.error) {
+        return actionFailed(isMissingScheduleSchema(occurrenceResult.error.message)
+          ? "실제 운영 회차 기능을 사용하려면 먼저 데이터베이스 업데이트가 필요합니다."
+          : "행사 기본 정보는 저장했지만 운영 회차를 저장하지 못했습니다. 다시 시도해 주세요.");
+      }
+    }
+    const sourcePayload = buildEventSourcePayload(result.data.id, event, verifiedAt);
+    const { error: sourceError } = await client
+      .from("event_sources")
+      .upsert(sourcePayload, { onConflict: "event_id,provider,original_url" });
+    if (sourceError) {
+      return actionFailed(isEventCollectionExcludedError(sourceError.message)
+        ? "이 행사의 출처는 재수집 제외 중입니다. 관리자 대시보드에서 먼저 재수집을 허용해 주세요."
+        : "행사 출처를 저장하지 못했습니다. 입력한 출처를 확인해 주세요.");
     }
   }
-  const sourcePayload = buildEventSourcePayload(result.data.id, event, verifiedAt);
-  const sourceResult = await client
-    .from("event_sources")
-    .upsert(sourcePayload, { onConflict: "event_id,provider,original_url" });
-  const sourceError = sourceResult.error;
-  if (sourceError) return actionFailed("행사 출처를 저장하지 못했습니다. 입력한 출처를 확인해 주세요.");
   revalidateEventPaths(event.slug);
   redirect(eventSavedRedirect(isEditing));
 }
@@ -302,18 +363,43 @@ export async function deleteEventAction(
   formData: FormData,
 ): Promise<AdminActionState> {
   await requireAdmin();
-  const parsed = deleteSchema.safeParse({
+  const parsed = eventDeleteSchema.safeParse({
     id: value(formData, "id"),
-    slug: value(formData, "slug"),
     confirmation: value(formData, "confirmation"),
   });
-  if (!parsed.success) return actionFailed("삭제 확인에 체크한 뒤 다시 시도해 주세요.");
+  if (!parsed.success) return actionFailed("삭제 요청을 확인한 뒤 다시 시도해 주세요.");
   const client = await createAuthenticatedSupabaseClient();
   if (!client) return actionFailed("운영자 데이터 연결을 확인해 주세요.");
-  const { error } = await client.from("events").delete().eq("id", parsed.data.id);
-  if (error) return actionFailed("행사를 삭제하지 못했습니다. 잠시 후 다시 시도해 주세요.");
-  revalidateEventPaths(parsed.data.slug);
+  const { data: deletedSlug, error } = await client.rpc("delete_event_and_exclude", {
+    p_event_id: parsed.data.id,
+    p_reason: "관리자 대시보드에서 삭제",
+  });
+  if (error) {
+    return actionFailed(error.message.includes("delete_event_and_exclude")
+      ? "삭제 기능을 사용하려면 먼저 데이터베이스 업데이트가 필요합니다."
+      : "행사를 삭제하지 못했습니다. 잠시 후 다시 시도해 주세요.");
+  }
+  revalidateEventPaths(typeof deletedSlug === "string" ? deletedSlug : null);
   redirect("/admin?deleted=event");
+}
+
+export async function releaseEventCollectionExclusionAction(
+  _previousState: AdminActionState,
+  formData: FormData,
+): Promise<AdminActionState> {
+  await requireAdmin();
+  const parsed = eventCollectionExclusionSchema.safeParse({ id: value(formData, "id") });
+  if (!parsed.success) return actionFailed("재수집 허용 대상을 확인해 주세요.");
+  const client = await createAuthenticatedSupabaseClient();
+  if (!client) return actionFailed("운영자 데이터 연결을 확인해 주세요.");
+  const { data: released, error } = await client.rpc("release_event_collection_exclusion", {
+    p_tombstone_id: parsed.data.id,
+  });
+  if (error || released !== true) {
+    return actionFailed("재수집 제외를 해제하지 못했습니다. 잠시 후 다시 시도해 주세요.");
+  }
+  revalidatePath("/admin");
+  redirect("/admin?released=event-exclusion");
 }
 
 export async function savePlaceAction(
@@ -382,7 +468,13 @@ export async function importEventCandidateAction(
   const client = await createAuthenticatedSupabaseClient();
   if (!client) return actionFailed("운영자 데이터 연결을 확인해 주세요.");
   const slug = `candidate-${Date.now()}`;
-  const { data, error } = await client.from("events").insert({
+  const sourceUrl = canonicalizeSourceUrl(candidate.sourceUrl);
+  const exclusionFailure = await checkEventCollectionExclusion(client, {
+    slug,
+    sourceUrl,
+  });
+  if (exclusionFailure) return exclusionFailure;
+  const eventPayload = {
     slug,
     title: candidate.title,
     summary: candidate.summary,
@@ -406,19 +498,22 @@ export async function importEventCandidateAction(
     application_url: candidate.applicationUrl,
     image_url: candidate.imageUrl,
     source_name: candidate.sourceName,
-    source_url: candidate.sourceUrl,
-    review_status: "pending",
+    source_url: sourceUrl,
     last_verified_at: null,
-  }).select("id").single();
-  if (error) return actionFailed("후보 행사를 등록하지 못했습니다. JSON 내용을 확인해 주세요.");
-  const { error: sourceError } = await client.from("event_sources").insert({
-    event_id: data.id,
-    provider: candidate.sourceName,
-    original_url: candidate.sourceUrl,
-    external_id: extractSourceExternalId(candidate.sourceUrl),
-    last_checked_at: new Date().toISOString(),
+  };
+  const { data: eventId, error } = await client.rpc("create_event_with_source", {
+    p_event: eventPayload,
+    p_occurrences: [],
+    p_source_checked_at: new Date().toISOString(),
   });
-  if (sourceError) return actionFailed("후보 출처를 등록하지 못했습니다. 공식 원문 URL을 확인해 주세요.");
+  if (error) {
+    return actionFailed(isEventCollectionExcludedError(error.message)
+      ? "이 후보 행사는 이전에 삭제되어 재수집 제외 중입니다. 관리자 대시보드에서 먼저 재수집을 허용해 주세요."
+      : error.message.includes("create_event_with_source")
+        ? "후보 등록 기능을 사용하려면 먼저 데이터베이스 업데이트가 필요합니다."
+        : "후보 행사를 등록하지 못했습니다. JSON 내용을 확인해 주세요.");
+  }
+  if (typeof eventId !== "string") return actionFailed("등록된 후보 행사를 확인하지 못했습니다.");
   revalidatePath("/admin");
-  redirect(`/admin/events/${data.id}?created=1`);
+  redirect(`/admin/events/${eventId}?created=1`);
 }

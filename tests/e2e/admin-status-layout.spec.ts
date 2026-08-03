@@ -92,3 +92,30 @@ test("실제 행사 수정 화면 상태 컨트롤이 저장·성공·실패 rol
   expectStable(await editBoxes(page), baseline);
   await expect(publishButton).toHaveAttribute("aria-pressed", "true");
 });
+
+test("관리자 대시보드 목록에서 확인 후 행사를 삭제할 수 있다", async ({ page }) => {
+  await page.goto("/e2e-test/admin-status");
+  const currentRow = page.getByRole("row").filter({ hasText: "현재 행사" });
+
+  await currentRow.getByRole("button", { name: "삭제", exact: true }).click();
+
+  const dialog = page.getByRole("dialog", { name: "현재 행사 삭제" });
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByText("삭제한 행사는 복구할 수 없으며, 연결된 출처 기록과 운영 회차도 함께 삭제됩니다.")).toBeVisible();
+  await expect(dialog.locator('input[name="id"]')).toHaveValue("10000000-0000-4000-8000-000000000091");
+  await expect(dialog.locator('input[name="slug"]')).toHaveValue("e2e-current");
+  await expect(dialog.locator('input[name="confirmation"]')).toHaveValue("delete");
+  await expect(dialog.getByRole("checkbox")).toHaveCount(0);
+
+  const box = await dialog.boundingBox();
+  const viewport = page.viewportSize();
+  expect(box).not.toBeNull();
+  expect(viewport).not.toBeNull();
+  if (box && viewport) {
+    expect(Math.abs(box.x + box.width / 2 - viewport.width / 2)).toBeLessThanOrEqual(1);
+    expect(Math.abs(box.y + box.height / 2 - viewport.height / 2)).toBeLessThanOrEqual(1);
+  }
+
+  await dialog.getByRole("button", { name: "취소", exact: true }).click();
+  await expect(dialog).not.toBeVisible();
+});
