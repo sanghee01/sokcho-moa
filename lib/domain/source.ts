@@ -1,4 +1,15 @@
-const EVENT_ID_QUERY_KEYS = ["fstvlcntntsid", "eventseq", "articleseq", "contentseq", "pseq"];
+const EVENT_ID_QUERY_KEYS = [
+  "fstvlcntntsid",
+  "eventseq",
+  "articleseq",
+  "contentseq",
+  "pseq",
+  "eduno",
+  "idx",
+  "ntt_id",
+  "destid",
+];
+const TRACKING_QUERY_KEYS = new Set(["fbclid", "gclid", "dclid", "msclkid"]);
 const OFFICIAL_IMAGE_PATTERN = /\.(?:avif|gif|jpe?g|png|webp)$/i;
 const SOKCHO_HOSTS = new Set(["sokcho.go.kr", "www.sokcho.go.kr"]);
 const SOKCHO_FACILITIES_HOSTS = new Set(["sokchosiseol.or.kr", "www.sokchosiseol.or.kr"]);
@@ -24,6 +35,16 @@ const KNOWN_GENERIC_PATHS = new Set([
   "/bbs/event.do",
 ]);
 
+export function canonicalizeSourceUrl(value: string) {
+  try {
+    const url = new URL(value);
+    url.searchParams.sort();
+    return url.toString();
+  } catch {
+    return value;
+  }
+}
+
 export function normalizeComparableUrl(value: string | null) {
   if (!value) return null;
   try {
@@ -31,6 +52,12 @@ export function normalizeComparableUrl(value: string | null) {
     url.hash = "";
     url.hostname = url.hostname.toLowerCase();
     url.pathname = url.pathname.length > 1 ? url.pathname.replace(/\/+$/, "") : url.pathname;
+    for (const key of [...url.searchParams.keys()]) {
+      const normalizedKey = key.toLowerCase();
+      if (normalizedKey.startsWith("utm_") || TRACKING_QUERY_KEYS.has(normalizedKey)) {
+        url.searchParams.delete(key);
+      }
+    }
     url.searchParams.sort();
     return url.toString();
   } catch {

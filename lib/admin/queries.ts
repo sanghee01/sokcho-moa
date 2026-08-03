@@ -1,6 +1,22 @@
 import "server-only";
 import { createAuthenticatedSupabaseClient } from "@/lib/supabase/auth-server";
 
+export type AdminEventDeletionIdentity = {
+  kind: string;
+  identityValue: string;
+  sourceUrl: string | null;
+};
+
+export type AdminEventCollectionExclusion = {
+  id: string;
+  originalTitle: string | null;
+  originalSlug: string | null;
+  deletedAt: string;
+  deletedBy: string | null;
+  reason: string | null;
+  identities: AdminEventDeletionIdentity[];
+};
+
 export async function getAdminEvents(status?: string) {
   const client = await createAuthenticatedSupabaseClient();
   if (!client) return [];
@@ -58,6 +74,42 @@ export async function getAdminEventReports() {
     .order("created_at", { ascending: false });
   if (error) throw new Error(`제보 목록을 불러오지 못했습니다: ${error.message}`);
   return data ?? [];
+}
+
+export async function getAdminEventCollectionExclusions(): Promise<AdminEventCollectionExclusion[]> {
+  const client = await createAuthenticatedSupabaseClient();
+  if (!client) return [];
+  const { data, error } = await client
+    .from("event_deletion_tombstones")
+    .select(`
+      id,
+      original_title,
+      original_slug,
+      deleted_at,
+      deleted_by,
+      reason,
+      event_deletion_identities(kind, identity_value, source_url)
+    `)
+    .is("released_at", null)
+    .order("deleted_at", { ascending: false });
+  if (error && error.message.includes("event_deletion_tombstones")
+    && (error.message.includes("schema cache") || error.message.includes("does not exist"))) {
+    return [];
+  }
+  if (error) throw new Error(`재수집 제외 목록을 불러오지 못했습니다: ${error.message}`);
+  return (data ?? []).map((row) => ({
+    id: String(row.id),
+    originalTitle: row.original_title ? String(row.original_title) : null,
+    originalSlug: row.original_slug ? String(row.original_slug) : null,
+    deletedAt: String(row.deleted_at),
+    deletedBy: row.deleted_by ? String(row.deleted_by) : null,
+    reason: row.reason ? String(row.reason) : null,
+    identities: (row.event_deletion_identities ?? []).map((identity) => ({
+      kind: String(identity.kind),
+      identityValue: String(identity.identity_value),
+      sourceUrl: identity.source_url ? String(identity.source_url) : null,
+    })),
+  }));
 }
 
 export async function getAdminSiteFeedback() {

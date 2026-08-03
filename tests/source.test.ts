@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  canonicalizeSourceUrl,
   extractSourceExternalId,
   isKnownUnavailableOfficialUrl,
   isLikelyEventDetailUrl,
@@ -7,11 +8,27 @@ import {
 } from "@/lib/domain/source";
 
 describe("공식 원문 URL", () => {
+  it("브라우저가 같은 주소로 해석하는 원문 URL을 저장 전에 표준화한다", () => {
+    expect(canonicalizeSourceUrl("https://éxample.com:0443/a/../event?eventSeq=%37%37"))
+      .toBe("https://xn--xample-9ua.com/event?eventSeq=77");
+    expect(canonicalizeSourceUrl("https:\\\\example.com\\a\\..\\event"))
+      .toBe("https://example.com/event");
+  });
+
   it("알려진 쿼리·경로·공식 파일에서 외부 식별자를 추출한다", () => {
     expect(extractSourceExternalId("https://sokcho.go.kr/sc/event/program?eventSeq=669")).toBe("669");
     expect(extractSourceExternalId("https://www.sokcho.go.kr/ct/tour/attraction?contentSeq=168")).toBe("168");
     expect(extractSourceExternalId("https://library.sokcho.go.kr/sokcho/menu/259/board/51/post/1079")).toBe("1079");
     expect(extractSourceExternalId("https://www.sokcho.go.kr/upload/popupzone/event-poster.jpg")).toBe("event-poster.jpg");
+  });
+
+  it.each([
+    ["EDUNO", "education-101"],
+    ["Idx", "festival-202"],
+    ["NTT_ID", "notice-303"],
+    ["destID", "destination-404"],
+  ])("현재 수집 주소의 %s 식별자를 대소문자와 무관하게 추출한다", (key, id) => {
+    expect(extractSourceExternalId(`https://events.example.com/detail?${key}=${id}`)).toBe(id);
   });
 
   it("속초시청은 감사된 상세 쿼리와 공식 팝업 이미지만 허용한다", () => {
@@ -67,8 +84,24 @@ describe("공식 원문 URL", () => {
     expect(isLikelyEventDetailUrl("https://events.example.com/events/summer-night-2026")).toBe(true);
   });
 
-  it("슬래시·쿼리 순서 차이를 제거해 중복 링크를 판정한다", () => {
+  it("슬래시·의미 있는 쿼리 순서 차이를 제거해 중복 링크를 판정한다", () => {
     expect(isSameSourceUrl("https://example.com/event/?b=2&a=1", "https://example.com/event?a=1&b=2")).toBe(true);
+  });
+
+  it.each(["utm_source", "UTM_Medium", "fbclid", "GCLID", "dclid", "MSCLKID"])(
+    "%s 추적 쿼리를 중복 링크 판정에서 제외한다",
+    (trackingKey) => {
+      expect(
+        isSameSourceUrl(
+          `https://example.com/event?b=2&${trackingKey}=tracking-value&a=1`,
+          "https://example.com/event?a=1&b=2",
+        ),
+      ).toBe(true);
+    },
+  );
+
+  it("의미 있는 쿼리 값의 차이는 유지한다", () => {
+    expect(isSameSourceUrl("https://example.com/event?id=1&utm_campaign=summer", "https://example.com/event?id=2")).toBe(false);
   });
 
   it("현재 접속 불가능한 속초문화관광재단 링크는 공식 안내에서 제외한다", () => {

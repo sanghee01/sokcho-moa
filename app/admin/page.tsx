@@ -1,26 +1,34 @@
 import { ActionFeedback } from "@/components/admin/action-feedback";
 import { AdminShell } from "@/components/admin/admin-shell";
+import { EventCollectionExclusionList } from "@/components/admin/event-collection-exclusion-list";
 import { SubmissionReviewCard } from "@/components/admin/submission-review-card";
 import { EventReviewRow } from "@/components/admin/event-review-row";
 import { TransitionLink } from "@/components/transition-link";
 import { requireAdmin } from "@/lib/admin/auth";
 import { getAdminDashboardFeedback } from "@/lib/admin/dashboard-feedback";
-import { getAdminEventReports, getAdminEvents, getAdminPlaces, getAdminSiteFeedback } from "@/lib/admin/queries";
+import {
+  getAdminEventCollectionExclusions,
+  getAdminEventReports,
+  getAdminEvents,
+  getAdminPlaces,
+  getAdminSiteFeedback,
+} from "@/lib/admin/queries";
 
 const statusLabels: Record<string, string> = { pending: "검수 대기", published: "공개", rejected: "반려" };
 
 export default async function AdminPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string; deleted?: string; saved?: string }>;
+  searchParams: Promise<{ status?: string; deleted?: string; released?: string; saved?: string }>;
 }) {
-  const [admin, { status, deleted, saved }, allEvents, places, reports, feedback] = await Promise.all([
+  const [admin, { status, deleted, released, saved }, allEvents, places, reports, feedback, exclusions] = await Promise.all([
     requireAdmin(),
     searchParams,
     getAdminEvents(),
     getAdminPlaces(),
     getAdminEventReports(),
     getAdminSiteFeedback(),
+    getAdminEventCollectionExclusions(),
   ]);
   const events = status && statusLabels[status]
     ? allEvents.filter((row) => row.review_status === status)
@@ -31,7 +39,7 @@ export default async function AdminPage({
       allEvents.filter((row) => row.review_status === key).length,
     ]),
   );
-  const feedbackMessage = getAdminDashboardFeedback({ saved, deleted });
+  const feedbackMessage = getAdminDashboardFeedback({ saved, deleted, released });
 
   return (
     <AdminShell email={admin.email}>
@@ -72,6 +80,8 @@ export default async function AdminPage({
           </table>
         </div>
       </section>
+
+      <EventCollectionExclusionList exclusions={exclusions} />
 
       <section className="mt-10" aria-labelledby="admin-reports-title">
         <div className="mb-4 flex items-center justify-between gap-3">

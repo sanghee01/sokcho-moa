@@ -1,5 +1,5 @@
 import type { EventFormValues } from "@/lib/admin/schemas";
-import { extractSourceExternalId } from "@/lib/domain/source";
+import { canonicalizeSourceUrl, extractSourceExternalId } from "@/lib/domain/source";
 
 export function createEventSlug(randomId = crypto.randomUUID()) {
   return `event-${randomId.toLowerCase()}`;
@@ -7,6 +7,7 @@ export function createEventSlug(randomId = crypto.randomUUID()) {
 
 export function buildEventPayload(event: EventFormValues, verifiedAt: string) {
   const legacyOfficialUrl = (event as EventFormValues & { officialUrl?: string | null }).officialUrl;
+  const sourceUrl = canonicalizeSourceUrl(event.sourceUrl);
   return {
     slug: event.slug,
     title: event.title,
@@ -31,7 +32,7 @@ export function buildEventPayload(event: EventFormValues, verifiedAt: string) {
     application_url: event.applicationUrl,
     image_url: event.imageUrl,
     source_name: event.sourceName,
-    source_url: event.sourceUrl,
+    source_url: sourceUrl,
     is_featured: event.isFeatured,
     last_verified_at: verifiedAt,
     ...(legacyOfficialUrl !== undefined ? { official_url: legacyOfficialUrl } : {}),
@@ -39,11 +40,12 @@ export function buildEventPayload(event: EventFormValues, verifiedAt: string) {
 }
 
 export function buildEventSourcePayload(eventId: string, event: EventFormValues, verifiedAt: string) {
+  const originalUrl = canonicalizeSourceUrl(event.sourceUrl);
   return {
     event_id: eventId,
     provider: event.sourceName,
-    original_url: event.sourceUrl,
-    external_id: extractSourceExternalId(event.sourceUrl),
+    original_url: originalUrl,
+    external_id: extractSourceExternalId(originalUrl),
     last_checked_at: verifiedAt,
   };
 }
