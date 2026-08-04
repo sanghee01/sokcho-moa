@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import type { Event } from "@/lib/domain/event";
-import { buildEventStructuredData, eventOfferPrice } from "@/lib/seo/event-structured-data";
+import {
+  buildEventBreadcrumbStructuredData,
+  buildEventSeoDescription,
+  buildEventStructuredData,
+  eventOfferPrice,
+} from "@/lib/seo/event-structured-data";
 
 const event: Event = {
   id: "00000000-0000-4000-8000-000000000001",
@@ -51,6 +56,11 @@ describe("event structured data", () => {
     );
 
     expect(result.url).toBe("https://sokcho-moa.vercel.app/events/summer-concert");
+    expect(result).toMatchObject({
+      "@id": "https://sokcho-moa.vercel.app/events/summer-concert#event",
+      mainEntityOfPage: "https://sokcho-moa.vercel.app/events/summer-concert",
+      inLanguage: "ko-KR",
+    });
     expect(result.location).toEqual({
       "@type": "Place",
       name: "속초문화예술회관",
@@ -82,6 +92,7 @@ describe("event structured data", () => {
       name: "속초문화관광재단",
       url: "https://example.org",
     });
+    expect(buildEventSeoDescription(event)).toContain("속초 여름 음악회 일정 2026.08.01");
   });
 
   it("확인되지 않은 선택 정보는 임의로 만들지 않는다", () => {
@@ -110,5 +121,34 @@ describe("event structured data", () => {
     expect(eventOfferPrice({ isFree: false, priceText: "성인 10,000원 · 청소년 5,000원" })).toBe(5_000);
     expect(eventOfferPrice({ isFree: null, priceText: "무료(사전 신청)" })).toBe(0);
     expect(eventOfferPrice({ isFree: false, priceText: "요금은 원문 확인" })).toBeNull();
+  });
+
+  it("직접 신청 URL이 없으면 일반 출처 페이지를 예매 Offer로 표시하지 않는다", () => {
+    const result = buildEventStructuredData({
+      ...event,
+      applicationUrl: null,
+      priceText: "10,000원",
+      isFree: false,
+    }, "https://sokcho-moa.vercel.app");
+
+    expect(result).not.toHaveProperty("offers");
+  });
+
+  it("행사 상세 경로를 브랜드와 주제 계층에 연결한다", () => {
+    const result = buildEventBreadcrumbStructuredData(event, "https://sokcho-moa.vercel.app");
+
+    expect(result.itemListElement).toEqual([
+      expect.objectContaining({ position: 1, name: "속초모아" }),
+      expect.objectContaining({
+        position: 2,
+        name: "속초 공연",
+        item: "https://sokcho-moa.vercel.app/topics/performance",
+      }),
+      expect.objectContaining({
+        position: 3,
+        name: "속초 여름 음악회",
+        item: "https://sokcho-moa.vercel.app/events/summer-concert",
+      }),
+    ]);
   });
 });

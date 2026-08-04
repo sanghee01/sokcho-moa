@@ -1,5 +1,7 @@
 import type { Event } from "@/lib/domain/event";
 import { deriveEventState, getEventIntroduction } from "@/lib/domain/event";
+import { categoryLabels, formatDateRange } from "@/lib/domain/format";
+import { eventTopicPath } from "@/lib/domain/event-topic";
 
 type EventStructuredData = Record<string, unknown>;
 
@@ -9,24 +11,29 @@ export function buildEventStructuredData(
   now = new Date(),
 ): EventStructuredData {
   const eventUrl = absoluteUrl(`/events/${encodeURIComponent(event.slug)}`, siteUrl);
-  const offerPrice = eventOfferPrice(event);
+  const eventId = `${eventUrl}#event`;
+  const applicationUrl = cleanUrl(event.applicationUrl);
+  const imageUrl = cleanUrl(event.imageUrl, true);
+  const offerPrice = applicationUrl ? eventOfferPrice(event) : null;
   const performers = (event.performers ?? []).map((performer) => ({
     "@type": performer.type,
     name: performer.name,
   }));
-  const organizerUrl = event.organizerUrl ?? (event.organizer ? urlOrigin(event.sourceUrl) : undefined);
+  const organizerUrl = cleanUrl(event.organizerUrl);
 
   return compactObject({
     "@context": "https://schema.org",
     "@type": "Event",
+    "@id": eventId,
     name: event.title,
-    description: getEventIntroduction(event),
+    description: getEventIntroduction(event) ?? `${event.title}의 일정, 장소와 참여 정보를 확인하세요.`,
     startDate: event.eventStartAt,
-    endDate: event.eventEndAt ?? event.eventStartAt,
+    endDate: event.eventEndAt ?? undefined,
     eventStatus: deriveEventState(event, now) === "ended"
       ? "https://schema.org/EventCompleted"
       : "https://schema.org/EventScheduled",
     eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
+    inLanguage: "ko-KR",
     isAccessibleForFree: event.isFree ?? undefined,
     location: event.locationName
       ? compactObject({
@@ -48,12 +55,12 @@ export function buildEventStructuredData(
             : undefined,
         })
       : undefined,
-    image: event.imageUrl ? [absoluteUrl(event.imageUrl, siteUrl)] : undefined,
+    image: imageUrl ? [absoluteUrl(imageUrl, siteUrl)] : undefined,
     offers: offerPrice == null
       ? undefined
       : compactObject({
           "@type": "Offer",
-          url: event.applicationUrl ?? event.sourceUrl,
+          url: applicationUrl,
           price: offerPrice,
           priceCurrency: "KRW",
           validFrom: event.applicationStartAt ?? undefined,
@@ -67,7 +74,40 @@ export function buildEventStructuredData(
         })
       : undefined,
     url: eventUrl,
+    mainEntityOfPage: eventUrl,
   });
+}
+
+export function buildEventBreadcrumbStructuredData(event: Event, siteUrl: string) {
+  const homeUrl = absoluteUrl("/", siteUrl);
+  const topicUrl = absoluteUrl(eventTopicPath(event.category), siteUrl);
+  const eventUrl = absoluteUrl(`/events/${encodeURIComponent(event.slug)}`, siteUrl);
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "@id": `${eventUrl}#breadcrumb`,
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "속초모아",
+        item: homeUrl,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: `속초 ${categoryLabels[event.category]}`,
+        item: topicUrl,
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: event.title,
+        item: eventUrl,
+      },
+    ],
+  };
 }
 
 export function eventOfferPrice(event: Pick<Event, "isFree" | "priceText">) {
@@ -81,13 +121,27 @@ export function eventOfferPrice(event: Pick<Event, "isFree" | "priceText">) {
   return prices.length > 0 ? Math.min(...prices) : null;
 }
 
+export function buildEventSeoDescription(event: Event) {
+  const parts = [
+    `${event.title} 일정 ${formatDateRange(event.eventStartAt, event.eventEndAt)}`,
+    event.locationName ? `장소 ${event.locationName}` : null,
+    getEventIntroduction(event)?.trim() || null,
+  ].filter((part): part is string => Boolean(part));
+  const description = parts.join(" · ");
+  return description.length <= 160 ? description : `${description.slice(0, 159).trimEnd()}…`;
+}
+
 function absoluteUrl(value: string, siteUrl: string) {
   return new URL(value, siteUrl.endsWith("/") ? siteUrl : `${siteUrl}/`).toString();
 }
 
-function urlOrigin(value: string) {
+function cleanUrl(value: string | null | undefined, allowRootRelative = false) {
+  const normalized = value?.trim();
+  if (!normalized) return undefined;
+  if (allowRootRelative && normalized.startsWith("/")) return normalized;
   try {
-    return new URL(value).origin;
+    const url = new URL(normalized);
+    return url.protocol === "http:" || url.protocol === "https:" ? normalized : undefined;
   } catch {
     return undefined;
   }

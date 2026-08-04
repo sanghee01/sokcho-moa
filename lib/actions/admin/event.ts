@@ -16,7 +16,9 @@ import { combineDateAndOptionalTime } from "@/lib/admin/datetime";
 import { buildEventPayload, createEventSlug, eventSavedRedirect } from "@/lib/admin/event-write";
 import { eventFormSchema } from "@/lib/admin/schemas";
 import { PUBLIC_EVENTS_CACHE_TAG } from "@/lib/data/cache-tags";
+import { eventTopics } from "@/lib/domain/event-topic";
 import { extractSourceExternalId } from "@/lib/domain/source";
+import { buildPublicEventIndexPaths, notifyIndexNow } from "@/lib/seo/indexnow";
 import { createAuthenticatedSupabaseClient } from "@/lib/supabase/auth-server";
 
 const reviewSchema = z.object({
@@ -107,6 +109,7 @@ function revalidatePublicEventPaths(slug?: string | null) {
   revalidatePath("/");
   revalidatePath("/calendar");
   revalidatePath("/sitemap.xml");
+  for (const topic of eventTopics) revalidatePath(topic.path);
   if (slug) revalidatePath(`/events/${slug}`);
 }
 
@@ -163,6 +166,17 @@ export async function saveEventAction(
   const client = await createAuthenticatedSupabaseClient();
   if (!client) return actionFailed("운영자 데이터 연결을 확인해 주세요.");
 
+  let previousEvent: { category: string; review_status: string } | null = null;
+  if (event.id) {
+    const { data, error } = await client
+      .from("events")
+      .select("category, review_status")
+      .eq("id", event.id)
+      .maybeSingle();
+    if (error) return actionFailed("수정 전 행사의 공개 상태를 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.");
+    previousEvent = data;
+  }
+
   // A separately uploaded image remains owned by the form so the user can retry.
   // Only an image created inside this save attempt is safe to remove on failure.
   let newImagePath: string | null = null;
@@ -186,6 +200,7 @@ export async function saveEventAction(
     ? event.occurrences.map((occurrence) => ({ starts_at: occurrence.startsAt, ends_at: occurrence.endsAt }))
     : [];
 
+  let savedEventId: string;
   if (!event.id) {
     const { data: createdEventId, error } = await client.rpc("create_event_with_source", {
       p_event: payload,
@@ -201,6 +216,7 @@ export async function saveEventAction(
           ? "신규 행사 저장 기능을 사용하려면 먼저 데이터베이스 업데이트가 필요합니다."
           : "행사를 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.");
     }
+    savedEventId = createdEventId;
   } else {
     const { data: updatedEventId, error } = await client.rpc("update_event_with_source", {
       p_event_id: event.id,
@@ -217,9 +233,26 @@ export async function saveEventAction(
           ? "행사 수정 기능을 사용하려면 먼저 데이터베이스 업데이트가 필요합니다."
           : "행사를 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.");
     }
+    savedEventId = updatedEventId;
   }
 
+  const { data: savedEvent, error: savedEventError } = await client
+    .from("events")
+    .select("category, review_status")
+    .eq("id", savedEventId)
+    .maybeSingle();
+  if (savedEventError) console.warn("저장한 행사의 공개 상태를 확인하지 못했습니다.", savedEventError.message);
+
   revalidateEventPaths(event.slug);
+  const wasPublished = previousEvent?.review_status === "published";
+  const isPublished = savedEvent?.review_status === "published";
+  if (wasPublished || isPublished) {
+    const categories = [
+      ...(wasPublished ? [previousEvent?.category, event.category] : []),
+      ...(isPublished ? [savedEvent?.category ?? event.category] : []),
+    ];
+    after(() => notifyIndexNow(buildPublicEventIndexPaths(event.slug, categories)));
+  }
   redirect(eventSavedRedirect(isEditing));
 }
 
@@ -231,16 +264,21 @@ export async function setEventReviewStatusAction(input: unknown) {
   const client = await createAuthenticatedSupabaseClient();
   if (!client) throw new Error("Supabase 관리자 연결이 없습니다.");
 
-  const { error } = await client
+  const { data: updatedEvent, error } = await client
     .from("events")
     .update({
       review_status: parsed.data.status,
       published_at: parsed.data.status === "published" ? new Date().toISOString() : null,
     })
-    .eq("id", parsed.data.id);
+    .eq("id", parsed.data.id)
+    .select("category")
+    .single();
   if (error) throw new Error(`공개 상태를 바꾸지 못했습니다: ${error.message}`);
 
-  after(() => revalidatePublicEventPaths(parsed.data.slug));
+  after(async () => {
+    revalidatePublicEventPaths(parsed.data.slug);
+    await notifyIndexNow(buildPublicEventIndexPaths(parsed.data.slug, [updatedEvent?.category]));
+  });
   return { status: parsed.data.status };
 }
 
@@ -257,6 +295,15 @@ export async function deleteEventAction(
 
   const client = await createAuthenticatedSupabaseClient();
   if (!client) return actionFailed("운영자 데이터 연결을 확인해 주세요.");
+  const { data: eventToDelete, error: eventToDeleteError } = await client
+    .from("events")
+    .select("category, review_status")
+    .eq("id", parsed.data.id)
+    .maybeSingle();
+  if (eventToDeleteError) {
+    return actionFailed("삭제할 행사의 공개 상태를 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.");
+  }
+
   const { data: deletedSlug, error } = await client.rpc("delete_event_and_exclude", {
     p_event_id: parsed.data.id,
     p_reason: "관리자 대시보드에서 삭제",
@@ -267,7 +314,11 @@ export async function deleteEventAction(
       : "행사를 삭제하지 못했습니다. 잠시 후 다시 시도해 주세요.");
   }
 
-  revalidateEventPaths(typeof deletedSlug === "string" ? deletedSlug : null);
+  const normalizedDeletedSlug = typeof deletedSlug === "string" ? deletedSlug : null;
+  revalidateEventPaths(normalizedDeletedSlug);
+  if (normalizedDeletedSlug && eventToDelete?.review_status === "published") {
+    after(() => notifyIndexNow(buildPublicEventIndexPaths(normalizedDeletedSlug, [eventToDelete.category])));
+  }
   redirect("/admin?deleted=event");
 }
 

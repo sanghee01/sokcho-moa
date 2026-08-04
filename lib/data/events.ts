@@ -15,12 +15,14 @@ const getCachedPublicEvents = unstable_cache(async (): Promise<Event[]> => {
     .from("events")
     .select("*, event_occurrences(id, starts_at, ends_at)")
     .eq("review_status", "published")
+    .eq("is_demo", false)
     .order("event_start_at", { ascending: true });
   const fallback = result.error && isMissingOccurrenceRelation(result.error.message)
     ? await client
       .from("events")
       .select("*")
       .eq("review_status", "published")
+      .eq("is_demo", false)
       .order("event_start_at", { ascending: true })
     : null;
   const { data, error } = fallback ?? result;
