@@ -1,21 +1,29 @@
 node_modules
+.pnpm-store
 .next
 .next-*
 out
+output
 coverage
 test-results
 playwright-report
-.env
-.env.local
-.env.*.local
+.env*
 !.env.example
 *.log
 *.tsbuildinfo
 .DS_Store
+.vercel
 supabase/.temp
+supabase/.branches
+supabase/review
 
 # Local ChatGPT project material; not part of the deployable application.
 sources/
 docs/goals/
+docs/goaljaby/
+design-qa.md
 AGENTS.md
 .playwright-cli/
+
+# The mobile client is not part of the current public product surface.
+apps/mobile/
