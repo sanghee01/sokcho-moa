@@ -40,8 +40,8 @@ set
 from verified_locations
 where events.id = verified_locations.id;
 
--- 감사표의 18개가 모두 존재하고 정확한 값으로 반영됐는지 확인한다.
--- 하나라도 누락되거나 값이 다르면 예외로 migration 전체를 롤백한다.
+-- 운영 데이터가 있는 환경에서는 감사표의 18개가 정확히 반영됐는지 확인한다.
+-- 새 프로젝트의 빈 데이터베이스에서는 seed가 migration 뒤에 실행되므로 검증을 건너뛴다.
 do $$
 declare
   matched_location_count integer;
@@ -77,7 +77,7 @@ begin
     and events.location_verified_at = '2026-07-19T22:18:08+09:00'::timestamptz
     and (expected.corrected_address is null or events.address = expected.corrected_address);
 
-  if matched_location_count <> 18 then
+  if exists (select 1 from public.events) and matched_location_count <> 18 then
     raise exception '검증 위치 backfill 불일치: expected 18, matched %', matched_location_count;
   end if;
 end
@@ -130,7 +130,8 @@ begin
     and provider = '속초시시설관리공단'
     and original_url = 'https://www.sokchosiseol.or.kr/bbs/event.do?articleseq=11208&bmode=view';
 
-  if movie_event_count <> 1 or movie_source_count <> 1 then
+  if exists (select 1 from public.events)
+    and (movie_event_count <> 1 or movie_source_count <> 1) then
     raise exception '무비 나잇 단건 검증 실패: events %, sources %', movie_event_count, movie_source_count;
   end if;
 end
@@ -266,7 +267,8 @@ begin
     and sources.original_url = audited.source_url
     and sources.last_checked_at = '2026-07-19T22:18:08+09:00'::timestamptz;
 
-  if verified_event_count <> 20 or verified_source_count <> 20 then
+  if exists (select 1 from public.events)
+    and (verified_event_count <> 20 or verified_source_count <> 20) then
     raise exception '운영 감사 20건 검증 실패: events %, sources %', verified_event_count, verified_source_count;
   end if;
 end
