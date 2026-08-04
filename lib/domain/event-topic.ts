@@ -1,8 +1,8 @@
-import { categoryLabels } from "@/lib/domain/format";
 import {
+  categoryLabels,
   eventCategories,
   type EventCategory,
-} from "@/lib/domain/event";
+} from "@/lib/domain/event-taxonomy";
 
 export type EventTopic = {
   category: EventCategory;

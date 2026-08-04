@@ -37,6 +37,16 @@ describe("eventCandidateSchema", () => {
     expect(result.success).toBe(false);
   });
 
+  it.each(["javascript:alert(1)", "data:text/plain,hello", "file:///tmp/event", "ftp://example.com/event"])(
+    "후보의 %s URL을 거부한다",
+    (sourceUrl) => {
+      expect(eventCandidateSchema.safeParse({ ...candidate, sourceUrl }).success).toBe(false);
+      expect(eventCandidateSchema.safeParse({ ...candidate, officialUrl: sourceUrl }).success).toBe(false);
+      expect(eventCandidateSchema.safeParse({ ...candidate, applicationUrl: sourceUrl }).success).toBe(false);
+      expect(eventCandidateSchema.safeParse({ ...candidate, imageUrl: sourceUrl }).success).toBe(false);
+    },
+  );
+
   it("기관 대표 홈을 행사 원문으로 허용하지 않는다", () => {
     const result = eventCandidateSchema.safeParse({ ...candidate, sourceUrl: "https://www.sokcho.go.kr/sc/portal" });
     expect(result.success).toBe(false);
