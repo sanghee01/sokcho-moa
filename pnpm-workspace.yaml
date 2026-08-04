@@ -1,2 +1,2 @@
-packages:
-  - "apps/*"
+# Reserved for future public packages. The unfinished mobile client stays local-only.
+packages: []
