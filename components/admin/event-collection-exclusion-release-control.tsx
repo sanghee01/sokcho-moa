@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { AdminActionForm } from "@/components/admin/admin-action-form";
 import { FormSubmitButton } from "@/components/admin/form-submit-button";
-import { releaseEventCollectionExclusionAction } from "@/lib/actions/admin";
+import { releaseEventCollectionExclusionAction } from "@/lib/actions/admin/event";
 
 export function EventCollectionExclusionReleaseControl({
   id,

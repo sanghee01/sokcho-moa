@@ -1,7 +1,7 @@
 import { AdminActionForm } from "@/components/admin/admin-action-form";
 import { AdminShell } from "@/components/admin/admin-shell";
 import { FormSubmitButton } from "@/components/admin/form-submit-button";
-import { importEventCandidateAction } from "@/lib/actions/admin";
+import { importEventCandidateAction } from "@/lib/actions/admin/import";
 import { requireAdmin } from "@/lib/admin/auth";
 
 const example = JSON.stringify({

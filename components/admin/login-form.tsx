@@ -2,7 +2,8 @@
 
 import { useActionState, useState } from "react";
 import { FormSubmitButton } from "@/components/admin/form-submit-button";
-import { signInAction, type AdminActionState } from "@/lib/actions/admin";
+import { signInAction } from "@/lib/actions/admin/auth";
+import type { AdminActionState } from "@/lib/actions/admin/types";
 
 const initialState: AdminActionState = { error: null };
 
