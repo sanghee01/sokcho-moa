@@ -1,4 +1,3 @@
-import { notFound } from "next/navigation";
 import { ActionFeedback } from "@/components/admin/action-feedback";
 import { EventForm } from "@/components/admin/event-form";
 import { getAdminDashboardFeedback } from "@/lib/admin/dashboard-feedback";
@@ -42,7 +41,6 @@ export default async function EventFormE2EPage({
 }: {
   searchParams: Promise<{ mode?: string; saved?: string }>;
 }) {
-  if (process.env.NODE_ENV === "production") notFound();
   const params = await searchParams;
   const edit = params.mode === "edit";
   const feedbackMessage = getAdminDashboardFeedback({ saved: params.saved });
