@@ -1,12 +1,38 @@
 @import "tailwindcss";
 
+@theme static inline {
+  --font-sans: Arial, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+
+  --color-brand-50: var(--color-teal-50);
+  --color-brand-100: var(--color-teal-100);
+  --color-brand-200: var(--color-teal-200);
+  --color-brand-300: var(--color-teal-300);
+  --color-brand-400: var(--color-teal-400);
+  --color-brand-500: var(--color-teal-500);
+  --color-brand-600: var(--color-teal-600);
+  --color-brand-700: var(--color-teal-700);
+  --color-brand-800: var(--color-teal-800);
+  --color-brand-900: var(--color-teal-900);
+  --color-brand-950: var(--color-teal-950);
+
+  --color-surface: var(--color-white);
+  --color-surface-subtle: var(--color-slate-50);
+  --color-surface-muted: var(--color-slate-100);
+  --color-skeleton: var(--color-slate-200);
+  --color-content-strong: var(--color-slate-950);
+  --color-content: var(--color-slate-700);
+  --color-content-muted: var(--color-slate-600);
+  --color-content-subtle: var(--color-slate-500);
+  --color-content-placeholder: var(--color-slate-400);
+  --color-line: var(--color-slate-200);
+  --color-line-strong: var(--color-slate-300);
+}
+
 :root {
-  --background: #f4fbfc;
-  --foreground: #16333b;
-  --sea: #087f8c;
-  --sea-deep: #075663;
-  --sun: #ffb84d;
-  --coral: #f56f5d;
+  --app-page-background: #f4fbfc;
+  --app-page-text: #16333b;
+  --app-focus-ring: #087f8c;
+  --app-selection: #bcecf0;
 }
 
 * {
@@ -21,9 +47,9 @@ body {
   margin: 0;
   background:
     radial-gradient(circle at top right, rgba(150, 225, 231, 0.38), transparent 32rem),
-    var(--background);
-  color: var(--foreground);
-  font-family: Arial, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    var(--app-page-background);
+  color: var(--app-page-text);
+  font-family: var(--font-sans);
 }
 
 a,
@@ -31,12 +57,12 @@ button,
 input,
 textarea,
 select {
-  outline-color: var(--sea);
+  outline-color: var(--app-focus-ring);
   outline-offset: 3px;
 }
 
 :focus-visible {
-  outline: 3px solid var(--sea);
+  outline: 3px solid var(--app-focus-ring);
   outline-offset: 3px;
 }
 
@@ -67,5 +93,5 @@ a {
 }
 
 ::selection {
-  background: #bcecf0;
+  background: var(--app-selection);
 }

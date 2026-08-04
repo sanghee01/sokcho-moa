@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { FormSubmitButton } from "@/components/admin/form-submit-button";
+import { getButtonClassName } from "@/components/ui/button-styles";
 import { signInAction } from "@/lib/actions/admin/auth";
 import type { AdminActionState } from "@/lib/actions/admin/types";
 
@@ -38,7 +39,7 @@ export function AdminLoginForm({ disabled }: { disabled: boolean }) {
         idleLabel="로그인"
         pendingLabel="로그인 중…"
         disabled={disabled}
-        className="w-full rounded-2xl bg-teal-800 px-5 py-3 font-bold text-white"
+        className={getButtonClassName({ variant: "primary", size: "medium", width: "full" })}
       />
     </form>
   );
