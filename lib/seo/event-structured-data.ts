@@ -1,5 +1,9 @@
 import type { Event } from "@/lib/domain/event";
-import { deriveEventState, getEventIntroduction } from "@/lib/domain/event";
+import {
+  deriveApplicationState,
+  deriveEventState,
+  getEventIntroduction,
+} from "@/lib/domain/event";
 import { categoryLabels, formatDateRange } from "@/lib/domain/format";
 import { eventTopicPath } from "@/lib/domain/event-topic";
 
@@ -9,12 +13,15 @@ export function buildEventStructuredData(
   event: Event,
   siteUrl: string,
   now = new Date(),
-): EventStructuredData {
+): EventStructuredData | null {
+  const locationAddress = event.address?.trim();
+  if (!locationAddress) return null;
+
   const eventUrl = absoluteUrl(`/events/${encodeURIComponent(event.slug)}`, siteUrl);
   const eventId = `${eventUrl}#event`;
   const applicationUrl = cleanUrl(event.applicationUrl);
   const imageUrl = cleanUrl(event.imageUrl, true);
-  const offerPrice = applicationUrl ? eventOfferPrice(event) : null;
+  const offer = applicationUrl ? buildEventOffer(event, applicationUrl, now) : undefined;
   const performers = (event.performers ?? []).map((performer) => ({
     "@type": performer.type,
     name: performer.name,
@@ -29,42 +36,28 @@ export function buildEventStructuredData(
     description: getEventIntroduction(event) ?? `${event.title}의 일정, 장소와 참여 정보를 확인하세요.`,
     startDate: event.eventStartAt,
     endDate: event.eventEndAt ?? undefined,
-    eventStatus: deriveEventState(event, now) === "ended"
-      ? "https://schema.org/EventCompleted"
-      : "https://schema.org/EventScheduled",
+    eventStatus: "https://schema.org/EventScheduled",
     eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
     inLanguage: "ko-KR",
     isAccessibleForFree: event.isFree ?? undefined,
-    location: event.locationName
-      ? compactObject({
-          "@type": "Place",
-          name: event.locationName,
-          address: event.address
-            ? {
-                "@type": "PostalAddress",
-                streetAddress: event.address,
-                addressCountry: "KR",
-              }
-            : undefined,
-          geo: event.latitude != null && event.longitude != null
-            ? {
-                "@type": "GeoCoordinates",
-                latitude: event.latitude,
-                longitude: event.longitude,
-              }
-            : undefined,
-        })
-      : undefined,
+    location: compactObject({
+      "@type": "Place",
+      name: event.locationName?.trim() || undefined,
+      address: {
+        "@type": "PostalAddress",
+        streetAddress: locationAddress,
+        addressCountry: "KR",
+      },
+      geo: event.latitude != null && event.longitude != null
+        ? {
+            "@type": "GeoCoordinates",
+            latitude: event.latitude,
+            longitude: event.longitude,
+          }
+        : undefined,
+    }),
     image: imageUrl ? [absoluteUrl(imageUrl, siteUrl)] : undefined,
-    offers: offerPrice == null
-      ? undefined
-      : compactObject({
-          "@type": "Offer",
-          url: applicationUrl,
-          price: offerPrice,
-          priceCurrency: "KRW",
-          validFrom: event.applicationStartAt ?? undefined,
-        }),
+    offers: offer,
     performer: performers.length > 0 ? performers : undefined,
     organizer: event.organizer
       ? compactObject({
@@ -119,6 +112,24 @@ export function eventOfferPrice(event: Pick<Event, "isFree" | "priceText">) {
     .map((match) => Number(match[1].replaceAll(",", "")))
     .filter((price) => Number.isFinite(price));
   return prices.length > 0 ? Math.min(...prices) : null;
+}
+
+function buildEventOffer(event: Event, applicationUrl: string, now: Date) {
+  const price = eventOfferPrice(event);
+  if (price == null || deriveEventState(event, now) === "ended") return undefined;
+
+  const applicationState = deriveApplicationState(event, now);
+  if (applicationState === "closed" || applicationState === "not_applicable") return undefined;
+
+  // An open application window does not prove that tickets or seats remain.
+  // Keep availability absent until the event data carries a verified stock status.
+  return compactObject({
+    "@type": "Offer",
+    url: applicationUrl,
+    price,
+    priceCurrency: "KRW",
+    validFrom: event.applicationStartAt ?? undefined,
+  });
 }
 
 export function buildEventSeoDescription(event: Event) {
