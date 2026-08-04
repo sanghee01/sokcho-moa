@@ -1,11 +1,20 @@
 import { z } from "zod";
 import { seoulDateOrDatetimeToIso } from "@/lib/admin/datetime";
 import { eventAudiences, eventCandidateSchema, eventCategories } from "@/lib/domain/event";
+import { createHttpUrlSchema, isHttpUrl } from "@/lib/domain/url";
 
 const optionalText = z.string().trim().transform((value) => value || null);
+const adminUrlSchema = createHttpUrlSchema({
+  invalidUrl: "올바른 URL을 입력하세요.",
+  unsupportedProtocol: "올바른 URL을 입력하세요.",
+});
+const eventSourceUrlSchema = createHttpUrlSchema({
+  invalidUrl: "올바른 행사 안내 URL을 입력하세요.",
+  unsupportedProtocol: "HTTPS 행사 안내 URL을 입력하세요.",
+});
 const optionalUrl = z.string().trim().transform((value, context) => {
   if (!value) return null;
-  const parsed = z.string().url().safeParse(value);
+  const parsed = adminUrlSchema.safeParse(value);
   if (!parsed.success) {
     context.addIssue({ code: "custom", message: "올바른 URL을 입력하세요." });
     return z.NEVER;
@@ -15,14 +24,11 @@ const optionalUrl = z.string().trim().transform((value, context) => {
 const requiredHttpsUrl = z.string()
   .trim()
   .min(1, "행사 안내 URL을 입력하세요.")
-  .url("올바른 행사 안내 URL을 입력하세요.")
-  .refine((value) => {
-    try {
-      return new URL(value).protocol === "https:";
-    } catch {
-      return false;
-    }
-  }, "HTTPS 행사 안내 URL을 입력하세요.");
+  .pipe(eventSourceUrlSchema)
+  .refine(
+    (value) => isHttpUrl(value) && new URL(value).protocol === "https:",
+    "HTTPS 행사 안내 URL을 입력하세요.",
+  );
 const optionalDate = (dateOnlyBoundary: "start" | "end" = "start") => z.string().trim().transform((value, context) => {
   if (!value) return null;
   try {

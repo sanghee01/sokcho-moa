@@ -1,4 +1,6 @@
-import type { ApplicationState, EventAudience, EventCategory, EventState } from "./event";
+import type { ApplicationState, EventState } from "./event";
+
+export { audienceLabels, categoryLabels } from "./event-taxonomy";
 
 const datePartsFormatter = new Intl.DateTimeFormat("en-CA", {
   timeZone: "Asia/Seoul",
@@ -16,23 +18,6 @@ const dateTimePartsFormatter = new Intl.DateTimeFormat("en-CA", {
   minute: "2-digit",
   hourCycle: "h23",
 });
-
-export const categoryLabels: Record<EventCategory, string> = {
-  performance: "공연",
-  festival: "축제",
-  experience: "체험",
-  education: "교육",
-  exhibition: "전시",
-  other: "기타",
-};
-
-export const audienceLabels: Record<EventAudience, string> = {
-  child: "아동",
-  youth: "청소년",
-  family: "가족",
-  adult: "성인",
-  all: "누구나",
-};
 
 export const eventStateLabels: Record<EventState, string> = {
   upcoming: "예정",

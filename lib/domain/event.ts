@@ -1,19 +1,14 @@
 import { z } from "zod";
+import {
+  eventAudiences,
+  eventCategories,
+  type EventAudience,
+  type EventCategory,
+} from "./event-taxonomy";
 import { isLikelyEventDetailUrl } from "./source";
+import { httpUrlSchema } from "./url";
 
-export const eventCategories = [
-  "performance",
-  "festival",
-  "experience",
-  "education",
-  "exhibition",
-  "other",
-] as const;
-
-export const eventAudiences = ["child", "youth", "family", "adult", "all"] as const;
-
-export type EventCategory = (typeof eventCategories)[number];
-export type EventAudience = (typeof eventAudiences)[number];
+export { eventAudiences, eventCategories, type EventAudience, type EventCategory } from "./event-taxonomy";
 export type ReviewStatus = "pending" | "published" | "rejected";
 export type EventScheduleMode = "continuous" | "occurrences";
 
@@ -121,7 +116,7 @@ export type EventCandidate = {
   sourceUrl: string;
 };
 
-const nullableUrl = z.string().url().nullable();
+const nullableUrl = httpUrlSchema.nullable();
 const nullableDateTime = z.string().datetime({ offset: true }).nullable();
 
 export const eventCandidateSchema: z.ZodType<EventCandidate> = z.object({
@@ -147,7 +142,7 @@ export const eventCandidateSchema: z.ZodType<EventCandidate> = z.object({
   applicationUrl: nullableUrl,
   imageUrl: nullableUrl,
   sourceName: z.string().trim().min(1).max(200),
-  sourceUrl: z.string().url().refine(isLikelyEventDetailUrl, "기관 대표 홈이나 목록이 아닌 행사별 공식 원문 URL을 입력하세요."),
+  sourceUrl: httpUrlSchema.refine(isLikelyEventDetailUrl, "기관 대표 홈이나 목록이 아닌 행사별 공식 원문 URL을 입력하세요."),
 });
 
 export type EventState = "upcoming" | "ongoing" | "ended";
