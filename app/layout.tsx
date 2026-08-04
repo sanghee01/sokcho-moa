@@ -8,38 +8,46 @@ import { HeaderNavigation } from "@/components/header-navigation";
 import { ScrollToTopButton } from "@/components/scroll-to-top-button";
 import { googleAnalyticsId, shouldCollectGoogleAnalytics } from "@/lib/analytics/google-analytics";
 import { getPublicEnv } from "@/lib/config/env";
+import {
+  HOME_TITLE,
+  INDEXABLE_ROBOTS,
+  SITE_DESCRIPTION,
+  SITE_LOGO_PATH,
+  SITE_NAME,
+  SITE_OPEN_GRAPH_IMAGE_PATH,
+} from "@/lib/seo/site-identity";
 import headerLogo from "@/public/sokchomoa-header.webp";
 import "./globals.css";
 
 const siteUrl = getPublicEnv().NEXT_PUBLIC_SITE_URL;
 const collectGoogleAnalytics = shouldCollectGoogleAnalytics();
-const defaultTitle = "속초모아 | 요즘 속초에서 뭐하지?";
-const description = "속초의 행사·공연·축제·체험·교육 프로그램을 한곳에서 비교하세요.";
+const logoUrl = new URL(SITE_LOGO_PATH, siteUrl).toString();
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  applicationName: "속초모아",
-  title: { default: defaultTitle, template: "%s | 속초모아" },
-  description,
+  applicationName: SITE_NAME,
+  title: { default: HOME_TITLE, template: `%s | ${SITE_NAME}` },
+  description: SITE_DESCRIPTION,
   alternates: { canonical: "/" },
+  robots: INDEXABLE_ROBOTS,
   icons: {
-    icon: [{ url: "/icon.jpeg", type: "image/jpeg" }],
-    shortcut: "/icon.jpeg",
+    icon: [{ url: logoUrl, type: "image/jpeg", sizes: "512x512" }],
+    shortcut: logoUrl,
   },
   openGraph: {
     type: "website",
     locale: "ko_KR",
     url: "/",
-    siteName: "속초모아",
-    title: defaultTitle,
-    description,
-    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "속초모아" }],
+    siteName: SITE_NAME,
+    title: HOME_TITLE,
+    description: SITE_DESCRIPTION,
+    images: [{ url: SITE_OPEN_GRAPH_IMAGE_PATH, width: 1200, height: 630, alt: `${SITE_NAME} 로고` }],
   },
   twitter: {
     card: "summary_large_image",
-    title: defaultTitle,
-    description,
-    images: ["/opengraph-image"],
+    title: HOME_TITLE,
+    description: SITE_DESCRIPTION,
+    images: [SITE_OPEN_GRAPH_IMAGE_PATH],
   },
 };
 
@@ -74,7 +82,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
           <div className="mx-auto flex max-w-6xl flex-col gap-5 px-4 py-10 text-sm leading-6 text-slate-600 sm:flex-row sm:items-end sm:justify-between sm:px-6">
             <div>
               <p className="font-bold text-teal-900">속초모아</p>
-              <p>속초 시민이 행사 탐색의 불편을 줄이고자 만든 사이트입니다. 정보가 실제 공고와 다를 수 있으니 방문·신청 전 반드시 원문을 확인해 주세요.</p>
+              <p>속초모아(속초 모아)는 속초 시민이 행사와 축제를 더 쉽게 찾도록 만든 사이트입니다. 정보가 실제 공고와 다를 수 있으니 방문·신청 전 반드시 원문을 확인해 주세요.</p>
             </div>
             <div className="shrink-0 sm:text-right">
               <nav aria-label="사이트 이용" className="mb-2 flex flex-wrap gap-x-4 gap-y-1 sm:justify-end">

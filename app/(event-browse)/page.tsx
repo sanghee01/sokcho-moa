@@ -2,6 +2,13 @@ import type { Metadata } from "next";
 import { EventBrowsePage } from "@/components/event-browse-page";
 import type { EventSearchParams } from "@/lib/domain/event-navigation";
 import { findEventTopicByCategory } from "@/lib/domain/event-topic";
+import {
+  HOME_TITLE,
+  INDEXABLE_ROBOTS,
+  SITE_DESCRIPTION,
+  SITE_NAME,
+  SITE_OPEN_GRAPH_IMAGE_PATH,
+} from "@/lib/seo/site-identity";
 
 type HomePageProps = {
   searchParams: Promise<EventSearchParams>;
@@ -20,13 +27,45 @@ export async function generateMetadata({ searchParams }: HomePageProps): Promise
       title: topic.title,
       description: topic.description,
       alternates: { canonical: topic.path },
+      robots: INDEXABLE_ROBOTS,
+      openGraph: {
+        type: "website",
+        locale: "ko_KR",
+        url: topic.path,
+        siteName: SITE_NAME,
+        title: topic.title,
+        description: topic.description,
+        images: [{ url: SITE_OPEN_GRAPH_IMAGE_PATH, width: 1200, height: 630, alt: `${SITE_NAME} 로고` }],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: topic.title,
+        description: topic.description,
+        images: [SITE_OPEN_GRAPH_IMAGE_PATH],
+      },
     };
   }
 
   return {
-    title: "속초모아 | 요즘 속초에서 뭐하지?",
-    description: "속초의 행사·공연·축제·체험·교육·전시 일정을 날짜, 장소와 신청 정보로 한눈에 확인하세요.",
+    title: { absolute: HOME_TITLE },
+    description: SITE_DESCRIPTION,
     alternates: { canonical: "/" },
+    robots: INDEXABLE_ROBOTS,
+    openGraph: {
+      type: "website",
+      locale: "ko_KR",
+      url: "/",
+      siteName: SITE_NAME,
+      title: HOME_TITLE,
+      description: SITE_DESCRIPTION,
+      images: [{ url: SITE_OPEN_GRAPH_IMAGE_PATH, width: 1200, height: 630, alt: `${SITE_NAME} 로고` }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: HOME_TITLE,
+      description: SITE_DESCRIPTION,
+      images: [SITE_OPEN_GRAPH_IMAGE_PATH],
+    },
   };
 }
 

@@ -70,10 +70,15 @@ describe("event topic SEO", () => {
       title: "속초 축제 일정·기간·장소",
       description: expect.stringContaining("속초"),
       alternates: { canonical: "/topics/festival" },
+      openGraph: {
+        url: "/topics/festival",
+        siteName: "속초모아",
+        title: "속초 축제 일정·기간·장소",
+      },
     });
   });
 
-  it("주제 이동 시 별도 소개 배너 없이 같은 탐색 레이아웃을 유지한다", async () => {
+  it("주제 페이지에 사람이 볼 수 있는 고유 제목과 소개를 제공한다", async () => {
     const topic = findEventTopicBySlug("performance");
     expect(topic).toBeDefined();
 
@@ -83,9 +88,10 @@ describe("event topic SEO", () => {
     });
     const html = renderToStaticMarkup(page);
 
-    expect(html).toContain(
-      '<h1 id="topic-page-title" class="sr-only">속초 공연 한눈에 보기</h1>',
-    );
+    expect(html).toContain('<h1 id="topic-page-title"');
+    expect(html).toContain("속초 공연 한눈에 보기</h1>");
+    expect(html).toContain("가까운 공연부터 예정된 무대까지");
+    expect(html).not.toContain('<h1 id="topic-page-title" class="sr-only">');
     expect(html).not.toContain('aria-label="현재 위치"');
     expect(html).not.toContain("from-teal-900");
   });
@@ -112,7 +118,7 @@ describe("event topic SEO", () => {
       alternates: { canonical: "/topics/performance" },
     });
     expect(homeMetadata).toMatchObject({
-      title: "속초모아 | 요즘 속초에서 뭐하지?",
+      title: { absolute: "속초모아 | 속초 행사·축제 일정" },
       alternates: { canonical: "/" },
     });
   });

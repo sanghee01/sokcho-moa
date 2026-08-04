@@ -10,10 +10,16 @@ import { StatusBadges } from "@/components/status-badges";
 import { getAllPublicEvents, getPublicEventBySlug, getPublicPlaces, getRelatedEvents } from "@/lib/data/events";
 import { audienceLabels, applicationStateLabels, categoryLabels, formatDateRange, formatOperatingSchedule } from "@/lib/domain/format";
 import { deriveApplicationState, getEventIntroduction } from "@/lib/domain/event";
+import { eventTopicPath } from "@/lib/domain/event-topic";
 import { createEventMapLinks, findNearbyPlaces, getNearbyPlacesLabel } from "@/lib/domain/geo";
 import { analyticsData } from "@/lib/analytics/events";
 import { getPublicEnv } from "@/lib/config/env";
-import { buildEventStructuredData } from "@/lib/seo/event-structured-data";
+import {
+  buildEventBreadcrumbStructuredData,
+  buildEventSeoDescription,
+  buildEventStructuredData,
+} from "@/lib/seo/event-structured-data";
+import { INDEXABLE_ROBOTS, SITE_NAME } from "@/lib/seo/site-identity";
 
 export const revalidate = 3600;
 
@@ -28,13 +34,30 @@ export async function generateMetadata({ params }: EventPageProps): Promise<Meta
   const { slug } = await params;
   const event = await getPublicEventBySlug(slug);
   if (!event) return { title: "행사를 찾을 수 없습니다" };
-  const description = getEventIntroduction(event) ?? `${event.title}의 기간, 장소, 신청 정보와 주변 명소를 확인하세요.`;
+  const description = buildEventSeoDescription(event);
+  const canonicalPath = `/events/${event.slug}`;
+  const imageUrl = event.imageUrl?.trim() || null;
+  const images = imageUrl ? [{ url: imageUrl, alt: `${event.title} 행사 대표 이미지` }] : undefined;
   return {
-    title: event.title,
+    title: `${event.title} 일정·장소·신청 안내`,
     description,
-    alternates: { canonical: `/events/${event.slug}` },
-    openGraph: { title: event.title, description, type: "article", images: event.imageUrl ? [event.imageUrl] : [] },
-    twitter: { card: "summary_large_image", title: event.title, description, images: event.imageUrl ? [event.imageUrl] : [] },
+    alternates: { canonical: canonicalPath },
+    robots: INDEXABLE_ROBOTS,
+    openGraph: {
+      type: "website",
+      locale: "ko_KR",
+      url: canonicalPath,
+      siteName: SITE_NAME,
+      title: event.title,
+      description,
+      ...(images ? { images } : {}),
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: event.title,
+      description,
+      ...(images ? { images } : {}),
+    },
   };
 }
 
@@ -54,6 +77,8 @@ export default async function EventDetailPage({ params }: EventPageProps) {
     event.longitude,
   );
   const eventJsonLd = buildEventStructuredData(event, getPublicEnv().NEXT_PUBLIC_SITE_URL);
+  const breadcrumbJsonLd = buildEventBreadcrumbStructuredData(event, getPublicEnv().NEXT_PUBLIC_SITE_URL);
+  const topicPath = eventTopicPath(event.category);
 
   const facts = [
     ["행사기간", formatDateRange(event.eventStartAt, event.eventEndAt)],
@@ -77,8 +102,12 @@ export default async function EventDetailPage({ params }: EventPageProps) {
         applicationAvailable={Boolean(event.applicationUrl)}
       />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(eventJsonLd).replace(/</g, "\\u003c") }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd).replace(/</g, "\\u003c") }} />
       <nav aria-label="현재 위치" className="mb-6 text-sm text-slate-500">
-        <Link href="/" className="font-bold text-teal-700 hover:underline">행사 목록</Link> <span aria-hidden="true">/</span> {event.title}
+        <Link href="/" className="font-bold text-teal-700 hover:underline">속초모아</Link>{" "}
+        <span aria-hidden="true">/</span>{" "}
+        <Link href={topicPath} className="font-bold text-teal-700 hover:underline">속초 {categoryLabels[event.category]}</Link>{" "}
+        <span aria-hidden="true">/</span> {event.title}
       </nav>
 
       {event.isDemo && (

@@ -2,6 +2,7 @@ import { revalidatePath, revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { PUBLIC_EVENTS_CACHE_TAG } from "@/lib/data/cache-tags";
+import { eventTopics } from "@/lib/domain/event-topic";
 
 const requestSchema = z.object({ slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).optional() });
 
@@ -14,6 +15,7 @@ export async function POST(request: Request) {
   revalidateTag(PUBLIC_EVENTS_CACHE_TAG, "max");
   revalidatePath("/");
   revalidatePath("/sitemap.xml");
+  for (const topic of eventTopics) revalidatePath(topic.path);
   if (parsed.data.slug) revalidatePath(`/events/${parsed.data.slug}`);
   return NextResponse.json({ revalidated: true, slug: parsed.data.slug ?? null, at: new Date().toISOString() });
 }

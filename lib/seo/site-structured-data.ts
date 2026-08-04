@@ -1,10 +1,18 @@
-const siteName = "속초모아";
-const englishSiteName = "Sokcho Moa";
+import {
+  HOME_TITLE,
+  SITE_ALTERNATE_NAMES,
+  SITE_DESCRIPTION,
+  SITE_LOGO_PATH,
+  SITE_NAME,
+} from "@/lib/seo/site-identity";
 
 export function buildSiteStructuredData(siteUrl: string) {
   const homeUrl = new URL("/", siteUrl).toString();
   const organizationId = `${homeUrl}#organization`;
   const websiteId = `${homeUrl}#website`;
+  const webpageId = `${homeUrl}#webpage`;
+  const logoId = `${homeUrl}#logo`;
+  const logoUrl = new URL(SITE_LOGO_PATH, homeUrl).toString();
 
   return {
     "@context": "https://schema.org",
@@ -12,27 +20,50 @@ export function buildSiteStructuredData(siteUrl: string) {
       {
         "@type": "Organization",
         "@id": organizationId,
-        name: siteName,
-        alternateName: englishSiteName,
+        name: SITE_NAME,
+        alternateName: [...SITE_ALTERNATE_NAMES],
         url: homeUrl,
         logo: {
-          "@type": "ImageObject",
-          url: new URL("/icon.jpeg", homeUrl).toString(),
-          width: 512,
-          height: 512,
+          "@id": logoId,
         },
       },
       {
         "@type": "WebSite",
         "@id": websiteId,
         url: homeUrl,
-        name: siteName,
-        alternateName: [englishSiteName],
-        description: "속초의 행사·공연·축제·체험·교육 프로그램을 한곳에서 비교하세요.",
+        name: SITE_NAME,
+        alternateName: [...SITE_ALTERNATE_NAMES],
+        description: SITE_DESCRIPTION,
         inLanguage: "ko-KR",
         publisher: {
           "@id": organizationId,
         },
+      },
+      {
+        "@type": "WebPage",
+        "@id": webpageId,
+        url: homeUrl,
+        name: HOME_TITLE,
+        description: SITE_DESCRIPTION,
+        inLanguage: "ko-KR",
+        isPartOf: {
+          "@id": websiteId,
+        },
+        about: {
+          "@id": organizationId,
+        },
+        primaryImageOfPage: {
+          "@id": logoId,
+        },
+      },
+      {
+        "@type": "ImageObject",
+        "@id": logoId,
+        url: logoUrl,
+        contentUrl: logoUrl,
+        caption: `${SITE_NAME} 로고`,
+        width: 512,
+        height: 512,
       },
     ],
   };
