@@ -117,7 +117,7 @@ export default async function EventDetailPage({ params }: EventPageProps) {
                 <dd className="flex flex-wrap items-center gap-x-3 gap-y-1 text-slate-950">
                   <span className={label === "운영일정" ? "whitespace-pre-line" : undefined}>{value}</span>
                   {label === "상세 주소" && mapLinks && (
-                    <a href={mapLinks.naver} target="_blank" rel="noreferrer" {...analyticsData("map_link_clicked", { event_slug: event.slug, event_category: event.category, link_position: "facts_address", map_method: mapLinks.hasVerifiedCoordinates ? "verified_location" : "search" })} className="font-bold text-teal-700 underline underline-offset-4">네이버 지도 <span className="sr-only">(새 창)</span></a>
+                    <a href={mapLinks.naver} target="_blank" rel="noreferrer" {...analyticsData("map_link_clicked", { event_slug: event.slug, event_category: event.category, link_position: "facts_address", map_method: mapLinks.hasCoordinates ? "coordinates" : "search" })} className="font-bold text-teal-700 underline underline-offset-4">네이버 지도 <span className="sr-only">(새 창)</span></a>
                   )}
                 </dd>
               </div>
