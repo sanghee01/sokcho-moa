@@ -3,6 +3,14 @@ import { NextResponse, type NextRequest } from "next/server";
 import { findEventTopicBySlug } from "@/lib/domain/event-topic";
 
 export async function proxy(request: NextRequest) {
+  const isE2ETestPath = request.nextUrl.pathname === "/e2e-test"
+    || request.nextUrl.pathname.startsWith("/e2e-test/");
+  if (process.env.NODE_ENV === "production" && isE2ETestPath) {
+    const notFoundUrl = request.nextUrl.clone();
+    notFoundUrl.pathname = "/_not-found";
+    return NextResponse.rewrite(notFoundUrl, { status: 404 });
+  }
+
   const topicMatch = request.nextUrl.pathname.match(/^\/topics\/([^/]+)$/);
   if (topicMatch && !findEventTopicBySlug(topicMatch[1])) {
     const notFoundUrl = request.nextUrl.clone();
@@ -31,5 +39,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/topics/:path*"],
+  matcher: ["/admin/:path*", "/topics/:path*", "/e2e-test/:path*"],
 };

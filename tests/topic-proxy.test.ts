@@ -58,7 +58,24 @@ describe("topic proxy", () => {
     expect(supabaseMocks.getClaims).toHaveBeenCalledOnce();
   });
 
-  it("proxy matcher가 관리자와 주제 경로를 모두 포함한다", () => {
-    expect(config.matcher).toEqual(["/admin/:path*", "/topics/:path*"]);
+  it("운영 환경의 E2E 전용 경로를 HTTP 404로 차단한다", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+
+    const response = await proxy(
+      new NextRequest("https://sokcho-moa.vercel.app/e2e-test/header"),
+    );
+
+    expect(response.status).toBe(404);
+    expect(response.headers.get("x-middleware-rewrite")).toBe(
+      "https://sokcho-moa.vercel.app/_not-found",
+    );
+  });
+
+  it("proxy matcher가 관리자·주제·E2E 전용 경로를 포함한다", () => {
+    expect(config.matcher).toEqual([
+      "/admin/:path*",
+      "/topics/:path*",
+      "/e2e-test/:path*",
+    ]);
   });
 });
