@@ -50,10 +50,7 @@ function EventHero({ topic }: { topic?: EventTopic }) {
           <p className="sr-only">{topic.intro}</p>
         </>
       ) : (
-        <>
-          <h1 id="home-hero-title" className="sr-only">속초 행사·축제 정보를 한눈에, 속초모아</h1>
-          <p className="sr-only">공연·체험·교육·전시를 포함한 속초의 최신 행사 정보를 확인하세요.</p>
-        </>
+        <p className="sr-only">공연·체험·교육·전시를 포함한 속초의 최신 행사 정보를 확인하세요.</p>
       )}
       <div className="relative h-[10.8rem] overflow-hidden bg-cyan-100 sm:h-[min(33.77vw,24rem)] lg:mx-auto lg:aspect-[5/1] lg:h-auto lg:max-w-[120rem]">
         <picture className="absolute inset-x-0 bottom-0 top-0 lg:-top-2">
@@ -68,15 +65,23 @@ function EventHero({ topic }: { topic?: EventTopic }) {
             className="object-cover object-center"
           />
         </picture>
-        <div aria-hidden="true" className="absolute inset-0 flex items-center justify-center px-2 sm:px-4">
+        <div aria-hidden={topic ? "true" : undefined} className="absolute inset-0 flex items-center justify-center px-2 sm:px-4">
           <div className="-translate-y-[2%] text-center">
             <div className="flex items-center justify-center gap-[clamp(0.25rem,1.2vw,1.5rem)]">
               <HeroBurst side="left" />
-              <p className="whitespace-nowrap text-[clamp(1.6rem,5.3vw,5.15rem)] font-black leading-none tracking-[-0.045em] drop-shadow-[0_2px_4px_rgba(255,255,255,0.8)]">
-                <span className="text-[#07377a]">요즘 </span>
-                <span className="text-[#009c91]">속초</span>
-                <span className="text-[#07377a]">에서 뭐하지?</span>
-              </p>
+              {topic ? (
+                <p className="whitespace-nowrap text-[clamp(1.6rem,5.3vw,5.15rem)] font-black leading-none tracking-[-0.045em] drop-shadow-[0_2px_4px_rgba(255,255,255,0.8)]">
+                  <span className="text-[#07377a]">요즘 </span>
+                  <span className="text-[#009c91]">속초</span>
+                  <span className="text-[#07377a]">에서 뭐하지?</span>
+                </p>
+              ) : (
+                <h1 id="home-hero-title" className="whitespace-nowrap text-[clamp(1.6rem,5.3vw,5.15rem)] font-black leading-none tracking-[-0.045em] drop-shadow-[0_2px_4px_rgba(255,255,255,0.8)]">
+                  <span className="text-[#07377a]">요즘 </span>
+                  <span className="text-[#009c91]">속초</span>
+                  <span className="text-[#07377a]">에서 뭐하지?</span>
+                </h1>
+              )}
               <HeroBurst side="right" />
             </div>
             <p className="mt-[clamp(0.6rem,1.15vw,1.4rem)] text-[clamp(0.72rem,2.1vw,1.75rem)] font-medium tracking-[-0.035em] text-slate-600 drop-shadow-[0_1px_2px_rgba(255,255,255,0.9)]">
