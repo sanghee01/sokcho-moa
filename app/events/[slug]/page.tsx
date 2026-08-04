@@ -101,7 +101,9 @@ export default async function EventDetailPage({ params }: EventPageProps) {
         audiences={event.audiences}
         applicationAvailable={Boolean(event.applicationUrl)}
       />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(eventJsonLd).replace(/</g, "\\u003c") }} />
+      {eventJsonLd && (
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(eventJsonLd).replace(/</g, "\\u003c") }} />
+      )}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd).replace(/</g, "\\u003c") }} />
       <nav aria-label="현재 위치" className="mb-6 text-sm text-slate-500">
         <Link href="/" className="font-bold text-teal-700 hover:underline">속초모아</Link>{" "}

@@ -54,6 +54,7 @@ describe("event structured data", () => {
       "https://sokcho-moa.vercel.app",
       new Date("2026-07-28T00:00:00+09:00"),
     );
+    if (!result) throw new Error("주소가 있는 오프라인 행사의 구조화 데이터가 누락되었습니다.");
 
     expect(result.url).toBe("https://sokcho-moa.vercel.app/events/summer-concert");
     expect(result).toMatchObject({
@@ -95,10 +96,9 @@ describe("event structured data", () => {
     expect(buildEventSeoDescription(event)).toContain("속초 여름 음악회 일정 2026.08.01");
   });
 
-  it("확인되지 않은 선택 정보는 임의로 만들지 않는다", () => {
+  it("Google 필수 장소 정보가 없으면 Event 리치 결과 데이터를 만들지 않는다", () => {
     const result = buildEventStructuredData({
       ...event,
-      locationName: null,
       address: null,
       latitude: null,
       longitude: null,
@@ -110,7 +110,42 @@ describe("event structured data", () => {
       imageUrl: null,
     }, "https://sokcho-moa.vercel.app");
 
-    expect(result).not.toHaveProperty("location");
+    expect(result).toBeNull();
+  });
+
+  it("상세 주소가 있으면 확인되지 않은 장소명을 꾸며내지 않는다", () => {
+    const result = buildEventStructuredData({
+      ...event,
+      locationName: null,
+    }, "https://sokcho-moa.vercel.app");
+
+    expect(result?.location).toEqual({
+      "@type": "Place",
+      address: {
+        "@type": "PostalAddress",
+        streetAddress: "강원특별자치도 속초시 번영로 155",
+        addressCountry: "KR",
+      },
+      geo: {
+        "@type": "GeoCoordinates",
+        latitude: 38.207,
+        longitude: 128.591,
+      },
+    });
+  });
+
+  it("확인되지 않은 권장 정보는 임의로 만들지 않는다", () => {
+    const result = buildEventStructuredData({
+      ...event,
+      applicationUrl: null,
+      priceText: null,
+      isFree: null,
+      performers: [],
+      organizer: null,
+      organizerUrl: null,
+      imageUrl: null,
+    }, "https://sokcho-moa.vercel.app");
+
     expect(result).not.toHaveProperty("offers");
     expect(result).not.toHaveProperty("performer");
     expect(result).not.toHaveProperty("image");
@@ -132,6 +167,49 @@ describe("event structured data", () => {
     }, "https://sokcho-moa.vercel.app");
 
     expect(result).not.toHaveProperty("offers");
+  });
+
+  it("판매 시작일은 실제 값만 표시하고 재고 상태를 신청 기간으로 추정하지 않는다", () => {
+    const upcoming = buildEventStructuredData(
+      event,
+      "https://sokcho-moa.vercel.app",
+      new Date("2026-06-20T00:00:00+09:00"),
+    );
+    const open = buildEventStructuredData(
+      event,
+      "https://sokcho-moa.vercel.app",
+      new Date("2026-07-20T00:00:00+09:00"),
+    );
+    const unknownStart = buildEventStructuredData({
+      ...event,
+      applicationStartAt: null,
+    }, "https://sokcho-moa.vercel.app", new Date("2026-07-20T00:00:00+09:00"));
+
+    expect(upcoming?.offers).toMatchObject({
+      validFrom: "2026-07-01T09:00:00+09:00",
+    });
+    expect(upcoming?.offers).not.toHaveProperty("availability");
+    expect(open?.offers).not.toHaveProperty("availability");
+    expect(unknownStart?.offers).not.toHaveProperty("validFrom");
+    expect(unknownStart?.offers).not.toHaveProperty("availability");
+  });
+
+  it("신청이 끝났거나 행사가 종료된 예매 링크는 Offer로 노출하지 않는다", () => {
+    const closedApplication = buildEventStructuredData({
+      ...event,
+      applicationEndAt: "2026-07-10T18:00:00+09:00",
+    }, "https://sokcho-moa.vercel.app", new Date("2026-07-20T00:00:00+09:00"));
+    const endedEvent = buildEventStructuredData(
+      event,
+      "https://sokcho-moa.vercel.app",
+      new Date("2026-08-02T00:00:00+09:00"),
+    );
+
+    expect(closedApplication).not.toHaveProperty("offers");
+    expect(endedEvent).not.toHaveProperty("offers");
+    expect(endedEvent).toMatchObject({
+      eventStatus: "https://schema.org/EventScheduled",
+    });
   });
 
   it("행사 상세 경로를 브랜드와 주제 계층에 연결한다", () => {
