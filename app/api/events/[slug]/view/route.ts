@@ -1,7 +1,5 @@
-import { revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { PUBLIC_EVENTS_CACHE_TAG } from "@/lib/data/cache-tags";
 import { createPublicSupabaseClient } from "@/lib/supabase/server";
 
 const slugSchema = z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/);
@@ -16,6 +14,6 @@ export async function POST(_request: Request, { params }: { params: Promise<{ sl
   const { error } = await client.rpc("increment_event_view", { p_slug: slug });
   if (error) return new NextResponse(null, { status: 204 });
 
-  revalidateTag(PUBLIC_EVENTS_CACHE_TAG, "max");
+  // 조회수는 공개 행사 목록의 기존 최대 5분 캐시 주기에 따라 반영한다.
   return new NextResponse(null, { status: 204 });
 }

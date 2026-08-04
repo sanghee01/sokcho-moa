@@ -295,7 +295,7 @@ test("정상·null·빈 문자열·404 이미지가 목록과 상세에서 같�
 
 test("목록과 상세는 데스크톱·모바일에서 가로로 넘치지 않는다", async ({ page }) => {
   await page.goto("/");
-  const listHeading = page.getByRole("heading", { name: "요즘 속초에서 뭐하지?" });
+  const listHeading = page.getByRole("heading", { level: 1, name: "요즘 속초에서 뭐하지?", exact: true });
   await expect(listHeading).toBeVisible();
 
   await expectNoHorizontalOverflow(page, [
@@ -361,7 +361,7 @@ test("목록에서 검색하고 상세·원문·외부 지도 링크·주변 명
   await context.route("https://www.sokcho.go.kr/**", (route) => route.abort());
 
   await page.goto("/");
-  await expect(page.getByRole("heading", { name: "요즘 속초에서 뭐하지?" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "요즘 속초에서 뭐하지?", exact: true })).toBeVisible();
   await expect(page.getByRole("heading", { name: /행사 목록 7개/ })).toBeVisible();
   await page.getByLabel("행사명, 장소, 기관 검색").fill("바다빛");
   await page.getByRole("button", { name: "검색", exact: true }).click();
@@ -402,12 +402,13 @@ test("검색 응답이 늦어도 제출 즉시 진행 상태를 알린다", asyn
   await page.goto("/");
   const search = page.getByRole("search", { name: "행사 검색" });
   await search.getByRole("searchbox").fill("바다빛");
-  await search.getByRole("button", { name: "검색", exact: true }).click();
+  const submitPromise = search.getByRole("button", { name: "검색", exact: true }).click();
 
   await expect(search).toHaveAttribute("aria-busy", "true");
   await expect(search.getByRole("button")).toBeDisabled();
 
   releaseRequest();
+  await submitPromise;
   await expect(page).toHaveURL(/q=/);
   await expect(page.getByRole("heading", { name: /행사 목록 1개/ })).toBeVisible();
 });
@@ -438,15 +439,18 @@ test("행사 목록에서 게시·행사일·마감일·조회 기준으로 정�
   await page.goto("/");
   const sort = page.getByRole("navigation", { name: "행사 정렬" });
   await expect(sort.getByRole("link")).toHaveText(["게시순", "행사일순", "마감일순", "조회순"]);
-  await expect(sort.getByRole("link")).toHaveAttribute("rel", "nofollow");
+  await expect(sort.locator('a[rel="nofollow"]')).toHaveCount(4);
   const sortButtonRows = await sort.getByRole("link").evaluateAll((links) => (
     new Set(links.map((link) => Math.round(link.getBoundingClientRect().top))).size
   ));
   expect(sortButtonRows).toBe(1);
   await expect(sort.getByRole("link", { name: "게시순" })).toHaveAttribute("aria-current", "page");
-  await sort.scrollIntoViewIfNeeded();
+  await page.evaluate(() => {
+    document.documentElement.style.scrollBehavior = "auto";
+    window.scrollTo(0, 200);
+  });
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
   const initialScrollY = await page.evaluate(() => window.scrollY);
-  expect(initialScrollY).toBeGreaterThan(0);
 
   await sort.getByRole("link", { name: "행사일순" }).click();
   await expect(page).toHaveURL(/sort=latest/);
