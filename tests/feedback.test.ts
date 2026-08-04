@@ -35,6 +35,18 @@ describe("siteFeedbackSchema", () => {
     }).success).toBe(false);
   });
 
+  it.each(["javascript:alert(1)", "data:text/plain,hello", "file:///tmp/feedback", "ftp://example.com/feedback"])(
+    "웹에서 안전하게 열 수 없는 %s 링크를 거부한다",
+    (linkUrl) => {
+      expect(siteFeedbackSchema.safeParse({
+        title: "캘린더 의견",
+        body: "캘린더 화면에 대한 의견을 남깁니다.",
+        linkUrl,
+        website: "",
+      }).success).toBe(false);
+    },
+  );
+
   it("짧은 제목·본문과 봇용 숨김 필드 입력을 거부한다", () => {
     expect(siteFeedbackSchema.safeParse({ title: "의", body: "짧음", linkUrl: "", website: "" }).success).toBe(false);
     expect(siteFeedbackSchema.safeParse({
@@ -47,15 +59,15 @@ describe("siteFeedbackSchema", () => {
 });
 
 describe("site feedback image validation", () => {
-  it("JPG, PNG, WebP 이미지를 4MB까지 허용한다", () => {
+  it("JPG, PNG, WebP 이미지를 3MB까지 허용한다", () => {
     for (const type of ["image/jpeg", "image/png", "image/webp"]) {
       expect(getSiteFeedbackImageValidationError({ type, size: SITE_FEEDBACK_IMAGE_MAX_BYTES })).toBeNull();
     }
   });
 
-  it("지원하지 않는 형식과 4MB 초과 이미지를 거부한다", () => {
+  it("지원하지 않는 형식과 3MB 초과 이미지를 거부한다", () => {
     expect(getSiteFeedbackImageValidationError({ type: "image/gif", size: 100 })).toContain("JPG");
-    expect(getSiteFeedbackImageValidationError({ type: "image/png", size: SITE_FEEDBACK_IMAGE_MAX_BYTES + 1 })).toContain("4MB");
+    expect(getSiteFeedbackImageValidationError({ type: "image/png", size: SITE_FEEDBACK_IMAGE_MAX_BYTES + 1 })).toContain("3MB");
   });
 
   it("확장된 MIME 정보뿐 아니라 실제 이미지 시그니처도 확인한다", async () => {

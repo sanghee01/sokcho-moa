@@ -9,9 +9,12 @@ import {
   siteFeedbackReviewSchema,
   siteFeedbackSchema,
 } from "@/lib/domain/feedback";
+import { checkPublicSubmissionRateLimit } from "@/lib/security/public-submission-rate-limit";
 import { createAuthenticatedSupabaseClient } from "@/lib/supabase/auth-server";
-import { createPublicSupabaseClient } from "@/lib/supabase/server";
-import { createServiceRoleSupabaseClient } from "@/lib/supabase/service";
+import {
+  createServiceRoleSupabaseClient,
+  isServiceRoleSupabaseConfigured,
+} from "@/lib/supabase/service";
 
 export type SiteFeedbackActionState = {
   error: string | null;
@@ -48,28 +51,37 @@ export async function submitSiteFeedbackAction(
   if (image) {
     const imageError = getSiteFeedbackImageValidationError(image);
     if (imageError) return { error: imageError, success: false };
+  }
+
+  if (!isServiceRoleSupabaseConfigured()) {
+    return image
+      ? { error: "현재 사진 첨부 기능을 준비 중입니다. 사진을 제외하고 다시 보내 주세요.", success: false }
+      : { error: "현재 의견 접수를 준비 중입니다. 잠시 후 다시 이용해 주세요.", success: false };
+  }
+
+  const rateLimit = await checkPublicSubmissionRateLimit("site_feedback");
+  if (!rateLimit.allowed) {
+    const retryMinutes = Math.max(1, Math.ceil(rateLimit.retryAfterSeconds / 60));
+    return { error: `요청이 많습니다. 약 ${retryMinutes}분 후 다시 시도해 주세요.`, success: false };
+  }
+
+  if (image) {
     if (!(await hasValidSiteFeedbackImageSignature(image))) {
       return { error: "파일 내용과 이미지 형식이 일치하지 않습니다. 다른 사진을 선택해 주세요.", success: false };
     }
   }
 
-  const client = createPublicSupabaseClient();
+  const feedbackId = crypto.randomUUID();
+  let imagePath: string | null = null;
+  const client = createServiceRoleSupabaseClient();
   if (!client) {
     return { error: "현재 의견 접수를 준비 중입니다. 잠시 후 다시 이용해 주세요.", success: false };
   }
 
-  const feedbackId = crypto.randomUUID();
-  let imagePath: string | null = null;
-  let storageClient: ReturnType<typeof createServiceRoleSupabaseClient> = null;
-
   if (image) {
-    storageClient = createServiceRoleSupabaseClient();
-    if (!storageClient) {
-      return { error: "현재 사진 첨부 기능을 준비 중입니다. 사진을 제외하고 다시 보내 주세요.", success: false };
-    }
     const extension = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" }[image.type];
     imagePath = `${feedbackId}/${crypto.randomUUID()}.${extension}`;
-    const { error: uploadError } = await storageClient.storage
+    const { error: uploadError } = await client.storage
       .from("feedback-images")
       .upload(imagePath, await image.arrayBuffer(), { contentType: image.type, upsert: false });
     if (uploadError) {
@@ -86,7 +98,7 @@ export async function submitSiteFeedbackAction(
     image_path: imagePath,
   });
   if (error) {
-    if (imagePath && storageClient) await storageClient.storage.from("feedback-images").remove([imagePath]);
+    if (imagePath) await client.storage.from("feedback-images").remove([imagePath]);
     console.error("Site feedback insert failed", error.message);
     return { error: "의견을 보내지 못했습니다. 잠시 후 다시 시도해 주세요.", success: false };
   }

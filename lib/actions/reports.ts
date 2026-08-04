@@ -3,8 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/admin/auth";
 import { eventReportDeleteSchema, eventReportReviewSchema, eventReportSchema } from "@/lib/domain/report";
+import { checkPublicSubmissionRateLimit } from "@/lib/security/public-submission-rate-limit";
 import { createAuthenticatedSupabaseClient } from "@/lib/supabase/auth-server";
-import { createPublicSupabaseClient } from "@/lib/supabase/server";
+import {
+  createServiceRoleSupabaseClient,
+  isServiceRoleSupabaseConfigured,
+} from "@/lib/supabase/service";
 
 export type EventReportActionState = {
   error: string | null;
@@ -36,7 +40,17 @@ export async function submitEventReportAction(
     };
   }
 
-  const client = createPublicSupabaseClient();
+  if (!isServiceRoleSupabaseConfigured()) {
+    return { error: "현재 제보 접수를 준비 중입니다. 잠시 후 다시 이용해 주세요.", success: false };
+  }
+
+  const rateLimit = await checkPublicSubmissionRateLimit("event_report");
+  if (!rateLimit.allowed) {
+    const retryMinutes = Math.max(1, Math.ceil(rateLimit.retryAfterSeconds / 60));
+    return { error: `요청이 많습니다. 약 ${retryMinutes}분 후 다시 시도해 주세요.`, success: false };
+  }
+
+  const client = createServiceRoleSupabaseClient();
   if (!client) {
     return { error: "현재 제보 접수를 준비 중입니다. 잠시 후 다시 이용해 주세요.", success: false };
   }

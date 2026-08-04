@@ -1,6 +1,7 @@
 import { z } from "zod";
+import { createHttpUrlSchema } from "@/lib/domain/url";
 
-export const SITE_FEEDBACK_IMAGE_MAX_MB = 4;
+export const SITE_FEEDBACK_IMAGE_MAX_MB = 3;
 export const SITE_FEEDBACK_IMAGE_MAX_BYTES = SITE_FEEDBACK_IMAGE_MAX_MB * 1024 * 1024;
 export const SITE_FEEDBACK_IMAGE_ACCEPT = "image/jpeg,image/png,image/webp";
 
@@ -24,10 +25,15 @@ export async function hasValidSiteFeedbackImageSignature(file: Blob) {
   return false;
 }
 
+const feedbackUrlSchema = createHttpUrlSchema({
+  invalidUrl: "링크를 올바른 주소로 입력해 주세요.",
+  unsupportedProtocol: "링크를 올바른 주소로 입력해 주세요.",
+});
+
 const optionalLinkSchema = z.string()
   .trim()
   .max(2048, "링크가 너무 깁니다.")
-  .refine((value) => value.length === 0 || z.url().safeParse(value).success, "링크를 올바른 주소로 입력해 주세요.");
+  .refine((value) => value.length === 0 || feedbackUrlSchema.safeParse(value).success, "링크를 올바른 주소로 입력해 주세요.");
 
 export const siteFeedbackSchema = z.object({
   title: z.string().trim().min(2, "제목을 2자 이상 입력해 주세요.").max(200, "제목은 200자 이하로 입력해 주세요."),
