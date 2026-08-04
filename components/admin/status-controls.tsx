@@ -1,7 +1,7 @@
 "use client";
 
 import { useOptimistic, useState, useTransition } from "react";
-import { setEventReviewStatusAction } from "@/lib/actions/admin";
+import { setEventReviewStatusAction } from "@/lib/actions/admin/event";
 import { statusControlStyles } from "@/components/admin/status-control-styles";
 
 type ReviewStatus = "pending" | "published" | "rejected";

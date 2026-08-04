@@ -1,6 +1,6 @@
 import { AdminActionForm } from "@/components/admin/admin-action-form";
 import { FormSubmitButton } from "@/components/admin/form-submit-button";
-import { deletePlaceAction, savePlaceAction } from "@/lib/actions/admin";
+import { deletePlaceAction, savePlaceAction } from "@/lib/actions/admin/place";
 
 type Row = Record<string, unknown> | null;
 const input = "mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5";

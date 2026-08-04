@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { FormSubmitButton } from "@/components/admin/form-submit-button";
 import { TransitionLink } from "@/components/transition-link";
-import { signOutAction } from "@/lib/actions/admin";
+import { signOutAction } from "@/lib/actions/admin/auth";
 
 export function AdminShell({ email, children }: { email: string; children: ReactNode }) {
   return (

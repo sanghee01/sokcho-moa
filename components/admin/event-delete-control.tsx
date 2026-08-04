@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import { AdminActionForm } from "@/components/admin/admin-action-form";
 import { FormSubmitButton } from "@/components/admin/form-submit-button";
 import { statusControlStyles } from "@/components/admin/status-control-styles";
-import { deleteEventAction } from "@/lib/actions/admin";
+import { deleteEventAction } from "@/lib/actions/admin/event";
 
 type EventDeletionTarget = {
   id: string;

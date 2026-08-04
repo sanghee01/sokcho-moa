@@ -35,15 +35,15 @@ test("행사 작성 폼이 필수 입력과 공개 버튼 생성을 설명하고
   await imageInput.setInputFiles({
     name: "too-large.png",
     mimeType: "image/png",
-    buffer: Buffer.alloc(Math.ceil(5.5 * 1024 * 1024)),
+    buffer: Buffer.alloc(Math.ceil(3.5 * 1024 * 1024)),
   });
-  await expect(linksSection.getByText("선택한 파일은 5.5MB입니다. 5MB 이하 이미지를 선택해 주세요.")).toBeVisible();
+  await expect(linksSection.getByText("선택한 파일은 3.5MB입니다. 3MB 이하 이미지를 선택해 주세요.")).toBeVisible();
   await expect(imageInput).toHaveValue("");
   await expect(uploadImageButton).toBeDisabled();
   await imageInput.setInputFiles(path.join(process.cwd(), "app", "icon.jpeg"));
   await expect(linksSection.getByRole("img", { name: "대표 이미지 미리보기" })).toBeVisible();
   await expect(linksSection.getByText("icon.jpeg · 업로드 대기", { exact: true })).toBeVisible();
-  await expect(linksSection.getByText("선택한 파일은 5.5MB입니다.", { exact: false })).toHaveCount(0);
+  await expect(linksSection.getByText("선택한 파일은 3.5MB입니다.", { exact: false })).toHaveCount(0);
   await expect(uploadImageButton).toBeEnabled();
   expect(await previewPanel.boundingBox()).toEqual(initialPreviewSize);
   await expect(linksSection.getByText("파일 선택 후 ‘이미지 업로드’를 누르세요.", { exact: false })).toBeVisible();
