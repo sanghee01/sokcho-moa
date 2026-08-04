@@ -27,13 +27,13 @@ vi.mock("@/components/transition-link", () => ({
   TransitionLink: () => null,
 }));
 
-import { generateMetadata as generateHomeMetadata } from "@/app/page";
+import { generateMetadata as generateHomeMetadata } from "@/app/(event-browse)/page";
 import sitemap from "@/app/sitemap";
 import {
   dynamicParams,
   generateMetadata as generateTopicMetadata,
   generateStaticParams,
-} from "@/app/topics/[topic]/page";
+} from "@/app/(event-browse)/topics/[topic]/page";
 import { EventBrowsePage } from "@/components/event-browse-page";
 import { eventCategories } from "@/lib/domain/event";
 import {
