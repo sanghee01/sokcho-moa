@@ -114,7 +114,7 @@ export function createNaverMapUrl(name: string, latitude: number, longitude: num
 
 export type EventMapLinks = {
   naver: string;
-  hasVerifiedCoordinates: boolean;
+  hasCoordinates: boolean;
 };
 
 export function createEventMapLinks(
@@ -123,23 +123,23 @@ export function createEventMapLinks(
   latitude: number | null,
   longitude: number | null,
 ): EventMapLinks | null {
-  const hasVerifiedCoordinates = latitude != null && longitude != null;
-  if (!address && !hasVerifiedCoordinates) return null;
+  const hasCoordinates = latitude != null && longitude != null;
+  if (!address && !hasCoordinates) return null;
 
   const searchName = createMapSearchName(name);
   // 행사 세부 공간명은 네이버 지도에 별도 장소로 등록되지 않은 경우가 많다.
   // 도로명주소가 있으면 이를 우선 검색해 실제 방문 위치를 안정적으로 연다.
   const searchQuery = address?.trim() || searchName;
   const query = encodeURIComponent(searchQuery);
-  if (!hasVerifiedCoordinates) {
+  if (!hasCoordinates) {
     return {
       naver: `https://map.naver.com/p/search/${query}`,
-      hasVerifiedCoordinates: false,
+      hasCoordinates: false,
     };
   }
 
   return {
     naver: createNaverMapUrl(searchQuery, latitude, longitude),
-    hasVerifiedCoordinates: true,
+    hasCoordinates: true,
   };
 }
