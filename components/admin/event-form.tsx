@@ -211,7 +211,7 @@ function ImageUploadField({ initialUrl, onUploaded }: { initialUrl: string; onUp
           </p>
         </div>
       </div>
-      <FieldHelp>JPG·PNG·WebP, 최대 3MB. 파일 선택 후 ‘이미지 업로드’를 누르세요. 업로드한 파일은 위의 대표 이미지 URL보다 우선 사용합니다.</FieldHelp>
+      <FieldHelp>JPG·PNG·WebP, 최대 3MB. 파일 선택 후 ‘이미지 업로드’를 누르세요. 업로드한 파일은 WebP로 최적화되며, 위의 대표 이미지 URL보다 우선 사용합니다.</FieldHelp>
       <FieldHelp tone="warning">공식 원본과 재사용 허가·공공누리 조건을 확인한 파일만 업로드하세요.</FieldHelp>
     </div>
   );
