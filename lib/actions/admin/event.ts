@@ -319,7 +319,7 @@ export async function deleteEventAction(
   if (normalizedDeletedSlug && eventToDelete?.review_status === "published") {
     after(() => notifyIndexNow(buildPublicEventIndexPaths(normalizedDeletedSlug, [eventToDelete.category])));
   }
-  redirect("/admin?deleted=event");
+  redirect("/admin?tab=events&deleted=event");
 }
 
 export async function releaseEventCollectionExclusionAction(
@@ -340,5 +340,5 @@ export async function releaseEventCollectionExclusionAction(
   }
 
   revalidatePath("/admin");
-  redirect("/admin?released=event-exclusion");
+  redirect("/admin?tab=exclusions&released=event-exclusion");
 }

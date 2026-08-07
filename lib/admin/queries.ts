@@ -17,20 +17,58 @@ export type AdminEventCollectionExclusion = {
   identities: AdminEventDeletionIdentity[];
 };
 
-export async function getAdminEvents(status?: string) {
+export const ADMIN_EVENT_PAGE_SIZE = 20;
+
+const eventReviewStatuses = ["pending", "published", "rejected"] as const;
+
+type EventReviewStatus = (typeof eventReviewStatuses)[number];
+
+function isEventReviewStatus(status?: string): status is EventReviewStatus {
+  return Boolean(status && eventReviewStatuses.includes(status as EventReviewStatus));
+}
+
+export async function getAdminEvents({
+  status,
+  page = 1,
+  pageSize = ADMIN_EVENT_PAGE_SIZE,
+}: {
+  status?: string;
+  page?: number;
+  pageSize?: number;
+} = {}) {
   const client = await createAuthenticatedSupabaseClient();
-  if (!client) return [];
+  if (!client) return { events: [], totalCount: 0 };
   // 상태 변경은 updated_at을 갱신하므로 그 값으로 정렬하면 저장 직후 행이
   // 목록 맨 위로 이동한다. 생성 순서와 id를 사용해 상태 변경 전후 순서를 고정한다.
   let query = client
     .from("events")
-    .select("*")
+    .select("*", { count: "exact" })
     .order("created_at", { ascending: false })
     .order("id", { ascending: true });
-  if (status && ["pending", "published", "rejected"].includes(status)) query = query.eq("review_status", status);
-  const { data, error } = await query;
+  if (isEventReviewStatus(status)) query = query.eq("review_status", status);
+  const start = Math.max(0, (page - 1) * pageSize);
+  query = query.range(start, start + pageSize - 1);
+  const { data, count, error } = await query;
   if (error) throw new Error(`관리자 행사 목록을 불러오지 못했습니다: ${error.message}`);
-  return data ?? [];
+  return { events: data ?? [], totalCount: count ?? 0 };
+}
+
+export async function getAdminEventStatusCounts(): Promise<Record<EventReviewStatus, number>> {
+  const client = await createAuthenticatedSupabaseClient();
+  if (!client) return { pending: 0, published: 0, rejected: 0 };
+
+  const results = await Promise.all(
+    eventReviewStatuses.map(async (status) => {
+      const { count, error } = await client
+        .from("events")
+        .select("id", { count: "exact", head: true })
+        .eq("review_status", status);
+      if (error) throw new Error(`관리자 행사 상태별 수를 불러오지 못했습니다: ${error.message}`);
+      return [status, count ?? 0] as const;
+    }),
+  );
+
+  return Object.fromEntries(results) as Record<EventReviewStatus, number>;
 }
 
 export async function getAdminEvent(id: string) {

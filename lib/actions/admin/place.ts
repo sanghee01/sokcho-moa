@@ -98,5 +98,5 @@ export async function deletePlaceAction(
   if (error) return actionFailed("명소를 삭제하지 못했습니다. 잠시 후 다시 시도해 주세요.");
 
   revalidatePlacePaths();
-  redirect("/admin?deleted=place");
+  redirect("/admin?tab=places&deleted=place");
 }
