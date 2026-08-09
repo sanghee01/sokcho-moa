@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath, updateTag } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { after } from "next/server";
 import { z } from "zod";
@@ -105,7 +105,7 @@ async function checkEventCollectionExclusion(
 }
 
 function revalidatePublicEventPaths(slug?: string | null) {
-  updateTag(PUBLIC_EVENTS_CACHE_TAG);
+  revalidateTag(PUBLIC_EVENTS_CACHE_TAG, "max");
   revalidatePath("/");
   revalidatePath("/calendar");
   revalidatePath("/sitemap.xml");

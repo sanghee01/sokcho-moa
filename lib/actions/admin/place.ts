@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath, updateTag } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { formString } from "@/lib/actions/admin/form-data";
@@ -28,7 +28,7 @@ function invalidFields(error: z.ZodError): AdminActionState {
 }
 
 function revalidatePlacePaths() {
-  updateTag(PUBLIC_PLACES_CACHE_TAG);
+  revalidateTag(PUBLIC_PLACES_CACHE_TAG, "max");
   revalidatePath("/");
   revalidatePath("/admin");
 }
