@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { EventImage } from "./event-image";
+import { EventViewCount } from "./event-view-count";
 import { StatusBadges } from "./status-badges";
 import { audienceLabels, categoryLabels, formatDate, formatDateRange } from "@/lib/domain/format";
 import { deriveApplicationState, deriveEventUnavailableReason, type Event } from "@/lib/domain/event";
@@ -70,7 +71,10 @@ export function EventCard({ event, contentSource = "event_list" }: { event: Even
               </div>
             )}
           </dl>
-          <p className="mt-auto border-t border-slate-100 pt-3 text-xs text-slate-500">출처: {event.sourceName}</p>
+          <div className="mt-auto flex items-center justify-between gap-3 border-t border-slate-100 pt-3">
+            <p className="min-w-0 text-xs text-slate-500">출처: {event.sourceName}</p>
+            <EventViewCount className="text-xs" value={event.viewCount} />
+          </div>
         </div>
       </Link>
     </article>
