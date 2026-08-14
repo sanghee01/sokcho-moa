@@ -19,6 +19,8 @@ const dateTimePartsFormatter = new Intl.DateTimeFormat("en-CA", {
   hourCycle: "h23",
 });
 
+const numberFormatter = new Intl.NumberFormat("ko-KR");
+
 export const eventStateLabels: Record<EventState, string> = {
   upcoming: "예정",
   ongoing: "진행 중",
@@ -62,6 +64,10 @@ export function formatOperatingSchedule(value: string | null) {
     .map((line) => line.trim().replace(/[ \t]+/g, " "))
     .filter(Boolean)
     .join("\n");
+}
+
+export function formatViewCount(value?: number | null) {
+  return numberFormatter.format(Math.max(0, value ?? 0));
 }
 
 function getDateParts(formatter: Intl.DateTimeFormat, value: string) {

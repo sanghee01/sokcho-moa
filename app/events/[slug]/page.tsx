@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { EventCard } from "@/components/event-card";
 import { EventDetailAnalytics } from "@/components/analytics/event-detail-analytics";
 import { EventImage } from "@/components/event-image";
+import { EventViewCount } from "@/components/event-view-count";
 import { PlaceCard } from "@/components/place-card";
 import { ShareEventButton } from "@/components/share-event-button";
 import { StatusBadges } from "@/components/status-badges";
@@ -132,6 +133,9 @@ export default async function EventDetailPage({ params }: EventPageProps) {
               {event.applicationUrl && <a href={event.applicationUrl} target="_blank" rel="noreferrer" {...analyticsData("application_link_clicked", { event_slug: event.slug, event_category: event.category, link_position: "hero" })} className="rounded-2xl bg-rose-600 px-5 py-3 font-bold text-white">신청·예매 <span className="sr-only">(새 창)</span></a>}
               <a href={event.sourceUrl} target="_blank" rel="noreferrer" {...analyticsData("source_link_clicked", { event_slug: event.slug, event_category: event.category, link_position: "hero", source_type: "primary" })} className="rounded-2xl bg-teal-800 px-5 py-3 font-bold text-white">행사 안내 <span className="sr-only">(새 창)</span></a>
               <ShareEventButton slug={event.slug} />
+            </div>
+            <div className="mt-4 flex justify-end">
+              <EventViewCount className="text-sm" value={event.viewCount} />
             </div>
           </div>
         </div>
