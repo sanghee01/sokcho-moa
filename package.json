@@ -37,6 +37,10 @@
   },
   "packageManager": "pnpm@9.6.0",
   "pnpm": {
+    "supportedArchitectures": {
+      "os": ["current", "linux"],
+      "cpu": ["current", "x64"]
+    },
     "overrides": {
       "next>postcss": "8.5.23",
       "next>sharp": "0.35.3",
