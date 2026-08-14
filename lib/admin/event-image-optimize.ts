@@ -1,4 +1,3 @@
-import sharp from "sharp";
 import { EVENT_IMAGE_MAX_BYTES } from "@/lib/admin/event-image";
 
 const MAX_INPUT_PIXELS = 40_000_000;
@@ -8,6 +7,10 @@ const MAX_HEIGHT = 2_400;
 export class EventImageOptimizationError extends Error {}
 
 async function encodeWebp(input: ArrayBuffer | Uint8Array, quality: number, width: number) {
+  // Load the native module only when an image is actually uploaded. Event saves
+  // without a new image must not depend on Sharp's platform binary.
+  const { default: sharp } = await import("sharp");
+
   return sharp(input, { animated: false, failOn: "error", limitInputPixels: MAX_INPUT_PIXELS })
     .rotate()
     .resize({ width, height: MAX_HEIGHT, fit: "inside", withoutEnlargement: true })
