@@ -26,7 +26,8 @@ export async function optimizeEventImage(input: ArrayBuffer | Uint8Array) {
 
     const compact = await encodeWebp(input, 70, 1_200);
     if (compact.byteLength <= EVENT_IMAGE_MAX_BYTES) return compact;
-  } catch {
+  } catch (error) {
+    console.error("Event image optimization failed", error);
     throw new EventImageOptimizationError("이미지를 읽거나 최적화하지 못했습니다. JPG, PNG 또는 WebP 파일인지 확인해 주세요.");
   }
 

@@ -16,6 +16,7 @@ export function TransitionLink({
   className = "",
   pendingLabel = "페이지 이동 중",
   showPendingIndicator = true,
+  prefetch,
   scroll,
   rel,
   ...analyticsAttributes
@@ -25,6 +26,7 @@ export function TransitionLink({
   className?: string;
   pendingLabel?: string;
   showPendingIndicator?: boolean;
+  prefetch?: boolean;
   scroll?: boolean;
   rel?: string;
 } & Partial<AnalyticsDataAttributes> & {
@@ -45,7 +47,7 @@ export function TransitionLink({
   }
 
   return (
-    <Link href={href} onClick={handleClick} aria-busy={isPending} rel={rel} {...analyticsAttributes} className={`relative transition-opacity aria-busy:opacity-70 ${className}`}>
+    <Link href={href} prefetch={prefetch} onClick={handleClick} aria-busy={isPending} rel={rel} {...analyticsAttributes} className={`relative transition-opacity aria-busy:opacity-70 ${className}`}>
       {children}
       {isPending && (
         <>

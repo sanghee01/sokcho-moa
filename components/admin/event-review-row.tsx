@@ -30,7 +30,7 @@ export function EventReviewRow({
 
   return (
     <tr className="border-t border-slate-100 align-top">
-      <td className="px-4 py-4"><TransitionLink href={`/admin/events/${event.id}`} className="font-bold text-slate-950 hover:text-teal-700">{event.title}</TransitionLink><p className="mt-1 text-xs text-slate-500">/{event.slug}</p></td>
+      <td className="px-4 py-4"><TransitionLink href={`/admin/events/${event.id}`} prefetch={false} className="font-bold text-slate-950 hover:text-teal-700">{event.title}</TransitionLink><p className="mt-1 text-xs text-slate-500">/{event.slug}</p></td>
       <td className="px-4 py-4 text-right font-bold tabular-nums text-slate-700">{Math.max(0, event.viewCount).toLocaleString("ko-KR")}회</td>
       <td className="px-4 py-4"><span className={statusControlStyles.badge}>{statusLabels[reviewStatus]}</span></td>
       <td className="px-4 py-4 text-slate-600">{event.sourceName}</td>
