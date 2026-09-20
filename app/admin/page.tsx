@@ -94,6 +94,7 @@ export default async function AdminPage({
           <TransitionLink
             key={item.id}
             href={adminTabHref(item.id)}
+            showPendingIndicator={false}
             aria-current={selectedTab === item.id ? "page" : undefined}
             className={`rounded-xl px-4 py-2.5 text-sm font-bold transition-colors ${selectedTab === item.id ? "bg-teal-800 text-white" : "text-slate-700 hover:bg-slate-100"}`}
           >
