@@ -171,8 +171,54 @@ select id, now() + interval '13 days', now() + interval '13 days 3 hours'
 from public.events where slug = 'demo-youth-media-class'
 on conflict (event_id, starts_at) do update set ends_at = excluded.ends_at;
 
+-- 관리자 E2E 전용 행사. 검수 대기 상태라 공개 화면에는 보이지 않고, 관리자 test만 이 행을 바꾼다.
+insert into public.events
+  (id, slug, title, summary, category, audiences, event_start_at, event_end_at, operating_hours,
+   location_name, address, source_name, source_url, review_status, is_demo)
+values
+  ('10000000-0000-4000-8000-000000000091', 'e2e-admin-pending', '[E2E] 관리자 검수 테스트 행사',
+   '관리자 화면 E2E가 상태 변경과 수정 화면을 확인하는 행사입니다.', 'festival', array['family', 'adult'],
+   now() + interval '20 days', now() + interval '22 days', E'매일 10:00~18:00\n마지막 날은 17:00까지',
+   '속초문화예술회관', '강원특별자치도 속초시 번영로 155', '속초시', 'https://example.com/events/e2e-admin-pending',
+   'pending', false)
+on conflict (slug) do nothing;
+
+-- E2E가 확인하는 경계 상태: 깨진 이미지 주소, 빈 이미지 값, 신청 기간 없이 끝난 행사.
+update public.events set image_url = '/missing-event-image.jpg' where slug = 'demo-youth-media-class';
+update public.events set image_url = ' ' where slug = 'demo-children-craft';
+update public.events set application_start_at = null, application_end_at = null where slug = 'demo-ended-winter-program';
+
+-- 로컬에서는 샘플 행사를 공개 화면에 보여 준다. 공개 조회는 is_demo = true인 행을 숨긴다.
+update public.events set is_demo = false where slug like 'demo-%';
+
 insert into public.event_sources (event_id, provider, original_url, last_checked_at)
 select id, 'sokcho-moa-demo', source_url, now()
 from public.events
-where is_demo = true
+where slug like 'demo-%'
 on conflict (event_id, provider, original_url) do nothing;
+
+-- 로컬 개발·E2E용 관리자 계정. 로컬 Supabase(db reset)에만 들어가고 운영 DB에는 적용되지 않는다.
+-- 이메일 admin@sokcho-moa.test / 비밀번호 local-admin-password (tests/e2e/fixtures.ts와 같은 값)
+insert into auth.users (
+  instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
+  raw_app_meta_data, raw_user_meta_data, created_at, updated_at,
+  confirmation_token, recovery_token, email_change_token_new, email_change
+)
+values (
+  '00000000-0000-0000-0000-000000000000', 'a0000000-0000-4000-8000-000000000001', 'authenticated', 'authenticated',
+  'admin@sokcho-moa.test', extensions.crypt('local-admin-password', extensions.gen_salt('bf')), now(),
+  '{"provider":"email","providers":["email"]}', '{}', now(), now(), '', '', '', ''
+)
+on conflict (id) do nothing;
+
+insert into auth.identities (id, user_id, provider_id, identity_data, provider, last_sign_in_at, created_at, updated_at)
+values (
+  'a0000000-0000-4000-8000-000000000002', 'a0000000-0000-4000-8000-000000000001', 'a0000000-0000-4000-8000-000000000001',
+  '{"sub":"a0000000-0000-4000-8000-000000000001","email":"admin@sokcho-moa.test","email_verified":true}',
+  'email', now(), now(), now()
+)
+on conflict do nothing;
+
+insert into public.admin_users (user_id, email)
+values ('a0000000-0000-4000-8000-000000000001', 'admin@sokcho-moa.test')
+on conflict (user_id) do nothing;

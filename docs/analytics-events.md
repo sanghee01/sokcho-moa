@@ -20,8 +20,6 @@
 | `filter_used` | 필터를 적용하거나 해제할 때 | `filter_type`, `filter_value`, `filter_action` | 탐색 조건 수요 |
 | `filter_reset` | 적용된 필터를 초기화할 때 | `active_filter_count` | 탐색 실패·재시도 신호 |
 | `sort_changed` | 정렬 기준을 실제로 변경할 때 | `sort_method` | 정렬 선호도 |
-| `calendar_month_changed` | 이전·이번·다음 달로 이동할 때 | `direction`, `target_month` | 캘린더 탐색 깊이 |
-| `calendar_date_selected` | 모바일 캘린더 날짜를 선택할 때 | `selected_date`, `event_count` | 날짜 탐색 사용성 |
 | `application_link_clicked` | 신청·예매 링크를 선택할 때 | `event_slug`, `event_category`, `link_position` | 핵심 전환 프록시 |
 | `source_link_clicked` | 공식 원문·안내 링크를 선택할 때 | `event_slug`, `event_category`, `link_position`, `source_type` | 정보 검증·참여 의도 |
 | `map_link_clicked` | 행사 또는 주변 명소 지도를 선택할 때 | `event_slug` 또는 `place_name`, `link_position`, `map_method` | 방문 의도 |

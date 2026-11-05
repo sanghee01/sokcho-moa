@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-test("푸터에서 의견 보내기 폼으로 이동하고 링크 없이 의견을 작성할 수 있다", async ({ page }) => {
+test("푸터에서 의견 보내기 폼으로 이동해 링크 없이도 의견을 보낼 수 있다", async ({ page }) => {
   await page.goto("/");
 
   const footer = page.getByRole("contentinfo");
@@ -21,21 +21,17 @@ test("푸터에서 의견 보내기 폼으로 이동하고 링크 없이 의견�
   await expect(body).toHaveAttribute("required", "");
   await expect(link).not.toHaveAttribute("required", "");
   await expect(image).not.toHaveAttribute("required", "");
-  await expect(image).toBeDisabled();
-  await expect(page.getByText(/현재 환경에서는 사진 첨부를 사용할 수 없습니다/)).toBeVisible();
+  await expect(image).toBeEnabled();
+  await expect(page.getByText(/화면을 설명하는 사진 1장을 첨부할 수 있습니다/)).toBeVisible();
 
   await title.fill("필터 사용 의견");
-  await body.fill("필터를 적용한 상태가 캘린더에서도 유지되어서 편리합니다.");
-  await link.fill("https://example.com/feedback");
+  await body.fill("필터를 적용한 상태가 목록 이동 뒤에도 유지되어서 편리합니다.");
   await page.getByRole("button", { name: "의견 보내기", exact: true }).click();
 
-  await expect(page.locator("form").getByRole("alert")).toHaveText("현재 의견 접수를 준비 중입니다. 잠시 후 다시 이용해 주세요.");
-  await expect(title).toHaveValue("필터 사용 의견");
-  await expect(body).toHaveValue("필터를 적용한 상태가 캘린더에서도 유지되어서 편리합니다.");
-  await expect(link).toHaveValue("https://example.com/feedback");
+  await expect(page.getByRole("status")).toContainText("의견을 보내주셔서 감사합니다.");
 });
 
-test("행사 제보 전송에 실패해도 작성한 내용이 유지된다", async ({ page }) => {
+test("행사 제보는 서버 검증에 실패하면 작성한 내용을 유지하고, 고치면 접수된다", async ({ page }) => {
   await page.goto("/report");
 
   const title = page.getByLabel(/제목/);
@@ -43,11 +39,15 @@ test("행사 제보 전송에 실패해도 작성한 내용이 유지된다", as
   const sourceUrl = page.getByLabel(/^링크/);
   await title.fill("속초 시민 행사 제보");
   await body.fill("다음 달 시민회관에서 열리는 행사 정보를 제보합니다.");
-  await sourceUrl.fill("https://example.com/event");
+  // 브라우저는 javascript: 주소를 URL로 통과시키지만, 서버 검증이 http(s)만 허용한다.
+  await sourceUrl.fill("javascript:alert(1)");
   await page.getByRole("button", { name: "제보 보내기", exact: true }).click();
 
-  await expect(page.locator("form").getByRole("alert")).toHaveText("현재 제보 접수를 준비 중입니다. 잠시 후 다시 이용해 주세요.");
+  await expect(page.locator("form").getByRole("alert")).toHaveText("링크를 올바른 주소로 입력해 주세요.");
   await expect(title).toHaveValue("속초 시민 행사 제보");
   await expect(body).toHaveValue("다음 달 시민회관에서 열리는 행사 정보를 제보합니다.");
-  await expect(sourceUrl).toHaveValue("https://example.com/event");
+
+  await sourceUrl.fill("https://example.com/event");
+  await page.getByRole("button", { name: "제보 보내기", exact: true }).click();
+  await expect(page.getByRole("status")).toContainText("제보가 접수되었습니다.");
 });

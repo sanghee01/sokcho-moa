@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { EventBrowsePage } from "@/components/event-browse-page";
-import type { EventSearchParams } from "@/lib/domain/event-navigation";
+import { EventBrowsePage } from "@/features/events/components/event-browse-page";
+import type { EventSearchParams } from "@/features/events/model/browse-url";
 import {
   eventTopics,
   findEventTopicBySlug,
-} from "@/lib/domain/event-topic";
+} from "@/features/events/model/topics";
 import {
   INDEXABLE_ROBOTS,
   SITE_NAME,

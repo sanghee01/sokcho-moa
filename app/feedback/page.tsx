@@ -1,13 +1,10 @@
 import type { Metadata } from "next";
-import { SiteFeedbackForm } from "@/components/site-feedback-form";
+import { SiteFeedbackForm } from "@/features/feedback/components/site-feedback-form";
 import { feedbackPageMetadata } from "@/lib/seo/utility-page-metadata";
-import { isSiteFeedbackImageUploadAvailable } from "@/lib/supabase/service";
 
 export const metadata: Metadata = feedbackPageMetadata;
 
-export default async function FeedbackPage() {
-  const imageUploadEnabled = await isSiteFeedbackImageUploadAvailable();
-
+export default function FeedbackPage() {
   return (
     <main id="main-content" className="mx-auto max-w-3xl px-4 py-12 sm:px-6 sm:py-16">
       <p className="text-sm font-bold text-brand-700">속초모아를 함께 다듬어 주세요</p>
@@ -17,7 +14,7 @@ export default async function FeedbackPage() {
         보내주신 의견은 서비스 개선에 참고하겠습니다.
       </p>
       <div className="mt-9">
-        <SiteFeedbackForm imageUploadEnabled={imageUploadEnabled} />
+        <SiteFeedbackForm />
       </div>
     </main>
   );

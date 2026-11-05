@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState, type ReactNode } from "react";
-import type { AdminActionState } from "@/lib/actions/admin/types";
+import type { AdminActionState } from "@/lib/action-state";
 
 type AdminFormAction = (
   previousState: AdminActionState,

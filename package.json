@@ -12,12 +12,17 @@
     "places:check": "node scripts/generate-place-assets.mjs --check",
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "db:start": "supabase start -x realtime,edge-runtime,logflare,vector,imgproxy,supavisor",
+    "db:stop": "supabase stop",
+    "db:reset": "supabase db reset --local",
+    "db:test": "supabase test db",
+    "db:types": "supabase gen types --lang typescript --schema public > lib/supabase/database.types.ts"
   },
   "dependencies": {
-    "@supabase/ssr": "0.12.3",
-    "@supabase/supabase-js": "2.110.7",
-    "next": "16.2.12",
+    "@supabase/ssr": "0.12.7",
+    "@supabase/supabase-js": "2.119.0",
+    "next": "16.4.5",
     "react": "19.2.7",
     "react-dom": "19.2.7",
     "sharp": "0.35.3",
@@ -30,7 +35,8 @@
     "@types/react": "19.2.17",
     "@types/react-dom": "19.2.3",
     "eslint": "9.39.5",
-    "eslint-config-next": "16.2.12",
+    "eslint-config-next": "16.4.5",
+    "supabase": "3.0.0",
     "tailwindcss": "4.3.3",
     "typescript": "5.9.3",
     "vitest": "4.1.10"
@@ -38,8 +44,14 @@
   "packageManager": "pnpm@9.6.0",
   "pnpm": {
     "supportedArchitectures": {
-      "os": ["current", "linux"],
-      "cpu": ["current", "x64"]
+      "os": [
+        "current",
+        "linux"
+      ],
+      "cpu": [
+        "current",
+        "x64"
+      ]
     },
     "overrides": {
       "next>postcss": "8.5.23",

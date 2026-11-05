@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import { EventBrowsePage } from "@/components/event-browse-page";
-import type { EventSearchParams } from "@/lib/domain/event-navigation";
-import { findEventTopicByCategory } from "@/lib/domain/event-topic";
+import { EventBrowsePage } from "@/features/events/components/event-browse-page";
+import type { EventSearchParams } from "@/features/events/model/browse-url";
+import { findEventTopicByCategory } from "@/features/events/model/topics";
 import {
   HOME_TITLE,
   INDEXABLE_ROBOTS,

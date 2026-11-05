@@ -1,6 +1,6 @@
 "use client";
 
-import { PageErrorState } from "@/components/page-error-state";
+import { PageErrorState } from "@/components/layout/page-error-state";
 
 export default function EventError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   return (

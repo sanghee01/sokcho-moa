@@ -1,20 +1,22 @@
 import { ActionFeedback } from "@/components/admin/action-feedback";
-import { AdminShell } from "@/components/admin/admin-shell";
-import { EventCollectionExclusionList } from "@/components/admin/event-collection-exclusion-list";
+import { AdminShell } from "@/app/admin/_components/admin-shell";
+import { EventCollectionExclusionList } from "@/features/events/admin/components/exclusion-list";
 import { SubmissionReviewCard } from "@/components/admin/submission-review-card";
-import { EventReviewRow } from "@/components/admin/event-review-row";
-import { TransitionLink } from "@/components/transition-link";
-import { requireAdmin } from "@/lib/admin/auth";
-import { getAdminDashboardFeedback } from "@/lib/admin/dashboard-feedback";
+import { EventReviewRow } from "@/features/events/admin/components/event-review-row";
+import { TransitionLink } from "@/components/ui/transition-link";
+import { requireAdmin } from "@/lib/auth/admin";
+import { getAdminDashboardFeedback } from "@/app/admin/dashboard-message";
 import {
   getAdminEventCollectionExclusions,
-  getAdminEventReports,
   getAdminEvents,
   getAdminEventStatusCounts,
-  getAdminPlaces,
-  getAdminSiteFeedback,
   ADMIN_EVENT_PAGE_SIZE,
-} from "@/lib/admin/queries";
+} from "@/features/events/admin/queries";
+import { deleteSiteFeedbackAction, setSiteFeedbackReviewStatusAction } from "@/features/feedback/admin/actions";
+import { getAdminSiteFeedback } from "@/features/feedback/admin/queries";
+import { getAdminPlaces } from "@/features/places/admin/queries";
+import { deleteEventReportAction, setEventReportReviewStatusAction } from "@/features/reports/admin/actions";
+import { getAdminEventReports } from "@/features/reports/admin/queries";
 
 const statusLabels: Record<string, string> = { pending: "검수 대기", published: "공개", rejected: "반려" };
 const adminTabs = [
@@ -182,6 +184,8 @@ export default async function AdminPage({
             <SubmissionReviewCard
               key={String(report.id)}
               kind="event_report"
+              setReviewStatus={setEventReportReviewStatusAction}
+              deleteSubmission={deleteEventReportAction}
               submission={{
                 id: String(report.id),
                 title: String(report.title),
@@ -206,6 +210,8 @@ export default async function AdminPage({
             <SubmissionReviewCard
               key={String(item.id)}
               kind="site_feedback"
+              setReviewStatus={setSiteFeedbackReviewStatusAction}
+              deleteSubmission={deleteSiteFeedbackAction}
               submission={{
                 id: String(item.id),
                 title: String(item.title),

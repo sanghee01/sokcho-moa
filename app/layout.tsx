@@ -4,10 +4,10 @@ import Link from "next/link";
 import Script from "next/script";
 import type { ReactNode } from "react";
 import { AnalyticsRuntime } from "@/components/analytics/analytics-runtime";
-import { HeaderNavigation } from "@/components/header-navigation";
-import { ScrollToTopButton } from "@/components/scroll-to-top-button";
+import { HeaderNavigation } from "@/app/_components/header-navigation";
+import { ScrollToTopButton } from "@/components/layout/scroll-to-top-button";
 import { googleAnalyticsId, shouldCollectGoogleAnalytics } from "@/lib/analytics/google-analytics";
-import { getPublicEnv } from "@/lib/config/env";
+import { getPublicEnv } from "@/lib/env";
 import {
   HOME_TITLE,
   INDEXABLE_ROBOTS,

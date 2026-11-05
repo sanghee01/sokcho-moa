@@ -1,8 +1,13 @@
 import { expect, test } from "@playwright/test";
+import { E2E_ADMIN_EVENT, loginAsAdmin } from "./fixtures";
 import path from "node:path";
 
+test.beforeEach(async ({ page }) => {
+  await loginAsAdmin(page);
+});
+
 test("행사 작성 폼이 필수 입력과 공개 버튼 생성을 설명하고 기술 필드를 숨긴다", async ({ page }, testInfo) => {
-  await page.goto("/e2e-test/event-form");
+  await page.goto("/admin/events/new");
 
   await expect(page.getByRole("heading", { name: "기본 정보" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "일정·신청" })).toBeVisible();
@@ -65,20 +70,20 @@ test("행사 작성 폼이 필수 입력과 공개 버튼 생성을 설명하고
 });
 
 test("행사 수정 폼은 기존 slug를 내부에서 유지하고 문맥에 맞는 완료 동작을 보여준다", async ({ page }, testInfo) => {
-  await page.goto("/e2e-test/event-form?mode=edit");
+  await page.goto(`/admin/events/${E2E_ADMIN_EVENT.id}`);
 
-  const editForm = page.locator("form").first();
-  await expect(editForm.locator('input[type="hidden"][name="slug"]')).toHaveValue("existing-event-slug");
+  const editForm = page.locator("form.event-form");
+  await expect(editForm.locator('input[type="hidden"][name="slug"]')).toHaveValue(E2E_ADMIN_EVENT.slug);
   await expect(page.locator('[name="latitude"]')).toHaveCount(0);
   await expect(page.locator('[name="officialUrl"]')).toHaveCount(0);
-  await expect(page.getByRole("textbox", { name: "운영일정" })).toHaveValue("8월 1일 10:00~18:00\n8월 2일 11:00~17:00");
+  await expect(page.getByRole("textbox", { name: "운영일정" })).toHaveValue("매일 10:00~18:00\n마지막 날은 17:00까지");
   await expect(page.getByRole("button", { name: "수정 완료" })).toBeVisible();
   await expect(page.getByText("완료하면 관리자 대시보드로 이동합니다.")).toBeVisible();
   await expect(page.locator('input[type="file"][name="image"]')).toHaveCount(1);
   await expect(page.getByRole("button", { name: "Storage에 업로드" })).toHaveCount(0);
 
   await page.getByRole("button", { name: "삭제", exact: true }).click();
-  const deleteDialog = page.getByRole("dialog", { name: "기존 행사 수정 테스트 삭제" });
+  const deleteDialog = page.getByRole("dialog", { name: `${E2E_ADMIN_EVENT.title} 삭제` });
   await expect(deleteDialog).toBeVisible();
   await expect(deleteDialog.getByRole("checkbox")).toHaveCount(0);
   await expect(deleteDialog.getByText("같은 행사가 다시 수집되지 않도록", { exact: false })).toBeVisible();
@@ -90,11 +95,11 @@ test("행사 수정 폼은 기존 slug를 내부에서 유지하고 문맥에 �
 });
 
 test("작성과 수정 완료 후 대시보드 성공 메시지를 구분한다", async ({ page }) => {
-  await page.goto("/e2e-test/event-form?saved=event-created");
-  await expect(page.getByRole("status")).toHaveText("새 행사를 검수 대기로 등록했습니다.");
+  await page.goto("/admin?saved=event-created");
+  await expect(page.getByText("새 행사를 검수 대기로 등록했습니다.")).toBeVisible();
 
-  await page.goto("/e2e-test/event-form?saved=event-updated");
-  await expect(page.getByRole("status")).toHaveText("행사 정보를 수정했습니다.");
+  await page.goto("/admin?saved=event-updated");
+  await expect(page.getByText("행사 정보를 수정했습니다.")).toBeVisible();
 });
 
 test("행사 상세는 중복 관련 링크 없이 행동 버튼을 한 번씩 보여준다", async ({ page }, testInfo) => {

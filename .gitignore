@@ -1,30 +1,28 @@
+# dependencies
 node_modules
 .pnpm-store
+
+# next.js
 .next
-.next-*
 next-env.d.ts
-out
-output
+*.tsbuildinfo
+
+# testing
 coverage
 test-results
 playwright-report
+.playwright-cli
+
+# env: 실제 비밀값은 Git에 넣지 않고 변수 이름만 .env.example에 둔다
 .env*
 !.env.example
-*.log
-*.tsbuildinfo
-.DS_Store
+
+# vercel
 .vercel
-supabase/.temp
-supabase/.branches
+
+# 운영 데이터를 담은 수집 검토 자료. 운영 행사 정보가 들어 있어 저장소에 올리지 않는다.
 supabase/review
 
-# Local ChatGPT project material; not part of the deployable application.
-sources/
-docs/goals/
-docs/goaljaby/
-design-qa.md
-AGENTS.md
-.playwright-cli/
-
-# The mobile client is not part of the current public product surface.
-apps/mobile/
+# misc
+.DS_Store
+*.log

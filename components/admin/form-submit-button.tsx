@@ -1,7 +1,7 @@
 "use client";
 
 import { useFormStatus } from "react-dom";
-import { LoadingSpinner } from "@/components/loading-spinner";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 export function FormSubmitButton({
   idleLabel,

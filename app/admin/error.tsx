@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { TransitionLink } from "@/components/transition-link";
+import { TransitionLink } from "@/components/ui/transition-link";
 import { getButtonClassName } from "@/components/ui/button-styles";
 
 export default function AdminError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {

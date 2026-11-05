@@ -1,6 +1,6 @@
-import { AdminShell } from "@/components/admin/admin-shell";
-import { EventForm } from "@/components/admin/event-form";
-import { requireAdmin } from "@/lib/admin/auth";
+import { AdminShell } from "@/app/admin/_components/admin-shell";
+import { EventForm } from "@/features/events/admin/components/event-form";
+import { requireAdmin } from "@/lib/auth/admin";
 
 export default async function NewEventPage() {
   const admin = await requireAdmin();

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { EventReportForm } from "@/components/event-report-form";
+import { EventReportForm } from "@/features/reports/components/event-report-form";
 import { reportPageMetadata } from "@/lib/seo/utility-page-metadata";
 
 export const metadata: Metadata = reportPageMetadata;

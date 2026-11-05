@@ -2,10 +2,8 @@
 
 import Image from "next/image";
 import { useOptimistic, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
-import { deleteSiteFeedbackAction, setSiteFeedbackReviewStatusAction } from "@/lib/actions/feedback";
-import { deleteEventReportAction, setEventReportReviewStatusAction } from "@/lib/actions/reports";
-import type { SiteFeedbackReviewStatus } from "@/lib/domain/feedback";
+
+export type SubmissionReviewStatus = "pending" | "reviewed" | "rejected";
 
 export type SubmissionReviewCardData = {
   id: string;
@@ -13,13 +11,13 @@ export type SubmissionReviewCardData = {
   body: string;
   linkUrl: string | null;
   imageUrl?: string | null;
-  reviewStatus: SiteFeedbackReviewStatus;
+  reviewStatus: SubmissionReviewStatus;
   createdAt: string;
 };
 
 type SubmissionKind = "event_report" | "site_feedback";
 
-const statusMeta: Record<SiteFeedbackReviewStatus, { label: string; className: string }> = {
+const statusMeta: Record<SubmissionReviewStatus, { label: string; className: string }> = {
   pending: { label: "검토 대기", className: "bg-amber-50 text-amber-900" },
   reviewed: { label: "검토 완료", className: "bg-emerald-50 text-emerald-900" },
   rejected: { label: "철회", className: "bg-slate-100 text-slate-700" },
@@ -30,18 +28,25 @@ const kindMeta: Record<SubmissionKind, { noun: string; linkLabel: string }> = {
   site_feedback: { noun: "의견", linkLabel: "관련 링크" },
 };
 
+/**
+ * 방문자 제보·의견 검토 카드. 어떤 action으로 상태를 바꾸고 지울지는 화면을 조립하는 쪽(app/admin)이 넘긴다.
+ * 공용 컴포넌트가 feature의 action을 직접 import하지 않게 하려는 것이다.
+ */
 export function SubmissionReviewCard({
   submission,
   kind,
+  setReviewStatus,
+  deleteSubmission: deleteAction,
 }: {
   submission: SubmissionReviewCardData;
   kind: SubmissionKind;
+  setReviewStatus: (input: { id: string; status: "reviewed" | "rejected" }) => Promise<{ status: SubmissionReviewStatus }>;
+  deleteSubmission: (input: { id: string }) => Promise<unknown>;
 }) {
-  const router = useRouter();
   const [confirmedStatus, setConfirmedStatus] = useState(submission.reviewStatus);
   const [optimisticStatus, setOptimisticStatus] = useOptimistic(
     confirmedStatus,
-    (_, nextStatus: SiteFeedbackReviewStatus) => nextStatus,
+    (_, nextStatus: SubmissionReviewStatus) => nextStatus,
   );
   const [isPending, startTransition] = useTransition();
   const [isDeleted, setIsDeleted] = useState(false);
@@ -54,11 +59,8 @@ export function SubmissionReviewCard({
     startTransition(async () => {
       setOptimisticStatus(status);
       try {
-        const result = kind === "event_report"
-          ? await setEventReportReviewStatusAction({ id: submission.id, status })
-          : await setSiteFeedbackReviewStatusAction({ id: submission.id, status });
+        const result = await setReviewStatus({ id: submission.id, status });
         setConfirmedStatus(result.status);
-        router.refresh();
       } catch {
         setError("상태를 변경하지 못했습니다. 잠시 후 다시 시도해 주세요.");
       }
@@ -70,10 +72,8 @@ export function SubmissionReviewCard({
     setError(null);
     startTransition(async () => {
       try {
-        if (kind === "event_report") await deleteEventReportAction({ id: submission.id });
-        else await deleteSiteFeedbackAction({ id: submission.id });
+        await deleteAction({ id: submission.id });
         setIsDeleted(true);
-        router.refresh();
       } catch {
         setError(`${labels.noun}을 삭제하지 못했습니다. 잠시 후 다시 시도해 주세요.`);
       }

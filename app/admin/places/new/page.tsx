@@ -1,6 +1,6 @@
-import { AdminShell } from "@/components/admin/admin-shell";
-import { PlaceForm } from "@/components/admin/place-form";
-import { requireAdmin } from "@/lib/admin/auth";
+import { AdminShell } from "@/app/admin/_components/admin-shell";
+import { PlaceForm } from "@/features/places/admin/components/place-form";
+import { requireAdmin } from "@/lib/auth/admin";
 
 export default async function NewPlacePage() {
   const admin = await requireAdmin();

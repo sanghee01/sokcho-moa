@@ -1,8 +1,8 @@
 import { AdminActionForm } from "@/components/admin/admin-action-form";
-import { AdminShell } from "@/components/admin/admin-shell";
+import { AdminShell } from "@/app/admin/_components/admin-shell";
 import { FormSubmitButton } from "@/components/admin/form-submit-button";
-import { importEventCandidateAction } from "@/lib/actions/admin/import";
-import { requireAdmin } from "@/lib/admin/auth";
+import { importEventCandidateAction } from "@/features/events/admin/import-actions";
+import { requireAdmin } from "@/lib/auth/admin";
 
 const example = JSON.stringify({
   title: "확인된 행사명", summary: null, description: null, category: null, audiences: [],

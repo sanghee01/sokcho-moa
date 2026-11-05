@@ -1,24 +1,9 @@
-import { getPublicEnv } from "@/lib/config/env";
-import { eventCategories, type EventCategory } from "@/lib/domain/event";
-import { eventTopicPath } from "@/lib/domain/event-topic";
+import { getPublicEnv } from "@/lib/env";
 
 export const INDEXNOW_KEY = "4d8f5c2e1a7b4c9d8e6f0a3b5c7d9e12";
 export const INDEXNOW_KEY_PATH = "/indexnow-key.txt";
 
 const INDEXNOW_ENDPOINT = "https://searchadvisor.naver.com/indexnow";
-
-export function buildPublicEventIndexPaths(
-  slug: string,
-  categories: readonly unknown[] = [],
-) {
-  const paths = ["/", `/events/${slug}`];
-  for (const category of categories) {
-    if (typeof category === "string" && eventCategories.includes(category as EventCategory)) {
-      paths.push(eventTopicPath(category as EventCategory));
-    }
-  }
-  return Array.from(new Set(paths));
-}
 
 export function buildIndexNowPayload(paths: readonly string[], siteUrl: string) {
   const homeUrl = new URL("/", siteUrl);

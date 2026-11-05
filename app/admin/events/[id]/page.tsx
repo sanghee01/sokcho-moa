@@ -1,10 +1,10 @@
 import { notFound } from "next/navigation";
 import { ActionFeedback } from "@/components/admin/action-feedback";
-import { AdminShell } from "@/components/admin/admin-shell";
-import { EventForm } from "@/components/admin/event-form";
-import { StatusControls } from "@/components/admin/status-controls";
-import { requireAdmin } from "@/lib/admin/auth";
-import { getAdminEvent } from "@/lib/admin/queries";
+import { AdminShell } from "@/app/admin/_components/admin-shell";
+import { EventForm } from "@/features/events/admin/components/event-form";
+import { StatusControls } from "@/features/events/admin/components/status-controls";
+import { requireAdmin } from "@/lib/auth/admin";
+import { getAdminEvent } from "@/features/events/admin/queries";
 
 export default async function EditEventPage({
   params,

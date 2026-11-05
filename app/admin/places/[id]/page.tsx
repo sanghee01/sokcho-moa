@@ -1,9 +1,9 @@
 import { notFound } from "next/navigation";
 import { ActionFeedback } from "@/components/admin/action-feedback";
-import { AdminShell } from "@/components/admin/admin-shell";
-import { PlaceForm } from "@/components/admin/place-form";
-import { requireAdmin } from "@/lib/admin/auth";
-import { getAdminPlace } from "@/lib/admin/queries";
+import { AdminShell } from "@/app/admin/_components/admin-shell";
+import { PlaceForm } from "@/features/places/admin/components/place-form";
+import { requireAdmin } from "@/lib/auth/admin";
+import { getAdminPlace } from "@/features/places/admin/queries";
 
 export default async function EditPlacePage({
   params,

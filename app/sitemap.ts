@@ -1,13 +1,13 @@
 import type { MetadataRoute } from "next";
-import { getPublicEnv } from "@/lib/config/env";
-import { getAllPublicEvents } from "@/lib/data/events";
-import { eventTopics } from "@/lib/domain/event-topic";
+import { getPublicEnv } from "@/lib/env";
+import { getAllPublicEvents } from "@/features/events/queries";
+import { eventTopics } from "@/features/events/model/topics";
 
 export const revalidate = 3600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = getPublicEnv().NEXT_PUBLIC_SITE_URL.replace(/\/$/, "");
-  const events = (await getAllPublicEvents()).filter((event) => !event.isDemo);
+  const events = await getAllPublicEvents();
   const homeLastModified = latestModifiedAt(events);
   return [
     {

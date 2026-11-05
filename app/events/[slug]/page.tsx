@@ -1,25 +1,26 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { EventCard } from "@/components/event-card";
-import { EventDetailAnalytics } from "@/components/analytics/event-detail-analytics";
-import { EventImage } from "@/components/event-image";
-import { EventViewCount } from "@/components/event-view-count";
-import { PlaceCard } from "@/components/place-card";
-import { ShareEventButton } from "@/components/share-event-button";
-import { StatusBadges } from "@/components/status-badges";
-import { getAllPublicEvents, getPublicEventBySlug, getPublicPlaces, getRelatedEvents } from "@/lib/data/events";
-import { audienceLabels, applicationStateLabels, categoryLabels, formatDateRange, formatOperatingSchedule } from "@/lib/domain/format";
-import { deriveApplicationState, getEventIntroduction } from "@/lib/domain/event";
-import { eventTopicPath } from "@/lib/domain/event-topic";
-import { createEventMapLinks, findNearbyPlaces, getNearbyPlacesLabel } from "@/lib/domain/geo";
+import { EventCard } from "@/features/events/components/event-card";
+import { EventDetailAnalytics } from "@/features/events/components/event-detail-analytics";
+import { EventImage } from "@/features/events/components/event-image";
+import { EventViewCount } from "@/features/events/components/event-view-count";
+import { PlaceCard } from "@/features/places/components/place-card";
+import { ShareEventButton } from "@/features/events/components/share-event-button";
+import { StatusBadges } from "@/features/events/components/status-badges";
+import { getAllPublicEvents, getPublicEventBySlug } from "@/features/events/queries";
+import { getPublicPlaces } from "@/features/places/queries";
+import { audienceLabels, applicationStateLabels, categoryLabels, formatDateRange, formatOperatingSchedule } from "@/features/events/model/format";
+import { deriveApplicationState, getEventIntroduction, getRelatedEvents } from "@/features/events/model/event";
+import { eventTopicPath } from "@/features/events/model/topics";
+import { createEventMapLinks, findNearbyPlaces, getNearbyPlacesLabel } from "@/features/events/model/location";
 import { analyticsData } from "@/lib/analytics/events";
-import { getPublicEnv } from "@/lib/config/env";
+import { getPublicEnv } from "@/lib/env";
 import {
   buildEventBreadcrumbStructuredData,
   buildEventSeoDescription,
   buildEventStructuredData,
-} from "@/lib/seo/event-structured-data";
+} from "@/features/events/seo";
 import { INDEXABLE_ROBOTS, SITE_NAME } from "@/lib/seo/site-identity";
 
 export const revalidate = 3600;
@@ -113,11 +114,6 @@ export default async function EventDetailPage({ params }: EventPageProps) {
         <span aria-hidden="true">/</span> {event.title}
       </nav>
 
-      {event.isDemo && (
-        <aside className="mb-5 rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950">
-          <strong>이 페이지는 샘플 행사입니다.</strong> 실제 방문·신청 정보가 아닙니다.
-        </aside>
-      )}
 
       <article>
         <div className="grid overflow-hidden rounded-[2rem] bg-white shadow-xl ring-1 ring-teal-900/10 lg:grid-cols-2">

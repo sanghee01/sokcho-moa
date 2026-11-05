@@ -9,8 +9,6 @@ export const analyticsEvents = [
   "filter_used",
   "filter_reset",
   "sort_changed",
-  "calendar_month_changed",
-  "calendar_date_selected",
   "share",
 ] as const;
 
