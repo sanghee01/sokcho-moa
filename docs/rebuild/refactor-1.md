@@ -107,11 +107,17 @@ AI로 빠르게 만든 기존 구현에서 문제와 코드 스멜을 한 번에
 - 1차에서 새로 드러난 사실: 운영 DB와 새 DB의 `event_reports.source_url` 차이, Supabase 기본 grant 때문에 select·update를 막는 것은
   RLS라는 점, proxy가 공개 토픽 요청마다 세션을 갱신하던 낭비, E2E 기대값과 seed 데이터가 서로 어긋나 있던 점.
 
-## 사용자가 할 일
+## 운영 반영 상태(2026-11-05)
 
-| 할 일 | 이유 |
+| 할 일 | 상태 |
 | --- | --- |
-| Vercel에 `SUPABASE_SECRET_KEY`(sb_secret_…) 추가 후 배포, 이후 `SUPABASE_SERVICE_ROLE_KEY`·`NEXT_PUBLIC_DATA_MODE`·`NEXT_PUBLIC_KAKAO_MAP_JS_KEY` 삭제 | 코드가 새 이름만 읽음. 넣기 전에 배포하면 방문자 제보·의견 접수가 "준비 중"으로 막힘 |
-| 운영 DB에서 `select count(*) from public.event_reports where source_url is null;`가 0인지 확인 후 `20261105090000_cleanup_unused_objects.sql` 적용 | 0이 아니면 4번(not null)이 실패함 |
-| `db push`를 쓰려면 먼저 원격 이력에 없는 migration 13개를 `supabase migration repair --status applied`로 등록 | 운영 이력에는 2026-08-03 이후 7개만 있음 |
-| `pnpm db:start`가 Docker Desktop 실행을 필요로 함 | 로컬 DB·pgTAP·E2E가 모두 로컬 Supabase를 씀 |
+| Vercel에 `SUPABASE_SECRET_KEY` 추가(Production) | ✅ 사용자가 추가 |
+| Vercel의 `SUPABASE_SERVICE_ROLE_KEY`·`NEXT_PUBLIC_DATA_MODE`·`NEXT_PUBLIC_KAKAO_MAP_JS_KEY` 삭제 | ✅ 사용자가 삭제 |
+| 운영 DB `event_reports.source_url` null 행 확인 | ✅ 0건(전체 2건) |
+| `20261105090000_cleanup_unused_objects.sql` 운영 적용 | ✅ SQL Editor에서 한 트랜잭션으로 적용. 적용 후 not null·RPC 삭제·index 삭제·insert 권한 회수 확인 |
+| 원격 migration 이력 맞추기 | ✅ 이력에 없던 13개와 정리 migration을 `supabase_migrations.schema_migrations`에 등록. 이력 21개 = 로컬 파일 21개 |
+| 새 코드 배포 | ⏳ 아직. `main`에 합치면 운영 배포 |
+
+주의: 환경 변수 변경은 이미 배포된 버전에는 적용되지 않습니다. 지금 운영 중인 버전은 예전 변수로 계속 동작합니다.
+대신 이 상태에서 **예전 `main` 코드를 다시 배포하면** `NEXT_PUBLIC_DATA_MODE`가 없어 샘플(demo) 화면으로 바뀌고, 제보·의견 접수도 막힙니다.
+다음 운영 배포는 이 branch를 합친 코드여야 합니다. `SUPABASE_SECRET_KEY`는 Production에만 있으므로, Preview 배포에서는 제보·의견 접수가 "준비 중"으로 보입니다.
