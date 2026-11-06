@@ -14,11 +14,11 @@ import {
   HOME_TITLE,
   INDEXABLE_ROBOTS,
   SITE_DESCRIPTION,
-  SITE_LOGO_PATH,
   SITE_NAME,
   SITE_OPEN_GRAPH_IMAGE_PATH,
 } from "@/lib/seo/site-identity";
-// 예전 로고 파일은 위아래 여백이 커서 키워도 글자가 작게 보였다. 여백을 잘라 낸 파일을 쓴다(2026-11-06).
+// 그림은 예전 로고에서 그라데이션·구름·갈매기를 빼고 산·바다를 한 색씩으로, 글자는 G마켓 산스 Bold 남색으로 바꿨다.
+// 글꼴 파일을 사이트에 넣지 않도록 글자까지 한 장의 투명 이미지로 만든다(2026-11-07).
 import headerLogo from "@/public/sokchomoa-wordmark.webp";
 import "./globals.css";
 
@@ -33,7 +33,6 @@ const pretendard = localFont({
 
 const siteUrl = getPublicEnv().NEXT_PUBLIC_SITE_URL;
 const collectGoogleAnalytics = shouldCollectGoogleAnalytics(getRuntimeEnv().vercelEnv);
-const logoUrl = new URL(SITE_LOGO_PATH, siteUrl).toString();
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -42,10 +41,8 @@ export const metadata: Metadata = {
   description: SITE_DESCRIPTION,
   alternates: { canonical: "/" },
   robots: INDEXABLE_ROBOTS,
-  icons: {
-    icon: [{ url: logoUrl, type: "image/jpeg", sizes: "512x512" }],
-    shortcut: logoUrl,
-  },
+  // 탭 파비콘(app/icon.png, 산과 바다만)과 아이폰 홈 화면 아이콘(app/apple-icon.png, 그림 전체)은 파일 규칙으로 둔다.
+  // 파일 규칙이 metadata.icons보다 우선하므로 여기서는 지정하지 않는다(2026-11-07).
   openGraph: {
     type: "website",
     locale: "ko_KR",
@@ -90,11 +87,11 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
         </header>
         <AnalyticsRuntime />
         <div className="flex-1">{children}</div>
-        {/* 회색 바탕 푸터. 로고 이미지의 흰 배경은 mix-blend-multiply로 바탕색에 섞어 보이지 않게 한다. 묶음 제목 없이 링크만 한 줄로 둔다(2026-11-06). */}
+        {/* 회색 바탕 푸터. 로고 이미지는 바탕이 투명해 그대로 얹는다(2026-11-07). 묶음 제목 없이 링크만 한 줄로 둔다(2026-11-06). */}
         <footer className="mt-16 border-t border-line bg-surface-subtle">
           <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-8 sm:px-6 md:flex-row md:items-start md:justify-between md:gap-10">
             <div>
-              <Image src={headerLogo} alt="속초모아" sizes="128px" className="h-7 w-auto object-contain mix-blend-multiply" />
+              <Image src={headerLogo} alt="속초모아" sizes="128px" className="h-7 w-auto object-contain" />
               {/* 안내는 폭 제한 없이 한 문단으로 둔다. 넓은 화면에서는 한 줄, 좁은 화면에서는 글자 폭에 맞춰 자연스럽게 줄이 바뀐다(2026-11-06). */}
               <p className="mt-3 text-caption text-content-subtle">각 기관의 공고를 옮긴 정보라 실제와 다를 수 있어요. 방문하거나 신청하기 전에 원문을 꼭 확인해 주세요.</p>
             </div>

@@ -46,7 +46,7 @@ test("대표 이미지는 3MB를 넘으면 거부하고, 올바른 이미지는 
   await expect(imageInput).toHaveValue("");
   await expect(uploadImageButton).toBeDisabled();
 
-  await imageInput.setInputFiles(path.join(process.cwd(), "app", "icon.jpeg"));
+  await imageInput.setInputFiles(path.join(process.cwd(), "public", "icon.jpeg"));
   await expect(linksSection.getByRole("img", { name: "대표 이미지 미리보기" })).toBeVisible();
   await expect(linksSection.getByText(/3MB 이하/)).toHaveCount(0);
   await expect(uploadImageButton).toBeEnabled();
