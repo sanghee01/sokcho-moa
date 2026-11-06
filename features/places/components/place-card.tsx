@@ -1,4 +1,6 @@
+import { ExternalLink, MapPin } from "lucide-react";
 import { getButtonClassName } from "@/components/ui/button-styles";
+import { iconProps } from "@/components/ui/icon";
 import type { NearbyPlace } from "@/features/places/model/place";
 import { createNaverMapUrl } from "@/lib/map";
 import { analyticsData } from "@/lib/analytics/events";
@@ -16,9 +18,18 @@ export function PlaceCard({ place }: { place: NearbyPlace }) {
       </div>
       <p className="text-label font-normal text-content-muted">{place.summary}</p>
       {place.address && <p className="mt-2 text-caption text-content-subtle">{place.address}</p>}
-      <div className="mt-auto flex flex-wrap gap-2 pt-3">
-        <a href={mapUrl} target="_blank" rel="noreferrer" {...analyticsData("map_link_clicked", { content_type: "nearby_place", place_name: place.name, link_position: "nearby_place_card" })} className={getButtonClassName({ variant: "secondary" })}>지도에서 보기 <span className="sr-only">(새 창)</span></a>
-        {place.officialUrl && <a href={place.officialUrl} target="_blank" rel="noreferrer" {...analyticsData("nearby_place_clicked", { place_name: place.name, place_category: place.category, link_position: "nearby_place_card" })} className={getButtonClassName({ variant: "ghost" })}>자세히 보기 <span className="sr-only">(새 창)</span></a>}
+      {/* 두 버튼은 같은 폭에 바탕색으로 구분한다: 지도는 연한 파랑(tonal), 자세히 보기는 회색(neutral).
+          테두리만 있거나 글자만 있던 예전 버튼은 눌러야 하는 곳으로 잘 보이지 않았다(2026-11-07 사용자 결정).
+          lg에서는 카드가 4열로 좁아져 글자가 두 줄로 꺾이므로 세로로 쌓는다. */}
+      <div className="mt-auto flex gap-2 pt-4 lg:flex-col">
+        <a href={mapUrl} target="_blank" rel="noreferrer" {...analyticsData("map_link_clicked", { content_type: "nearby_place", place_name: place.name, link_position: "nearby_place_card" })} className={`${getButtonClassName({ variant: "tonal" })} min-w-0 flex-1 whitespace-nowrap`}>
+          <MapPin {...iconProps} size={16} />지도에서 보기<span className="sr-only">(새 창)</span>
+        </a>
+        {place.officialUrl && (
+          <a href={place.officialUrl} target="_blank" rel="noreferrer" {...analyticsData("nearby_place_clicked", { place_name: place.name, place_category: place.category, link_position: "nearby_place_card" })} className={`${getButtonClassName({ variant: "neutral" })} min-w-0 flex-1 whitespace-nowrap`}>
+            <ExternalLink {...iconProps} size={16} />자세히 보기<span className="sr-only">(새 창)</span>
+          </a>
+        )}
       </div>
     </article>
   );

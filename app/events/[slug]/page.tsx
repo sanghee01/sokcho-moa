@@ -99,6 +99,8 @@ function InfoRow({ label, children }: { label: string; children: ReactNode }) {
 }
 
 const sectionTitleClassName = "text-title-2 text-content-strong";
+// 본문 아래 구역(주변 명소, 비슷한 행사, 목록으로)은 구분선 없이 여백으로만 나눈다(구분선은 번잡해 보였음, 2026-11-07 사용자 결정).
+const lowerSectionClassName = "mt-14 px-4 lg:px-0";
 
 export default async function EventDetailPage({ params }: PageProps<"/events/[slug]">) {
   const [{ slug }, allEvents, places] = await Promise.all([params, getAllPublicEvents(), getPublicPlaces()]);
@@ -124,8 +126,8 @@ export default async function EventDetailPage({ params }: PageProps<"/events/[sl
   const price = event.priceText ?? (event.isFree ? "무료" : "요금은 원문에서 확인해 주세요");
 
   return (
-    // 모바일은 하단 행동 바가 본문 끝을 가리지 않게 아래 여백을 둔다.
-    <main id="main-content" className="mx-auto max-w-6xl pb-28 lg:px-6 lg:pb-16 lg:pt-6">
+    // 하단 행동 바만큼의 여백은 페이지 맨 끝(body)에 둔다(globals.css). 여기에 두면 목록으로 버튼 아래가 너무 비었다(2026-11-07).
+    <main id="main-content" className="mx-auto max-w-6xl lg:px-6 lg:pt-6">
       <EventDetailAnalytics
         slug={event.slug}
         category={event.category}
@@ -156,8 +158,10 @@ export default async function EventDetailPage({ params }: PageProps<"/events/[sl
         </div>
 
         <div className="px-4 pt-5 lg:sticky lg:top-6 lg:col-start-2 lg:row-span-3 lg:row-start-1 lg:px-0 lg:pt-0">
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
-            <p className="text-caption font-medium text-primary-text">{categoryLabels[event.category]} · {audiences}</p>
+          {/* 분야 글자와 배지 묶음 사이는 12px로 띄운다(8px은 붙어 보였음, 2026-11-07 사용자 결정). */}
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+            {/* 참여 대상이 비어 있으면(수집 데이터) 분야만 쓴다. DB는 빈 값을 허용하고 관리자 폼만 막는다. */}
+            <p className="text-caption font-medium text-primary-text">{[categoryLabels[event.category], audiences].filter(Boolean).join(" · ")}</p>
             <StatusBadges event={event} />
             {/* 조회수는 분야 줄 오른쪽 끝에 아이콘 없이 작게 둔다(모바일·PC 같음, 2026-11-07 사용자 결정). */}
             <EventViewCount value={event.viewCount} className="ml-auto text-caption text-content-subtle" />
@@ -204,7 +208,8 @@ export default async function EventDetailPage({ params }: PageProps<"/events/[sl
           </section>
 
           {/* 행동 버튼은 한 벌만 둔다. 모바일은 화면 아래에 고정하고, lg에서는 핵심 정보 아래에 둔다(.ai/DESIGN.md BottomActionBar).
-              한 화면에 primary는 하나다: 신청 링크가 있으면 신청·예매, 없으면 행사 안내. */}
+              행사 안내는 모든 행사에 있어 항상 파랑(primary)이고, 신청 링크가 있으면 그 앞에 신청·예매를 차콜(accent)로 둔다.
+              둘 다 눈에 띄어야 해서 채운 버튼으로 두고 색으로 구분한다(상황마다 색이 바뀌어 헷갈렸음, 2026-11-07 사용자 결정). */}
           <div
             data-bottom-action-bar
             className="fixed inset-x-0 bottom-0 z-40 flex gap-2 border-t border-line bg-surface px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 shadow-floating lg:static lg:z-auto lg:mt-6 lg:border-t-0 lg:bg-transparent lg:p-0 lg:shadow-none"
@@ -215,7 +220,7 @@ export default async function EventDetailPage({ params }: PageProps<"/events/[sl
                 target="_blank"
                 rel="noreferrer"
                 {...analyticsData("application_link_clicked", { event_slug: event.slug, event_category: event.category, link_position: "action_bar" })}
-                className={`${getButtonClassName({ variant: "primary" })} min-w-0 flex-1`}
+                className={`${getButtonClassName({ variant: "accent" })} min-w-0 flex-1`}
               >
                 신청·예매 <span className="sr-only">(새 창)</span>
               </a>
@@ -225,7 +230,7 @@ export default async function EventDetailPage({ params }: PageProps<"/events/[sl
               target="_blank"
               rel="noreferrer"
               {...analyticsData("source_link_clicked", { event_slug: event.slug, event_category: event.category, link_position: "action_bar", source_type: "primary" })}
-              className={`${getButtonClassName({ variant: event.applicationUrl ? "secondary" : "primary" })} ${event.applicationUrl ? "shrink-0" : "min-w-0 flex-1"}`}
+              className={`${getButtonClassName({ variant: "primary" })} ${event.applicationUrl ? "shrink-0" : "min-w-0 flex-1"}`}
             >
               행사 안내 <span className="sr-only">(새 창)</span>
             </a>
@@ -240,18 +245,21 @@ export default async function EventDetailPage({ params }: PageProps<"/events/[sl
           </section>
         )}
 
-        <section aria-labelledby="event-info-title" className="mt-10 px-4 lg:col-start-1 lg:px-0">
-          <h2 id="event-info-title" className={sectionTitleClassName}>행사 정보</h2>
-          <dl className="mt-3 max-w-160">
-            <InfoRow label="참여 대상">{audiences}</InfoRow>
-            {event.organizer && <InfoRow label="주최·주관">{event.organizer}</InfoRow>}
-            {event.contact && <InfoRow label="문의처">{event.contact}</InfoRow>}
-          </dl>
-        </section>
+        {/* 보여 줄 값이 하나도 없으면 제목만 남지 않게 묶음 전체를 뺀다. */}
+        {(audiences || event.organizer || event.contact) && (
+          <section aria-labelledby="event-info-title" className="mt-10 px-4 lg:col-start-1 lg:px-0">
+            <h2 id="event-info-title" className={sectionTitleClassName}>행사 정보</h2>
+            <dl className="mt-3 max-w-160">
+              {audiences && <InfoRow label="참여 대상">{audiences}</InfoRow>}
+              {event.organizer && <InfoRow label="주최·주관">{event.organizer}</InfoRow>}
+              {event.contact && <InfoRow label="문의처">{event.contact}</InfoRow>}
+            </dl>
+          </section>
+        )}
       </article>
 
       {nearbyPlaces.length > 0 && (
-        <section aria-labelledby="nearby-title" className="mt-14 px-4 lg:px-0">
+        <section aria-labelledby="nearby-title" className={lowerSectionClassName}>
           <h2 id="nearby-title" className={sectionTitleClassName}>{nearbyPlacesLabel.title}</h2>
           <div className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-4">
             {nearbyPlaces.map((place) => <PlaceCard key={place.id} place={place} />)}
@@ -260,14 +268,15 @@ export default async function EventDetailPage({ params }: PageProps<"/events/[sl
       )}
 
       {relatedEvents.length > 0 && (
-        <section aria-labelledby="related-title" className="mt-14 px-4 lg:px-0">
+        <section aria-labelledby="related-title" className={lowerSectionClassName}>
           <h2 id="related-title" className={sectionTitleClassName}>이 행사도 살펴보세요</h2>
           <div className={`mt-4 ${eventCardGridClassName}`}>{relatedEvents.map((item) => <EventCard key={item.id} event={item} contentSource="related_events" />)}</div>
         </section>
       )}
 
-      <div className="mx-4 mt-14 flex justify-center border-t border-line pt-10 lg:mx-0">
-        <Link href="/" className={getButtonClassName({ variant: "secondary", width: "fullOnMobile" })}>
+      <div className={`${lowerSectionClassName} flex justify-center`}>
+        {/* 모바일은 폭 전체, sm부터는 글자 폭만 하면 작아 보여 320px로 둔다(2026-11-07 사용자 결정). */}
+        <Link href="/" className={`${getButtonClassName({ variant: "tonal", width: "full" })} sm:w-80`}>
           목록으로 돌아가기
         </Link>
       </div>

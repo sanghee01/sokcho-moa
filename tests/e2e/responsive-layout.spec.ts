@@ -96,4 +96,20 @@ test.describe("360×740 첫 화면", () => {
       expect(box!.y + box!.height).toBeLessThanOrEqual(740);
     }
   });
+
+  // 모바일 상세는 행동 버튼이 화면 아래에 고정되어 있어, 페이지 끝까지 내려도 푸터 마지막 줄이 그 바에 가려지면 안 된다.
+  test("상세를 끝까지 내리면 푸터 마지막 줄이 하단 행동 바에 가려지지 않는다", async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== "desktop-chromium", "화면 폭을 직접 지정하므로 프로젝트마다 반복하지 않는다");
+
+    await page.goto("/events/demo-sea-family-festival");
+    await page.evaluate(() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "instant" }));
+
+    const lastFooterLine = page.getByRole("contentinfo").getByText(/All rights reserved/);
+    await expect(lastFooterLine).toBeInViewport();
+    const lineBox = await lastFooterLine.boundingBox();
+    const barBox = await page.locator("[data-bottom-action-bar]").boundingBox();
+    expect(lineBox).not.toBeNull();
+    expect(barBox).not.toBeNull();
+    expect(lineBox!.y + lineBox!.height).toBeLessThanOrEqual(barBox!.y);
+  });
 });

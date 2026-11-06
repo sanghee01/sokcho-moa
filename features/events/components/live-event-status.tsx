@@ -17,7 +17,8 @@ export function LiveStatusBadges({ status, renderedAt }: { status: EventStatusFi
   if (badges.length === 0) return null;
 
   return (
-    <div className="flex flex-wrap gap-1" aria-label="행사 상태">
+    // 배지 사이는 6px. 4px은 배지끼리 붙어 보였다(2026-11-07 사용자 결정).
+    <div className="flex flex-wrap gap-1.5" aria-label="행사 상태">
       {badges.map((badge) => <Badge key={badge.label} tone={badge.tone}>{badge.label}</Badge>)}
     </div>
   );
