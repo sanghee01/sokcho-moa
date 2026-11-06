@@ -7,6 +7,7 @@ import {
   type SubmissionReviewDecision,
   type SubmissionReviewStatus,
 } from "@/components/admin/submission-review-status";
+import { ConfirmDialog, ConfirmDialogActions, ConfirmDialogButton } from "@/components/ui/confirm-dialog";
 import type { ButtonActionResult } from "@/lib/action-state";
 
 export interface SubmissionReviewCardData {
@@ -22,9 +23,9 @@ export interface SubmissionReviewCardData {
 type SubmissionKind = "event_report" | "site_feedback";
 
 const statusClassNames: Record<SubmissionReviewStatus, string> = {
-  pending: "bg-amber-50 text-amber-900",
-  reviewed: "bg-emerald-50 text-emerald-900",
-  rejected: "bg-slate-100 text-slate-700",
+  pending: "bg-primary-subtle text-primary-text",
+  reviewed: "bg-success-subtle text-success",
+  rejected: "bg-surface-muted text-content",
 };
 
 const kindMeta: Record<SubmissionKind, { noun: string; linkLabel: string }> = {
@@ -75,7 +76,6 @@ export function SubmissionReviewCard({
   }
 
   function deleteSubmission() {
-    if (!window.confirm(`이 ${labels.noun}을 삭제할까요? 삭제 후 복구할 수 없습니다.`)) return;
     setError(null);
     startTransition(async () => {
       try {
@@ -94,14 +94,14 @@ export function SubmissionReviewCard({
   if (isDeleted) return null;
 
   return (
-    <article className="rounded-2xl bg-white p-5 ring-1 ring-slate-200" aria-busy={isPending}>
+    <article className="rounded-card bg-surface p-5 ring-1 ring-line" aria-busy={isPending}>
       <div className="flex flex-wrap items-start justify-between gap-2">
-        <h3 className="text-lg font-black text-slate-950">{submission.title}</h3>
-        <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${statusClassNames[optimisticStatus]}`}>{submissionReviewStatusLabels[optimisticStatus]}</span>
+        <h3 className="text-title-3 font-bold text-content-strong">{submission.title}</h3>
+        <span className={`rounded-full px-2.5 py-1 text-caption font-bold ${statusClassNames[optimisticStatus]}`}>{submissionReviewStatusLabels[optimisticStatus]}</span>
       </div>
-      <p className="mt-3 whitespace-pre-line leading-7 text-slate-700">{submission.body}</p>
+      <p className="mt-3 whitespace-pre-line leading-7 text-content">{submission.body}</p>
       {submission.imageUrl && (
-        <a href={submission.imageUrl} target="_blank" rel="noreferrer" className="mt-4 block w-fit overflow-hidden rounded-2xl ring-1 ring-slate-200 hover:ring-teal-300">
+        <a href={submission.imageUrl} target="_blank" rel="noreferrer" className="mt-4 block w-fit overflow-hidden rounded-card ring-1 ring-line hover:ring-primary">
           <Image
             src={submission.imageUrl}
             alt={`${submission.title} 첨부 이미지`}
@@ -110,19 +110,29 @@ export function SubmissionReviewCard({
             unoptimized
             className="h-auto max-h-80 w-auto max-w-full object-contain"
           />
-          <span className="block bg-slate-50 px-3 py-2 text-center text-xs font-bold text-slate-600">첨부 이미지 크게 보기 <span className="sr-only">(새 창)</span></span>
+          <span className="block bg-surface-subtle px-3 py-2 text-center text-caption font-bold text-content-muted">첨부 이미지 크게 보기 <span className="sr-only">(새 창)</span></span>
         </a>
       )}
-      <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
-        {submission.linkUrl && <a href={submission.linkUrl} target="_blank" rel="noreferrer" className="font-bold text-teal-700 underline underline-offset-4">{labels.linkLabel} <span className="sr-only">(새 창)</span></a>}
-        <time className="text-slate-500" dateTime={submission.createdAt}>{new Intl.DateTimeFormat("ko-KR", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Seoul" }).format(new Date(submission.createdAt))}</time>
+      <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-label">
+        {submission.linkUrl && <a href={submission.linkUrl} target="_blank" rel="noreferrer" className="font-bold text-primary-text underline underline-offset-4">{labels.linkLabel} <span className="sr-only">(새 창)</span></a>}
+        <time className="text-content-subtle" dateTime={submission.createdAt}>{new Intl.DateTimeFormat("ko-KR", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Seoul" }).format(new Date(submission.createdAt))}</time>
       </div>
       <div className="mt-5 flex flex-wrap gap-2" aria-label={`${labels.noun} 검토 상태 변경`}>
-        <button type="button" disabled={isPending || optimisticStatus === "reviewed"} onClick={() => updateStatus("reviewed")} className="rounded-xl bg-emerald-700 px-3.5 py-2 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-40">검토 완료</button>
-        <button type="button" disabled={isPending || optimisticStatus === "rejected"} onClick={() => updateStatus("rejected")} className="rounded-xl bg-slate-200 px-3.5 py-2 text-sm font-bold text-slate-800 disabled:cursor-not-allowed disabled:opacity-40">철회</button>
-        <button type="button" disabled={isPending} onClick={deleteSubmission} className="rounded-xl bg-rose-50 px-3.5 py-2 text-sm font-bold text-rose-800 ring-1 ring-rose-200 disabled:cursor-not-allowed disabled:opacity-40">삭제</button>
+        <button type="button" disabled={isPending || optimisticStatus === "reviewed"} onClick={() => updateStatus("reviewed")} className="rounded-control bg-success px-3.5 py-2 text-label font-bold text-on-primary disabled:cursor-not-allowed disabled:opacity-40">검토 완료</button>
+        <button type="button" disabled={isPending || optimisticStatus === "rejected"} onClick={() => updateStatus("rejected")} className="rounded-control bg-surface-muted px-3.5 py-2 text-label font-bold text-content disabled:cursor-not-allowed disabled:opacity-40">철회</button>
+        <ConfirmDialog
+          triggerLabel="삭제"
+          triggerDisabled={isPending}
+          triggerClassName="rounded-control bg-danger-subtle px-3.5 py-2 text-label font-bold text-danger ring-1 ring-danger-subtle disabled:cursor-not-allowed disabled:opacity-40"
+          title={`${submission.title} 삭제`}
+          description={`이 ${labels.noun}을 삭제하면 복구할 수 없습니다.`}
+        >
+          <ConfirmDialogActions>
+            <ConfirmDialogButton tone="danger" onConfirm={deleteSubmission}>{labels.noun} 삭제</ConfirmDialogButton>
+          </ConfirmDialogActions>
+        </ConfirmDialog>
       </div>
-      <p className={error ? "mt-3 text-sm font-bold text-rose-700" : "sr-only"} role="status" aria-live="polite">
+      <p className={error ? "mt-3 text-label font-bold text-danger" : "sr-only"} role="status" aria-live="polite">
         {error ?? (isPending ? "변경 사항을 저장하고 있습니다." : "")}
       </p>
     </article>

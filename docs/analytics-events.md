@@ -26,6 +26,8 @@
 
 `share`와 `select_content`는 GA4 권장 이벤트명을 사용한다. 기존 커스텀 이벤트명은 과거 데이터와의 연속성을 위해 유지했다.
 
+2026-11-06 상세 개편으로 신청·예매와 행사 안내 버튼이 하단 행동 바 하나로 모였다. 두 이벤트의 `link_position`은 그 전 `hero`에서 `action_bar`로 바뀌었다.
+
 2026-11-06 디자인 개편에서 빠른 필터를 없애며 `filter_used`·`filter_reset`(파라미터 `filter_type`·`filter_value`·`filter_action`)을 더 이상 보내지 않는다. 그 전 데이터는 GA4에 남아 있다.
 
 ## GA4 관리자 설정

@@ -88,11 +88,11 @@ export function ImageUploadField({ initialUrl, onUploaded }: { initialUrl: strin
   }
 
   return (
-    <div className="rounded-2xl border border-cyan-200 bg-cyan-50 p-4 sm:col-span-2">
+    <div className="rounded-card border border-line-strong bg-primary-subtle p-4 sm:col-span-2">
       <p className={labelClassName}>대표 이미지 파일 업로드</p>
       <input type="hidden" name="uploadedImageUrl" value={isUploaded ? uploadState.publicUrl ?? "" : ""} />
       <div data-testid="event-image-upload-panel" className="mt-3 grid min-h-32 grid-cols-[5rem_minmax(0,1fr)] items-center gap-4">
-        <div className="relative h-28 w-20 overflow-hidden rounded-xl border border-cyan-200 bg-white">
+        <div className="relative h-28 w-20 overflow-hidden rounded-control border border-line-strong bg-surface">
           {hasPreview ? (
             <Image
               src={previewUrl}
@@ -104,7 +104,7 @@ export function ImageUploadField({ initialUrl, onUploaded }: { initialUrl: strin
               className="object-contain"
             />
           ) : (
-            <div role="img" aria-label="대표 이미지 미리보기 없음" className="flex h-full items-center justify-center bg-gradient-to-br from-cyan-100 via-white to-amber-50 px-2 text-center text-[11px] font-medium leading-4 text-slate-500">
+            <div role="img" aria-label="대표 이미지 미리보기 없음" className="flex h-full items-center justify-center bg-surface-muted px-2 text-center text-caption font-medium leading-4 text-content-subtle">
               미리보기 없음
             </div>
           )}
@@ -120,14 +120,14 @@ export function ImageUploadField({ initialUrl, onUploaded }: { initialUrl: strin
             className="sr-only"
           />
           <div className="flex flex-wrap gap-2">
-            <button type="button" onClick={() => inputRef.current?.click()} className="inline-flex min-h-11 items-center justify-center rounded-xl border border-cyan-700 bg-white px-4 py-2.5 text-sm font-bold text-cyan-900 hover:bg-cyan-100">
+            <button type="button" onClick={() => inputRef.current?.click()} className="inline-flex min-h-11 items-center justify-center rounded-control border border-primary bg-surface px-4 py-2.5 text-label font-bold text-primary-text hover:bg-primary-subtle">
               파일 선택
             </button>
-            <button type="button" disabled={!fileName || isUploading || isUploaded} onClick={handleUpload} className="inline-flex min-h-11 items-center justify-center rounded-xl bg-teal-800 px-4 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-teal-900 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-600">
+            <button type="button" disabled={!fileName || isUploading || isUploaded} onClick={handleUpload} className="inline-flex min-h-11 items-center justify-center rounded-control bg-primary px-4 py-2.5 text-label font-bold text-on-primary hover:bg-primary-hover disabled:cursor-not-allowed disabled:bg-surface-muted disabled:text-content-muted">
               {isUploading ? "업로드 중…" : isUploaded ? "업로드 완료" : "이미지 업로드"}
             </button>
           </div>
-          <p aria-live="polite" className={`mt-2 min-h-10 text-xs font-normal leading-5 ${uploadError ? "text-rose-700" : "text-slate-600"}`}>
+          <p aria-live="polite" className={`mt-2 min-h-10 text-caption font-normal leading-5 ${uploadError ? "text-danger" : "text-content-muted"}`}>
             {uploadError || (fileName
               ? `${fileName} · ${isUploaded ? "업로드 완료" : "업로드 대기"}`
               : initialUrl.trim() ? "현재 등록된 이미지" : "선택된 파일 없음")}

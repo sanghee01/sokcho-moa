@@ -3,7 +3,8 @@
 import {
   actionFailed,
   actionSucceeded,
-  firstIssueMessage,
+  fieldFailed,
+  invalidFormInput,
   type FormActionState,
 } from "@/lib/action-state";
 import { formString } from "@/lib/form-data";
@@ -34,18 +35,18 @@ export async function submitSiteFeedbackAction(
     body: formString(formData, "body"),
     linkUrl: formString(formData, "linkUrl"),
   });
-  if (!parsed.success) return actionFailed(firstIssueMessage(parsed.error));
+  if (!parsed.success) return invalidFormInput(parsed.error);
 
   const image = selectedImage(formData);
   const imageError = image ? getSiteFeedbackImageValidationError(image) : null;
-  if (imageError) return actionFailed(imageError);
+  if (imageError) return fieldFailed("image", imageError);
 
   const submission = await openPublicSubmission("site_feedback", UNAVAILABLE);
   if ("error" in submission) return actionFailed(submission.error);
   const { client } = submission;
 
   if (image && !(await hasValidSiteFeedbackImageSignature(image))) {
-    return actionFailed("파일 내용과 이미지 형식이 일치하지 않습니다. 다른 사진을 선택해 주세요.");
+    return fieldFailed("image", "파일 내용과 이미지 형식이 일치하지 않습니다. 다른 사진을 선택해 주세요.");
   }
 
   const feedbackId = crypto.randomUUID();

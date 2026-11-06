@@ -30,8 +30,8 @@ export function PageErrorState({
 
   return (
     <main id="main-content" className="mx-auto min-h-[60vh] max-w-2xl px-4 py-20 text-center sm:px-6">
-      <p className="text-sm font-bold text-rose-700">{eyebrow}</p>
-      <h1 className="mt-2 text-3xl font-black text-content-strong">{title}</h1>
+      <p className="text-label font-bold text-danger">{eyebrow}</p>
+      <h1 className="mt-2 text-title-1 font-bold text-content-strong">{title}</h1>
       <p className="mt-4 leading-7 text-content-muted">{description}</p>
       <div className="mt-8 flex flex-wrap justify-center gap-3">
         <button

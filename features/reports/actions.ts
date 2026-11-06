@@ -3,7 +3,7 @@
 import {
   actionFailed,
   actionSucceeded,
-  firstIssueMessage,
+  invalidFormInput,
   type FormActionState,
 } from "@/lib/action-state";
 import { formString } from "@/lib/form-data";
@@ -24,7 +24,7 @@ export async function submitEventReportAction(
     body: formString(formData, "body"),
     sourceUrl: formString(formData, "sourceUrl"),
   });
-  if (!parsed.success) return actionFailed(firstIssueMessage(parsed.error));
+  if (!parsed.success) return invalidFormInput(parsed.error);
 
   const submission = await openPublicSubmission("event_report", UNAVAILABLE);
   if ("error" in submission) return actionFailed(submission.error);

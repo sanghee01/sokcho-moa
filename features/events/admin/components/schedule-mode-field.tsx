@@ -61,24 +61,24 @@ export function ScheduleModeField({ row }: { row: EventRow }) {
         <FieldHelp>매일 이어지는 행사는 행사기간을, 특정 날짜·요일에만 열리면 실제 운영 회차를 선택하세요.</FieldHelp>
       </label>
       {scheduleMode === "occurrences" && (
-        <fieldset className="space-y-3 rounded-2xl border border-teal-200 bg-teal-50/50 p-4 sm:col-span-2">
+        <fieldset className="space-y-3 rounded-card border border-primary bg-primary-subtle p-4 sm:col-span-2">
           <legend className="sr-only">실제 운영 회차</legend>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className={labelClassName}>실제 운영 회차</p>
-              <p className="mt-1 text-xs font-normal leading-5 text-slate-600">공개 화면에는 아래 날짜만 운영일로 표시됩니다. 같은 날 여러 회차도 각각 입력할 수 있어요.</p>
+              <p className="mt-1 text-caption font-normal leading-5 text-content-muted">공개 화면에는 아래 날짜만 운영일로 표시됩니다. 같은 날 여러 회차도 각각 입력할 수 있어요.</p>
             </div>
-            <button type="button" onClick={addOccurrence} className="min-h-11 rounded-xl border border-teal-300 bg-white px-4 py-2 text-sm font-bold text-teal-800 hover:bg-teal-50">회차 추가</button>
+            <button type="button" onClick={addOccurrence} className="min-h-11 rounded-control border border-primary bg-surface px-4 py-2 text-label font-bold text-primary-text hover:bg-primary-subtle">회차 추가</button>
           </div>
           {occurrences.length === 0 ? (
-            <p className="rounded-xl bg-white px-4 py-3 text-sm text-slate-600">회차 추가를 눌러 실제 운영 날짜를 입력해 주세요.</p>
+            <p className="rounded-control bg-surface px-4 py-3 text-label text-content-muted">회차 추가를 눌러 실제 운영 날짜를 입력해 주세요.</p>
           ) : (
             <div className="space-y-3">
               {occurrences.map((occurrence, index) => (
-                <div key={occurrence.key} className="grid gap-3 rounded-xl bg-white p-3 ring-1 ring-slate-200 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
+                <div key={occurrence.key} className="grid gap-3 rounded-control bg-surface p-3 ring-1 ring-line sm:grid-cols-[1fr_1fr_auto] sm:items-end">
                   <DateTimeField labelText={`회차 ${index + 1} 시작`} name="occurrenceStartsAt" defaultValue={occurrence.startsAt} requiredDate />
                   <DateTimeField labelText={`회차 ${index + 1} 종료`} name="occurrenceEndsAt" defaultValue={occurrence.endsAt} />
-                  <button type="button" onClick={() => removeOccurrence(occurrence.key)} aria-label={`회차 ${index + 1} 삭제`} className="min-h-11 rounded-xl border border-rose-200 px-3 py-2 text-sm font-bold text-rose-700 hover:bg-rose-50">삭제</button>
+                  <button type="button" onClick={() => removeOccurrence(occurrence.key)} aria-label={`회차 ${index + 1} 삭제`} className="min-h-11 rounded-control border border-danger-subtle px-3 py-2 text-label font-bold text-danger hover:bg-danger-subtle">삭제</button>
                 </div>
               ))}
             </div>

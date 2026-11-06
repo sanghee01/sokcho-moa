@@ -49,7 +49,7 @@ export function AdminActionForm({
       <form className={className} onChange={dismissCurrentError} onSubmit={submit} aria-busy={isPending}>
         {children}
         {error && (
-          <p role="alert" className="rounded-xl bg-rose-50 px-3 py-2.5 text-sm font-bold text-rose-900 ring-1 ring-rose-200">
+          <p role="alert" className="rounded-control bg-danger-subtle px-3 py-2.5 text-label font-bold text-danger ring-1 ring-danger-subtle">
             {error}
           </p>
         )}

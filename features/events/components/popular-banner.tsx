@@ -13,7 +13,7 @@ const bannerHeightClassName = "h-48 sm:h-60 lg:h-76";
  * 많이 보는 행사 한 장(A안, 2026-11-06 결정). 같은 포스터를 크게 흐려 배경으로 깔고, 위에 포스터 전체를 잘리지 않게 둔다.
  * 포스터 비율이 제각각이어도 잘려 보이지 않는다. 공연 예매 앱 상단 배너와 같은 방식이다. 장 전체가 상세로 가는 링크다.
  */
-function PopularSlide({ event, rank }: { event: Event; rank: number }) {
+function PopularSlide({ event }: { event: Event }) {
   return (
     <Link
       href={`/events/${event.slug}`}
@@ -33,7 +33,8 @@ function PopularSlide({ event, rank }: { event: Event; rank: number }) {
       {/* md 이상에서는 좌우 넘김 버튼(왼쪽·오른쪽 12px + 40px)이 내용을 가리지 않게 안쪽 여백을 64px로 둔다(2026-11-06). */}
       <div className="relative mx-auto flex h-full max-w-6xl items-center gap-4 px-4 pb-7 pt-5 sm:px-6 md:px-16 lg:gap-10">
         <div className="min-w-0 flex-1 text-on-image">
-          <p className="text-caption font-semibold opacity-90">지금 많이 보는 행사 {rank}</p>
+          {/* 순위 숫자(1, 2, 3)는 붙이지 않는다(2026-11-06 사용자 결정). */}
+          <p className="text-caption font-semibold opacity-90">지금 많이 보는 행사</p>
           <p className="mt-1 line-clamp-2 text-title-2 lg:text-title-1-lg">{event.title}</p>
           <p className="mt-1.5 truncate text-caption opacity-90 tabular-nums lg:text-body">
             {formatShortDateRange(event.eventStartAt, event.eventEndAt)} · {event.locationName ?? "장소 원문 확인"}
@@ -62,7 +63,7 @@ export function PopularBanner({ events }: { events: Event[] }) {
   return (
     <BannerCarousel
       label="지금 많이 보는 행사"
-      slides={events.map((event, index) => <PopularSlide key={event.id} event={event} rank={index + 1} />)}
+      slides={events.map((event) => <PopularSlide key={event.id} event={event} />)}
     />
   );
 }

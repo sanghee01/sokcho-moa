@@ -36,12 +36,12 @@ export function EventForm({ row }: { row: EventRow }) {
 
   return (
     <div className="space-y-6">
-      <AdminActionForm action={saveEventAction} className="event-form space-y-7 rounded-3xl bg-white p-5 ring-1 ring-slate-200 sm:p-8">
+      <AdminActionForm action={saveEventAction} className="event-form space-y-7 rounded-card bg-surface p-5 ring-1 ring-line sm:p-8">
         {id && <><input type="hidden" name="id" value={id} /><input type="hidden" name="slug" value={slug} /></>}
 
-        <div className="rounded-2xl bg-teal-50 px-4 py-3 text-sm leading-6 text-teal-950">
-          <p><span aria-hidden="true" className="font-black text-rose-600">*</span> 표시는 저장에 필요한 항목입니다.</p>
-          <p className="text-teal-800">slug와 확인 시각 같은 시스템 정보는 저장할 때 자동으로 관리됩니다.</p>
+        <div className="rounded-card bg-primary-subtle px-4 py-3 text-label leading-6 text-primary-text">
+          <p><span aria-hidden="true" className="font-bold text-danger">*</span> 표시는 저장에 필요한 항목입니다.</p>
+          <p className="text-primary-text">slug와 확인 시각 같은 시스템 정보는 저장할 때 자동으로 관리됩니다.</p>
         </div>
 
         <section aria-labelledby="event-basic-title" className={sectionClassName}>
@@ -65,10 +65,10 @@ export function EventForm({ row }: { row: EventRow }) {
             </label>
             <fieldset className="sm:col-span-2" aria-required="true" aria-describedby="audiences-help">
               <legend className={labelClassName}>참여 대상<RequiredMark /></legend>
-              <p id="audiences-help" className="mt-1 text-xs leading-5 text-slate-500">한 개 이상 선택하세요.</p>
+              <p id="audiences-help" className="mt-1 text-caption leading-5 text-content-subtle">한 개 이상 선택하세요.</p>
               <div className="mt-2 flex flex-wrap gap-3">
                 {eventAudiences.map((value, index) => (
-                  <label key={value} className="flex min-h-11 items-center gap-2 rounded-xl bg-white px-3 py-2 text-sm ring-1 ring-slate-200">
+                  <label key={value} className="flex min-h-11 items-center gap-2 rounded-control bg-surface px-3 py-2 text-label ring-1 ring-line">
                     <input
                       type="checkbox"
                       name="audiences"
@@ -117,8 +117,8 @@ export function EventForm({ row }: { row: EventRow }) {
 
         <section aria-labelledby="event-links-title" className={sectionClassName}>
           <SectionHeading id="event-links-title" title="링크·출처" description="방문자가 포스터 옆에서 보게 될 버튼과 정보의 출처를 입력하세요." />
-          <aside aria-label="공개 버튼 생성 안내" className="rounded-2xl border border-cyan-200 bg-cyan-50 p-4 text-sm leading-6 text-cyan-950">
-            <p className="font-black">공개 화면 버튼은 이렇게 만들어집니다</p>
+          <aside aria-label="공개 버튼 생성 안내" className="rounded-card border border-line bg-primary-subtle p-4 text-label leading-6 text-content-strong">
+            <p className="font-bold">공개 화면 버튼은 이렇게 만들어집니다</p>
             <ul className="mt-2 list-disc space-y-1 pl-5">
               <li><strong>행사 안내</strong>: 아래 행사 안내 URL로 항상 생성</li>
               <li><strong>신청·예매</strong>: 신청·예매 URL이 있을 때만 생성</li>
@@ -174,7 +174,7 @@ export function EventForm({ row }: { row: EventRow }) {
         <section aria-labelledby="event-visibility-title" className={sectionClassName}>
           <SectionHeading id="event-visibility-title" title="노출 설정" description="추천 표시와 공개 상태를 관리합니다. 공개 상태는 저장 후 대시보드에서 변경할 수 있습니다." />
           <div>
-            <label className="flex min-h-11 items-center gap-2 text-sm font-bold text-slate-800">
+            <label className="flex min-h-11 items-center gap-2 text-label font-bold text-content">
               <input type="checkbox" name="isFeatured" defaultChecked={checked(row, "is_featured")} /> 추천 행사로 표시
             </label>
             <FieldHelp>현재는 검색엔진용 사이트맵 우선순위만 높아지며, 홈이나 행사 목록의 노출 순서는 바뀌지 않습니다.</FieldHelp>
@@ -182,15 +182,15 @@ export function EventForm({ row }: { row: EventRow }) {
         </section>
 
         <div className="flex flex-wrap items-center gap-3">
-          <FormSubmitButton idleLabel={id ? "수정 완료" : "작성 완료"} pendingLabel="저장 중…" className="min-h-12 rounded-2xl bg-teal-800 px-6 py-3 font-bold text-white hover:bg-teal-900" />
-          <p className="text-sm text-slate-500">완료하면 관리자 대시보드로 이동합니다.</p>
+          <FormSubmitButton idleLabel={id ? "수정 완료" : "작성 완료"} pendingLabel="저장 중…" className="min-h-12 rounded-card bg-primary px-6 py-3 font-bold text-on-primary hover:bg-primary-hover" />
+          <p className="text-label text-content-subtle">완료하면 관리자 대시보드로 이동합니다.</p>
         </div>
       </AdminActionForm>
 
       {id && (
-        <section className="space-y-4 rounded-3xl bg-rose-50 p-5 ring-1 ring-rose-200 sm:p-6">
-          <p className="font-black text-rose-950">행사 삭제</p>
-          <p className="mt-1 text-sm leading-6 text-rose-900">행사와 연결된 출처 기록이 영구 삭제되고, 같은 행사는 재수집 제외 목록에 저장됩니다.</p>
+        <section className="space-y-4 rounded-card bg-danger-subtle p-5 ring-1 ring-danger-subtle sm:p-6">
+          <p className="font-bold text-danger">행사 삭제</p>
+          <p className="mt-1 text-label leading-6 text-danger">행사와 연결된 출처 기록이 영구 삭제되고, 같은 행사는 재수집 제외 목록에 저장됩니다.</p>
           <EventDeleteControl event={{ id, slug, title: text(row, "title") || "행사" }} />
         </section>
       )}

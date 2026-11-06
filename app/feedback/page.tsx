@@ -6,14 +6,11 @@ export const metadata: Metadata = feedbackPageMetadata;
 
 export default function FeedbackPage() {
   return (
-    <main id="main-content" className="mx-auto max-w-3xl px-4 py-12 sm:px-6 sm:py-16">
-      <p className="text-sm font-bold text-primary-text">속초모아를 함께 다듬어 주세요</p>
-      <h1 className="mt-2 text-3xl font-black tracking-tight text-content-strong sm:text-4xl">의견 보내기</h1>
-      <p className="mt-4 max-w-2xl text-base leading-7 text-content-muted">
-        사이트를 사용하며 불편했던 점, 개선하면 좋을 점, 좋았던 점이나 사용평을 자유롭게 보내 주세요.
-        보내주신 의견은 서비스 개선에 참고하겠습니다.
-      </p>
-      <div className="mt-9">
+    // 폼은 한 열, 최대 폭 40rem(.ai/DESIGN.md 제보·의견 폼)
+    <main id="main-content" className="mx-auto max-w-160 px-4 pb-16 pt-8 lg:pt-12">
+      <h1 className="text-title-1 text-content-strong lg:text-title-1-lg">의견 보내기</h1>
+      <p className="mt-2 text-body text-content-muted">사이트를 쓰며 불편했던 점, 개선하면 좋을 점, 좋았던 점을 자유롭게 보내 주세요.</p>
+      <div className="mt-8">
         <SiteFeedbackForm />
       </div>
     </main>

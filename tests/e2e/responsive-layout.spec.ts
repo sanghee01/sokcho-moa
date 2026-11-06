@@ -71,4 +71,29 @@ test.describe("360×740 첫 화면", () => {
     ));
     expect(visibleCards).toBeGreaterThanOrEqual(2);
   });
+
+  // .ai/DESIGN.md 원칙 1: 상세는 검색 유입의 실제 첫 화면이라 360×740 안에서 제목·날짜·장소·주요 버튼을 답해야 한다.
+  test("상세 첫 화면에 제목, 날짜, 장소, 행사 안내 버튼이 보인다", async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== "desktop-chromium", "화면 폭을 직접 지정하므로 프로젝트마다 반복하지 않는다");
+
+    await page.goto("/events/demo-sea-family-festival");
+    const facts = page.getByRole("region", { name: "핵심 정보" });
+    function factValue(label: string) {
+      return facts.locator("dt", { hasText: label }).locator("xpath=following-sibling::dd[1]");
+    }
+    const firstScreen = [
+      page.getByRole("heading", { level: 1 }),
+      factValue("날짜"),
+      factValue("장소"),
+      page.getByRole("link", { name: /행사 안내/ }),
+    ];
+
+    for (const locator of firstScreen) {
+      await expect(locator).toBeVisible();
+      const box = await locator.boundingBox();
+      expect(box).not.toBeNull();
+      expect(box!.y).toBeGreaterThanOrEqual(0);
+      expect(box!.y + box!.height).toBeLessThanOrEqual(740);
+    }
+  });
 });

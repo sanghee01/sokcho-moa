@@ -59,6 +59,17 @@ export function formatShortDateRange(start: string | null, end: string | null, n
   return `${short(startParts)} – ${short(endParts)}`;
 }
 
+/**
+ * 상세 핵심 정보의 신청 기간. 목록과 같은 짧은 표기를 쓰고, 한쪽 날짜만 있으면 "…까지"·"…부터"로 보여 준다.
+ * 신청 기간이 없으면 null이다(화면이 "별도 신청 없음"을 보여 준다).
+ */
+export function formatApplicationPeriod(start: string | null, end: string | null, now = new Date()) {
+  if (start && end) return formatShortDateRange(start, end, now);
+  if (end) return `${formatShortDateRange(end, null, now)}까지`;
+  if (start) return `${formatShortDateRange(start, null, now)}부터`;
+  return null;
+}
+
 export function formatOperatingSchedule(value: string | null) {
   if (!value?.trim()) return "행사 안내 확인";
   return value

@@ -13,8 +13,8 @@ export function AdminLoginForm() {
   const [email, setEmail] = useState("");
 
   return (
-    <form action={formAction} className="mt-8 space-y-5 rounded-3xl bg-white p-6 ring-1 ring-slate-200">
-      <label className="block text-sm font-bold text-slate-700">
+    <form action={formAction} className="mt-8 space-y-5 rounded-card bg-surface p-6 ring-1 ring-line">
+      <label className="block text-label font-bold text-content">
         이메일
         <input
           required
@@ -23,15 +23,15 @@ export function AdminLoginForm() {
           value={email}
           onChange={(event) => setEmail(event.target.value)}
           autoComplete="email"
-          className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2.5"
+          className="mt-1 w-full rounded-control border border-line-input px-3 py-2.5"
         />
       </label>
-      <label className="block text-sm font-bold text-slate-700">
+      <label className="block text-label font-bold text-content">
         비밀번호
-        <input required minLength={8} type="password" name="password" autoComplete="current-password" className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2.5" />
+        <input required minLength={8} type="password" name="password" autoComplete="current-password" className="mt-1 w-full rounded-control border border-line-input px-3 py-2.5" />
       </label>
       {state.error && (
-        <p role="alert" className="rounded-xl bg-rose-50 px-3 py-2.5 text-sm font-bold text-rose-900 ring-1 ring-rose-200">
+        <p role="alert" className="rounded-control bg-danger-subtle px-3 py-2.5 text-label font-bold text-danger ring-1 ring-danger-subtle">
           {state.error}
         </p>
       )}

@@ -8,6 +8,12 @@
   /* layout.tsx의 next/font/local이 --font-pretendard를 html에 붙인다. */
   --font-sans: var(--font-pretendard), -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
 
+  /*
+   * Tailwind 기본 색(teal-700, slate-600, white 등)을 모두 끈다. 원색 class를 쓰면 스타일이 생기지 않아 바로 드러난다
+   * (AGENTS.md 코드 규칙 "역할 토큰만", 2026-11-06 사용자 결정). transparent·current 같은 기본 키워드 class는 그대로 동작한다.
+   */
+  --color-*: initial;
+
   /* 원본 팔레트(primitive) */
   --color-sea-50: #eaf5f8;
   --color-sea-100: #cfe8ef;
@@ -145,6 +151,24 @@ body {
   dd,
   li {
     text-wrap-style: pretty;
+  }
+
+  /*
+   * 상세 페이지의 모바일 하단 행동 바(data-bottom-action-bar) 높이. 맨 위로 버튼이 이만큼 올라가 바와 겹치지 않는다.
+   * 바는 lg에서 본문 안으로 들어가므로 0으로 되돌린다.
+   */
+  :root {
+    --bottom-action-bar-height: 0rem;
+  }
+
+  :root:has([data-bottom-action-bar]) {
+    --bottom-action-bar-height: 4.25rem;
+  }
+
+  @media (width >= 64rem) {
+    :root:has([data-bottom-action-bar]) {
+      --bottom-action-bar-height: 0rem;
+    }
   }
 }
 

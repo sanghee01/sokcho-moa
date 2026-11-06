@@ -1,31 +1,26 @@
+/** 행사 상세 로딩 자리 표시. 실제 상세와 같은 배치(모바일: 포스터 → 제목 → 핵심 정보, lg: 2열)를 따른다. */
 export default function EventLoading() {
+  const block = "rounded-control bg-skeleton";
+
   return (
-    <main id="main-content" className="mx-auto min-h-[70vh] max-w-6xl px-4 py-8 sm:px-6 sm:py-12" aria-busy="true" aria-label="행사 상세 불러오는 중">
-      <div className="animate-pulse" aria-hidden="true">
-        <div className="mb-6 h-5 w-56 rounded-full bg-teal-100" />
-        <div className="grid overflow-hidden rounded-[2rem] bg-white shadow-xl ring-1 ring-teal-900/10 lg:grid-cols-2">
-          <div className="min-h-72 bg-gradient-to-br from-cyan-100 via-slate-100 to-amber-100 lg:min-h-[32rem]" />
-          <div className="flex min-h-80 flex-col justify-center space-y-5 p-6 sm:p-10">
-            <div className="h-7 w-40 rounded-full bg-slate-200" />
-            <div className="h-5 w-32 rounded-full bg-teal-100" />
-            <div className="h-12 w-4/5 rounded-2xl bg-slate-200 sm:h-16" />
-            <div className="h-7 w-full rounded-xl bg-slate-100" />
-            <div className="flex gap-3"><div className="h-12 w-32 rounded-2xl bg-rose-100" /><div className="h-12 w-32 rounded-2xl bg-teal-100" /></div>
+    <main id="main-content" className="mx-auto min-h-[70vh] max-w-6xl pb-28 lg:px-6 lg:pb-16 lg:pt-6" aria-busy="true" aria-label="행사 상세 불러오는 중">
+      <div className="animate-pulse motion-reduce:animate-none lg:grid lg:grid-cols-[minmax(0,1fr)_24rem] lg:items-start lg:gap-x-12" aria-hidden="true">
+        <div className="h-60 bg-skeleton lg:h-128 lg:rounded-card" />
+        <div className="px-4 pt-5 lg:px-0 lg:pt-0">
+          <div className={`${block} h-4 w-32`} />
+          <div className={`${block} mt-3 h-7 w-4/5`} />
+          <div className="mt-5 space-y-4">
+            {[1, 2, 3, 4].map((item) => (
+              <div key={item} className="flex gap-3">
+                <div className={`${block} size-5 shrink-0`} />
+                <div className={`${block} h-5 w-3/4`} />
+              </div>
+            ))}
           </div>
-        </div>
-
-        <section className="mt-10">
-          <div className="mb-4 h-8 w-36 rounded-xl bg-slate-200" />
-          <div className="overflow-hidden rounded-3xl bg-white ring-1 ring-slate-200">
-            {[1, 2, 3, 4, 5].map((item) => <div key={item} className="grid gap-3 border-t border-slate-100 px-5 py-5 first:border-t-0 sm:grid-cols-[10rem_1fr]"><div className="h-5 w-24 rounded bg-slate-200" /><div className="h-5 w-3/4 rounded bg-slate-100" /></div>)}
-          </div>
-        </section>
-
-        <div className="mt-10 grid gap-6 lg:grid-cols-[1fr_0.75fr]">
-          <div className="h-72 rounded-3xl bg-white ring-1 ring-slate-200" />
-          <div className="h-72 rounded-3xl bg-teal-100" />
+          <div className={`${block} mt-6 hidden h-11 w-full lg:block`} />
         </div>
       </div>
+      <span className="sr-only" role="status">행사 정보를 불러오고 있습니다.</span>
     </main>
   );
 }

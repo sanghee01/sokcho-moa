@@ -1,7 +1,9 @@
 "use client";
 
+import { Share2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getButtonClassName } from "@/components/ui/button-styles";
+import { iconProps } from "@/components/ui/icon";
 import { trackAnalyticsEvent } from "@/lib/analytics/events";
 
 type ShareStatus = "idle" | "copied" | "error";
@@ -79,12 +81,14 @@ export function ShareEventButton({ slug }: { slug: string }) {
   const feedback = status === "idle" ? null : feedbackByStatus[status];
 
   return (
-    <div className="relative self-start pb-6">
+    // 상세의 하단 행동 바 안에 있으므로 복사 결과는 버튼 위에 띄운다(아래는 화면 밖이다).
+    <div className="relative shrink-0">
       <button
         type="button"
         onClick={handleShare}
         className={getButtonClassName({ variant: "secondary" })}
       >
+        <Share2 {...iconProps} size={18} />
         공유하기
       </button>
       {feedback && (
@@ -92,7 +96,7 @@ export function ShareEventButton({ slug }: { slug: string }) {
           role="status"
           aria-live="polite"
           aria-atomic="true"
-          className={`absolute left-1/2 top-11 mt-1 -translate-x-1/2 whitespace-nowrap text-caption font-semibold ${feedback.tone}`}
+          className={`absolute bottom-full right-0 mb-2 whitespace-nowrap rounded-badge bg-surface px-2 py-1 text-caption font-semibold shadow-floating ${feedback.tone}`}
         >
           {feedback.message}
         </div>

@@ -70,6 +70,16 @@ describe("방문자 제출 server action", () => {
     expect(mocks.checkPublicSubmissionRateLimit).not.toHaveBeenCalled();
   });
 
+  // 2026-11-06 사용자 결정: 검증 오류는 해당 칸 바로 아래에 보여 준다. 그래서 어느 칸이 틀렸는지도 돌려준다.
+  it.each(actions)("%s: 검증에 실패하면 틀린 칸마다 오류 문장을 돌려준다", async (_, action, form) => {
+    const data = form();
+    data.set("body", "짧음");
+    const result = await action(initialFormActionState, data);
+    expect(result.success).toBe(false);
+    expect(result.fieldErrors?.body).toBeTruthy();
+    expect(result.fieldErrors?.title).toBeUndefined();
+  });
+
   it.each(actions)("%s: 저장 설정이 없으면 요청 제한보다 준비 중 안내를 먼저 한다", async (_, action, form) => {
     mocks.createAdminSupabaseClient.mockReturnValue(null);
     await expect(action(initialFormActionState, form())).resolves.toMatchObject({

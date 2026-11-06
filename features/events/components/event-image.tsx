@@ -34,7 +34,15 @@ export function EventImage({
   }
 
   // 이미지가 없으면 빈 칸 대신 기본 이미지를 둔다(.ai/DESIGN.md Shapes).
-  if (fallback) return <div role="img" aria-label={`${alt} 대표 이미지`}>{fallback}</div>;
+  // 마감된 행사는 기본 포스터도 실제 포스터처럼 흑백으로 보인다(2026-11-06 사용자 결정).
+  // filter는 안쪽 fill 이미지의 기준 상자가 되므로 감싸는 상자를 부모 크기로 채운다.
+  if (fallback) {
+    return (
+      <div role="img" aria-label={`${alt} 대표 이미지`} className={`absolute inset-0 ${muted ? "grayscale" : ""}`}>
+        {fallback}
+      </div>
+    );
+  }
   return (
     <div role="img" aria-label={`${alt} 대표 이미지`} className="absolute inset-0 flex items-center justify-center bg-surface-muted text-content-placeholder">
       <Waves {...iconProps} size={24} />

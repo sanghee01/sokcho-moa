@@ -5,9 +5,9 @@ import { useEventReviewStatus } from "@/features/events/admin/components/use-eve
 import { eventReviewStatusActionLabels, type EventReviewStatus } from "@/features/events/model/review-status";
 
 const buttonTones: [EventReviewStatus, string][] = [
-  ["published", "bg-emerald-700 text-white"],
-  ["pending", "bg-slate-200 text-slate-800"],
-  ["rejected", "bg-rose-100 text-rose-900"],
+  ["published", "bg-success text-on-primary"],
+  ["pending", "bg-surface-muted text-content"],
+  ["rejected", "bg-danger-subtle text-danger"],
 ];
 
 /** 상태 버튼 묶음. 상태는 부모가 useEventReviewStatus로 들고 있고, 여기서는 그리기만 한다. */

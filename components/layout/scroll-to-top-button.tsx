@@ -26,7 +26,7 @@ export function ScrollToTopButton() {
       aria-hidden={!isVisible}
       data-testid="scroll-to-top"
       tabIndex={isVisible ? 0 : -1}
-      className={`fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-4 z-40 inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-surface text-content-strong shadow-floating ring-1 ring-line transition-[opacity,transform,background-color] duration-200 hover:bg-surface-subtle sm:right-6 sm:bottom-6 sm:px-4 ${isVisible ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-3 opacity-0"}`}
+      className={`fixed bottom-[calc(max(1rem,env(safe-area-inset-bottom))+var(--bottom-action-bar-height))] right-4 z-40 inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-surface text-content-strong shadow-floating ring-1 ring-line transition-[opacity,transform,background-color] duration-200 hover:bg-surface-subtle sm:right-6 sm:bottom-[calc(1.5rem+var(--bottom-action-bar-height))] sm:px-4 ${isVisible ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-3 opacity-0"}`}
     >
       <span className="inline-flex w-12 justify-center sm:w-auto"><ArrowUp {...iconProps} /></span>
       <span className="hidden text-label sm:inline">맨 위로</span>

@@ -1,12 +1,34 @@
 import type { z } from "zod";
 
-/** `useActionState`로 쓰는 폼 action의 공통 반환 형태. 성공하면 error가 null이다. */
-export interface FormActionState { error: string | null; success: boolean }
+/**
+ * `useActionState`로 쓰는 폼 action의 공통 반환 형태. 성공하면 error가 null이다.
+ * fieldErrors는 칸(form 필드 이름)별 오류 문장이다. 화면은 해당 칸 바로 아래에 보여 준다(.ai/DESIGN.md 제보·의견 폼).
+ */
+export interface FormActionState {
+  error: string | null;
+  success: boolean;
+  fieldErrors?: Partial<Record<string, string>>;
+}
 
 export const initialFormActionState: FormActionState = { error: null, success: false };
 
 export function actionFailed(message: string): FormActionState {
   return { error: message, success: false };
+}
+
+/** 한 칸에 대한 실패(예: 첨부 사진 형식). 칸 아래와 요약에 같은 문장을 쓴다. */
+export function fieldFailed(field: string, message: string): FormActionState {
+  return { error: message, success: false, fieldErrors: { [field]: message } };
+}
+
+/** zod 검증 실패. 첫 오류 문장과 함께 칸마다 첫 오류 문장을 돌려준다. */
+export function invalidFormInput(error: z.ZodError): FormActionState {
+  const fieldErrors: Partial<Record<string, string>> = {};
+  for (const issue of error.issues) {
+    const field = issue.path[0];
+    if (typeof field === "string" && !fieldErrors[field]) fieldErrors[field] = issue.message;
+  }
+  return { error: firstIssueMessage(error), success: false, fieldErrors };
 }
 
 export function actionSucceeded(): FormActionState {

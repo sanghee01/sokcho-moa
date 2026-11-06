@@ -6,18 +6,18 @@ import { signOutAction } from "@/features/auth/actions";
 export function AdminShell({ email, children }: { email: string; children: ReactNode }) {
   return (
     <main id="main-content" className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-12">
-      <header className="mb-8 flex flex-col gap-4 rounded-3xl bg-slate-950 p-6 text-white sm:flex-row sm:items-center sm:justify-between">
+      <header className="mb-8 flex flex-col gap-4 rounded-card bg-surface-subtle p-5 ring-1 ring-line sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-sm font-bold text-cyan-300">속초모아 운영자</p>
-          <p className="mt-1 text-sm text-slate-300">{email}</p>
+          <p className="text-label font-bold text-primary-text">속초모아 운영자</p>
+          <p className="mt-1 text-label font-normal text-content-subtle">{email}</p>
         </div>
-        <nav className="flex flex-wrap gap-2 text-sm font-bold" aria-label="관리자 메뉴">
-          <TransitionLink href="/admin" prefetch={false} className="rounded-xl bg-white/10 px-3 py-2 hover:bg-white/20">대시보드</TransitionLink>
-          <TransitionLink href="/admin/events/new" prefetch={false} className="rounded-xl bg-teal-600 px-3 py-2 hover:bg-teal-500">행사 등록</TransitionLink>
-          <TransitionLink href="/admin/places/new" prefetch={false} className="rounded-xl bg-white/10 px-3 py-2 hover:bg-white/20">명소 등록</TransitionLink>
-          <TransitionLink href="/admin/import" prefetch={false} className="rounded-xl bg-white/10 px-3 py-2 hover:bg-white/20">후보 JSON</TransitionLink>
+        <nav className="flex flex-wrap gap-2 text-label font-bold" aria-label="관리자 메뉴">
+          <TransitionLink href="/admin" prefetch={false} className="inline-flex min-h-11 items-center rounded-control px-3 text-content hover:bg-surface-muted">대시보드</TransitionLink>
+          <TransitionLink href="/admin/events/new" prefetch={false} className="inline-flex min-h-11 items-center rounded-control bg-primary px-3 text-on-primary hover:bg-primary-hover">행사 등록</TransitionLink>
+          <TransitionLink href="/admin/places/new" prefetch={false} className="inline-flex min-h-11 items-center rounded-control px-3 text-content hover:bg-surface-muted">명소 등록</TransitionLink>
+          <TransitionLink href="/admin/import" prefetch={false} className="inline-flex min-h-11 items-center rounded-control px-3 text-content hover:bg-surface-muted">후보 JSON</TransitionLink>
           <form action={signOutAction}>
-            <FormSubmitButton idleLabel="로그아웃" pendingLabel="로그아웃 중…" className="rounded-xl border border-white/20 px-3 py-2 hover:bg-white/10" />
+            <FormSubmitButton idleLabel="로그아웃" pendingLabel="로그아웃 중…" className="min-h-11 rounded-control border border-line-strong bg-surface px-3 text-content hover:bg-surface-subtle" />
           </form>
         </nav>
       </header>

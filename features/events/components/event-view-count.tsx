@@ -4,8 +4,8 @@ export function EventViewCount({ value, className = "" }: { value?: number; clas
   const count = formatViewCount(value);
 
   return (
-    <span className={`inline-flex shrink-0 items-center whitespace-nowrap font-normal tabular-nums text-slate-500 ${className}`}>
-      조회 {count}
+    <span className={`inline-flex shrink-0 items-center whitespace-nowrap tabular-nums ${className}`}>
+      {count}회
     </span>
   );
 }
