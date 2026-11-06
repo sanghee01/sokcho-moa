@@ -73,7 +73,8 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
         <a href="#main-content" className="fixed left-3 top-3 z-60 -translate-y-24 rounded-control bg-surface px-4 py-3 text-label font-semibold text-primary-text shadow-floating focus:translate-y-0">
           본문으로 건너뛰기
         </a>
-        <header className="border-b border-line bg-surface">
+        {/* 어느 페이지든 내려도 헤더가 화면 위에 붙어 있다(2026-11-07 사용자 결정). 높이는 globals.css의 --site-header-height와 맞춘다. */}
+        <header className="sticky top-0 z-30 border-b border-line bg-surface">
           <div className="mx-auto flex h-16 max-w-6xl items-center px-4 sm:px-6 lg:h-18">
             <Link href="/" className="block shrink-0 rounded-control">
               <Image

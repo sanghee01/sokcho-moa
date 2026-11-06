@@ -128,8 +128,23 @@
   box-sizing: border-box;
 }
 
+/*
+ * 고정 헤더 높이(layout.tsx의 h-16, lg:h-18). 주소의 #으로 이동하거나 초점이 옮겨 갈 때
+ * 대상이 헤더 밑에 숨지 않도록 그만큼(+16px) 위를 비워 둔다(2026-11-07 헤더 고정).
+ */
+:root {
+  --site-header-height: 4rem;
+}
+
+@media (width >= 64rem) {
+  :root {
+    --site-header-height: 4.5rem;
+  }
+}
+
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: calc(var(--site-header-height) + 1rem);
 }
 
 body {

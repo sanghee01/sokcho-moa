@@ -48,6 +48,21 @@ for (const { name, options } of viewports) {
         expect(widths.document).toBeLessThanOrEqual(widths.viewport + 1);
         expect(widths.body).toBeLessThanOrEqual(widths.viewport + 1);
       });
+
+      // 2026-11-07 사용자 결정: 어느 페이지든 내려도 헤더(로고)가 화면 위에 남아 있어 홈으로 바로 갈 수 있다.
+      test(`${path} 아래로 내려도 헤더가 화면 맨 위에 보인다`, async ({ page }, testInfo) => {
+        test.skip(testInfo.project.name !== "desktop-chromium", "화면 폭을 직접 지정하므로 프로젝트마다 반복하지 않는다");
+
+        await page.goto(path);
+        await expect(page.getByRole("heading", { level: 1 }).first()).toBeVisible();
+        await page.evaluate(() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "instant" }));
+
+        const header = page.getByRole("banner");
+        await expect(header.getByRole("link", { name: "속초모아" })).toBeInViewport();
+        const box = await header.boundingBox();
+        expect(box).not.toBeNull();
+        expect(Math.round(box!.y)).toBe(0);
+      });
     }
   });
 }

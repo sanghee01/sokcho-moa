@@ -157,7 +157,7 @@ export default async function EventDetailPage({ params }: PageProps<"/events/[sl
           </div>
         </div>
 
-        <div className="px-4 pt-5 lg:sticky lg:top-6 lg:col-start-2 lg:row-span-3 lg:row-start-1 lg:px-0 lg:pt-0">
+        <div className="px-4 pt-5 lg:sticky lg:top-24 lg:col-start-2 lg:row-span-3 lg:row-start-1 lg:px-0 lg:pt-0">
           {/* 분야 글자와 배지 묶음 사이는 12px로 띄운다(8px은 붙어 보였음, 2026-11-07 사용자 결정). */}
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
             {/* 참여 대상이 비어 있으면(수집 데이터) 분야만 쓴다. DB는 빈 값을 허용하고 관리자 폼만 막는다. */}
