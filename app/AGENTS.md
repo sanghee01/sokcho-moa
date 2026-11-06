@@ -9,7 +9,7 @@
 - 페이지에서 Supabase client를 직접 만들지 않고 `features/*/queries.ts`의 조회 함수를 부릅니다.
 - `params`·`searchParams`는 zod나 `features/*/model`의 parse 함수로 검증한 뒤 씁니다(예: `parseEventFilters`).
 - page props 타입은 Next.js 전역 helper `PageProps<"/route">`를 씁니다. 경로 문자열에서 `params` 타입이 만들어집니다.
-- 여러 페이지가 같은 윗부분(탭·배너)을 쓰면 route group의 공통 `layout.tsx`에 둡니다. 탭을 바꿀 때 페이지 전체가 다시 그려지지 않습니다(예: `app/(event-browse)/layout.tsx`).
+- 여러 페이지가 같은 윗부분(배너 등)을 쓰면 route group의 공통 `layout.tsx`에 둡니다. 탭을 바꿀 때 페이지 전체가 다시 그려지지 않습니다(예: `app/(event-browse)/layout.tsx`).
 - `export default`는 Next.js가 요구하는 파일(page, layout, loading, error, not-found, route 메타 파일)에만 씁니다. 같은 폴더의 보조 파일은 named export입니다.
 
 ## 관리자 페이지
