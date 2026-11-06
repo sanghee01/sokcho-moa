@@ -182,7 +182,10 @@ export function deriveApplicationState(
   return "open";
 }
 
-export function deriveEventUnavailableReason(event: Event, now = new Date()): EventUnavailableReason | null {
+export function deriveEventUnavailableReason(
+  event: Pick<Event, "eventStartAt" | "eventEndAt" | "applicationStartAt" | "applicationEndAt" | "applicationUrl">,
+  now = new Date(),
+): EventUnavailableReason | null {
   if (deriveApplicationState(event, now) === "closed") return "application_closed";
   if (deriveEventState(event, now) === "ended") return "event_ended";
   return null;
@@ -277,6 +280,32 @@ export function getRelatedEvents(current: Event, events: Event[], limit = 4, now
 }
 
 /**
+ * 홈 위쪽 "지금 많이 보는 행사". 참여할 수 있는 행사(종료·신청 마감 제외) 중 조회수가 1 이상인 것을
+ * 조회수가 많은 순서로, 같으면 먼저 시작하는 순서로 고른다.
+ */
+export function selectPopularEvents(events: Event[], now = new Date(), limit = 3): Event[] {
+  return events
+    .filter((event) => (event.viewCount ?? 0) > 0 && !isEventClosedForDiscovery(event, now))
+    .sort((a, b) => (b.viewCount ?? 0) - (a.viewCount ?? 0) || a.eventStartAt.localeCompare(b.eventStartAt))
+    .slice(0, limit);
+}
+
+/** 목록의 기본 정렬. 2026-11-06 게시순에서 행사일순(날짜 묶음)으로 바꿨다(.ai/DESIGN.md). */
+export const DEFAULT_EVENT_SORT = "latest" satisfies NonNullable<EventFilters["sort"]>;
+
+const RECENTLY_PUBLISHED_MS = 7 * 24 * 60 * 60 * 1_000;
+
+/**
+ * 속초모아에 공개된 지 7일이 지나지 않은 행사인지. 행사 날짜가 아니라 published_at(사이트에 올라온 시각)을 본다.
+ * 수집이 늦어 오래전에 시작한 행사라도, 다시 찾아온 사용자에게는 처음 보는 행사이기 때문이다.
+ */
+export function isRecentlyPublished(event: Pick<Event, "publishedAt">, now = new Date()) {
+  if (!event.publishedAt) return false;
+  const elapsed = now.getTime() - new Date(event.publishedAt).getTime();
+  return elapsed >= 0 && elapsed < RECENTLY_PUBLISHED_MS;
+}
+
+/**
  * 목록 정렬은 필터 적용 뒤에 수행한다. 조회수가 없는 기존 행사는 0으로 취급한다.
  */
 export function sortEvents(events: Event[], sort: EventFilters["sort"] = "published", now = new Date()): Event[] {
@@ -361,7 +390,7 @@ function eventScheduleRanges(event: Event) {
   });
 }
 
-function getKoreanParts(date: Date) {
+export function getKoreanParts(date: Date) {
   const parts = new Intl.DateTimeFormat("en-CA", {
     timeZone: "Asia/Seoul",
     year: "numeric",

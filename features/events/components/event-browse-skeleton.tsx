@@ -1,46 +1,16 @@
-import { EventHeroFrame } from "@/features/events/components/event-hero-frame";
+import { eventCardGridClassName } from "@/features/events/components/event-card";
 
-const skeletonCards = Array.from({ length: 6 }, (_, index) => index);
-const detailRows = Array.from({ length: 4 }, (_, index) => index);
-const sortOptions = ["게시순", "행사일순", "마감일순", "조회순"];
+const skeletonCards = Array.from({ length: 8 }, (_, index) => index);
 
+// 분야 탭과 배너는 공통 틀(layout)에 있어 로딩 중에도 그대로 남는다. 여기서는 검색창과 목록 자리만 그린다.
+// 실제 포스터 카드(EventCard)와 같은 자리를 차지해, 데이터가 들어와도 화면이 밀리지 않게 한다.
 function EventCardSkeleton() {
   return (
-    <article
-      data-event-card-skeleton
-      className="h-full overflow-hidden rounded-3xl border border-teal-900/10 bg-white shadow-sm"
-    >
-      <div className="flex h-full flex-col">
-        <div className="relative aspect-[16/9] overflow-hidden bg-gradient-to-br from-cyan-100 via-slate-100 to-amber-100">
-          <div className="absolute left-3 top-3 flex flex-wrap gap-2">
-            <span className="h-6 w-14 rounded-full bg-white/90" />
-            <span className="h-6 w-16 rounded-full bg-white/75" />
-          </div>
-        </div>
-
-        <div className="flex flex-1 flex-col gap-3 p-5">
-          <div className="flex flex-wrap items-center gap-1.5">
-            <span className="h-7 w-14 rounded-full bg-teal-200" />
-            <span className="h-7 w-16 rounded-full bg-cyan-100" />
-          </div>
-          <div className="space-y-2">
-            <div className="h-6 w-5/6 rounded-lg bg-slate-200" />
-            <div className="h-6 w-2/3 rounded-lg bg-slate-200" />
-          </div>
-          <dl className="grid gap-2 text-sm">
-            {detailRows.map((row) => (
-              <div key={row} className="flex items-center gap-2">
-                <dt className="h-4 w-12 rounded bg-slate-200" />
-                <dd className="h-4 flex-1 rounded bg-slate-100" />
-              </div>
-            ))}
-          </dl>
-          <div className="mt-auto border-t border-slate-100 pt-3">
-            <div className="h-3 w-1/2 rounded bg-slate-100" />
-          </div>
-        </div>
-      </div>
-    </article>
+    <div data-event-card-skeleton className="min-w-0">
+      <div className="aspect-4/5 rounded-card bg-surface-muted" />
+      <div className="mt-2.5 h-5 w-5/6 rounded-badge bg-skeleton" />
+      <div className="mt-1.5 h-3.5 w-1/2 rounded-badge bg-surface-muted" />
+    </div>
   );
 }
 
@@ -52,46 +22,18 @@ export function EventBrowseSkeleton() {
       aria-busy="true"
       aria-label="행사 목록 불러오는 중"
     >
-      <section aria-hidden="true" className="overflow-hidden bg-cyan-50">
-        <EventHeroFrame priority>
-          <div className="-translate-y-[2%] animate-pulse space-y-[clamp(0.6rem,1.15vw,1.4rem)] text-center motion-reduce:animate-none">
-            <div className="mx-auto h-[clamp(1.6rem,5.3vw,5.15rem)] w-[min(78vw,50rem)] rounded-2xl bg-white/65 shadow-sm" />
-            <div className="mx-auto h-[clamp(0.72rem,2.1vw,1.75rem)] w-[min(62vw,32rem)] rounded-lg bg-white/55" />
+      <div aria-hidden="true" className="mx-auto max-w-6xl animate-pulse px-4 pb-8 pt-4 motion-reduce:animate-none sm:px-6 lg:pt-8">
+        <div className="min-h-12 w-full rounded-full border border-line-input bg-surface lg:mx-auto lg:max-w-xl" />
+
+        <div className="mt-6 lg:mt-10">
+          <div className="mb-3 flex items-center justify-between gap-4">
+            <div className="h-7 w-44 rounded-badge bg-skeleton" />
+            <div className="h-5 w-28 rounded-badge bg-surface-muted" />
           </div>
-        </EventHeroFrame>
-      </section>
-
-      <div className="mx-auto max-w-6xl space-y-9 px-4 py-8 sm:px-6 sm:py-12">
-        <section aria-hidden="true" className="animate-pulse motion-reduce:animate-none">
-          <div className="mb-5 grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(18rem,23rem)_auto] xl:items-center xl:gap-5">
-            <div className="flex min-w-0 flex-wrap items-center gap-3">
-              <div className="h-8 w-40 rounded-xl bg-slate-200 sm:h-9 sm:w-48" />
-              <div className="inline-flex shrink-0 items-center border-b border-slate-300">
-                <div className="inline-flex min-h-11 items-center border-b-2 border-teal-200 px-3 text-base font-black text-transparent">진행중</div>
-                <div className="inline-flex min-h-11 items-center border-b-2 border-slate-200 px-3 text-base font-black text-transparent">마감</div>
-              </div>
-            </div>
-
-            <div className="relative min-h-10 w-full rounded-xl border border-slate-300 bg-white sm:min-h-11">
-              <div className="absolute bottom-1 right-1 top-1 w-14 rounded-lg bg-teal-100" />
-            </div>
-
-            <div className="grid w-full grid-cols-4 gap-1 rounded-xl border border-slate-200 bg-white p-1 shadow-sm sm:inline-flex sm:w-fit">
-              {sortOptions.map((option) => (
-                <div
-                  key={option}
-                  className="inline-flex min-h-10 items-center justify-center rounded-lg bg-slate-100 px-1 text-sm font-bold text-transparent sm:px-3"
-                >
-                  {option}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+          <div className={eventCardGridClassName}>
             {skeletonCards.map((card) => <EventCardSkeleton key={card} />)}
           </div>
-        </section>
+        </div>
       </div>
 
       <span className="sr-only" role="status">행사 목록을 불러오고 있습니다.</span>

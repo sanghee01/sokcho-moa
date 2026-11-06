@@ -1,38 +1,114 @@
 @import "tailwindcss";
 
+/*
+ * 디자인 토큰의 값 원본이다. 이름·역할·사용 규칙은 .ai/DESIGN.md에 있다.
+ * 컴포넌트는 원본 팔레트(sea-*, gray-*)를 직접 쓰지 않고 아래 역할 토큰만 쓴다.
+ */
 @theme static inline {
-  --font-sans: Arial, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  /* layout.tsx의 next/font/local이 --font-pretendard를 html에 붙인다. */
+  --font-sans: var(--font-pretendard), -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
 
-  --color-brand-50: var(--color-teal-50);
-  --color-brand-100: var(--color-teal-100);
-  --color-brand-200: var(--color-teal-200);
-  --color-brand-300: var(--color-teal-300);
-  --color-brand-400: var(--color-teal-400);
-  --color-brand-500: var(--color-teal-500);
-  --color-brand-600: var(--color-teal-600);
-  --color-brand-700: var(--color-teal-700);
-  --color-brand-800: var(--color-teal-800);
-  --color-brand-900: var(--color-teal-900);
-  --color-brand-950: var(--color-teal-950);
+  /* 원본 팔레트(primitive) */
+  --color-sea-50: #eaf5f8;
+  --color-sea-100: #cfe8ef;
+  --color-sea-200: #a3d2df;
+  --color-sea-300: #6db5ca;
+  --color-sea-400: #3a93ae;
+  --color-sea-500: #157a98;
+  --color-sea-600: #0b6b88;
+  --color-sea-700: #0a5870;
+  --color-sea-800: #0b4659;
+  --color-sea-900: #0a3443;
+  --color-sea-950: #072630;
 
-  --color-surface: var(--color-white);
-  --color-surface-subtle: var(--color-slate-50);
-  --color-surface-muted: var(--color-slate-100);
-  --color-skeleton: var(--color-slate-200);
-  --color-content-strong: var(--color-slate-950);
-  --color-content: var(--color-slate-700);
-  --color-content-muted: var(--color-slate-600);
-  --color-content-subtle: var(--color-slate-500);
-  --color-content-placeholder: var(--color-slate-400);
-  --color-line: var(--color-slate-200);
-  --color-line-strong: var(--color-slate-300);
-}
+  --color-gray-50: #f6f8f9;
+  --color-gray-100: #eef1f3;
+  --color-gray-200: #e1e5e8;
+  --color-gray-300: #c9cfd4;
+  --color-gray-400: #8a949d;
+  --color-gray-500: #626c76;
+  --color-gray-600: #4b545d;
+  --color-gray-700: #3d454c;
+  --color-gray-800: #2a3036;
+  --color-gray-900: #181c20;
 
-:root {
-  --app-page-background: #f4fbfc;
-  --app-page-text: #16333b;
-  --app-focus-ring: #087f8c;
-  --app-selection: #bcecf0;
+  /* 역할 토큰(semantic) */
+  --color-surface: #ffffff;
+  --color-surface-subtle: var(--color-gray-50);
+  --color-surface-muted: var(--color-gray-100);
+  --color-skeleton: var(--color-gray-200);
+
+  --color-content-strong: var(--color-gray-900);
+  --color-content: var(--color-gray-800);
+  --color-content-muted: var(--color-gray-600);
+  --color-content-subtle: var(--color-gray-500);
+  --color-content-placeholder: var(--color-gray-500);
+
+  --color-line: var(--color-gray-200);
+  --color-line-strong: var(--color-gray-300);
+  --color-line-input: var(--color-gray-400);
+
+  --color-primary: var(--color-sea-600);
+  --color-primary-hover: var(--color-sea-700);
+  --color-primary-subtle: var(--color-sea-50);
+  --color-primary-text: var(--color-sea-700);
+  --color-on-primary: #ffffff;
+
+  --color-danger: #b42318;
+  --color-danger-subtle: #fdecea;
+  --color-success: #2f6b1f;
+  --color-success-subtle: #eaf4e2;
+
+  /* 사진 위에 얹는 글자와 어둡게 덮는 막(배너의 흐린 포스터 배경 등). */
+  --color-on-image: #ffffff;
+  --color-image-scrim: rgb(10 26 34 / 0.55);
+
+  /* 글자 크기 단계. 모바일 값이 기본이고, -lg는 lg(1024px) 이상에서 쓴다. */
+  --text-display: 1.625rem;
+  --text-display--line-height: 2.125rem;
+  --text-display--font-weight: 700;
+  --text-display--letter-spacing: -0.02em;
+  --text-display-lg: 2.125rem;
+  --text-display-lg--line-height: 2.625rem;
+  --text-display-lg--font-weight: 700;
+  --text-display-lg--letter-spacing: -0.02em;
+
+  --text-title-1: 1.375rem;
+  --text-title-1--line-height: 1.875rem;
+  --text-title-1--font-weight: 700;
+  --text-title-1--letter-spacing: -0.02em;
+  --text-title-1-lg: 1.875rem;
+  --text-title-1-lg--line-height: 2.375rem;
+  --text-title-1-lg--font-weight: 700;
+  --text-title-1-lg--letter-spacing: -0.02em;
+
+  --text-title-2: 1.1875rem;
+  --text-title-2--line-height: 1.6875rem;
+  --text-title-2--font-weight: 600;
+  --text-title-2--letter-spacing: -0.02em;
+
+  --text-title-3: 1.0625rem;
+  --text-title-3--line-height: 1.5rem;
+  --text-title-3--font-weight: 600;
+  --text-title-3--letter-spacing: -0.02em;
+
+  --text-body: 1rem;
+  --text-body--line-height: 1.625rem;
+
+  --text-label: 0.875rem;
+  --text-label--line-height: 1.25rem;
+  --text-label--font-weight: 500;
+
+  --text-caption: 0.8125rem;
+  --text-caption--line-height: 1.125rem;
+
+  /* 모서리. Tailwind 기본 rounded-sm/md/lg와 겹치지 않게 역할 이름으로 둔다. */
+  --radius-badge: 0.375rem;
+  --radius-control: 0.625rem;
+  --radius-card: 0.875rem;
+
+  /* 화면 위에 떠 있는 요소(하단 고정 바, 맨 위로 버튼, 시트)에만 쓴다. */
+  --shadow-floating: 0 -1px 0 0 rgb(24 28 32 / 0.06), 0 8px 24px -4px rgb(24 28 32 / 0.16);
 }
 
 * {
@@ -45,11 +121,31 @@ html {
 
 body {
   margin: 0;
-  background:
-    radial-gradient(circle at top right, rgba(150, 225, 231, 0.38), transparent 32rem),
-    var(--app-page-background);
-  color: var(--app-page-text);
+  background: var(--color-surface);
+  color: var(--color-content);
   font-family: var(--font-sans);
+  /* 한글은 기본값이면 음절 단위로 줄이 바뀐다("생 / 활을"). 어절 단위로 바꾸고, 화면보다 긴 어절만 끊는다. */
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+/*
+ * 줄 모양 기본값. base layer에 두어 truncate·whitespace-nowrap 같은 유틸리티 class가 이긴다.
+ * text-wrap(축약형)은 줄바꿈 여부까지 바꾸므로 text-wrap-style만 쓴다.
+ */
+@layer base {
+  h1,
+  h2,
+  h3,
+  h4 {
+    text-wrap-style: balance;
+  }
+
+  p,
+  dd,
+  li {
+    text-wrap-style: pretty;
+  }
 }
 
 a,
@@ -57,24 +153,18 @@ button,
 input,
 textarea,
 select {
-  outline-color: var(--app-focus-ring);
+  outline-color: var(--color-primary);
   outline-offset: 3px;
 }
 
 :focus-visible {
-  outline: 3px solid var(--app-focus-ring);
+  outline: 3px solid var(--color-primary);
   outline-offset: 3px;
 }
 
 .event-form :where(input, textarea, select):focus-visible {
   outline: revert;
   outline-offset: revert;
-}
-
-p,
-dd,
-a {
-  overflow-wrap: anywhere;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -93,5 +183,5 @@ a {
 }
 
 ::selection {
-  background: var(--app-selection);
+  background: var(--color-sea-100);
 }

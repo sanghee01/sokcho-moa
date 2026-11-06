@@ -7,7 +7,7 @@ export const metadata: Metadata = reportPageMetadata;
 export default function ReportPage() {
   return (
     <main id="main-content" className="mx-auto max-w-3xl px-4 py-12 sm:px-6 sm:py-16">
-      <p className="text-sm font-bold text-brand-700">속초의 소식을 알려주세요</p>
+      <p className="text-sm font-bold text-primary-text">속초의 소식을 알려주세요</p>
       <h1 className="mt-2 text-3xl font-black tracking-tight text-content-strong sm:text-4xl">행사 제보하기</h1>
       <p className="mt-4 max-w-2xl text-base leading-7 text-content-muted">
         사이트에 없는 행사·축제·프로그램 등을 제보해 주세요. 검토 후 반영 가능하다면 반영하겠습니다.

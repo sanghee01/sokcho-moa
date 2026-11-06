@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" role="img" aria-label="샘플 이미지: 아바이마을 이야기 산책">
+  <rect width="1000" height="1000" fill="#eaf4e2"/>
+  <rect x="120" y="420" width="220" height="300" fill="#2f6b1f"/>
+  <rect x="380" y="360" width="260" height="360" fill="#3b7a2a"/>
+  <rect x="680" y="440" width="200" height="280" fill="#2f6b1f"/>
+  <path d="M100 720 H900 V760 H100Z" fill="#0b6b88"/>
+  <path d="M0 800 C 250 760, 500 840, 1000 790 V1000 H0Z" fill="#a3d2df"/>
+  <text x="80" y="180" fill="#173d10" font-family="sans-serif" font-size="80" font-weight="800">아바이마을</text>
+  <text x="80" y="280" fill="#173d10" font-family="sans-serif" font-size="80" font-weight="800">이야기 산책</text>
+  <text x="80" y="930" fill="#0a3443" font-family="sans-serif" font-size="40" font-weight="600">샘플 이미지 (정사각형)</text>
+</svg>

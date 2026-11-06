@@ -1,48 +1,24 @@
 "use client";
 
-import { applicationStateLabels, eventStateLabels } from "@/features/events/model/format";
-import { deriveApplicationState, deriveEventState } from "@/features/events/model/event";
+import { Badge } from "@/components/ui/badge";
+import { selectEventBadges } from "@/features/events/model/badges";
+import { deriveApplicationState } from "@/features/events/model/event";
+import { applicationStateLabels } from "@/features/events/model/format";
 import type { EventStatusFields } from "@/features/events/model/status-fields";
 import { useCurrentTime } from "@/features/events/components/use-current-time";
 
-const tone = {
-  ongoing: "bg-teal-700 text-white",
-  upcoming: "bg-sky-100 text-sky-900",
-  ended: "bg-slate-200 text-slate-700",
-  open: "bg-emerald-100 text-emerald-900",
-  closing_today: "bg-rose-100 text-rose-900",
-  closed: "bg-slate-200 text-slate-700",
-  not_applicable: "bg-white text-slate-600 ring-1 ring-slate-200",
-} as const;
-
-export function LiveStatusBadges({
-  status,
-  renderedAt,
-  compact = false,
-}: {
-  status: EventStatusFields;
-  renderedAt: string;
-  compact?: boolean;
-}) {
+/**
+ * 상태 배지를 방문자의 현재 시각으로 다시 고른다. 고르는 규칙은 selectEventBadges(.ai/DESIGN.md "행사 상태의 색")이고,
+ * 이 컴포넌트는 시각만 바꿔 준다. 캐시된 페이지가 마감 뒤에도 "사전 신청"을 보여 주지 않게 하려는 것이다.
+ */
+export function LiveStatusBadges({ status, renderedAt }: { status: EventStatusFields; renderedAt: string }) {
   const now = useCurrentTime(renderedAt);
-  const eventState = deriveEventState(status, now);
-  const applicationState = deriveApplicationState(status, now);
-  const size = compact ? "text-xs" : "text-sm";
+  const badges = selectEventBadges(status, now);
+  if (badges.length === 0) return null;
+
   return (
-    <div className="flex flex-wrap gap-2" aria-label="행사 상태">
-      <span className={`rounded-full px-2.5 py-1 font-bold ${size} ${tone[eventState]}`}>
-        {eventStateLabels[eventState]}
-      </span>
-      {applicationState !== "upcoming" && (
-        <span className={`rounded-full px-2.5 py-1 font-bold ${size} ${tone[applicationState]}`}>
-          {applicationStateLabels[applicationState]}
-        </span>
-      )}
-      {status.isFree && (
-        <span className={`rounded-full bg-amber-100 px-2.5 py-1 font-bold text-amber-950 ${size}`}>
-          무료
-        </span>
-      )}
+    <div className="flex flex-wrap gap-1" aria-label="행사 상태">
+      {badges.map((badge) => <Badge key={badge.label} tone={badge.tone}>{badge.label}</Badge>)}
     </div>
   );
 }

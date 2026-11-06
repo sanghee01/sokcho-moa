@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1414" role="img" aria-label="샘플 포스터: 청초호 노을 음악회">
+  <rect width="1000" height="1414" fill="#2a2140"/>
+  <circle cx="500" cy="760" r="260" fill="#f08a5d"/>
+  <rect y="780" width="1000" height="634" fill="#3a2f5c"/>
+  <path d="M0 860 H1000 M120 940 H880 M240 1020 H760" stroke="#f08a5d" stroke-width="10" stroke-linecap="round"/>
+  <text x="80" y="200" fill="#f6c86b" font-family="sans-serif" font-size="56" font-weight="700">11월의 저녁</text>
+  <text x="80" y="340" fill="#ffffff" font-family="sans-serif" font-size="112" font-weight="800">청초호</text>
+  <text x="80" y="470" fill="#ffffff" font-family="sans-serif" font-size="112" font-weight="800">노을 음악회</text>
+  <text x="80" y="1300" fill="#cfc6e6" font-family="sans-serif" font-size="44" font-weight="600">청초호수공원 · 샘플 포스터</text>
+</svg>

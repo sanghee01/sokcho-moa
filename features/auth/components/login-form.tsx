@@ -38,7 +38,7 @@ export function AdminLoginForm() {
       <FormSubmitButton
         idleLabel="로그인"
         pendingLabel="로그인 중…"
-        className={getButtonClassName({ variant: "primary", size: "medium", width: "full" })}
+        className={getButtonClassName({ variant: "primary", width: "full" })}
       />
     </form>
   );

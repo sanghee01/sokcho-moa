@@ -210,15 +210,16 @@ test("목록과 상세는 데스크톱·모바일에서 가로로 넘치지 않�
   ]);
 });
 
-test("행사 카드에서 주제와 참여 대상을 라벨 없이 배지로 표시한다", async ({ page }) => {
+// 2026-11-06 사용자 결정: 참여 대상(가족·성인·누구나)은 필터에도 없고 판단에 도움이 적어 카드에서 빼고 상세에만 둔다.
+// 분야는 "전체" 탭에서만 포스터 위에 라벨 없이 보여 준다.
+test("행사 카드는 전체 목록에서 포스터 위에 분야를 라벨 없이 보여 준다", async ({ page }) => {
   await page.goto("/");
-  const familyCard = page.getByRole("article").filter({ hasText: "[샘플] 바다빛 가족 문화축제" });
-  const taxonomy = familyCard.getByLabel("행사 주제와 참여 대상");
+  const familyCard = page.getByRole("region", { name: "행사 목록" }).getByRole("article").filter({ hasText: "[샘플] 바다빛 가족 문화축제" });
+  await expect(familyCard.getByLabel("행사 분야")).toHaveText("축제");
 
-  await expect(taxonomy).toContainText("축제");
-  await expect(taxonomy).toContainText("가족");
-  await expect(taxonomy.getByText("주제", { exact: true })).toHaveCount(0);
-  await expect(taxonomy.getByText("대상", { exact: true })).toHaveCount(0);
+  await page.goto("/topics/festival");
+  const topicCard = page.getByRole("region", { name: "행사 목록" }).getByRole("article").filter({ hasText: "[샘플] 바다빛 가족 문화축제" });
+  await expect(topicCard.getByLabel("행사 분야")).toHaveCount(0);
 });
 
 test("목록에서 검색하고 상세·원문·외부 지도 링크·주변 명소를 확인한다", async ({ context, page }) => {
@@ -226,11 +227,13 @@ test("목록에서 검색하고 상세·원문·외부 지도 링크·주변 명
 
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1, name: "요즘 속초에서 뭐하지?", exact: true })).toBeVisible();
-  await expect(page.getByRole("heading", { name: /행사 목록 7개/ })).toBeVisible();
+  // 2026-11-06 사용자 결정으로 화면의 행사 개수 표시를 뺐다. 목록 구역 안의 카드 수로 확인한다.
+  const results = page.getByRole("region", { name: "행사 목록" });
+  await expect(results.getByRole("article")).toHaveCount(7);
   await page.getByLabel("행사명, 장소, 기관 검색").fill("바다빛");
   await page.getByRole("button", { name: "검색", exact: true }).click();
   await expect(page).toHaveURL(/q=/);
-  await expect(page.getByRole("heading", { name: /행사 목록 1개/ })).toBeVisible();
+  await expect(results.getByRole("article")).toHaveCount(1);
 
   await page.getByRole("link", { name: /바다빛 가족 문화축제/ }).click();
   await expect(page).toHaveURL(/\/events\/demo-sea-family-festival$/);
@@ -274,7 +277,7 @@ test("검색 응답이 늦어도 제출 즉시 진행 상태를 알린다", asyn
   releaseRequest();
   await submitPromise;
   await expect(page).toHaveURL(/q=/);
-  await expect(page.getByRole("heading", { name: /행사 목록 1개/ })).toBeVisible();
+  await expect(page.getByRole("region", { name: "행사 목록" }).getByRole("article")).toHaveCount(1);
 });
 
 test("진행중과 마감 탭으로 참여 가능한 행사와 지난 기록을 분리한다", async ({ page }) => {
@@ -284,44 +287,40 @@ test("진행중과 마감 탭으로 참여 가능한 행사와 지난 기록을 
   const closedTab = statusTabs.getByRole("link", { name: "마감", exact: true });
 
   await expect(activeTab).toHaveAttribute("aria-current", "page");
-  await expect(page.getByRole("heading", { name: "행사 목록 7개", exact: true })).toBeVisible();
+  await expect(page.getByRole("region", { name: "행사 목록" }).getByRole("article")).toHaveCount(7);
   await expect(page.getByRole("link", { name: /지난 계절 문화 프로그램/ })).toHaveCount(0);
 
   await closedTab.click();
 
   await expect(page).toHaveURL(/status=closed/);
   await expect(closedTab).toHaveAttribute("aria-current", "page");
-  await expect(page.getByRole("heading", { name: "마감 행사 1개", exact: true })).toBeVisible();
+  await expect(page.getByRole("region", { name: "마감 행사" }).getByRole("article")).toHaveCount(1);
   const endedEvent = page.getByRole("link", { name: /지난 계절 문화 프로그램/ });
   await expect(endedEvent).toBeVisible();
   await expect(endedEvent.getByText("종료된 행사예요", { exact: true })).toBeVisible();
   await expect(endedEvent.getByText("신청이 마감된 행사예요", { exact: true })).toHaveCount(0);
-  await expect(page.getByRole("link", { name: /바다빛 가족 문화축제/ })).toHaveCount(0);
+  // 마감 탭에서도 위쪽 배너(많이 보는 행사)는 보이므로, 진행 중 행사가 빠졌는지는 마감 행사 목록 안에서 확인한다(2026-11-06).
+  await expect(page.getByRole("region", { name: "마감 행사" }).getByRole("link", { name: /바다빛 가족 문화축제/ })).toHaveCount(0);
 });
 
-test("행사 목록에서 게시·행사일·마감일·조회 기준으로 정렬할 수 있다", async ({ page }) => {
+// 2026-11-06 사용자 결정: 기본 정렬을 게시순에서 행사일순으로 바꿨다.
+// 새로 올라온 행사는 카드의 NEW 표시로 알리므로 "새로 올라온 순"·"마감일순" 정렬과 바로가기 칩은 모두 뺐다.
+// 마감일순 정렬 자체는 unit test(filters.test.ts)가 지키고, 예전 주소(sort=deadline)도 계속 동작한다.
+test("행사 목록은 행사일순이 기본이고 조회순으로 바꿀 수 있다", async ({ page }) => {
   await page.goto("/");
+  const results = page.getByRole("region", { name: "행사 목록" });
   const sort = page.getByRole("navigation", { name: "행사 정렬" });
-  await expect(sort.getByRole("link")).toHaveText(["게시순", "행사일순", "마감일순", "조회순"]);
-  await expect(sort.getByRole("link", { name: "게시순" })).toHaveAttribute("aria-current", "page");
-
-  await sort.getByRole("link", { name: "행사일순" }).click();
-  await expect(page).toHaveURL(/sort=latest/);
+  await expect(sort.getByRole("link")).toHaveText(["행사일순", "조회순"]);
   await expect(sort.getByRole("link", { name: "행사일순" })).toHaveAttribute("aria-current", "page");
-  await expect(page.getByRole("article").first()).toContainText("아바이마을 이야기 산책");
-
-  await sort.getByRole("link", { name: "마감일순" }).click();
-  await expect(page).toHaveURL(/sort=deadline/);
-  await expect(sort.getByRole("link", { name: "마감일순" })).toHaveAttribute("aria-current", "page");
-  await expect(page.getByRole("article").first()).toContainText("청소년 미디어 창작 교실");
+  await expect(results.getByRole("article").first()).toContainText("아바이마을 이야기 산책");
 
   await sort.getByRole("link", { name: "조회순" }).click();
   await expect(page).toHaveURL(/sort=views/);
   await expect(sort.getByRole("link", { name: "조회순" })).toHaveAttribute("aria-current", "page");
 
-  await sort.getByRole("link", { name: "게시순" }).click();
+  await sort.getByRole("link", { name: "행사일순" }).click();
   await expect(page).not.toHaveURL(/sort=/);
-  await expect(sort.getByRole("link", { name: "게시순" })).toHaveAttribute("aria-current", "page");
+  await expect(sort.getByRole("link", { name: "행사일순" })).toHaveAttribute("aria-current", "page");
 });
 
 test("뒤로 가서 검색 전 목록으로 돌아오면 검색창도 비워진다", async ({ page }) => {
@@ -343,5 +342,5 @@ test("캐시된 상세 페이지도 신청 상태는 방문자의 현재 시각�
 
   const facts = page.getByRole("region", { name: "핵심 정보" });
   await expect(facts.getByText("신청 마감", { exact: true })).toBeVisible();
-  await expect(page.getByLabel("행사 상태").first().getByText("신청 마감", { exact: true })).toBeVisible();
+  await expect(page.getByLabel("행사 상태").first().getByText("신청이 마감된 행사예요", { exact: true })).toBeVisible();
 });

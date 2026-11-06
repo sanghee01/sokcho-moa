@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-label="샘플 이미지: 산과 사람 기획전">
+  <rect width="1600" height="900" fill="#e6eef2"/>
+  <path d="M0 700 L380 260 L640 560 L900 200 L1300 640 L1600 420 V900 H0Z" fill="#4b545d"/>
+  <path d="M900 200 L980 300 L940 300 L900 260 L860 300 L820 300Z" fill="#ffffff"/>
+  <path d="M0 780 L1600 780 V900 H0Z" fill="#2a3036"/>
+  <text x="90" y="170" fill="#181c20" font-family="sans-serif" font-size="96" font-weight="800">산과 사람 기획전</text>
+  <text x="90" y="250" fill="#3d454c" font-family="sans-serif" font-size="44" font-weight="600">국립산악박물관 · 샘플 이미지 (가로)</text>
+</svg>

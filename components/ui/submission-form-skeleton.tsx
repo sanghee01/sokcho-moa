@@ -19,7 +19,7 @@ export function SubmissionFormSkeleton({ kind }: SubmissionFormSkeletonProps) {
       className="mx-auto min-h-[70vh] max-w-3xl px-4 py-12 sm:px-6 sm:py-16"
     >
       <div className="animate-pulse motion-reduce:animate-none" aria-hidden="true">
-        <div className="h-4 w-44 rounded-full bg-brand-100" />
+        <div className="h-4 w-44 rounded-full bg-skeleton" />
         <div className="mt-3 h-10 w-52 rounded-2xl bg-skeleton sm:h-12 sm:w-64" />
         <div className="mt-5 space-y-2">
           <div className="h-4 w-full max-w-2xl rounded-full bg-skeleton" />
@@ -42,7 +42,7 @@ export function SubmissionFormSkeleton({ kind }: SubmissionFormSkeletonProps) {
               <div className="mt-2 h-3 w-2/3 rounded-full bg-surface-muted" />
             </div>
           ))}
-          <div className="h-12 w-full rounded-2xl bg-brand-100 sm:w-32" />
+          <div className="h-12 w-full rounded-2xl bg-skeleton sm:w-32" />
         </div>
       </div>
       <span className="sr-only" role="status">{label} 화면을 불러오고 있습니다.</span>

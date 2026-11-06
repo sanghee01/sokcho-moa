@@ -1,5 +1,8 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { metadata } from "@/app/layout";
+
+// layout.tsx의 next/font/local은 Next.js 빌드에서만 동작한다. metadata만 확인하므로 글꼴은 빈 값으로 대신한다.
+vi.mock("next/font/local", () => ({ default: () => ({ className: "", variable: "", style: { fontFamily: "" } }) }));
 import {
   feedbackPageMetadata,
   reportPageMetadata,

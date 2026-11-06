@@ -14,8 +14,7 @@ DB의 RLS·RPC가 다시 권한을 검사합니다.
 ## 폴더
 
 ```text
-app/                 URL과 1:1. 데이터 함수 호출 + feature 컴포넌트 조립
-  _components/       전역 헤더(레이아웃 조각)
+app/                 URL과 1:1. 데이터 함수 호출 + feature 컴포넌트 조립. 전역 헤더·푸터는 layout.tsx
   admin/_components/ 관리자 shell(로그아웃 버튼 포함)
 features/
   events/            행사 탐색·상세·관리 (model, queries, cache, mappers, seo, components, admin/)
@@ -49,6 +48,7 @@ import합니다. 이 규칙은 아직 lint로 강제하지 않습니다.
 | --- | --- | --- |
 | `/` | 동적(`searchParams`) | `features/events/components/event-browse-page` + `getAllPublicEvents` |
 | `/topics/[topic]` | 동적 | 위와 같음. 카테고리 SEO 페이지 6개. 없는 토픽은 `proxy.ts`가 404 |
+| (공통 틀) `app/(event-browse)/layout.tsx` | - | `/`와 `/topics/[topic]`이 함께 쓰는 분야 탭과 배너(많이 보는 행사). 탭을 바꿔도 다시 그리지 않음 |
 | `/events/[slug]` | ISR 1시간, 공개 행사 전부 미리 생성 | 행사 상세, 관련 행사, 주변 명소(`features/places/queries`) |
 | `/calendar` | 동적 | 목록으로 redirect만(캘린더는 삭제, 옛 북마크 보호) |
 | `/report`, `/feedback` | 정적 | 방문자 제보·의견 폼 |

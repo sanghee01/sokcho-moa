@@ -199,6 +199,14 @@ update public.events set image_url = '/missing-event-image.jpg' where slug = 'de
 update public.events set image_url = ' ' where slug = 'demo-children-craft';
 update public.events set application_start_at = null, application_end_at = null where slug = 'demo-ended-winter-program';
 
+-- 화면 확인용 샘플 포스터(public/sample-events). 실제 데이터처럼 세로 포스터·정사각형·가로 이미지가 섞여 있다.
+update public.events set image_url = '/sample-events/sea-festival.svg' where slug = 'demo-sea-family-festival';
+update public.events set image_url = '/sample-events/abai-walk.svg' where slug = 'demo-abai-walk';
+update public.events set image_url = '/sample-events/library-reading.svg' where slug = 'demo-library-reading';
+update public.events set image_url = '/sample-events/mountain-exhibition.svg' where slug = 'demo-mountain-exhibition';
+update public.events set image_url = '/sample-events/sunset-concert.svg' where slug = 'demo-sunset-concert';
+update public.events set image_url = '/sample-events/winter-program.svg' where slug = 'demo-ended-winter-program';
+
 -- 로컬에서는 샘플 행사를 공개 화면에 보여 준다. 공개 조회는 is_demo = true인 행을 숨긴다.
 update public.events set is_demo = false where slug like 'demo-%';
 

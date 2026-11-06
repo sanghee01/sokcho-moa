@@ -120,7 +120,7 @@ export function SiteFeedbackForm() {
       <FormSubmitButton
         idleLabel="의견 보내기"
         pendingLabel="의견 전송 중…"
-        className={getButtonClassName({ variant: "primary", size: "large", width: "fullOnMobile" })}
+        className={getButtonClassName({ variant: "primary", size: "lg", width: "fullOnMobile" })}
       />
     </form>
   );

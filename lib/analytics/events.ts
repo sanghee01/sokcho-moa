@@ -6,8 +6,6 @@ export const analyticsEvents = [
   "application_link_clicked",
   "map_link_clicked",
   "nearby_place_clicked",
-  "filter_used",
-  "filter_reset",
   "sort_changed",
   "share",
 ] as const;

@@ -15,11 +15,9 @@
 | 이벤트 | 발생 시점 | 주요 파라미터 | 역할 |
 | --- | --- | --- | --- |
 | `event_detail_viewed` | 행사 상세가 처음 표시될 때 | `event_slug`, `event_category`, `event_audiences`, `application_available` | 상세 탐색 도달 |
-| `select_content` | 목록·관련 행사·캘린더에서 행사를 선택할 때 | `content_type`, `content_id`, `content_source`, `event_category` | 상세 진입 출처 |
+| `select_content` | 목록·관련 행사·많이 보는 행사에서 행사를 선택할 때 | `content_type`, `content_id`, `content_source`(`event_list`, `related_events`, `popular_events`), `event_category` | 상세 진입 출처 |
 | `search_submitted` | 키워드 검색을 제출할 때 | `query_length`, `has_query`, `active_filter_count` | 검색 사용성. 검색어 원문은 전송하지 않음 |
-| `filter_used` | 필터를 적용하거나 해제할 때 | `filter_type`, `filter_value`, `filter_action` | 탐색 조건 수요 |
-| `filter_reset` | 적용된 필터를 초기화할 때 | `active_filter_count` | 탐색 실패·재시도 신호 |
-| `sort_changed` | 정렬 기준을 실제로 변경할 때 | `sort_method` | 정렬 선호도 |
+| `sort_changed` | 정렬 칩으로 정렬 기준을 실제로 변경할 때 | `sort_method`(`latest` 행사일순·기본, `views` 조회순) | 정렬 선호도. 2026-11-06 기본을 `published`에서 `latest`로 바꾸고 `published`·`deadline` 칩을 뺐으므로 그 전후 값을 따로 본다. |
 | `application_link_clicked` | 신청·예매 링크를 선택할 때 | `event_slug`, `event_category`, `link_position` | 핵심 전환 프록시 |
 | `source_link_clicked` | 공식 원문·안내 링크를 선택할 때 | `event_slug`, `event_category`, `link_position`, `source_type` | 정보 검증·참여 의도 |
 | `map_link_clicked` | 행사 또는 주변 명소 지도를 선택할 때 | `event_slug` 또는 `place_name`, `link_position`, `map_method` | 방문 의도 |
@@ -27,6 +25,8 @@
 | `share` | 네이티브 공유 또는 링크 복사가 성공했을 때 | `method`, `content_type`, `item_id` | 추천·확산 |
 
 `share`와 `select_content`는 GA4 권장 이벤트명을 사용한다. 기존 커스텀 이벤트명은 과거 데이터와의 연속성을 위해 유지했다.
+
+2026-11-06 디자인 개편에서 빠른 필터를 없애며 `filter_used`·`filter_reset`(파라미터 `filter_type`·`filter_value`·`filter_action`)을 더 이상 보내지 않는다. 그 전 데이터는 GA4에 남아 있다.
 
 ## GA4 관리자 설정
 
@@ -43,9 +43,6 @@
 - `event_category`
 - `content_source`
 - `link_position`
-- `filter_type`
-- `filter_value`
-- `filter_action`
 - `sort_method`
 - `source_type`
 - `map_method`

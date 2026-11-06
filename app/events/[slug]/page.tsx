@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { EventCard } from "@/features/events/components/event-card";
+import { getButtonClassName } from "@/components/ui/button-styles";
+import { EventCard, eventCardGridClassName } from "@/features/events/components/event-card";
 import { EventDetailAnalytics } from "@/features/events/components/event-detail-analytics";
 import { EventImage } from "@/features/events/components/event-image";
 import { EventViewCount } from "@/features/events/components/event-view-count";
@@ -128,8 +129,9 @@ export default async function EventDetailPage({ params }: EventPageProps) {
             <h1 className="mt-3 text-3xl font-black leading-tight tracking-tight text-slate-950 sm:text-5xl">{event.title}</h1>
             <p className="mt-5 text-lg leading-8 text-slate-600">{getEventIntroduction(event) ?? "핵심 정보와 원문 출처를 확인하세요."}</p>
             <div className="mt-7 flex flex-wrap items-start gap-3">
-              {event.applicationUrl && <a href={event.applicationUrl} target="_blank" rel="noreferrer" {...analyticsData("application_link_clicked", { event_slug: event.slug, event_category: event.category, link_position: "hero" })} className="rounded-2xl bg-rose-600 px-5 py-3 font-bold text-white">신청·예매 <span className="sr-only">(새 창)</span></a>}
-              <a href={event.sourceUrl} target="_blank" rel="noreferrer" {...analyticsData("source_link_clicked", { event_slug: event.slug, event_category: event.category, link_position: "hero", source_type: "primary" })} className="rounded-2xl bg-teal-800 px-5 py-3 font-bold text-white">행사 안내 <span className="sr-only">(새 창)</span></a>
+              {/* 한 화면에 primary 버튼은 하나다(.ai/DESIGN.md). 신청 링크가 있으면 신청이, 없으면 행사 안내가 primary다. */}
+              {event.applicationUrl && <a href={event.applicationUrl} target="_blank" rel="noreferrer" {...analyticsData("application_link_clicked", { event_slug: event.slug, event_category: event.category, link_position: "hero" })} className={getButtonClassName({ variant: "primary" })}>신청·예매 <span className="sr-only">(새 창)</span></a>}
+              <a href={event.sourceUrl} target="_blank" rel="noreferrer" {...analyticsData("source_link_clicked", { event_slug: event.slug, event_category: event.category, link_position: "hero", source_type: "primary" })} className={getButtonClassName({ variant: event.applicationUrl ? "secondary" : "primary" })}>행사 안내 <span className="sr-only">(새 창)</span></a>
               <ShareEventButton slug={event.slug} />
             </div>
             <div className="mt-4 flex justify-end">
@@ -173,12 +175,12 @@ export default async function EventDetailPage({ params }: EventPageProps) {
         <section aria-labelledby="related-title" className="mt-14">
           <p className="text-sm font-bold text-teal-700">같은 기간·비슷한 대상</p>
           <h2 id="related-title" className="mt-1 text-2xl font-black text-slate-950 sm:text-3xl">이 행사도 살펴보세요</h2>
-          <div className="mt-5 grid gap-5 md:grid-cols-2 lg:grid-cols-4">{relatedEvents.map((item) => <EventCard key={item.id} event={item} contentSource="related_events" />)}</div>
+          <div className={`mt-4 ${eventCardGridClassName}`}>{relatedEvents.map((item) => <EventCard key={item.id} event={item} contentSource="related_events" />)}</div>
         </section>
       )}
 
-      <div className="mt-14 flex justify-center border-t border-teal-900/10 pt-10">
-        <Link href="/" className="inline-flex min-h-11 w-4/5 items-center justify-center rounded-xl bg-teal-800 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-900 focus-visible:ring-4 focus-visible:ring-teal-300">
+      <div className="mt-14 flex justify-center border-t border-line pt-10">
+        <Link href="/" className={getButtonClassName({ variant: "secondary", width: "fullOnMobile" })}>
           목록으로 돌아가기
         </Link>
       </div>

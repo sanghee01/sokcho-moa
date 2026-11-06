@@ -142,7 +142,7 @@ export async function saveEventAction(
 
 /**
  * 검수 목록의 공개·반려·대기 버튼.
- * - published_at은 처음 공개한 시각이다. 잠시 비공개했다가 다시 공개해도 바꾸지 않아 "게시순"이 흔들리지 않는다.
+ * - published_at은 처음 공개한 시각이다. 잠시 비공개했다가 다시 공개해도 바꾸지 않아 "새로 올라온 순"(예전 이름 게시순)과 "새로 올라옴" 표시가 흔들리지 않는다.
  * - 캐시 경로와 검색엔진 알림은 화면이 보낸 값이 아니라 DB의 slug·이전 상태로 정한다.
  */
 export async function setEventReviewStatusAction(input: unknown) {

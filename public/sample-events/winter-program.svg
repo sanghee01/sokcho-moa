@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" role="img" aria-label="샘플 이미지: 지난 계절 문화 프로그램">
+  <rect width="1000" height="1000" fill="#dfe9f3"/>
+  <circle cx="250" cy="560" r="120" fill="#ffffff"/>
+  <circle cx="250" cy="400" r="80" fill="#ffffff"/>
+  <circle cx="700" cy="300" r="14" fill="#ffffff"/>
+  <circle cx="820" cy="420" r="10" fill="#ffffff"/>
+  <circle cx="600" cy="480" r="12" fill="#ffffff"/>
+  <text x="440" y="640" fill="#1f3550" font-family="sans-serif" font-size="72" font-weight="800">겨울 문화</text>
+  <text x="440" y="730" fill="#1f3550" font-family="sans-serif" font-size="72" font-weight="800">프로그램</text>
+  <text x="80" y="930" fill="#1f3550" font-family="sans-serif" font-size="40" font-weight="600">샘플 이미지 (종료 행사)</text>
+</svg>

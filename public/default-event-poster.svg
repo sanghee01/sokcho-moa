@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" role="img" aria-label="속초모아 기본 포스터">
+  <rect width="800" height="1000" fill="#eaf5f8"/>
+  <circle cx="560" cy="300" r="96" fill="#cfe8ef"/>
+  <path d="M0 700 C 130 660, 260 740, 400 700 S 670 660, 800 700 V1000 H0Z" fill="#a3d2df"/>
+  <path d="M0 790 C 130 750, 260 830, 400 790 S 670 750, 800 790 V1000 H0Z" fill="#3a93ae"/>
+  <path d="M0 880 C 130 840, 260 920, 400 880 S 670 840, 800 880 V1000 H0Z" fill="#0b6b88"/>
+  <text x="400" y="500" text-anchor="middle" fill="#0a5870" font-family="Pretendard, -apple-system, 'Apple SD Gothic Neo', sans-serif" font-size="88" font-weight="800" letter-spacing="-2">속초모아</text>
+  <text x="400" y="560" text-anchor="middle" fill="#3a93ae" font-family="Pretendard, -apple-system, 'Apple SD Gothic Neo', sans-serif" font-size="30" font-weight="600" letter-spacing="6">SOKCHO MOA</text>
+</svg>

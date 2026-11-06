@@ -11,19 +11,19 @@ describe("analytics event contract", () => {
   });
 
   it("정의된 이벤트와 분석 가능한 값만 DOM 속성으로 직렬화한다", () => {
-    const attributes = analyticsData("filter_used", {
-      filter_type: "audience",
-      filter_value: "family",
-      filter_action: "apply",
+    const attributes = analyticsData("select_content", {
+      content_type: "event",
+      content_id: "demo-sea-family-festival",
+      content_source: "event_list",
       omitted: undefined,
       empty: null,
     });
 
-    expect(attributes["data-analytics-event"]).toBe("filter_used");
+    expect(attributes["data-analytics-event"]).toBe("select_content");
     expect(parseAnalyticsProperties(attributes["data-analytics-properties"])).toEqual({
-      filter_type: "audience",
-      filter_value: "family",
-      filter_action: "apply",
+      content_type: "event",
+      content_id: "demo-sea-family-festival",
+      content_source: "event_list",
     });
   });
 

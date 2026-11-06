@@ -37,13 +37,13 @@ export function PageErrorState({
         <button
           type="button"
           onClick={() => retry()}
-          className={getButtonClassName({ variant: "primary", size: "medium", width: "content" })}
+          className={getButtonClassName({ variant: "primary", width: "content" })}
         >
           다시 시도
         </button>
         <Link
           href={fallbackHref}
-          className={getButtonClassName({ variant: "secondary", size: "medium", width: "content" })}
+          className={getButtonClassName({ variant: "secondary", width: "content" })}
         >
           {fallbackLabel}
         </Link>

@@ -2,6 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useTransition, type FormEvent } from "react";
+import { Search } from "lucide-react";
+import { iconProps } from "@/components/ui/icon";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { trackAnalyticsEvent } from "@/lib/analytics/events";
 import {
@@ -73,15 +75,16 @@ export function EventSearch({
           type="search"
           defaultValue={query}
           placeholder="행사명, 장소 검색"
-          className="min-h-10 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 pr-20 text-base outline-none transition focus:border-teal-700 focus:ring-2 focus:ring-teal-700/20 sm:min-h-11"
+          className="min-h-12 w-full rounded-full border border-line-input bg-surface py-2 pl-12 pr-4 text-body text-content-strong outline-none transition placeholder:text-content-placeholder focus:border-primary focus:ring-2 focus:ring-primary/20"
         />
+        {/* 돋보기 아이콘이 곧 검색 버튼이다. Enter로도 검색된다. */}
         <button
           type="submit"
           disabled={isPending}
-          className="absolute bottom-1 right-1 top-1 inline-flex items-center justify-center gap-1 rounded-lg bg-teal-800 px-3 text-sm font-semibold text-white hover:bg-teal-900 disabled:cursor-wait disabled:opacity-70"
+          aria-label={isPending ? "검색 중" : "검색"}
+          className="absolute left-1 top-1/2 inline-flex size-10 -translate-y-1/2 items-center justify-center rounded-full text-content-muted hover:bg-surface-subtle hover:text-primary-text disabled:cursor-wait"
         >
-          {isPending && <LoadingSpinner className="size-3" />}
-          {isPending ? "검색 중" : "검색"}
+          {isPending ? <LoadingSpinner className="size-4" /> : <Search {...iconProps} />}
         </button>
       </div>
     </form>

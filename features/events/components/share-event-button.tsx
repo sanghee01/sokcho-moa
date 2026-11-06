@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { getButtonClassName } from "@/components/ui/button-styles";
 import { trackAnalyticsEvent } from "@/lib/analytics/events";
 
 type ShareStatus = "idle" | "copied" | "error";
 
 const feedbackByStatus: Record<Exclude<ShareStatus, "idle">, { message: string; tone: string }> = {
-  copied: { message: "링크를 복사했어요.", tone: "text-teal-700" },
-  error: { message: "복사 실패. 다시 눌러 주세요.", tone: "text-rose-700" },
+  copied: { message: "링크를 복사했어요.", tone: "text-primary-text" },
+  error: { message: "복사 실패. 다시 눌러 주세요.", tone: "text-danger" },
 };
 
 function eventShareUrl(slug: string) {
@@ -82,7 +83,7 @@ export function ShareEventButton({ slug }: { slug: string }) {
       <button
         type="button"
         onClick={handleShare}
-        className="min-h-12 min-w-[7rem] rounded-2xl border border-teal-800 bg-white px-5 py-3 font-bold text-teal-800 transition hover:bg-teal-50 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-teal-300"
+        className={getButtonClassName({ variant: "secondary" })}
       >
         공유하기
       </button>
@@ -91,7 +92,7 @@ export function ShareEventButton({ slug }: { slug: string }) {
           role="status"
           aria-live="polite"
           aria-atomic="true"
-          className={`absolute left-1/2 top-12 mt-1 -translate-x-1/2 whitespace-nowrap text-sm font-black ${feedback.tone}`}
+          className={`absolute left-1/2 top-11 mt-1 -translate-x-1/2 whitespace-nowrap text-caption font-semibold ${feedback.tone}`}
         >
           {feedback.message}
         </div>

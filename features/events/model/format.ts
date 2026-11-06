@@ -1,4 +1,4 @@
-import type { ApplicationState, EventState } from "@/features/events/model/event";
+import type { ApplicationState } from "@/features/events/model/event";
 
 export { audienceLabels, categoryLabels } from "@/features/events/model/taxonomy";
 
@@ -9,23 +9,7 @@ const datePartsFormatter = new Intl.DateTimeFormat("en-CA", {
   day: "2-digit",
 });
 
-const dateTimePartsFormatter = new Intl.DateTimeFormat("en-CA", {
-  timeZone: "Asia/Seoul",
-  year: "numeric",
-  month: "2-digit",
-  day: "2-digit",
-  hour: "2-digit",
-  minute: "2-digit",
-  hourCycle: "h23",
-});
-
 const numberFormatter = new Intl.NumberFormat("ko-KR");
-
-export const eventStateLabels: Record<EventState, string> = {
-  upcoming: "예정",
-  ongoing: "진행 중",
-  ended: "종료",
-};
 
 export const applicationStateLabels: Record<ApplicationState, string> = {
   not_applicable: "별도 신청 없음",
@@ -41,12 +25,6 @@ export function formatDate(value: string | null) {
   return parts ? `${parts.year}.${parts.month}.${parts.day}` : "확인 필요";
 }
 
-export function formatDateTime(value: string | null) {
-  if (!value) return "확인 필요";
-  const parts = getDateParts(dateTimePartsFormatter, value);
-  return parts ? `${parts.year}.${parts.month}.${parts.day} ${parts.hour}:${parts.minute}` : "확인 필요";
-}
-
 export function formatDateRange(start: string | null, end: string | null) {
   if (!start && !end) return "확인 필요";
   if (!start) return formatDate(end);
@@ -54,6 +32,29 @@ export function formatDateRange(start: string | null, end: string | null) {
   const startLabel = formatDate(start);
   const endLabel = formatDate(end);
   return startLabel !== endLabel ? `${startLabel} ~ ${endLabel}` : startLabel;
+}
+
+const koreanWeekdays = ["일", "월", "화", "수", "목", "금", "토"];
+
+/**
+ * 목록용 짧은 날짜 표기(.ai/DESIGN.md Typography > 날짜·시간 표기). 하루 행사는 "7.25 (토)",
+ * 여러 날 행사는 "10.3 – 11.21". 올해(KST)가 아닌 날짜가 섞이면 연도를 붙인다.
+ */
+export function formatShortDateRange(start: string | null, end: string | null, now = new Date()) {
+  const startParts = start ? getDateParts(datePartsFormatter, start) : null;
+  if (!startParts) return "날짜 확인 필요";
+  const endParts = end ? getDateParts(datePartsFormatter, end) : null;
+  const currentYear = getDateParts(datePartsFormatter, now.toISOString())?.year;
+  const isSameDay = !endParts
+    || (endParts.year === startParts.year && endParts.month === startParts.month && endParts.day === startParts.day);
+  const withYear = startParts.year !== currentYear || Boolean(endParts && endParts.year !== currentYear);
+  const short = (parts: NonNullable<typeof startParts>) => `${withYear ? `${parts.year}.` : ""}${Number(parts.month)}.${Number(parts.day)}`;
+
+  if (isSameDay) {
+    const weekday = koreanWeekdays[new Date(Date.UTC(Number(startParts.year), Number(startParts.month) - 1, Number(startParts.day))).getUTCDay()];
+    return `${short(startParts)} (${weekday})`;
+  }
+  return `${short(startParts)} – ${short(endParts)}`;
 }
 
 export function formatOperatingSchedule(value: string | null) {

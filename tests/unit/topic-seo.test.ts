@@ -78,7 +78,9 @@ describe("event topic SEO", () => {
     });
   });
 
-  it("주제 페이지에 사람이 볼 수 있는 고유 제목과 소개를 제공한다", async () => {
+  // 2026-11-06 사용자 결정: 화면의 소개 문장은 쓸모없는 글이라 뺐다(검색 노출에 약간 불리할 수 있음을 알고 결정).
+  // 주제별 고유 제목(h1)은 화면 읽기 프로그램·검색엔진용으로 남긴다. 검색 결과 설명은 topics.ts의 description(메타 설명)이 맡는다.
+  it("주제 페이지에 고유 제목(h1)을 두고 화면에는 소개 문장을 쓰지 않는다", async () => {
     const topic = findEventTopicBySlug("performance");
     expect(topic).toBeDefined();
 
@@ -89,7 +91,7 @@ describe("event topic SEO", () => {
     const html = renderToStaticMarkup(page);
 
     expect(html).toMatch(/<h1[^>]*>속초 공연 한눈에 보기<\/h1>/);
-    expect(html).toContain("가까운 공연부터 예정된 무대까지");
+    expect(html).not.toContain("가까운 공연부터 예정된 무대까지");
   });
 
   it("없는 주제는 metadata 생성 단계에서 404로 중단한다", async () => {

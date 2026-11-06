@@ -7,8 +7,9 @@
 
 | 규칙 | 원본 |
 | --- | --- |
-| 코드 컨벤션(사용자가 결정한 것만) | [CONVENTIONS.md](../CONVENTIONS.md) |
-| 작업 원칙, 검증, Supabase 안전 규칙 | [RULES.md](../RULES.md) |
+| 코드 규칙(사용자가 결정한 것만) | [루트 AGENTS.md의 코드 규칙](../../AGENTS.md#코드-규칙)과 폴더별 `AGENTS.md` |
+| 화면 설계(토큰, 배치, 컴포넌트) | [DESIGN.md](../DESIGN.md) |
+| 작업 원칙, 검증, 운영 데이터 안전 | [루트 AGENTS.md](../../AGENTS.md), [supabase/AGENTS.md](../../supabase/AGENTS.md) |
 | 라우트·데이터 흐름·테이블 권한 | [architecture.md](../../docs/architecture.md) |
 | 알려진 오탐과 적용 조건 | [false-positives.md](false-positives.md) |
 
@@ -78,9 +79,22 @@
   검수 전·샘플 행사가 노출되는 경우
 - PR 설명의 의도와 코드 동작이 다른 경우
 - **결정 범위 밖 변경**: 삭제·리팩토링·구조 변경이 PR 본문에 적힌 결정의 범위를 넘는 경우
-  ([작업 원칙](../RULES.md#작업-원칙))
+  ([작업 원칙](../../AGENTS.md#작업-원칙))
 - 도달할 수 없는 코드 경로, 아무 동작도 하지 않는 버튼
 - 기존 유사 흐름에 GA4 이벤트가 있는데 새 흐름에 빠진 경우([analytics-events.md](../../docs/analytics-events.md))
+
+### 화면·반응형
+
+이번 PR이 새로 쓰거나 고친 화면 코드에만 적용합니다. 아직 개편 전인 기존 화면은 지적하지 않습니다.
+
+- **모바일에서 깨지는 배치**: 360px 폭에서 가로로 넘치거나, 고정 폭(`w-[480px]` 등)·줄바꿈 금지(`whitespace-nowrap`)로
+  글자가 화면 밖으로 나가는 경우
+- **결정 정보가 첫 화면 밖으로 밀림**: 행사 상세에서 날짜·장소·주요 버튼보다 앞에 큰 요소를 새로 넣어
+  [DESIGN.md의 페이지 구조](../DESIGN.md#페이지-구조)를 어기는 경우
+- **토큰 대신 원색·임의 값**: [AGENTS.md의 코드 규칙](../../AGENTS.md#코드-규칙) 화면·스타일 위반. Minor로 분류합니다
+- **접근성 이름 변경**: E2E가 찾는 `navigation`·`search`·`region`의 이름을 test 변경 없이 바꾼 경우
+- **터치 영역 부족**: 누를 수 있는 요소가 44px보다 작고 여백으로 보완하지 않은 경우
+- **한 화면 primary 버튼 2개 이상**, 한 항목 배지 3개 이상([DESIGN.md의 Components](../DESIGN.md#components))
 
 ### 타입 안전성
 
@@ -92,9 +106,9 @@
 ## 지적하지 말 것
 
 - lint·typecheck가 검사하는 항목
-- [CONVENTIONS.md](../CONVENTIONS.md)에 근거하지 않은 스타일·네이밍 취향
+- `AGENTS.md`에 근거하지 않은 스타일·네이밍 취향
 - **"기존 구현과 다르다"는 이유만의 지적.** 기존 구현은 그 자체로 규칙이 아닙니다.
-  CONVENTIONS.md에 결정된 규칙이 있을 때만 지적합니다.
+  `AGENTS.md`에 결정된 규칙이 있을 때만 지적합니다.
 - `useCallback`/`useMemo` 최적화 제안
 - "~를 고려해보세요" 같은 약한 제안이나 질문형 제안
 - 이번 PR 이전부터 있던 문제(pre-existing). 단, 이번 PR이 그 코드를 건드려 영향이 커지면 지적합니다.
@@ -154,7 +168,7 @@
 | --- | --- | --- |
 | 🚨 Critical | 데이터 노출·손실, 권한 우회, 운영 장애 | 재현 시나리오 필수 |
 | ⚠️ Major | 특정 조건에서 버그 발생 | 조건 명시 필수 |
-| 📝 Minor | 동작하지만 결정된 규칙 위반 | PR당 최대 2개, CONVENTIONS.md 규칙 링크 필수 |
+| 📝 Minor | 동작하지만 결정된 규칙 위반 | PR당 최대 2개, `AGENTS.md` 규칙 링크 필수 |
 | ~~Recommendation~~ | **사용 금지** | Minor로 올리거나 지적하지 않기 |
 
 지적이 0개여도 괜찮습니다. 확신이 낮은 항목은 지적하지 않고 리뷰 요약에 확인하지 못한 점으로 남깁니다.
@@ -165,7 +179,7 @@
 
 리뷰 후 사용자는 지적마다 수용하거나 반박합니다. 결과는 아래처럼 반영합니다.
 
-- 수용하고, 앞으로도 지켜야 할 규칙이면 → [CONVENTIONS.md](../CONVENTIONS.md)에 규칙으로 추가
+- 수용하고, 앞으로도 지켜야 할 규칙이면 → 해당 폴더의 `AGENTS.md`에 규칙으로 추가하고 [결정 기록](../../docs/decisions/conventions.md)에 근거를 남김
 - 반박하고, 같은 오탐이 다시 나올 수 있으면 → [false-positives.md](false-positives.md)에 조건과 반례 추가
 - 한 번만 맞는 지적이면 → 코드만 고치고 문서에는 남기지 않음
 - 같은 문제가 반복되면 → 리뷰 항목을 늘리기보다 test나 lint로 옮길지 결정

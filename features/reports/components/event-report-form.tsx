@@ -87,7 +87,7 @@ export function EventReportForm() {
       <FormSubmitButton
         idleLabel="제보 보내기"
         pendingLabel="제보 접수 중…"
-        className={getButtonClassName({ variant: "primary", size: "large", width: "fullOnMobile" })}
+        className={getButtonClassName({ variant: "primary", size: "lg", width: "fullOnMobile" })}
       />
     </form>
   );

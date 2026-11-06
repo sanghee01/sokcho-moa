@@ -1,15 +1,17 @@
 import Link from "next/link";
-import { EventCard } from "@/features/events/components/event-card";
-import { EventHeroFrame } from "@/features/events/components/event-hero-frame";
+import { getButtonClassName } from "@/components/ui/button-styles";
+import { TransitionLink } from "@/components/ui/transition-link";
+import { EventCard, eventCardGridClassName } from "@/features/events/components/event-card";
 import { EventSearch } from "@/features/events/components/event-search";
 import { EventSort } from "@/features/events/components/event-sort";
-import { TransitionLink } from "@/components/ui/transition-link";
 import { getPublicEnv } from "@/lib/env";
 import { getAllPublicEvents } from "@/features/events/queries";
 import {
+  DEFAULT_EVENT_SORT,
   filterEvents,
   parseEventFilters,
   sortEvents,
+  type Event,
 } from "@/features/events/model/event";
 import {
   buildEventBrowseHref,
@@ -22,57 +24,57 @@ import { buildSiteStructuredData } from "@/lib/seo/site-structured-data";
 import { buildTopicStructuredData } from "@/features/events/topic-seo";
 import { JsonLd } from "@/components/seo/json-ld";
 
-function HeroBurst({ side }: { side: "left" | "right" }) {
-  const rayColors = side === "left"
-    ? ["bg-sky-500", "bg-sky-500", "bg-sky-500", "bg-sky-500"]
-    : ["bg-amber-400", "bg-orange-400", "bg-teal-500", "bg-amber-400"];
+// 진행중/마감은 밑줄 탭, 정렬은 묶음 버튼으로 모양을 구분한다(.ai/DESIGN.md 페이지 구조 > 홈·주제 목록).
+const statusTabClassName = (selected: boolean) => `-mb-px inline-flex min-h-11 items-center border-b-2 px-3 text-label lg:min-h-12 lg:px-4 lg:text-body ${selected
+  ? "border-primary font-semibold text-primary-text"
+  : "border-transparent text-content-subtle hover:text-content"}`;
 
+function EventCardGrid({ events, showCategory }: { events: Event[]; showCategory: boolean }) {
   return (
-    <span aria-hidden="true" className={`relative size-[clamp(1.65rem,3.7vw,4rem)] shrink-0 -translate-y-[28%] ${side === "right" ? "-scale-x-100" : ""}`}>
-      <span className={`absolute left-[46%] top-0 h-[36%] w-[13%] -rotate-6 rounded-full ${rayColors[0]}`} />
-      <span className={`absolute left-[19%] top-[16%] h-[36%] w-[13%] -rotate-45 rounded-full ${rayColors[1]}`} />
-      <span className={`absolute left-[4%] top-[48%] h-[36%] w-[13%] -rotate-[68deg] rounded-full ${rayColors[2]}`} />
-      <span className={`absolute left-[60%] top-[19%] h-[32%] w-[12%] rotate-[28deg] rounded-full ${rayColors[3]}`} />
-    </span>
+    <div className={eventCardGridClassName}>
+      {events.map((event) => <EventCard key={event.id} event={event} contentSource="event_list" showCategory={showCategory} />)}
+    </div>
   );
 }
 
-function EventHero({ topic }: { topic?: EventTopic }) {
+/**
+ * 목록이 비었을 때 상황에 맞는 안내(2026-11-06). 사용자가 하지 않은 일("검색어를 바꾸거나 조건을 지우고")을 말하지 않고,
+ * 실제로 갈 만한 곳 하나를 버튼으로 준다. 분야 이름 뒤에는 받침에 따라 바뀌는 조사를 붙이지 않는다.
+ */
+function EmptyResult({
+  query,
+  closedView,
+  topicLabel,
+  hasOtherFilters,
+  params,
+}: {
+  query?: string;
+  closedView: boolean;
+  topicLabel?: string;
+  hasOtherFilters: boolean;
+  params: EventSearchParams;
+}) {
+  const label = topicLabel ?? "행사";
+  const content: { title: string; description?: string; action?: { label: string; href: string } } = query
+    ? { title: `'${query}' 검색 결과가 없어요`, description: "다른 단어로 검색해 보세요.", action: { label: "검색 지우기", href: buildEventBrowseHref(params, { q: undefined }) } }
+    : hasOtherFilters
+      ? { title: "조건에 맞는 행사가 없어요", action: { label: "조건 지우기", href: clearEventFiltersHref(params) } }
+      : closedView
+        ? { title: `마감된 ${label} 기록이 아직 없어요`, action: { label: `진행 중인 ${label} 보기`, href: buildEventBrowseHref(params, { status: undefined }) } }
+        : {
+          title: `예정되거나 진행 중인 ${label} 일정이 아직 없어요`,
+          description: "새 일정이 올라오면 여기에 보여 드릴게요.",
+          action: topicLabel ? { label: "전체 행사 보기", href: "/" } : undefined,
+        };
+
   return (
-    <section
-      aria-label={topic ? `${topic.heading} 안내` : undefined}
-      aria-labelledby={topic ? undefined : "home-hero-title"}
-      className="overflow-hidden bg-cyan-50"
-    >
-      {!topic && (
-        <p className="sr-only">공연·체험·교육·전시를 포함한 속초의 최신 행사 정보를 확인하세요.</p>
+    <div className="rounded-card bg-surface-subtle px-6 py-12 text-center">
+      <p className="text-title-3 text-content-strong">{content.title}</p>
+      {content.description && <p className="mt-2 text-body text-content-muted">{content.description}</p>}
+      {content.action && (
+        <Link href={content.action.href} className={`${getButtonClassName({ variant: "secondary" })} mt-6`}>{content.action.label}</Link>
       )}
-      <EventHeroFrame priority overlayAriaHidden={Boolean(topic)}>
-        <div className="-translate-y-[2%] text-center">
-          <div className="flex items-center justify-center gap-[clamp(0.25rem,1.2vw,1.5rem)]">
-            <HeroBurst side="left" />
-            {topic ? (
-              <p className="whitespace-nowrap text-[clamp(1.6rem,5.3vw,5.15rem)] font-black leading-none tracking-[-0.045em] drop-shadow-[0_2px_4px_rgba(255,255,255,0.8)]">
-                <span className="text-[#07377a]">요즘 </span>
-                <span className="text-[#009c91]">속초</span>
-                <span className="text-[#07377a]">에서 뭐하지?</span>
-              </p>
-            ) : (
-              <h1 id="home-hero-title" className="whitespace-nowrap text-[clamp(1.6rem,5.3vw,5.15rem)] font-black leading-none tracking-[-0.045em] drop-shadow-[0_2px_4px_rgba(255,255,255,0.8)]">
-                <span className="text-[#07377a]">요즘 </span>
-                <span className="text-[#009c91]">속초</span>
-                <span className="text-[#07377a]">에서 뭐하지?</span>
-              </h1>
-            )}
-            <HeroBurst side="right" />
-          </div>
-          <p className="mt-[clamp(0.6rem,1.15vw,1.4rem)] text-[clamp(0.72rem,2.1vw,1.75rem)] font-medium tracking-[-0.035em] text-slate-600 drop-shadow-[0_1px_2px_rgba(255,255,255,0.9)]">
-            속초 행사 · 축제 · 공연 · 체험을 한눈에
-            <span aria-hidden="true" className="ml-[clamp(0.35rem,0.8vw,0.8rem)] font-black tracking-[-0.25em] text-sky-500">≋≋</span>
-          </p>
-        </div>
-      </EventHeroFrame>
-    </section>
+    </div>
   );
 }
 
@@ -94,11 +96,9 @@ export async function EventBrowsePage({
     : parsedFilters;
   const now = new Date();
   const filteredEvents = filterEvents(allEvents, filters, now);
-  const events = sortEvents(filteredEvents, filters.sort, now);
+  const sort = filters.sort ?? DEFAULT_EVENT_SORT;
+  const events = sortEvents(filteredEvents, sort, now);
   const closedView = filters.status === "closed";
-  const resultTitle = topic
-    ? `${topic.label} ${closedView ? "마감 행사" : "목록"}`
-    : closedView ? "마감 행사" : "행사 목록";
   const siteUrl = getPublicEnv().NEXT_PUBLIC_SITE_URL;
   const jsonLd = topic
     ? buildTopicStructuredData(topic, siteUrl)
@@ -107,23 +107,23 @@ export async function EventBrowsePage({
   return (
     <main id="main-content">
       <JsonLd data={jsonLd} />
-      <EventHero topic={topic} />
 
-      <div className="mx-auto max-w-6xl space-y-9 px-4 py-8 sm:px-6 sm:py-12">
-        {topic && (
-          <section aria-labelledby="topic-page-title" className="max-w-3xl">
-            <p className="text-sm font-black text-teal-700">속초 {topic.label} 일정</p>
-            <h1 id="topic-page-title" className="mt-1 text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">{topic.heading}</h1>
-            <p className="mt-3 text-base leading-7 text-slate-600 sm:text-lg">{topic.intro}</p>
-          </section>
-        )}
+      <div className="mx-auto max-w-6xl px-4 pb-8 pt-4 sm:px-6 lg:pt-6">
+        {/* 주제 페이지 제목은 화면 읽기 프로그램·검색엔진용으로만 남긴다. 소개 문장은 쓰지 않는다(2026-11-06). */}
+        {topic && <h1 id="topic-page-title" className="sr-only">{topic.heading}</h1>}
+        {!topic && <h1 id="home-hero-title" className="sr-only">요즘 속초에서 뭐하지?</h1>}
+        {!topic && <p className="sr-only">공연·체험·교육·전시를 포함한 속초의 최신 행사 정보를 확인하세요.</p>}
 
+        {/* 넓은 화면에서는 가운데 정렬한 분야 탭과 맞춰 검색창도 가운데에 둔다. */}
+        <div className="lg:mx-auto lg:max-w-xl">
+          <EventSearch params={navigationParams} query={filters.query} />
+        </div>
 
-        <section aria-labelledby="event-results-title" data-event-view={closedView ? "closed" : "active"}>
-          <div className="mb-5 grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(18rem,23rem)_auto] xl:items-center xl:gap-5">
-            <div className="flex min-w-0 flex-wrap items-center gap-3">
-              <h2 id="event-results-title" className="text-2xl font-black text-slate-950 sm:text-3xl">{resultTitle} {filteredEvents.length}개</h2>
-              <nav aria-label="행사 상태" className="inline-flex shrink-0 items-center border-b border-slate-300">
+        <section aria-labelledby="event-results-title" data-event-view={closedView ? "closed" : "active"} className="mt-6 lg:mt-10">
+          {/* 행사 개수는 보여 주지 않는다(2026-11-06). 구역 제목은 화면 읽기 프로그램용으로 남긴다. */}
+          <h2 id="event-results-title" className="sr-only">{closedView ? "마감 행사" : "행사 목록"}</h2>
+          <div className="mb-4 flex items-center justify-between gap-3 border-b border-line">
+            <nav aria-label="행사 상태" className="flex items-center">
                 <TransitionLink
                   href={buildEventBrowseHref(navigationParams, { status: undefined, application: undefined })}
                   pendingLabel="진행중 행사 불러오는 중"
@@ -131,7 +131,7 @@ export async function EventBrowsePage({
                   scroll={false}
                   rel="nofollow"
                   aria-current={!closedView ? "page" : undefined}
-                  className={`-mb-px inline-flex min-h-11 items-center justify-center border-b-2 px-3 text-base font-black ${!closedView ? "border-teal-700 text-teal-800" : "border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-800"}`}
+                  className={statusTabClassName(!closedView)}
                 >
                   진행중
                 </TransitionLink>
@@ -142,27 +142,28 @@ export async function EventBrowsePage({
                   scroll={false}
                   rel="nofollow"
                   aria-current={closedView ? "page" : undefined}
-                  className={`-mb-px inline-flex min-h-11 items-center justify-center border-b-2 px-3 text-base font-black ${closedView ? "border-teal-700 text-teal-800" : "border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-800"}`}
+                  className={statusTabClassName(closedView)}
                 >
                   마감
                 </TransitionLink>
-              </nav>
+            </nav>
+            <div className="pb-1.5">
+              <EventSort params={navigationParams} activeSort={filters.sort} />
             </div>
-            <EventSearch params={navigationParams} query={filters.query} />
-            <EventSort params={navigationParams} activeSort={filters.sort} />
           </div>
-          {events.length > 0 ? (
-            <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-              {events.map((event) => <EventCard key={event.id} event={event} contentSource="event_list" />)}
-            </div>
+          {events.length === 0 ? (
+            <EmptyResult
+              query={filters.query}
+              closedView={closedView}
+              topicLabel={topic?.label}
+              hasOtherFilters={Boolean(filters.when || filters.applicationOpen || filters.audience)}
+              params={navigationParams}
+            />
           ) : (
-            <div className="rounded-3xl border border-dashed border-teal-300 bg-white px-6 py-16 text-center">
-              <p className="text-xl font-black text-slate-900">{closedView ? "조건에 맞는 마감 행사가 없어요." : "조건에 맞는 진행중 행사가 아직 없어요."}</p>
-              <p className="mt-2 text-slate-600">검색어를 바꾸거나 선택 조건을 지우고 다시 찾아보세요.</p>
-              <Link href={clearEventFiltersHref(navigationParams)} className="mt-6 inline-block rounded-2xl bg-teal-800 px-5 py-3 font-bold text-white">조건 초기화</Link>
-            </div>
+            <EventCardGrid events={events} showCategory={!topic} />
           )}
         </section>
+
       </div>
     </main>
   );
