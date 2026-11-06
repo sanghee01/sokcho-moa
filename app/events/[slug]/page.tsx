@@ -209,10 +209,11 @@ export default async function EventDetailPage({ params }: PageProps<"/events/[sl
 
           {/* 행동 버튼은 한 벌만 둔다. 모바일은 화면 아래에 고정하고, lg에서는 핵심 정보 아래에 둔다(.ai/DESIGN.md BottomActionBar).
               행사 안내는 모든 행사에 있어 항상 파랑(primary)이고, 신청 링크가 있으면 그 앞에 신청·예매를 차콜(accent)로 둔다.
-              둘 다 눈에 띄어야 해서 채운 버튼으로 두고 색으로 구분한다(상황마다 색이 바뀌어 헷갈렸음, 2026-11-07 사용자 결정). */}
+              둘 다 눈에 띄어야 해서 채운 버튼으로 두고 색으로 구분한다(상황마다 색이 바뀌어 헷갈렸음, 2026-11-07 사용자 결정).
+              아래 여백은 20px + safe area다. 12px이면 실제 iPhone에서 화면 둥근 모서리에 버튼 왼쪽 아래가 잘렸다(2026-11-07). */}
           <div
             data-bottom-action-bar
-            className="fixed inset-x-0 bottom-0 z-40 flex gap-2 border-t border-line bg-surface px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 shadow-floating lg:static lg:z-auto lg:mt-6 lg:border-t-0 lg:bg-transparent lg:p-0 lg:shadow-none"
+            className="fixed inset-x-0 bottom-0 z-40 flex gap-2 border-t border-line bg-surface px-4 pb-[calc(1.25rem+env(safe-area-inset-bottom))] pt-3 shadow-floating lg:static lg:z-auto lg:mt-6 lg:border-t-0 lg:bg-transparent lg:p-0 lg:shadow-none"
           >
             {event.applicationUrl && (
               <a

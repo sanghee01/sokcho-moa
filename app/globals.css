@@ -183,9 +183,9 @@ body {
     --bottom-action-bar-height: 0rem;
   }
 
-  /* 위 테두리 1px + 위 여백 12px + 버튼 44px + 아래 여백 12px = 69px(4.3125rem). 아래 여백의 safe area는 따로 더한다. */
+  /* 위 테두리 1px + 위 여백 12px + 버튼 44px + 아래 여백 20px = 77px(4.8125rem). 아래 여백의 safe area는 따로 더한다. */
   :root:has([data-bottom-action-bar]) {
-    --bottom-action-bar-height: 4.3125rem;
+    --bottom-action-bar-height: 4.8125rem;
   }
 
   @media (width >= 64rem) {
