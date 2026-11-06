@@ -29,7 +29,7 @@ export function EventReviewRow({
       <td className="px-4 py-4 text-slate-600">{event.sourceName}</td>
       <td className={statusControlStyles.actionCell}>
         <div className="flex items-start gap-2">
-          <StatusControls id={event.id} slug={event.slug} current={reviewStatus} onStatusChange={setReviewStatus} />
+          <StatusControls id={event.id} current={reviewStatus} onStatusChange={setReviewStatus} />
           <EventDeleteControl event={event} />
         </div>
       </td>

@@ -168,3 +168,26 @@ describe("저장 payload", () => {
     expect(buildEventPayload(event, VERIFIED_AT).address).toBe("강원특별자치도 속초시");
   });
 });
+
+// DB 제약(events_time_order, events_application_order, event_occurrences_unique_start)에 걸릴 입력은
+// 저장 전에 이유를 알려 준다. 그대로 보내면 "잠시 후 다시 시도"라는 일반 오류만 나고 다시 해도 성공하지 않는다.
+describe("DB 저장 규칙과 같은 입력 검증", () => {
+  it("시작 없이 종료만 입력하면 거부한다", () => {
+    expect(eventFormSchema.safeParse(form({ eventStartAt: "", eventEndAt: "2026-07-20" })).success).toBe(false);
+  });
+
+  it("신청 종료가 신청 시작보다 빠르면 거부한다", () => {
+    expect(eventFormSchema.safeParse(form({ applicationStartAt: "2026-07-10", applicationEndAt: "2026-07-01" })).success).toBe(false);
+  });
+
+  it("같은 시작 시각의 회차가 두 번 있으면 거부한다", () => {
+    const result = eventFormSchema.safeParse(form({
+      scheduleMode: "occurrences",
+      occurrences: [
+        { startsAt: "2026-07-22T19:00", endsAt: "" },
+        { startsAt: "2026-07-22T19:00", endsAt: "" },
+      ],
+    }));
+    expect(result.success).toBe(false);
+  });
+});

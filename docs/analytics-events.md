@@ -30,7 +30,13 @@
 
 ## GA4 관리자 설정
 
-이 코드는 GA4 Enhanced Measurement의 자동 `page_view`를 전제로 한다. 웹 데이터 스트림에서 `Page changes based on browser history events`가 켜져 있는지 확인하고, 별도의 수동 `page_view` 태그를 중복으로 만들지 않는다.
+`page_view`는 코드가 직접 보낸다(`components/analytics/analytics-runtime.tsx`). 첫 로드의 자동 전송은 `send_page_view: false`로 끄고,
+경로(pathname)가 바뀔 때마다 한 번 보낸다. 이렇게 하는 이유는 관리자 화면(`/admin`)을 집계에서 빼고 이전 화면을 `page_referrer`로 남기기 위해서다.
+검색어·필터·정렬처럼 쿼리만 바뀌는 이동은 `page_view`가 아니라 `search_submitted`, `filter_used`, `sort_changed`로 센다.
+
+따라서 웹 데이터 스트림의 Enhanced Measurement에서 **`Page changes based on browser history events`를 꺼야 한다.**
+`send_page_view: false`는 첫 로드의 자동 page_view만 끄고, 이 옵션이 켜져 있으면 history 변경마다 page_view가 따로 나가
+공개 화면은 두 번, 관리자 화면은 집계 제외 없이 기록된다([Google: Measure single-page applications](https://developers.google.com/analytics/devguides/collection/ga4/views)).
 
 아래 저카디널리티 파라미터를 이벤트 범위 Custom dimension으로 우선 등록한다.
 

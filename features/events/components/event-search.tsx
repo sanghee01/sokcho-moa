@@ -64,7 +64,10 @@ export function EventSearch({
       })}
       <div className="relative">
         <label htmlFor="event-search" className="sr-only">행사명, 장소, 기관 검색</label>
+        {/* 같은 route에서 검색어만 바뀌면(뒤로 가기, 조건 초기화) 컴포넌트가 유지되어 defaultValue가 다시 적용되지 않는다.
+            검색어를 key로 두어 URL의 검색어와 입력값을 맞춘다. */}
         <input
+          key={query ?? ""}
           id="event-search"
           name="q"
           type="search"

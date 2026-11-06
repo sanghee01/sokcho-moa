@@ -12,10 +12,15 @@ export function withEventBrowsePath(
   return { ...params, [browsePathParam]: pathname };
 }
 
+/** 사이트 안 경로인지 확인한다. `//host`, `/\\host`는 브라우저가 다른 사이트 주소로 해석하므로 거부한다. */
+function isSameSitePath(value: string | undefined): value is string {
+  return Boolean(value?.startsWith("/") && !value.startsWith("//") && !value.startsWith("/\\"));
+}
+
 export function eventBrowsePath(params: EventSearchParams) {
   const value = params[browsePathParam];
   const pathname = Array.isArray(value) ? value[0] : value;
-  return pathname?.startsWith("/") ? pathname : "/";
+  return isSameSitePath(pathname) ? pathname : "/";
 }
 
 export function buildEventBrowseHref(

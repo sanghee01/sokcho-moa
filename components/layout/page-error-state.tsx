@@ -6,7 +6,8 @@ import { getButtonClassName } from "@/components/ui/button-styles";
 
 type PageErrorStateProps = {
   error: Error & { digest?: string };
-  reset: () => void;
+  /** Next.js error boundary의 retry: 데이터를 다시 가져와 다시 그린다(reset은 다시 가져오지 않음). */
+  retry: () => void;
   eyebrow: string;
   title: string;
   description: string;
@@ -16,7 +17,7 @@ type PageErrorStateProps = {
 
 export function PageErrorState({
   error,
-  reset,
+  retry,
   eyebrow,
   title,
   description,
@@ -35,7 +36,7 @@ export function PageErrorState({
       <div className="mt-8 flex flex-wrap justify-center gap-3">
         <button
           type="button"
-          onClick={reset}
+          onClick={() => retry()}
           className={getButtonClassName({ variant: "primary", size: "medium", width: "content" })}
         >
           다시 시도

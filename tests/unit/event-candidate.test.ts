@@ -46,4 +46,14 @@ describe("eventCandidateSchema", () => {
     const result = eventCandidateSchema.safeParse({ ...candidate, sourceUrl: "https://www.sokcho.go.kr/sc/portal" });
     expect(result.success).toBe(false);
   });
+
+  it("DB 저장 규칙에 걸리는 후보(종료만 있음, 신청 순서 역전, 좌표 한쪽만)를 거부한다", () => {
+    expect(eventCandidateSchema.safeParse({ ...candidate, eventStartAt: null, eventEndAt: "2026-08-01T12:00:00+09:00" }).success).toBe(false);
+    expect(eventCandidateSchema.safeParse({
+      ...candidate,
+      applicationStartAt: "2026-07-20T00:00:00+09:00",
+      applicationEndAt: "2026-07-10T00:00:00+09:00",
+    }).success).toBe(false);
+    expect(eventCandidateSchema.safeParse({ ...candidate, latitude: 38.2, longitude: null }).success).toBe(false);
+  });
 });

@@ -103,4 +103,11 @@ describe("POST /api/revalidate", () => {
     expect(mocks.revalidatePath).toHaveBeenCalledWith("/");
     expect(mocks.revalidatePath.mock.calls.some(([path]) => String(path).startsWith("/events/"))).toBe(false);
   });
+
+  it("본문이 있는데 JSON이 깨져 있으면 성공으로 넘기지 않고 400을 돌려준다", async () => {
+    const response = await POST(revalidateRequest({ authorization: `Bearer ${SECRET}`, body: '{"slug": "summer-' }));
+
+    expect(response.status).toBe(400);
+    expect(mocks.revalidateTag).not.toHaveBeenCalled();
+  });
 });

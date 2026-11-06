@@ -1,7 +1,14 @@
 "use client";
 
+import { createContext, useContext } from "react";
 import { useFormStatus } from "react-dom";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+
+/**
+ * onSubmit에서 action을 직접 호출하는 폼(AdminActionForm)은 useFormStatus가 제출 중 상태를 알 수 없다.
+ * 그런 폼은 이 context로 제출 중 상태를 알려 준다.
+ */
+export const FormPendingContext = createContext(false);
 
 export function FormSubmitButton({
   idleLabel,
@@ -14,7 +21,9 @@ export function FormSubmitButton({
   className: string;
   disabled?: boolean;
 }) {
-  const { pending } = useFormStatus();
+  const { pending: formActionPending } = useFormStatus();
+  const contextPending = useContext(FormPendingContext);
+  const pending = formActionPending || contextPending;
   const isDisabled = disabled || pending;
 
   return (

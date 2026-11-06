@@ -1,5 +1,6 @@
 import "server-only";
 import { createSessionSupabaseClient } from "@/lib/supabase/server";
+import { isUuid } from "@/lib/uuid";
 
 export type AdminEventDeletionIdentity = {
   kind: string;
@@ -48,6 +49,15 @@ export async function getAdminEvents({
   const start = Math.max(0, (page - 1) * pageSize);
   query = query.range(start, start + pageSize - 1);
   const { data, count, error } = await query;
+  // 요청한 페이지가 전체 행 수를 넘으면 PostgREST는 416(PGRST103)을 돌려준다. 오류가 아니라 "빈 페이지"로 보고,
+  // 화면이 마지막 페이지로 다시 조회할 수 있게 전체 수만 따로 센다.
+  if (error?.code === "PGRST103") {
+    let countQuery = client.from("events").select("id", { count: "exact", head: true });
+    if (isEventReviewStatus(status)) countQuery = countQuery.eq("review_status", status);
+    const { count: totalCount, error: countError } = await countQuery;
+    if (countError) throw new Error(`관리자 행사 수를 불러오지 못했습니다: ${countError.message}`);
+    return { events: [], totalCount: totalCount ?? 0 };
+  }
   if (error) throw new Error(`관리자 행사 목록을 불러오지 못했습니다: ${error.message}`);
   return { events: data ?? [], totalCount: count ?? 0 };
 }
@@ -70,6 +80,7 @@ export async function getAdminEventStatusCounts(): Promise<Record<EventReviewSta
 }
 
 export async function getAdminEvent(id: string) {
+  if (!isUuid(id)) return null;
   const client = await createSessionSupabaseClient();
   const { data, error } = await client
     .from("events")

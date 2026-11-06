@@ -8,12 +8,10 @@ type ReviewStatus = "pending" | "published" | "rejected";
 
 export function StatusControls({
   id,
-  slug,
   current,
   onStatusChange,
 }: {
   id: string;
-  slug: string;
   current: string;
   onStatusChange?: (status: ReviewStatus) => void;
 }) {
@@ -38,7 +36,7 @@ export function StatusControls({
       setOptimisticStatus(nextStatus);
       onStatusChange?.(nextStatus);
       try {
-        const result = await setEventReviewStatusAction({ id, slug, status: nextStatus });
+        const result = await setEventReviewStatusAction({ id, status: nextStatus });
         setConfirmedStatus(result.status);
       } catch {
         onStatusChange?.(previousStatus);

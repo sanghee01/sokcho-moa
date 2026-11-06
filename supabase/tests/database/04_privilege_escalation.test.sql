@@ -17,6 +17,8 @@ begin
   return affected;
 end;
 $$;
+-- 새 함수는 기본 실행 권한이 없으므로(20261106084625) 시험 역할에 명시적으로 준다.
+grant execute on function pg_temp.affected_rows(text) to authenticated;
 
 insert into auth.users (id, email, aud, role)
 values

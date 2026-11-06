@@ -21,13 +21,12 @@ import {
 } from "@/features/events/admin/collection-exclusion";
 import { buildEventPayload, eventSavedRedirect } from "@/features/events/admin/event-payload";
 import { readEventFormInput } from "@/features/events/admin/form-input";
-import { readEventImageFile, removeEventImage, uploadEventImage } from "@/features/events/admin/image-storage";
+import { cleanupUnusedEventImage, readEventImageFile, removeEventImage, uploadEventImage } from "@/features/events/admin/image-storage";
 import { eventFormSchema } from "@/features/events/admin/schemas";
 import { eventIndexNowPaths, expirePublicEvents } from "@/features/events/cache";
 
 const reviewSchema = z.object({
   id: z.string().uuid(),
-  slug: z.string().min(1),
   status: z.enum(["pending", "published", "rejected"]),
 });
 
@@ -45,10 +44,10 @@ const SAVE_FAILED_MESSAGE = "행사를 저장하지 못했습니다. 잠시 후 
 async function readPublication(client: SessionSupabaseClient, id: string) {
   const { data, error } = await client
     .from("events")
-    .select("category, review_status")
+    .select("category, review_status, image_url")
     .eq("id", id)
     .maybeSingle();
-  return { publication: data as { category: string; review_status: string } | null, error };
+  return { publication: data as { category: string; review_status: string; image_url: string | null } | null, error };
 }
 
 /** 공개 중이었거나 공개된 행사만 검색엔진에 알린다. 응답을 늦추지 않도록 응답 뒤(after)에 보낸다. */
@@ -80,7 +79,7 @@ export async function saveEventAction(
   const payload = buildEventPayload(event, verifiedAt);
   const client = await createSessionSupabaseClient();
 
-  let previous: { category: string; review_status: string } | null = null;
+  let previous: { category: string; review_status: string; image_url: string | null } | null = null;
   if (event.id) {
     const { publication, error } = await readPublication(client, event.id);
     if (error) {
@@ -126,6 +125,8 @@ export async function saveEventAction(
 
   const { publication: saved, error: savedError } = await readPublication(client, savedEventId);
   if (savedError) console.warn("저장한 행사의 공개 상태를 확인하지 못했습니다.", savedError.message);
+  // 수정으로 대표 이미지를 바꾸거나 지웠으면 이전 파일을 정리한다.
+  if (previous && saved) await cleanupUnusedEventImage(client, previous.image_url, saved.image_url);
 
   expirePublicEvents(event.slug);
   const wasPublished = previous?.review_status === "published";
@@ -139,7 +140,11 @@ export async function saveEventAction(
   redirect(eventSavedRedirect(isEditing));
 }
 
-/** 검수 목록의 공개·반려·대기 버튼. 공개할 때마다 published_at을 지금 시각으로 다시 쓴다(기존 동작). */
+/**
+ * 검수 목록의 공개·반려·대기 버튼.
+ * - published_at은 처음 공개한 시각이다. 잠시 비공개했다가 다시 공개해도 바꾸지 않아 "게시순"이 흔들리지 않는다.
+ * - 캐시 경로와 검색엔진 알림은 화면이 보낸 값이 아니라 DB의 slug·이전 상태로 정한다.
+ */
 export async function setEventReviewStatusAction(input: unknown) {
   await requireAdmin();
   const parsed = reviewSchema.safeParse(input);
@@ -147,19 +152,36 @@ export async function setEventReviewStatusAction(input: unknown) {
 
   const client = await createSessionSupabaseClient();
 
+  const { data: current, error: readError } = await client
+    .from("events")
+    .select("slug, category, review_status, published_at, event_start_at")
+    .eq("id", parsed.data.id)
+    .maybeSingle();
+  if (readError) throwActionError("행사의 현재 공개 상태를 확인하지 못했습니다.", readError);
+  if (!current) throwActionError("이미 삭제되었거나 권한이 없는 행사입니다. 목록을 새로고침해 주세요.");
+  // DB 제약(events_published_fields)과 같은 조건. 그대로 보내면 이유 없이 "바꾸지 못했습니다"만 보인다.
+  if (parsed.data.status === "published" && !current.event_start_at) {
+    throwActionError("행사 시작 일시가 있어야 공개할 수 있습니다. 행사를 수정해 시작 일시를 입력해 주세요.");
+  }
+
   const { data: updatedEvent, error } = await client
     .from("events")
     .update({
       review_status: parsed.data.status,
-      published_at: parsed.data.status === "published" ? new Date().toISOString() : null,
+      published_at: parsed.data.status === "published"
+        ? current.published_at ?? new Date().toISOString()
+        : current.published_at,
     })
     .eq("id", parsed.data.id)
-    .select("category")
+    .select("slug, category")
     .single();
   if (error) throwActionError("공개 상태를 바꾸지 못했습니다.", error);
 
-  expirePublicEvents(parsed.data.slug);
-  notifySearchEnginesAfterResponse(parsed.data.slug, [updatedEvent?.category]);
+  expirePublicEvents(updatedEvent.slug);
+  // 공개 페이지가 새로 생기거나 사라질 때만 검색엔진에 알린다(대기↔반려는 공개 URL에 변화가 없다).
+  if (current.review_status === "published" || parsed.data.status === "published") {
+    notifySearchEnginesAfterResponse(updatedEvent.slug, [updatedEvent.category]);
+  }
   return { status: parsed.data.status };
 }
 
@@ -192,6 +214,8 @@ export async function deleteEventAction(
   }
 
   const slug = typeof deletedSlug === "string" ? deletedSlug : null;
+  // 삭제한 행사의 포스터가 공개 bucket에 남아 예전 URL로 계속 보이지 않게 지운다.
+  await cleanupUnusedEventImage(client, publication?.image_url ?? null, null);
   expirePublicEvents(slug);
   if (slug && publication?.review_status === "published") {
     notifySearchEnginesAfterResponse(slug, [publication.category]);

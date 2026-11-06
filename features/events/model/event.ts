@@ -127,15 +127,42 @@ export const eventCandidateSchema: z.ZodType<EventCandidate> = z.object({
   imageUrl: nullableUrl,
   sourceName: z.string().trim().min(1).max(200),
   sourceUrl: httpUrlSchema.refine(isLikelyEventDetailUrl, "기관 대표 홈이나 목록이 아닌 행사별 공식 원문 URL을 입력하세요."),
+}).superRefine((candidate, context) => {
+  // DB 제약(events_time_order, events_application_order, events_coordinates_pair)과 같은 검사.
+  if (candidate.eventEndAt && !candidate.eventStartAt) {
+    context.addIssue({ code: "custom", path: ["eventStartAt"], message: "eventEndAt이 있으면 eventStartAt도 필요합니다." });
+  }
+  if (candidate.eventStartAt && candidate.eventEndAt && new Date(candidate.eventEndAt) < new Date(candidate.eventStartAt)) {
+    context.addIssue({ code: "custom", path: ["eventEndAt"], message: "eventEndAt은 eventStartAt보다 빠를 수 없습니다." });
+  }
+  if (candidate.applicationStartAt && candidate.applicationEndAt
+    && new Date(candidate.applicationEndAt) < new Date(candidate.applicationStartAt)) {
+    context.addIssue({ code: "custom", path: ["applicationEndAt"], message: "applicationEndAt은 applicationStartAt보다 빠를 수 없습니다." });
+  }
+  if ((candidate.latitude === null) !== (candidate.longitude === null)) {
+    context.addIssue({ code: "custom", path: ["latitude"], message: "latitude와 longitude는 함께 입력하거나 함께 비워야 합니다." });
+  }
 });
 
 export type EventState = "upcoming" | "ongoing" | "ended";
 export type ApplicationState = "not_applicable" | "upcoming" | "open" | "closing_today" | "closed";
 export type EventUnavailableReason = "application_closed" | "event_ended";
 
+/**
+ * 행사가 끝나는 시각. 종료일이 없으면 시작한 날(KST) 하루 행사로 보고 그날 23:59:59.999 KST를 종료로 쓴다.
+ * 관리자 폼이 날짜만 입력된 종료를 그날 끝으로 저장하는 것과 같은 기준이다.
+ */
+export function effectiveEnd(startsAt: string, endsAt: string | null) {
+  if (endsAt) return new Date(endsAt);
+  const start = new Date(startsAt);
+  if (Number.isNaN(start.getTime())) return start;
+  const { year, month, day } = getKoreanParts(start);
+  return new Date(koreanDate(year, month, day + 1).getTime() - 1);
+}
+
 export function deriveEventState(event: Pick<Event, "eventStartAt" | "eventEndAt">, now = new Date()): EventState {
   const start = new Date(event.eventStartAt);
-  const end = new Date(event.eventEndAt ?? event.eventStartAt);
+  const end = effectiveEnd(event.eventStartAt, event.eventEndAt);
   if (now < start) return "upcoming";
   if (now > end) return "ended";
   return "ongoing";
@@ -233,12 +260,12 @@ export function isEventClosedForDiscovery(event: Event, now = new Date()) {
 
 export function getRelatedEvents(current: Event, events: Event[], limit = 4, now = new Date()) {
   const currentStart = new Date(current.eventStartAt).getTime();
-  const currentEnd = new Date(current.eventEndAt ?? current.eventStartAt).getTime();
+  const currentEnd = effectiveEnd(current.eventStartAt, current.eventEndAt).getTime();
   return events
     .filter((event) => event.id !== current.id && !isEventClosedForDiscovery(event, now))
     .map((event) => {
       const start = new Date(event.eventStartAt).getTime();
-      const end = new Date(event.eventEndAt ?? event.eventStartAt).getTime();
+      const end = effectiveEnd(event.eventStartAt, event.eventEndAt).getTime();
       const overlaps = start <= currentEnd && end >= currentStart;
       const sharesAudience = event.audiences.some((audience) => current.audiences.includes(audience));
       return { event, score: (overlaps ? 4 : 0) + (event.category === current.category ? 2 : 0) + (sharesAudience ? 1 : 0) };
@@ -307,7 +334,12 @@ function compareLatestSchedule(a: Event, b: Event, now: Date) {
     return dateTimestamp(a.eventStartAt) - dateTimestamp(b.eventStartAt);
   }
 
-  return dateTimestamp(b.eventEndAt ?? b.eventStartAt) - dateTimestamp(a.eventEndAt ?? a.eventStartAt);
+  return effectiveEndTimestamp(b) - effectiveEndTimestamp(a);
+}
+
+function effectiveEndTimestamp(event: Event) {
+  const timestamp = effectiveEnd(event.eventStartAt, event.eventEndAt).getTime();
+  return Number.isNaN(timestamp) ? 0 : timestamp;
 }
 
 function dateTimestamp(value: string | null) {
@@ -323,7 +355,7 @@ function eventScheduleRanges(event: Event) {
   return values.flatMap(({ startsAt, endsAt }) => {
     const start = new Date(startsAt);
     if (Number.isNaN(start.getTime())) return [];
-    const rawEnd = new Date(endsAt ?? startsAt);
+    const rawEnd = effectiveEnd(startsAt, endsAt);
     const end = Number.isNaN(rawEnd.getTime()) || rawEnd < start ? start : rawEnd;
     return [{ start, end }];
   });

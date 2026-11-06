@@ -30,17 +30,19 @@ select throws_ok(
   '42501', null,
   'anon은 의견을 DB에 직접 저장할 수 없다'
 );
--- select·update 권한(grant)은 Supabase 기본값으로 열려 있다. 막는 것은 RLS라서 오류 대신 0행이 된다.
+-- 제보 select 권한(grant)은 Supabase 기본값으로 열려 있다. 막는 것은 RLS라서 오류 대신 0행이 된다.
 select is_empty($$select id from public.event_reports$$, 'anon에게는 RLS 때문에 제보가 하나도 보이지 않는다');
-select lives_ok(
+-- 행사 쓰기 권한은 anon에게서 회수했다. RLS 0행이 아니라 권한 오류로 막힌다.
+select throws_ok(
   $$update public.events set title = '변조' where slug = 'pgtap-published'$$,
-  'anon의 행사 수정 요청은 오류 없이 끝나지만'
+  '42501', null,
+  'anon의 행사 수정 요청은 권한 오류로 막히고'
 );
 reset role;
 select is(
   (select title from public.events where slug = 'pgtap-published'),
   '공개 행사',
-  'RLS 때문에 실제로는 아무 행도 바뀌지 않는다'
+  '실제로 아무 행도 바뀌지 않는다'
 );
 
 -- 일반 로그인 사용자(관리자 아님)

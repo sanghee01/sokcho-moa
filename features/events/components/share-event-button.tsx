@@ -57,8 +57,9 @@ export function ShareEventButton({ slug }: { slug: string }) {
 
     if (canShareNatively) {
       try {
-        trackAnalyticsEvent("share", { method: "native_share_sheet", content_type: "event", item_id: slug });
         await navigator.share({ url });
+        // 공유 시트에서 실제로 공유했을 때만 집계한다(취소하면 AbortError로 아래 catch에 간다).
+        trackAnalyticsEvent("share", { method: "native_share_sheet", content_type: "event", item_id: slug });
         return;
       } catch (error) {
         if (error instanceof DOMException && error.name === "AbortError") return;

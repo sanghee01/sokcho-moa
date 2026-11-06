@@ -1,5 +1,9 @@
 import "server-only";
-import { lookup } from "node:dns/promises";
+import { lookup as dnsLookup, type LookupAddress } from "node:dns";
+import http from "node:http";
+import https from "node:https";
+import { BlockList, isIP, type LookupFunction } from "node:net";
+import { Readable } from "node:stream";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { EVENT_IMAGE_MAX_BYTES } from "@/features/events/admin/image-rules";
 import { EventImageOptimizationError, optimizeEventImage } from "@/features/events/admin/image-optimize";
@@ -9,25 +13,60 @@ const MAX_REMOTE_IMAGE_BYTES = 12 * 1024 * 1024;
 const FETCH_TIMEOUT_MS = 15_000;
 const MAX_REDIRECTS = 3;
 const imageContentTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
+const NOT_PUBLIC_MESSAGE = "공개된 포스터 이미지 URL만 가져올 수 있습니다.";
 
-function isPrivateIpAddress(address: string) {
-  const normalized = address.toLowerCase();
-  if (normalized.startsWith("::ffff:")) return isPrivateIpAddress(normalized.slice(7));
-  if (normalized === "::1" || normalized === "::" || normalized.startsWith("fe80:") || normalized.startsWith("fc") || normalized.startsWith("fd") || normalized.startsWith("ff")) return true;
+/** 공개 인터넷이 아닌 대역(IANA special-purpose). 서버가 내부망·클라우드 메타데이터에 요청하지 않게 막는다. */
+const blockedRanges = new BlockList();
+for (const [network, prefix] of [
+  ["0.0.0.0", 8], ["10.0.0.0", 8], ["100.64.0.0", 10], ["127.0.0.0", 8], ["169.254.0.0", 16],
+  ["172.16.0.0", 12], ["192.0.0.0", 24], ["192.0.2.0", 24], ["192.168.0.0", 16], ["198.18.0.0", 15],
+  ["198.51.100.0", 24], ["203.0.113.0", 24], ["224.0.0.0", 3],
+] as const) blockedRanges.addSubnet(network, prefix, "ipv4");
+for (const [network, prefix] of [
+  ["::", 127], ["64:ff9b::", 96], ["100::", 64], ["2001:db8::", 32], ["fc00::", 7], ["fe80::", 10], ["ff00::", 8],
+] as const) blockedRanges.addSubnet(network, prefix, "ipv6");
 
-  const parts = normalized.split(".").map(Number);
-  if (parts.length !== 4 || parts.some(Number.isNaN)) return false;
-  const [first, second] = parts;
-  return first === 0
-    || first === 10
-    || first === 127
-    || first === 169 && second === 254
-    || first === 172 && second >= 16 && second <= 31
-    || first === 192 && second === 168
-    || first >= 224;
+/** IPv4-mapped IPv6(::ffff:a.b.c.d 또는 ::ffff:7f00:1)는 IPv4 주소로 바꿔 검사한다. */
+function mappedIpv4(address: string) {
+  const match = /^::ffff:(?:(\d+\.\d+\.\d+\.\d+)|([0-9a-f]{1,4}):([0-9a-f]{1,4}))$/i.exec(address);
+  if (!match) return null;
+  if (match[1]) return match[1];
+  const high = Number.parseInt(match[2], 16);
+  const low = Number.parseInt(match[3], 16);
+  return [high >> 8, high & 255, low >> 8, low & 255].join(".");
 }
 
-async function assertPublicImageUrl(value: string) {
+export function isBlockedAddress(address: string) {
+  const ipv4 = mappedIpv4(address.toLowerCase());
+  if (ipv4) return blockedRanges.check(ipv4, "ipv4");
+  const family = isIP(address);
+  if (family === 0) return true;
+  return blockedRanges.check(address, family === 4 ? "ipv4" : "ipv6");
+}
+
+class BlockedAddressError extends Error {
+  constructor() {
+    super(NOT_PUBLIC_MESSAGE);
+  }
+}
+
+/**
+ * 연결하는 순간의 DNS 결과를 검사한다. 미리 한 번 확인하고 fetch가 다시 조회하면, 그 사이 DNS 응답을
+ * 내부 IP로 바꾸는 공격(DNS rebinding)에 뚫린다. 그래서 실제 연결에 쓰는 lookup 자체에서 막는다.
+ */
+const publicOnlyLookup: LookupFunction = (hostname, options, callback) => {
+  dnsLookup(hostname, { ...options, all: true }, (error, addresses) => {
+    if (error) return callback(error, "", 4);
+    const list = addresses as unknown as LookupAddress[];
+    if (list.length === 0 || list.some(({ address }) => isBlockedAddress(address))) {
+      return callback(new BlockedAddressError(), "", 4);
+    }
+    if (options.all) return (callback as unknown as (error: null, addresses: LookupAddress[]) => void)(null, list);
+    return callback(null, list[0].address, list[0].family);
+  });
+};
+
+function assertPublicImageUrl(value: string) {
   let url: URL;
   try {
     url = new URL(value);
@@ -36,20 +75,39 @@ async function assertPublicImageUrl(value: string) {
   }
   if (url.protocol !== "https:" && url.protocol !== "http:") throw new Error("포스터 이미지는 HTTP(S) URL만 가져올 수 있습니다.");
   if (url.username || url.password || url.hostname === "localhost" || url.hostname.endsWith(".localhost")) {
-    throw new Error("공개된 포스터 이미지 URL만 가져올 수 있습니다.");
+    throw new Error(NOT_PUBLIC_MESSAGE);
   }
-
-  try {
-    const addresses = await lookup(url.hostname, { all: true, verbatim: true });
-    if (addresses.length === 0 || addresses.some(({ address }) => isPrivateIpAddress(address))) {
-      throw new Error("공개된 포스터 이미지 URL만 가져올 수 있습니다.");
-    }
-  } catch (error) {
-    if (error instanceof Error && error.message.includes("공개된 포스터")) throw error;
-    throw new Error("포스터 이미지 서버의 공개 주소를 확인하지 못했습니다.");
-  }
-
+  // IP를 직접 쓴 주소는 DNS 조회 없이 연결되므로 여기서 검사한다.
+  const literal = url.hostname.replace(/^\[|\]$/g, "");
+  if (isIP(literal) && isBlockedAddress(literal)) throw new Error(NOT_PUBLIC_MESSAGE);
   return url;
+}
+
+/** publicOnlyLookup으로 연결하는 GET. 리디렉션은 따라가지 않고 그대로 돌려준다. */
+function requestPublicUrl(url: URL) {
+  const transport = url.protocol === "https:" ? https : http;
+  return new Promise<Response>((resolve, reject) => {
+    const request = transport.request(url, {
+      method: "GET",
+      lookup: publicOnlyLookup,
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+      headers: { accept: "image/avif,image/webp,image/png,image/jpeg;q=0.9,*/*;q=0.1" },
+    }, (incoming) => {
+      const headers = new Headers();
+      for (const [name, value] of Object.entries(incoming.headers)) {
+        if (Array.isArray(value)) value.forEach((item) => headers.append(name, item));
+        else if (value !== undefined) headers.set(name, value);
+      }
+      const status = incoming.statusCode ?? 500;
+      const body = status >= 300 && status < 400 ? null : (Readable.toWeb(incoming) as ReadableStream<Uint8Array>);
+      if (!body) incoming.resume();
+      resolve(new Response(body, { status, headers }));
+    });
+    request.on("error", (error) => reject(error instanceof BlockedAddressError || error.cause instanceof BlockedAddressError
+      ? new Error(NOT_PUBLIC_MESSAGE)
+      : error));
+    request.end();
+  });
 }
 
 async function readLimitedBody(response: Response) {
@@ -87,18 +145,13 @@ async function readLimitedBody(response: Response) {
 }
 
 async function downloadOfficialImage(imageUrl: string) {
-  let url = await assertPublicImageUrl(imageUrl);
+  let url = assertPublicImageUrl(imageUrl);
   for (let redirectCount = 0; redirectCount <= MAX_REDIRECTS; redirectCount += 1) {
-    const response = await fetch(url, {
-      redirect: "manual",
-      cache: "no-store",
-      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-      headers: { accept: "image/avif,image/webp,image/png,image/jpeg;q=0.9,*/*;q=0.1" },
-    });
+    const response = await requestPublicUrl(url);
     if (response.status >= 300 && response.status < 400) {
       const location = response.headers.get("location");
       if (!location || redirectCount === MAX_REDIRECTS) throw new Error("포스터 이미지의 리디렉션 주소를 확인하지 못했습니다.");
-      url = await assertPublicImageUrl(new URL(location, url).toString());
+      url = assertPublicImageUrl(new URL(location, url).toString());
       continue;
     }
     if (!response.ok) throw new Error(`포스터 이미지를 가져오지 못했습니다. (HTTP ${response.status})`);

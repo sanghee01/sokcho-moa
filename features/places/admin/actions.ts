@@ -69,11 +69,13 @@ export async function deletePlaceAction(
   if (!parsed.success) return adminActionFailed("삭제 확인에 체크한 뒤 다시 시도해 주세요.");
 
   const client = await createSessionSupabaseClient();
-  const { error } = await client.from("places").delete().eq("id", parsed.data.id);
+  const { data: deleted, error } = await client.from("places").delete().eq("id", parsed.data.id).select("id");
   if (error) {
     console.error("Place delete failed", error.message);
     return adminActionFailed("명소를 삭제하지 못했습니다. 잠시 후 다시 시도해 주세요.");
   }
+  // RLS에 막히거나 이미 삭제된 행이면 오류 없이 0행이다.
+  if (!deleted?.length) return adminActionFailed("이미 삭제되었거나 권한이 없는 항목입니다. 목록을 새로고침해 주세요.");
 
   expirePublicPlaces();
   redirect("/admin?tab=places&deleted=place");

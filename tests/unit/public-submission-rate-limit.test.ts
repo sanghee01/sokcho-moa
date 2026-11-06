@@ -125,4 +125,66 @@ describe("public submission rate limiter", () => {
       retryAfterSeconds: 60,
     });
   });
+  function rpcKeyHashFor(address: string) {
+    mocks.headers.mockResolvedValueOnce(new Headers({ "x-vercel-forwarded-for": address }));
+    return checkPublicSubmissionRateLimit("event_report").then(
+      () => mocks.rpc.mock.calls.at(-1)?.[1]?.p_key_hash as string,
+    );
+  }
+
+  // 한 가정·기기는 보통 IPv6 /64 대역 하나를 받고 그 안의 주소를 마음대로 바꿀 수 있다.
+  it("groups IPv6 addresses by their /64 prefix", async () => {
+    mocks.rpc.mockResolvedValue({ data: [{ allowed: true, retry_after_seconds: 0 }], error: null });
+
+    const first = await rpcKeyHashFor("2001:db8:1234:5678::1");
+    const sameNetwork = await rpcKeyHashFor("2001:0DB8:1234:5678:abcd:ef01:2345:6789");
+    const otherNetwork = await rpcKeyHashFor("2001:db8:1234:5679::1");
+
+    expect(sameNetwork).toBe(first);
+    expect(otherNetwork).not.toBe(first);
+    expect(JSON.stringify(mocks.rpc.mock.calls)).not.toContain("2001:db8");
+  });
+
+  it("keeps distinct IPv4 addresses separate and treats IPv4-mapped IPv6 as IPv4", async () => {
+    mocks.rpc.mockResolvedValue({ data: [{ allowed: true, retry_after_seconds: 0 }], error: null });
+
+    const first = await rpcKeyHashFor("203.0.113.9");
+    const neighbour = await rpcKeyHashFor("203.0.113.10");
+    const mapped = await rpcKeyHashFor("::ffff:203.0.113.9");
+
+    expect(neighbour).not.toBe(first);
+    expect(mapped).toBe(first);
+  });
+
+  it("limits event views per visitor and event with its own policy", async () => {
+    mocks.rpc.mockResolvedValue({ data: [{ allowed: true, retry_after_seconds: 0 }], error: null });
+
+    await checkPublicSubmissionRateLimit("event_view", { subject: "summer-festival" });
+    await checkPublicSubmissionRateLimit("event_view", { subject: "winter-festival" });
+
+    const summer = mocks.rpc.mock.calls[0]?.[1];
+    const winter = mocks.rpc.mock.calls[1]?.[1];
+    expect(summer).toMatchObject({ p_scope: "event_view", p_limit: 10, p_window_seconds: 600 });
+    expect(summer?.p_key_hash).not.toBe(winter?.p_key_hash);
+    expect(JSON.stringify(mocks.rpc.mock.calls)).not.toContain("summer-festival");
+  });
+
+  it.each([
+    ["the HMAC secret", () => vi.stubEnv("SUBMISSION_RATE_LIMIT_HMAC_SECRET", ""), "hmac"],
+    ["the server client", () => mocks.createAdminSupabaseClient.mockReturnValue(null), "client"],
+    ["a trusted client address", () => mocks.headers.mockResolvedValue(new Headers()), "address"],
+  ])("logs which input is missing when %s is unavailable, without secrets or addresses", async (_, setup, word) => {
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    setup();
+
+    await expect(checkPublicSubmissionRateLimit("event_report")).resolves.toEqual({
+      allowed: false,
+      retryAfterSeconds: 60,
+    });
+    const logged = JSON.stringify(consoleError.mock.calls);
+    expect(logged.toLowerCase()).toContain(word);
+    expect(logged).not.toContain("test-rate-limit-secret");
+    expect(logged).not.toContain("203.0.113.9");
+    consoleError.mockRestore();
+  });
 });

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import type { ReactNode } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { EventCard } from "@/features/events/components/event-card";
@@ -8,10 +9,12 @@ import { EventViewCount } from "@/features/events/components/event-view-count";
 import { PlaceCard } from "@/features/places/components/place-card";
 import { ShareEventButton } from "@/features/events/components/share-event-button";
 import { StatusBadges } from "@/features/events/components/status-badges";
+import { LiveApplicationStateLabel } from "@/features/events/components/live-event-status";
+import { pickEventStatusFields } from "@/features/events/model/status-fields";
 import { getAllPublicEvents, getPublicEventBySlug } from "@/features/events/queries";
 import { getPublicPlaces } from "@/features/places/queries";
-import { audienceLabels, applicationStateLabels, categoryLabels, formatDateRange, formatOperatingSchedule } from "@/features/events/model/format";
-import { deriveApplicationState, getEventIntroduction, getRelatedEvents } from "@/features/events/model/event";
+import { audienceLabels, categoryLabels, formatDateRange, formatOperatingSchedule } from "@/features/events/model/format";
+import { getEventIntroduction, getRelatedEvents } from "@/features/events/model/event";
 import { eventTopicPath } from "@/features/events/model/topics";
 import { createEventMapLinks, findNearbyPlaces, getNearbyPlacesLabel } from "@/features/events/model/location";
 import { analyticsData } from "@/lib/analytics/events";
@@ -72,7 +75,7 @@ export default async function EventDetailPage({ params }: EventPageProps) {
   const nearbyPlaces = findNearbyPlaces(event, places);
   const nearbyPlacesLabel = getNearbyPlacesLabel(event);
   const relatedEvents = getRelatedEvents(event, allEvents);
-  const applicationState = deriveApplicationState(event);
+  const renderedAt = new Date().toISOString();
   const mapLinks = createEventMapLinks(
     event.locationName ?? event.title,
     event.address,
@@ -83,11 +86,11 @@ export default async function EventDetailPage({ params }: EventPageProps) {
   const breadcrumbJsonLd = buildEventBreadcrumbStructuredData(event, getPublicEnv().NEXT_PUBLIC_SITE_URL);
   const topicPath = eventTopicPath(event.category);
 
-  const facts = [
+  const facts: [label: string, value: ReactNode][] = [
     ["행사기간", formatDateRange(event.eventStartAt, event.eventEndAt)],
     ["운영일정", formatOperatingSchedule(event.operatingHours)],
     ["신청기간", event.applicationStartAt || event.applicationEndAt ? formatDateRange(event.applicationStartAt, event.applicationEndAt) : "별도 신청 없음"],
-    ["신청상태", applicationStateLabels[applicationState]],
+    ["신청상태", <LiveApplicationStateLabel key="application-state" status={pickEventStatusFields(event)} renderedAt={renderedAt} />],
     ["장소", event.locationName ?? "원문 확인"],
     ["상세 주소", event.address ?? "원문 확인"],
     ["이용 요금", event.priceText ?? "원문 확인"],

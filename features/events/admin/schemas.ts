@@ -66,8 +66,20 @@ export const eventFormSchema = z.object({
   sourceUrl: requiredHttpsUrl,
   isFeatured: z.boolean(),
 }).superRefine((event, context) => {
+  // 아래 검사는 DB 제약(events_time_order, events_application_order, event_occurrences_unique_start)과 같다.
+  // 저장 전에 이유를 알려 주지 않으면 "잠시 후 다시 시도"라는 일반 오류만 나고 다시 해도 성공하지 않는다.
+  if (event.eventEndAt && !event.eventStartAt) {
+    context.addIssue({ code: "custom", path: ["eventStartAt"], message: "행사 종료를 입력하려면 시작 일시도 입력하세요." });
+  }
   if (event.eventStartAt && event.eventEndAt && new Date(event.eventEndAt) < new Date(event.eventStartAt)) {
     context.addIssue({ code: "custom", path: ["eventEndAt"], message: "행사 종료는 시작보다 빠를 수 없습니다." });
+  }
+  if (event.applicationStartAt && event.applicationEndAt && new Date(event.applicationEndAt) < new Date(event.applicationStartAt)) {
+    context.addIssue({ code: "custom", path: ["applicationEndAt"], message: "신청 마감은 신청 시작보다 빠를 수 없습니다." });
+  }
+  const occurrenceStarts = event.occurrences.map((occurrence) => occurrence.startsAt).filter(Boolean);
+  if (new Set(occurrenceStarts).size !== occurrenceStarts.length) {
+    context.addIssue({ code: "custom", path: ["occurrences"], message: "시작 일시가 같은 회차가 두 번 이상 있습니다." });
   }
 
   if (event.scheduleMode === "occurrences" && event.occurrences.length === 0) {

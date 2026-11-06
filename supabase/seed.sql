@@ -1,3 +1,14 @@
+-- 운영 DB 보호: seed에는 비밀번호가 알려진 로컬 관리자 계정과 공개 샘플 행사가 들어 있다.
+-- `db reset` 직후의 빈 DB가 아니면(실제 행사나 다른 사용자가 있으면) 아무것도 넣지 않고 중단한다.
+do $$
+begin
+  if exists (select 1 from public.events where slug not like 'demo-%')
+    or exists (select 1 from auth.users where email is distinct from 'admin@sokcho-moa.test') then
+    raise exception 'seed.sql은 로컬 DB(db reset 직후)에서만 실행합니다. 운영 데이터가 있는 DB라 중단합니다.';
+  end if;
+end
+$$;
+
 -- 모든 행사는 UI 검증용 샘플입니다. 실제 운영 행사로 게시하지 마세요.
 -- now() 상대값을 사용하므로 seed를 적용할 때마다 진행/신청 상태 사례를 재현할 수 있습니다.
 -- event_sources의 충돌 키는 migration의 (event_id, provider, original_url) 계약과 동일합니다.

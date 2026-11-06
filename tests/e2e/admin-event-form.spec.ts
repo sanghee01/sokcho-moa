@@ -68,3 +68,31 @@ test("행사 수정 폼은 저장된 값을 불러오고 기존 slug를 숨김 �
   await deleteDialog.getByRole("button", { name: "취소", exact: true }).click();
   await expect(deleteDialog).not.toBeVisible();
 });
+
+test("서버 검증에 실패해도 입력이 남고, 고쳐서 다시 저장하면 대시보드로 이동한다", async ({ page }, testInfo) => {
+  // 행사를 실제로 저장하므로 한 브라우저 설정에서만 실행한다.
+  test.skip(testInfo.project.name !== "desktop-chromium", "DB 상태를 바꾸는 test는 desktop에서만 실행");
+  await page.goto("/admin/events/new");
+  const title = page.getByRole("textbox", { name: /행사명.*필수/ });
+  await title.fill("입력이 남아야 하는 행사");
+  await page.getByRole("combobox", { name: /카테고리.*필수/ }).selectOption({ index: 1 });
+  await page.getByRole("checkbox", { name: "성인" }).check();
+  await page.getByRole("textbox", { name: /출처 기관.*필수/ }).fill("속초시");
+  // 브라우저 type=url 검사는 통과하지만 서버는 HTTPS만 받으므로 서버 오류가 난다.
+  await page.getByRole("textbox", { name: /행사 안내 URL.*필수/ }).fill("http://www.sokcho.go.kr/events/1");
+  const dateInputs = page.locator('input[type="date"]');
+  if (await dateInputs.count()) await dateInputs.first().fill("2026-12-01");
+
+  const responded = page.waitForResponse((response) => response.request().method() === "POST" && response.url().includes("/admin"));
+  await page.getByRole("button", { name: "작성 완료" }).click();
+  await responded;
+
+  await expect(page.getByRole("alert").filter({ hasText: "HTTPS" })).toBeVisible();
+  await expect(title).toHaveValue("입력이 남아야 하는 행사");
+  await expect(page.getByRole("textbox", { name: /출처 기관.*필수/ })).toHaveValue("속초시");
+
+  await page.getByRole("textbox", { name: /행사 안내 URL.*필수/ }).fill("https://www.sokcho.go.kr/events/1");
+  await page.getByRole("button", { name: "작성 완료" }).click();
+  await expect(page).toHaveURL(/\/admin\?saved=event-created/);
+  await expect(page.getByText("입력이 남아야 하는 행사").first()).toBeVisible();
+});

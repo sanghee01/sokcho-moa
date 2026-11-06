@@ -66,3 +66,15 @@ test("로그아웃 상태에서는 관리자 화면 대신 로그인 화면으�
   await page.goto("/admin");
   await expect(page).toHaveURL(/\/admin\/login$/);
 });
+
+test("범위를 넘는 목록 페이지는 마지막 페이지를, 형식이 틀린 id는 404를 보여 준다", async ({ page }) => {
+  await page.goto("/admin?tab=events&page=99");
+  await expect(eventRow(page)).toBeVisible();
+
+  // 관리자 화면은 loading.tsx로 스트리밍하므로 상태 코드는 200으로 고정된다(Next.js loading.md "Status codes").
+  // 그래서 오류 화면이 아닌 "찾을 수 없음" 화면이 보이는지로 확인한다.
+  for (const path of ["/admin/events/not-a-uuid", "/admin/places/not-a-uuid"]) {
+    await page.goto(path);
+    await expect(page.getByRole("heading", { level: 1, name: "페이지를 찾을 수 없어요." }), path).toBeVisible();
+  }
+});

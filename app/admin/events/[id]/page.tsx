@@ -25,7 +25,7 @@ export default async function EditEventPage({
   return (
     <AdminShell email={admin.email}>
       <ActionFeedback message={feedbackMessage} />
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-3"><h1 className="text-2xl font-black">행사 수정</h1><StatusControls id={String(row.id)} slug={String(row.slug)} current={String(row.review_status)} /></div>
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3"><h1 className="text-2xl font-black">행사 수정</h1><StatusControls id={String(row.id)} current={String(row.review_status)} /></div>
       <EventForm row={row as Record<string, unknown>} />
     </AdminShell>
   );

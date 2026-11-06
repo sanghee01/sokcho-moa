@@ -2,7 +2,7 @@ import "server-only";
 import { createClient } from "@supabase/supabase-js";
 import { getPublicEnv } from "@/lib/env";
 import type { Database } from "@/lib/supabase/database.types";
-import { getServerEnv } from "@/lib/env.server";
+import { getSupabaseSecretKey } from "@/lib/env.server";
 
 /**
  * secret key로 만든 client. DB에서 service_role로 동작해 RLS를 거치지 않는다.
@@ -11,7 +11,7 @@ import { getServerEnv } from "@/lib/env.server";
  */
 export function createAdminSupabaseClient() {
   const env = getPublicEnv();
-  const { SUPABASE_SECRET_KEY } = getServerEnv();
+  const SUPABASE_SECRET_KEY = getSupabaseSecretKey();
   if (!SUPABASE_SECRET_KEY) return null;
 
   return createClient<Database>(env.NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SECRET_KEY, {

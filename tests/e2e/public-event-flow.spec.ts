@@ -323,3 +323,25 @@ test("행사 목록에서 게시·행사일·마감일·조회 기준으로 정�
   await expect(page).not.toHaveURL(/sort=/);
   await expect(sort.getByRole("link", { name: "게시순" })).toHaveAttribute("aria-current", "page");
 });
+
+test("뒤로 가서 검색 전 목록으로 돌아오면 검색창도 비워진다", async ({ page }) => {
+  await page.goto("/");
+  const searchbox = page.getByRole("search", { name: "행사 검색" }).getByRole("searchbox");
+  await searchbox.fill("바다빛");
+  await page.getByRole("button", { name: "검색", exact: true }).click();
+  await expect(page).toHaveURL(/q=/);
+
+  await page.goBack();
+  await expect(page).not.toHaveURL(/q=/);
+  await expect(searchbox).toHaveValue("");
+});
+
+test("캐시된 상세 페이지도 신청 상태는 방문자의 현재 시각으로 보여 준다", async ({ page }) => {
+  // seed의 demo-children-craft는 신청 마감이 DB 초기화 시점 + 2일이다. 브라우저 시각을 그 뒤로 옮긴다.
+  await page.clock.install({ time: new Date(Date.now() + 2.5 * 24 * 60 * 60 * 1_000) });
+  await page.goto("/events/demo-children-craft");
+
+  const facts = page.getByRole("region", { name: "핵심 정보" });
+  await expect(facts.getByText("신청 마감", { exact: true })).toBeVisible();
+  await expect(page.getByLabel("행사 상태").first().getByText("신청 마감", { exact: true })).toBeVisible();
+});

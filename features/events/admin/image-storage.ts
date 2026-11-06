@@ -53,6 +53,39 @@ export async function uploadEventImageBuffer(client: SupabaseClient, image: Arra
 
 export async function removeEventImage(client: SupabaseClient, path: string | null) {
   if (path?.startsWith("events/")) {
-    await client.storage.from(EVENT_IMAGE_BUCKET).remove([path]);
+    const { error } = await client.storage.from(EVENT_IMAGE_BUCKET).remove([path]);
+    if (error) console.error("Event image removal failed", path, error.message);
   }
+}
+
+const PUBLIC_URL_MARKER = `/storage/v1/object/public/${EVENT_IMAGE_BUCKET}/`;
+
+/** 우리 Storage의 행사 이미지 공개 URL이면 bucket 안 경로(events/...)를, 외부 이미지면 null을 돌려준다. */
+export function eventImagePathFromPublicUrl(url: string | null) {
+  if (!url) return null;
+  const index = url.indexOf(PUBLIC_URL_MARKER);
+  if (index < 0) return null;
+  const path = decodeURIComponent(url.slice(index + PUBLIC_URL_MARKER.length).split(/[?#]/)[0]);
+  return path.startsWith("events/") && !path.includes("..") ? path : null;
+}
+
+/**
+ * 행사 이미지를 바꾸거나 지운 뒤(또는 행사를 삭제한 뒤) 이전 파일을 정리한다.
+ * 공개 bucket이라 남겨 두면 삭제한 행사의 포스터도 예전 URL로 계속 공개된다.
+ * 새 값과 같거나, 다른 행사가 아직 같은 URL을 쓰거나, 외부 이미지면 지우지 않는다.
+ */
+export async function cleanupUnusedEventImage(client: SupabaseClient, previousUrl: string | null, nextUrl: string | null) {
+  if (!previousUrl || previousUrl === nextUrl) return;
+  const path = eventImagePathFromPublicUrl(previousUrl);
+  if (!path) return;
+
+  const { count, error } = await client
+    .from("events")
+    .select("id", { count: "exact", head: true })
+    .eq("image_url", previousUrl);
+  if (error) {
+    console.error("Event image reference check failed", error.message);
+    return;
+  }
+  if (count === 0) await removeEventImage(client, path);
 }
