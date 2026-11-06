@@ -47,7 +47,7 @@ Next.js App Router, React, TypeScript, Tailwind CSS, Supabase, Zod, Vitest, Play
 - 게시순·행사일순·신청 마감일순·조회순 정렬
 - 행사 기간, 운영 회차, 신청 상태, 대상, 요금, 장소 확인
 - 공식 행사 안내·신청·예매 페이지와 네이버 지도 연결
-- 행사 캘린더, 주변 명소, 관련 행사 탐색
+- 주변 명소, 관련 행사 탐색
 - 행사 제보와 서비스 의견 접수
 
 ### 운영자 기능
@@ -148,30 +148,38 @@ erDiagram
 ## 코드베이스 구조
 
 ```text
-app/                    # 공개·관리자 페이지, API, 메타데이터
-components/             # 공용 UI와 관리자 UI
-lib/domain/             # 순수 도메인 규칙과 검증
-lib/data/               # 공개 조회, 매퍼, 캐시, 데모 데이터
-lib/actions/            # 서버 액션과 쓰기 진입점
-lib/admin/              # 관리자 인증, 폼 스키마, 쓰기 도우미
-lib/security/           # 공개 제출 요청 제한
-lib/supabase/           # 서버·브라우저·service-role 클라이언트
-data/                   # 검증된 명소 원본 데이터
-supabase/migrations/    # 스키마, RLS, RPC
-tests/                  # 단위·통합·E2E 테스트
+app/            # URL과 1:1인 페이지·API. 데이터 함수를 부르고 feature 컴포넌트를 조립
+features/       # 도메인별 코드: events, places, reports, feedback, auth
+components/     # 여러 feature가 함께 쓰는 UI
+lib/            # 도메인을 모르는 인프라: Supabase client, 환경 변수, 요청 제한, SEO, GA4
+data/           # 검증된 명소 원본 데이터
+supabase/       # migration, seed, pgTAP 권한 테스트, rollback
+tests/          # unit(Vitest), e2e(Playwright)
 ```
+
+폴더 규칙, 라우트, 데이터 흐름, Supabase client 종류, 테이블 권한은 [docs/architecture.md](./docs/architecture.md)에 정리했습니다.
 
 ## 로컬 실행
 
-Node.js 22와 pnpm 9를 사용합니다.
+Node.js 22([.nvmrc](./.nvmrc))와 pnpm 9를 사용합니다. 로컬 Supabase를 Docker로 실행하므로 Docker가 필요합니다.
 
 ```bash
 pnpm install
+pnpm db:start
+```
+
+```bash
 cp .env.example .env.local
+```
+
+`.env.local`에는 `pnpm exec supabase status`가 출력하는 로컬 값을 넣습니다. 변수별 설명은 [.env.example](./.env.example)에 있습니다.
+
+```bash
+pnpm db:reset
 pnpm dev
 ```
 
-기본 `demo` 모드는 자격증명 없이 샘플 행사를 보여줍니다. Supabase 데이터를 사용하려면 `.env.local`에 환경 변수를 입력하고 `NEXT_PUBLIC_DATA_MODE=supabase`로 변경합니다.
+`pnpm db:reset`은 migration을 모두 다시 적용하고 [supabase/seed.sql](./supabase/seed.sql)의 샘플 행사와 로컬 전용 관리자 계정을 넣습니다.
 
 서버 전용 환경 변수에는 `NEXT_PUBLIC_` 접두사를 붙이지 않습니다. 실제 값은 `.env.local`과 배포 환경에만 저장합니다.
 
@@ -181,6 +189,7 @@ pnpm dev
 pnpm lint
 pnpm typecheck
 pnpm test
+pnpm db:test
 pnpm places:check
 pnpm test:e2e
 pnpm build

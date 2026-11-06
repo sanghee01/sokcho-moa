@@ -30,6 +30,6 @@ export async function signInAction(
 
 export async function signOutAction() {
   const client = await createSessionSupabaseClient();
-  if (client) await client.auth.signOut();
+  await client.auth.signOut();
   redirect("/admin/login");
 }

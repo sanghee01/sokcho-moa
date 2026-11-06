@@ -29,7 +29,7 @@ export function PlaceForm({ row }: { row: Row }) {
       </AdminActionForm>
       {id && (
         <AdminActionForm action={deletePlaceAction} className="space-y-4 rounded-3xl bg-rose-50 p-5 ring-1 ring-rose-200 sm:p-6">
-          <input type="hidden" name="id" value={id} /><input type="hidden" name="slug" value={slug} />
+          <input type="hidden" name="id" value={id} />
           <p className="font-black text-rose-950">명소 삭제</p>
           <label className="flex items-center gap-2 text-sm font-bold text-rose-950"><input required type="checkbox" name="confirmation" value="delete" /> 삭제 내용을 확인했습니다.</label>
           <FormSubmitButton idleLabel="명소 삭제" pendingLabel="삭제 중…" className="rounded-xl bg-rose-800 px-4 py-2.5 text-sm font-bold text-white" />

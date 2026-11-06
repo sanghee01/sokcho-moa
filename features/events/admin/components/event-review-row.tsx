@@ -7,11 +7,6 @@ import { statusControlStyles } from "@/features/events/admin/components/status-c
 import { TransitionLink } from "@/components/ui/transition-link";
 
 type ReviewStatus = "pending" | "published" | "rejected";
-type StatusChangeAction = (input: {
-  id: string;
-  slug: string;
-  status: ReviewStatus;
-}) => Promise<{ status: ReviewStatus }>;
 
 const statusLabels: Record<ReviewStatus, string> = {
   pending: "검수 대기",
@@ -21,10 +16,8 @@ const statusLabels: Record<ReviewStatus, string> = {
 
 export function EventReviewRow({
   event,
-  performStatusChangeAction,
 }: {
   event: { id: string; slug: string; title: string; sourceName: string; viewCount: number; reviewStatus: ReviewStatus };
-  performStatusChangeAction?: StatusChangeAction;
 }) {
   const [reviewStatus, setReviewStatus] = useState(event.reviewStatus);
 
@@ -36,7 +29,7 @@ export function EventReviewRow({
       <td className="px-4 py-4 text-slate-600">{event.sourceName}</td>
       <td className={statusControlStyles.actionCell}>
         <div className="flex items-start gap-2">
-          <StatusControls id={event.id} slug={event.slug} current={reviewStatus} onStatusChange={setReviewStatus} performStatusChangeAction={performStatusChangeAction} />
+          <StatusControls id={event.id} slug={event.slug} current={reviewStatus} onStatusChange={setReviewStatus} />
           <EventDeleteControl event={event} />
         </div>
       </td>

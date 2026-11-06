@@ -49,5 +49,3 @@ export const siteFeedbackReviewSchema = z.object({
 export const siteFeedbackDeleteSchema = z.object({
   id: z.string().uuid(),
 });
-
-export type SiteFeedbackReviewStatus = "pending" | "reviewed" | "rejected";

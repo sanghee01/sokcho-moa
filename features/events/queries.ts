@@ -3,7 +3,7 @@ import { unstable_cache } from "next/cache";
 import { createPublicSupabaseClient } from "@/lib/supabase/public";
 import { PUBLIC_EVENTS_CACHE_TAG } from "@/features/events/cache";
 import { mapPublicEventRow } from "@/features/events/mappers";
-import { filterEvents, type Event, type EventFilters } from "@/features/events/model/event";
+import type { Event } from "@/features/events/model/event";
 
 /**
  * 공개 행사 전체를 한 번에 불러와 5분 동안 캐시한다. 검색·필터·정렬은 메모리에서 한다.
@@ -24,10 +24,6 @@ const getCachedPublicEvents = unstable_cache(async (): Promise<Event[]> => {
 
 export async function getAllPublicEvents(): Promise<Event[]> {
   return getCachedPublicEvents();
-}
-
-export async function getPublicEvents(filters: EventFilters, now = new Date()) {
-  return filterEvents(await getAllPublicEvents(), filters, now);
 }
 
 export async function getPublicEventBySlug(slug: string): Promise<Event | null> {

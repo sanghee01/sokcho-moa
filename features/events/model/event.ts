@@ -329,10 +329,6 @@ function eventScheduleRanges(event: Event) {
   });
 }
 
-export function isEventToday(event: Event, now = new Date()) {
-  return filterEvents([event], { when: "today" }, now).length === 1;
-}
-
 function getKoreanParts(date: Date) {
   const parts = new Intl.DateTimeFormat("en-CA", {
     timeZone: "Asia/Seoul",

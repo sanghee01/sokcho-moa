@@ -5,24 +5,17 @@ import { setEventReviewStatusAction } from "@/features/events/admin/actions";
 import { statusControlStyles } from "@/features/events/admin/components/status-control-styles";
 
 type ReviewStatus = "pending" | "published" | "rejected";
-type StatusChangeAction = (input: {
-  id: string;
-  slug: string;
-  status: ReviewStatus;
-}) => Promise<{ status: ReviewStatus }>;
 
 export function StatusControls({
   id,
   slug,
   current,
   onStatusChange,
-  performStatusChangeAction = setEventReviewStatusAction,
 }: {
   id: string;
   slug: string;
   current: string;
   onStatusChange?: (status: ReviewStatus) => void;
-  performStatusChangeAction?: StatusChangeAction;
 }) {
   const [confirmedStatus, setConfirmedStatus] = useState<ReviewStatus>(current as ReviewStatus);
   const [optimisticStatus, setOptimisticStatus] = useOptimistic(
@@ -45,7 +38,7 @@ export function StatusControls({
       setOptimisticStatus(nextStatus);
       onStatusChange?.(nextStatus);
       try {
-        const result = await performStatusChangeAction({ id, slug, status: nextStatus });
+        const result = await setEventReviewStatusAction({ id, slug, status: nextStatus });
         setConfirmedStatus(result.status);
       } catch {
         onStatusChange?.(previousStatus);

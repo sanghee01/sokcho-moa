@@ -11,7 +11,7 @@ export default async function EditEventPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ saved?: string; uploaded?: string; created?: string }>;
+  searchParams: Promise<{ created?: string }>;
 }) {
   const idPromise = params.then(({ id }) => id);
   const [admin, row, feedback] = await Promise.all([
@@ -20,13 +20,8 @@ export default async function EditEventPage({
     searchParams,
   ]);
   if (!row) notFound();
-  const feedbackMessage = feedback.created === "1"
-    ? "검수 대기 행사로 등록했습니다."
-    : feedback.uploaded === "1"
-      ? "대표 이미지를 업로드했습니다."
-      : feedback.saved === "1"
-        ? "행사 정보를 저장했습니다."
-        : undefined;
+  // 후보 JSON 가져오기(import-actions.ts)만 created=1로 이 페이지에 돌아온다. 행사 저장은 /admin으로 간다.
+  const feedbackMessage = feedback.created === "1" ? "검수 대기 행사로 등록했습니다." : undefined;
   return (
     <AdminShell email={admin.email}>
       <ActionFeedback message={feedbackMessage} />

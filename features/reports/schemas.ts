@@ -23,5 +23,3 @@ export const eventReportReviewSchema = z.object({
 export const eventReportDeleteSchema = z.object({
   id: z.string().uuid(),
 });
-
-export type EventReportReviewStatus = "pending" | "reviewed" | "rejected";

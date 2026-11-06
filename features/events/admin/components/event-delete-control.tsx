@@ -39,7 +39,6 @@ export function EventDeleteControl({ event }: { event: EventDeletionTarget }) {
             <p className="mt-2 text-sm leading-6 text-slate-600">삭제한 행사는 복구할 수 없으며, 연결된 출처 기록과 운영 회차도 함께 삭제됩니다. 같은 행사가 다시 수집되지 않도록 재수집 제외 목록에 저장됩니다.</p>
           </div>
           <input type="hidden" name="id" value={event.id} />
-          <input type="hidden" name="slug" value={event.slug} />
           <input type="hidden" name="confirmation" value="delete" />
           <div className="flex flex-wrap justify-end gap-2">
             <button type="button" onClick={closeDialog} className="min-h-11 rounded-xl border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50">취소</button>

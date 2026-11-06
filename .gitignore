@@ -23,6 +23,10 @@ playwright-report
 # 운영 데이터를 담은 수집 검토 자료. 운영 행사 정보가 들어 있어 저장소에 올리지 않는다.
 supabase/review
 
+# AI 도구의 개인 설정. 저장소 공용 지침은 .ai/에 둔다.
+CLAUDE.local.md
+.claude/settings.local.json
+
 # misc
 .DS_Store
 *.log
