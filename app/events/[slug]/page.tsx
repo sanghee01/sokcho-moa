@@ -25,7 +25,8 @@ import {
   formatOperatingSchedule,
   formatShortDateRange,
 } from "@/features/events/model/format";
-import { getEventIntroduction, getRelatedEvents } from "@/features/events/model/event";
+import { getEventIntroduction } from "@/features/events/model/event";
+import { getRelatedEvents } from "@/features/events/model/event-list";
 import { eventTopicPath } from "@/features/events/model/topics";
 import { createEventMapLinks, findNearbyPlaces, getNearbyPlacesLabel } from "@/features/events/model/location";
 import { analyticsData } from "@/lib/analytics/events";

@@ -1,5 +1,6 @@
 import { getButtonClassName } from "@/components/ui/button-styles";
-import { createNaverMapUrl, type NearbyPlace } from "@/features/events/model/location";
+import type { NearbyPlace } from "@/features/places/model/place";
+import { createNaverMapUrl } from "@/lib/map";
 import { analyticsData } from "@/lib/analytics/events";
 
 export function PlaceCard({ place }: { place: NearbyPlace }) {

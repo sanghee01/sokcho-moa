@@ -13,3 +13,6 @@ export interface Place {
   mapUrl: string | null;
   isPublished: boolean;
 }
+
+/** 기준 위치에서 떨어진 거리를 붙인 명소. 좌표가 없는 행사는 지역으로만 고르므로 거리가 null이다. */
+export type NearbyPlace = Place & { distanceKm: number | null };

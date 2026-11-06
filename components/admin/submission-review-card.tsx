@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useOptimistic, useState, useTransition } from "react";
+import { formatSeoulDateTime } from "@/lib/seoul-time";
 import {
   submissionReviewStatusLabels,
   type SubmissionReviewDecision,
@@ -115,7 +116,7 @@ export function SubmissionReviewCard({
       )}
       <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-label">
         {submission.linkUrl && <a href={submission.linkUrl} target="_blank" rel="noreferrer" className="font-bold text-primary-text underline underline-offset-4">{labels.linkLabel} <span className="sr-only">(새 창)</span></a>}
-        <time className="text-content-subtle" dateTime={submission.createdAt}>{new Intl.DateTimeFormat("ko-KR", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Seoul" }).format(new Date(submission.createdAt))}</time>
+        <time className="text-content-subtle" dateTime={submission.createdAt}>{formatSeoulDateTime(new Date(submission.createdAt))}</time>
       </div>
       <div className="mt-5 flex flex-wrap gap-2" aria-label={`${labels.noun} 검토 상태 변경`}>
         <button type="button" disabled={isPending || optimisticStatus === "reviewed"} onClick={() => updateStatus("reviewed")} className="rounded-control bg-success px-3.5 py-2 text-label font-bold text-on-primary disabled:cursor-not-allowed disabled:opacity-40">검토 완료</button>

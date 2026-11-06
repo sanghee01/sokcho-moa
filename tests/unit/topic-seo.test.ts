@@ -35,7 +35,7 @@ import {
   generateStaticParams,
 } from "@/app/(event-browse)/topics/[topic]/page";
 import { EventBrowsePage } from "@/features/events/components/event-browse-page";
-import { eventCategories } from "@/features/events/model/event";
+import { eventCategories } from "@/features/events/model/taxonomy";
 import {
   eventTopics,
   findEventTopicByCategory,

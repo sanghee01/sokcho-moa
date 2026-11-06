@@ -2,7 +2,7 @@ import { Suspense, type ReactNode } from "react";
 import { BannerVisibility } from "@/features/events/components/banner-visibility";
 import { CategoryNavigation } from "@/features/events/components/category-navigation";
 import { PopularBanner } from "@/features/events/components/popular-banner";
-import { selectPopularEvents } from "@/features/events/model/event";
+import { selectPopularEvents } from "@/features/events/model/event-list";
 import { getAllPublicEvents } from "@/features/events/queries";
 
 /**

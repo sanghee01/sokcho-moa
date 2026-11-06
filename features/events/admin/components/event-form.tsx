@@ -18,7 +18,8 @@ import { checked, dateValue, listText, text, type EventRow } from "@/features/ev
 import { ImageUploadField } from "@/features/events/admin/components/event-image-upload-field";
 import { ScheduleModeField } from "@/features/events/admin/components/schedule-mode-field";
 import { audienceLabels, categoryLabels } from "@/features/events/model/format";
-import { eventAudiences, eventCategories, getEventIntroduction } from "@/features/events/model/event";
+import { eventAudiences, eventCategories } from "@/features/events/model/taxonomy";
+import { getEventIntroduction } from "@/features/events/model/event";
 
 /** 행사 작성·수정 폼. 섹션을 조립하고, 입력값 해석과 저장은 saveEventAction이 맡는다. */
 export function EventForm({ row }: { row: EventRow }) {

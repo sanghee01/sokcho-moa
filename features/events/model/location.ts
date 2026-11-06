@@ -1,27 +1,12 @@
 import type { Event } from "@/features/events/model/event";
-import type { Place } from "@/features/places/model/place";
-
-const EARTH_RADIUS_KM = 6_371;
+import type { NearbyPlace, Place } from "@/features/places/model/place";
+import { createMapSearchName, createNaverMapUrl, distanceInKm } from "@/lib/map";
 
 const nearbyRegions = [
   { label: "속초", marker: "속초시", latitude: 38.207, longitude: 128.591 },
   { label: "고성", marker: "고성군", latitude: 38.38, longitude: 128.467 },
   { label: "양양", marker: "양양군", latitude: 38.075, longitude: 128.619 },
 ] as const;
-
-export function distanceInKm(lat1: number, lon1: number, lat2: number, lon2: number) {
-  function toRadians(degree: number) {
-    return (degree * Math.PI) / 180;
-  }
-  const latDelta = toRadians(lat2 - lat1);
-  const lonDelta = toRadians(lon2 - lon1);
-  const a =
-    Math.sin(latDelta / 2) ** 2 +
-    Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) * Math.sin(lonDelta / 2) ** 2;
-  return 2 * EARTH_RADIUS_KM * Math.asin(Math.sqrt(a));
-}
-
-export type NearbyPlace = Place & { distanceKm: number | null };
 
 export function findNearbyPlaces(event: Event, places: Place[], limit = 4): NearbyPlace[] {
   if (event.latitude != null && event.longitude != null) {
@@ -89,30 +74,6 @@ function takeCategoryDiversePlaces(places: NearbyPlace[], limit: number) {
   }
 
   return selected;
-}
-
-export function createMapSearchName(name: string) {
-  const trimmedName = name.trim();
-  const detailSuffixes = [
-    /(?:\s+|\(|\[)\s*(?:(?:지하\s*)?\d+\s*층|b\s*\d+(?:\s*층)?)(?:\s*.*)?$/iu,
-    /\s+(?:대공연장|소공연장|대회의실|소회의실|시청각실|다목적실|회의실|강의실|세미나실|교육실|체험실|열람실|전시실|연습실|강당|야외무대|야외테라스)(?:\s*.*)?$/u,
-    /\s+(?:본관|신관|별관)$/u,
-    /\s+일원$/u,
-    /\s*\([^)]*(?:시|군|구|읍|면|동|리)\)\s*$/u,
-  ];
-
-  const searchName = detailSuffixes.reduce((value, suffix) => {
-    const match = value.match(suffix);
-    if (match?.index == null || match.index === 0) return value;
-    return value.slice(0, match.index).trim();
-  }, trimmedName);
-
-  return searchName || trimmedName;
-}
-
-export function createNaverMapUrl(name: string, latitude: number, longitude: number) {
-  const query = encodeURIComponent(createMapSearchName(name));
-  return `https://map.naver.com/p/search/${query}?c=${longitude},${latitude},15,0,0,0,dh`;
 }
 
 export interface EventMapLinks {

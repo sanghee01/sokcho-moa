@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { catalogPlaces, makeEvent } from "@/tests/unit/support/event-builder";
-import { createEventMapLinks, createMapSearchName, distanceInKm, findNearbyPlaces, getNearbyPlacesLabel } from "@/features/events/model/location";
+import { createEventMapLinks, findNearbyPlaces, getNearbyPlacesLabel } from "@/features/events/model/location";
+import { createMapSearchName, distanceInKm } from "@/lib/map";
 
 describe("distanceInKm", () => {
   it("같은 좌표의 거리는 0이다", () => {

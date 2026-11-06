@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { filterEvents, parseEventFilters, sortEvents } from "@/features/events/model/event";
+import { filterEvents, parseEventFilters, sortEvents } from "@/features/events/model/event-list";
 import { makeEvent, NOW } from "@/tests/unit/support/event-builder";
 
 describe("parseEventFilters", () => {

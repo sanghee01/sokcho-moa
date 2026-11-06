@@ -20,7 +20,7 @@
 
 - 화면에 보이는 상태(종료, 신청 마감, NEW, 배지)는 컴포넌트가 아니라 model 함수로 계산합니다(예: `selectEventBadges`, `isRecentlyPublished`).
 - "지금"에 따라 결과가 바뀌는 함수는 `now = new Date()`를 마지막 인자로 받습니다. test는 고정된 `now`를 넘깁니다.
-- 날짜 비교·표시는 `Asia/Seoul` 기준 helper(`getKoreanParts`, `features/events/model/format.ts`)로 합니다. `toLocaleDateString()`·`getDate()`를 직접 쓰지 않습니다(서버와 브라우저 시간대가 달라 hydration이 어긋남).
+- 날짜 비교·표시는 `Asia/Seoul` 기준 helper(`lib/seoul-time.ts`, `features/events/model/format.ts`)로 합니다. `toLocaleDateString()`·`getDate()`를 직접 쓰지 않습니다(서버와 브라우저 시간대가 달라 hydration이 어긋남).
 - model을 바꾸면 `pnpm test` 전체를 돌리고, 날짜 로직은 자정·월말·KST↔UTC 경계 test를 확인합니다.
 
 ## 조회와 캐시

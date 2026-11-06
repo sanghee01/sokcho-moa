@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isRecentlyPublished } from "@/features/events/model/event";
+import { isRecentlyPublished } from "@/features/events/model/event-list";
 import { makeEvent, NOW } from "@/tests/unit/support/event-builder";
 
 // "새로 올라옴" 표시: 속초모아에 공개된 지 7일이 지나지 않은 행사. 기준은 행사 날짜가 아니라 published_at(사이트에 올라온 시각)이다.

@@ -1,4 +1,5 @@
-import { deriveApplicationState, deriveEventUnavailableReason, getKoreanParts } from "@/features/events/model/event";
+import { deriveApplicationState, deriveEventUnavailableReason } from "@/features/events/model/event-state";
+import { getSeoulDateParts } from "@/lib/seoul-time";
 import type { EventStatusFields } from "@/features/events/model/status-fields";
 
 export type EventBadgeTone = "danger" | "success" | "neutral" | "muted";
@@ -37,7 +38,7 @@ export function selectEventBadges(event: EventStatusFields, now = new Date()): E
 
 /** 두 시각 사이의 KST 달력 날짜 차이. 밤 11시 30분과 다음 날 새벽 0시 30분은 1일이다. */
 function koreanDaysBetween(from: Date, to: Date) {
-  const a = getKoreanParts(from);
-  const b = getKoreanParts(to);
+  const a = getSeoulDateParts(from);
+  const b = getSeoulDateParts(to);
   return Math.round((Date.UTC(b.year, b.month - 1, b.day) - Date.UTC(a.year, a.month - 1, a.day)) / 86_400_000);
 }

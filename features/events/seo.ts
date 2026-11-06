@@ -1,9 +1,5 @@
-import type { Event } from "@/features/events/model/event";
-import {
-  deriveApplicationState,
-  deriveEventState,
-  getEventIntroduction,
-} from "@/features/events/model/event";
+import { type Event, getEventIntroduction } from "@/features/events/model/event";
+import { deriveApplicationState, deriveEventState } from "@/features/events/model/event-state";
 import { categoryLabels, formatDateRange } from "@/features/events/model/format";
 import { eventTopicPath } from "@/features/events/model/topics";
 

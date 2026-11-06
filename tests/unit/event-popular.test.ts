@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { selectPopularEvents } from "@/features/events/model/event";
+import { selectPopularEvents } from "@/features/events/model/event-list";
 import { makeEvent, NOW } from "@/tests/unit/support/event-builder";
 
 // 홈 위쪽 "지금 많이 보는 행사": 참여할 수 있는 행사 중 조회수가 많은 순서로 3개.

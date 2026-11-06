@@ -6,13 +6,8 @@ import { EventSearch } from "@/features/events/components/event-search";
 import { EventSort } from "@/features/events/components/event-sort";
 import { getPublicEnv } from "@/lib/env";
 import { getAllPublicEvents } from "@/features/events/queries";
-import {
-  DEFAULT_EVENT_SORT,
-  filterEvents,
-  parseEventFilters,
-  sortEvents,
-  type Event,
-} from "@/features/events/model/event";
+import { DEFAULT_EVENT_SORT, filterEvents, parseEventFilters, sortEvents } from "@/features/events/model/event-list";
+import type { Event } from "@/features/events/model/event";
 import {
   buildEventBrowseHref,
   clearEventFiltersHref,

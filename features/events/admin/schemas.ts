@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { seoulDateOrDatetimeToIso } from "@/features/events/admin/datetime";
-import { eventAudiences, eventCandidateSchema, eventCategories } from "@/features/events/model/event";
+import { eventAudiences, eventCategories } from "@/features/events/model/taxonomy";
+import { eventCandidateSchema } from "@/features/events/admin/candidate";
 import { optionalTextField, optionalUrlField } from "@/lib/form-data";
 import { createHttpUrlSchema, isHttpUrl } from "@/lib/url";
 import { slugSchema } from "@/lib/slug";

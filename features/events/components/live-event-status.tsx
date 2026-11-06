@@ -2,7 +2,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { selectEventBadges } from "@/features/events/model/badges";
-import { deriveApplicationState } from "@/features/events/model/event";
+import { deriveApplicationState } from "@/features/events/model/event-state";
 import { applicationStateLabels } from "@/features/events/model/format";
 import type { EventStatusFields } from "@/features/events/model/status-fields";
 import { useCurrentTime } from "@/features/events/components/use-current-time";

@@ -1,10 +1,6 @@
 import type { Tables } from "@/lib/supabase/database.types";
-import type {
-  Event,
-  EventAudience,
-  EventOccurrence,
-  EventScheduleMode,
-} from "@/features/events/model/event";
+import type { Event, EventOccurrence, EventScheduleMode } from "@/features/events/model/event";
+import type { EventAudience } from "@/features/events/model/taxonomy";
 
 type OccurrenceRow = Pick<Tables<"event_occurrences">, "id" | "starts_at" | "ends_at">;
 

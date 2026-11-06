@@ -3,7 +3,9 @@ import { EventImage } from "@/features/events/components/event-image";
 import { EventImagePlaceholder } from "@/features/events/components/event-image-placeholder";
 import { StatusBadges } from "@/features/events/components/status-badges";
 import { categoryLabels, formatShortDateRange } from "@/features/events/model/format";
-import { deriveEventUnavailableReason, isRecentlyPublished, type Event } from "@/features/events/model/event";
+import { deriveEventUnavailableReason } from "@/features/events/model/event-state";
+import { isRecentlyPublished } from "@/features/events/model/event-list";
+import type { Event } from "@/features/events/model/event";
 import { analyticsData } from "@/lib/analytics/events";
 
 /** 포스터 카드 격자: 모바일 2열, md 3열, lg 4열(.ai/DESIGN.md Components > EventCard). */

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getRelatedEvents } from "@/features/events/model/event";
+import { getRelatedEvents } from "@/features/events/model/event-list";
 import { makeEvent, NOW } from "@/tests/unit/support/event-builder";
 
 describe("getRelatedEvents", () => {

@@ -1,11 +1,7 @@
 import { EventCollectionExclusionReleaseControl } from "@/features/events/admin/components/exclusion-release-control";
 import type { AdminEventCollectionExclusion } from "@/features/events/admin/queries";
+import { formatSeoulDateTime } from "@/lib/seoul-time";
 
-const deletedAtFormatter = new Intl.DateTimeFormat("ko-KR", {
-  dateStyle: "medium",
-  timeStyle: "short",
-  timeZone: "Asia/Seoul",
-});
 
 const identityKindLabels: Record<string, string> = {
   external_id: "외부 ID",
@@ -19,7 +15,7 @@ const identityKindLabels: Record<string, string> = {
 
 function formatDeletedAt(value: string) {
   const deletedAt = new Date(value);
-  return Number.isNaN(deletedAt.getTime()) ? "삭제일 미상" : `${deletedAtFormatter.format(deletedAt)} 삭제`;
+  return Number.isNaN(deletedAt.getTime()) ? "삭제일 미상" : `${formatSeoulDateTime(deletedAt)} 삭제`;
 }
 
 export function EventCollectionExclusionList({

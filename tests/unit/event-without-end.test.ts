@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { deriveEventState, filterEvents, getRelatedEvents } from "@/features/events/model/event";
+import { deriveEventState } from "@/features/events/model/event-state";
+import { filterEvents, getRelatedEvents } from "@/features/events/model/event-list";
 import { makeEvent } from "@/tests/unit/support/event-builder";
 
 // 종료일 없이 등록한 행사(관리자 폼의 종료 비움, 수집 후보의 eventEndAt: null)는 시작한 날(KST) 하루 행사로 본다.

@@ -1,9 +1,12 @@
-import type { ApplicationState } from "@/features/events/model/event";
+import type { ApplicationState } from "@/features/events/model/event-state";
+
+import { SEOUL_TIME_ZONE } from "@/lib/seoul-time";
 
 export { audienceLabels, categoryLabels } from "@/features/events/model/taxonomy";
 
+// 화면 표기는 0을 채운 문자열 조각("07")이 필요해 lib/seoul-time의 숫자 조각 대신 formatter를 따로 둔다.
 const datePartsFormatter = new Intl.DateTimeFormat("en-CA", {
-  timeZone: "Asia/Seoul",
+  timeZone: SEOUL_TIME_ZONE,
   year: "numeric",
   month: "2-digit",
   day: "2-digit",

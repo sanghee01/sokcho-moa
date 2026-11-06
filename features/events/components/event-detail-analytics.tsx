@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { trackAnalyticsEvent } from "@/lib/analytics/events";
-import type { EventAudience, EventCategory } from "@/features/events/model/event";
+import type { EventAudience, EventCategory } from "@/features/events/model/taxonomy";
 
 interface EventDetailAnalyticsProps {
   slug: string;

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { analyticsData } from "@/lib/analytics/events";
-import { DEFAULT_EVENT_SORT, type EventFilters } from "@/features/events/model/event";
+import { DEFAULT_EVENT_SORT, type EventFilters } from "@/features/events/model/event-list";
 import { buildEventBrowseHref, type EventSearchParams } from "@/features/events/model/browse-url";
 
 type EventSort = NonNullable<EventFilters["sort"]>;

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { deriveApplicationState, deriveEventState, deriveEventUnavailableReason, type Event } from "@/features/events/model/event";
+import { deriveApplicationState, deriveEventState, deriveEventUnavailableReason } from "@/features/events/model/event-state";
+import type { Event } from "@/features/events/model/event";
 
 const baseEvent: Event = {
   id: "00000000-0000-4000-8000-000000000001",

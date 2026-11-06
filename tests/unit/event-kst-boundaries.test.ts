@@ -1,13 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { seoulDateOrDatetimeToIso } from "@/features/events/admin/datetime";
-import {
-  deriveApplicationState,
-  deriveEventState,
-  filterEvents,
-  parseEventFilters,
-  type Event,
-  type EventFilters,
-} from "@/features/events/model/event";
+import { deriveApplicationState, deriveEventState } from "@/features/events/model/event-state";
+import { filterEvents, parseEventFilters, type EventFilters } from "@/features/events/model/event-list";
+import type { Event } from "@/features/events/model/event";
 
 // 날짜 판단은 모두 한국 시간(KST, UTC+9) 기준이다. UTC 날짜와 KST 날짜가 갈리는 경계에서
 // 방문자가 보는 결과(오늘·이번 주·이번 달 목록, 오늘 마감, 진행 중/종료)가 맞는지 확인한다.

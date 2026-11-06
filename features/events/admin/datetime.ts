@@ -1,4 +1,5 @@
-const SEOUL_OFFSET_MS = 9 * 60 * 60 * 1_000;
+import { fromSeoulWallClock, toSeoulWallClock } from "@/lib/seoul-time";
+
 const dateOnlyPattern = /^(\d{4})-(\d{2})-(\d{2})$/;
 const datetimeLocalPattern = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/;
 
@@ -28,7 +29,7 @@ export function seoulDatetimeLocalToIso(value: string) {
     throw new Error("올바른 날짜와 시간을 입력하세요.");
   }
 
-  const instant = new Date(Date.UTC(year, month - 1, day, hour, minute) - SEOUL_OFFSET_MS);
+  const instant = fromSeoulWallClock({ year, month, day, hour, minute });
   if (isoToSeoulDatetimeLocal(instant.toISOString()) !== value) {
     throw new Error("올바른 날짜와 시간을 입력하세요.");
   }
@@ -48,9 +49,9 @@ export function seoulDateOrDatetimeToIso(value: string, dateOnlyBoundary: "start
 export function isoToSeoulDatetimeLocal(value: string) {
   const instant = new Date(value);
   if (Number.isNaN(instant.getTime())) return "";
-  const seoul = new Date(instant.getTime() + SEOUL_OFFSET_MS);
+  const seoul = toSeoulWallClock(instant);
   return [
-    `${seoul.getUTCFullYear()}-${pad(seoul.getUTCMonth() + 1)}-${pad(seoul.getUTCDate())}`,
-    `${pad(seoul.getUTCHours())}:${pad(seoul.getUTCMinutes())}`,
+    `${seoul.year}-${pad(seoul.month)}-${pad(seoul.day)}`,
+    `${pad(seoul.hour)}:${pad(seoul.minute)}`,
   ].join("T");
 }

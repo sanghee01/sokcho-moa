@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { buildCandidateEventPayload } from "@/features/events/admin/import-payload";
-import type { EventCandidate } from "@/features/events/model/event";
+import type { EventCandidate } from "@/features/events/admin/candidate";
 
 const candidate: EventCandidate = {
   title: "확인된 행사",
