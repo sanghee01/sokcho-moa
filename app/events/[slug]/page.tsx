@@ -159,6 +159,8 @@ export default async function EventDetailPage({ params }: PageProps<"/events/[sl
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
             <p className="text-caption font-medium text-primary-text">{categoryLabels[event.category]} · {audiences}</p>
             <StatusBadges event={event} />
+            {/* 조회수는 분야 줄 오른쪽 끝에 아이콘 없이 작게 둔다(모바일·PC 같음, 2026-11-07 사용자 결정). */}
+            <EventViewCount value={event.viewCount} className="ml-auto text-caption text-content-subtle" />
           </div>
           <h1 className="mt-2 text-title-1 text-content-strong lg:text-title-1-lg">{event.title}</h1>
 
@@ -244,11 +246,7 @@ export default async function EventDetailPage({ params }: PageProps<"/events/[sl
             <InfoRow label="참여 대상">{audiences}</InfoRow>
             {event.organizer && <InfoRow label="주최·주관">{event.organizer}</InfoRow>}
             {event.contact && <InfoRow label="문의처">{event.contact}</InfoRow>}
-            <InfoRow label="조회수"><EventViewCount value={event.viewCount} /></InfoRow>
           </dl>
-          <p className="mt-4 max-w-160 text-caption text-content-subtle">
-            출처: {event.sourceName}. 방문하거나 신청하기 전에 행사 안내(원문)에서 최신 정보를 확인해 주세요.
-          </p>
         </section>
       </article>
 

@@ -144,6 +144,9 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 ## Git
 
 - commit은 사용자가 요청할 때만, push는 사용자가 채팅에서 직접 요청할 때만 합니다.
+- 커밋은 작업 묶음 단위로 적게 만듭니다. 사용자 피드백으로 이어지는 작은 수정은 커밋마다 나누지 않고, 아직 push하지 않았으면 같은 주제의 직전 커밋에 합치거나
+  사용자가 커밋을 요청할 때 한 번에 묶습니다(2026-11-06 사용자 결정: 커밋이 너무 잦았음).
+- 커밋 메시지에 `Co-Authored-By` 같은 AI 공동 작업 표시를 넣지 않습니다. 본문은 핵심만 짧은 개조식(`- `)으로 씁니다(2026-11-06 사용자 결정).
 - `main`에 직접 commit하지 않고 작업 branch에서 진행합니다. PR 본문은 [PR 템플릿](.github/pull_request_template.md)을 따릅니다.
 
 ## AI가 읽는 문서 작성

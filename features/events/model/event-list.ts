@@ -92,15 +92,30 @@ export function getRelatedEvents(current: Event, events: Event[], limit = 4, now
     .map(({ event }) => event);
 }
 
+const WEEK_MS = 7 * 24 * 60 * 60 * 1_000;
+
+/**
+ * 7일 평균 조회수 = 누적 조회수 ÷ 올라온 뒤 지난 주 수. 올라온 지 7일이 안 됐으면 7일로 친다(하루 이틀 조회로 튀지 않게).
+ * DB에는 언제 봤는지가 남지 않아 "최근 7일 실제 조회수"는 셀 수 없어, 올라온 뒤 전체 기간의 주 평균을 쓴다(2026-11-06 사용자 결정).
+ */
+function weeklyAverageViews(event: Event, now: Date) {
+  const publishedAt = event.publishedAt ? new Date(event.publishedAt).getTime() : now.getTime();
+  const weeks = Math.max(1, (now.getTime() - publishedAt) / WEEK_MS);
+  return (event.viewCount ?? 0) / weeks;
+}
+
 /**
  * 홈 위쪽 "지금 많이 보는 행사". 참여할 수 있는 행사(종료·신청 마감 제외) 중 조회수가 1 이상인 것을
- * 조회수가 많은 순서로, 같으면 먼저 시작하는 순서로 고른다.
+ * 7일 평균 조회수가 많은 순서로, 같으면 먼저 시작하는 순서로 고른다.
+ * 누적 조회수로 고르면 오래전에 올라온 행사가 계속 1등을 해서 바꿨다(2026-11-06 사용자 결정).
  */
 export function selectPopularEvents(events: Event[], now = new Date(), limit = 3): Event[] {
   return events
     .filter((event) => (event.viewCount ?? 0) > 0 && !isEventClosedForDiscovery(event, now))
-    .sort((a, b) => (b.viewCount ?? 0) - (a.viewCount ?? 0) || a.eventStartAt.localeCompare(b.eventStartAt))
-    .slice(0, limit);
+    .map((event) => ({ event, score: weeklyAverageViews(event, now) }))
+    .sort((a, b) => b.score - a.score || a.event.eventStartAt.localeCompare(b.event.eventStartAt))
+    .slice(0, limit)
+    .map(({ event }) => event);
 }
 
 /** 목록의 기본 정렬. 2026-11-06 게시순에서 행사일순(날짜 묶음)으로 바꿨다(.ai/DESIGN.md). */
