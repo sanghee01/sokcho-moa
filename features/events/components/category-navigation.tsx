@@ -12,18 +12,28 @@ const categoryLinks = [
   })),
 ];
 
+/** 분야 탭을 보여 주는 목록 주소: 홈(전체)과 분야별 목록. 상세·제보·관리자에는 두지 않는다. */
+function isEventListPath(pathname: string) {
+  return pathname === "/" || pathname.startsWith("/topics/");
+}
+
 /**
- * 행사 분야 탭. 예전에는 전역 헤더에 2줄 격자로 있었다. 목록 페이지 위쪽의 밑줄 탭이다(.ai/DESIGN.md Components > Tabs).
- * 7개가 한 줄에 다 들어가게 모바일은 같은 폭으로 나누고, 넓은 화면은 가운데에 모은다. 좌우 스크롤은 쓰지 않는다(2026-11-06).
+ * 행사 분야 탭(.ai/DESIGN.md Components > Tabs). 전역 헤더 안에 있고 목록 주소에서만 보인다.
+ * 헤더와 함께 화면 위에 고정되어, 목록을 내려 보다가도 바로 분야를 바꿀 수 있다(2026-11-07 사용자 결정).
+ * lg는 로고 오른쪽 한 줄, 그보다 좁으면 로고 아래 줄이다. 7개가 한 줄에 다 들어가게 모바일은 같은 폭으로 나누고,
+ * 좌우 스크롤은 쓰지 않는다(2026-11-06).
  * 검은 배경 칩은 무거워 보여 밑줄 탭으로 바꿨다가, 밑줄로는 현재 탭이 잘 안 보여 바다색 알약으로 바꿨다(2026-11-06).
  * E2E가 이 이름("주요 메뉴")과 링크 순서를 확인한다.
  */
 export function CategoryNavigation() {
   const pathname = usePathname();
+  if (!isEventListPath(pathname)) return null;
 
   return (
-    <nav aria-label="주요 메뉴" className="border-b border-line bg-surface">
-      <div className="mx-auto grid max-w-6xl grid-cols-7 px-1 py-1 sm:flex sm:justify-center sm:gap-1 sm:px-4">
+    // data-category-navigation: 탭이 헤더 높이를 늘리므로 globals.css가 # 이동 여백(--site-header-height)을 맞춘다.
+    // 로고 아래 줄일 때(lg 미만)는 로고 줄과 구분선으로 나눈다(예전 모양, 2026-11-07 사용자 결정). lg는 한 줄이라 선이 없다.
+    <nav aria-label="주요 메뉴" data-category-navigation className="border-t border-line lg:ml-auto lg:border-t-0">
+      <div className="grid grid-cols-7 px-1 py-1 sm:flex sm:justify-center sm:gap-1 sm:px-4 lg:px-0 lg:py-0">
         {categoryLinks.map((item) => {
           const active = pathname === item.href;
           return (

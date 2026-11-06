@@ -131,13 +131,20 @@
 /*
  * 고정 헤더 높이(layout.tsx의 h-16, lg:h-18). 주소의 #으로 이동하거나 초점이 옮겨 갈 때
  * 대상이 헤더 밑에 숨지 않도록 그만큼(+16px) 위를 비워 둔다(2026-11-07 헤더 고정).
+ * 목록에서는 lg보다 좁을 때 분야 탭 줄(구분선 1px + 위아래 4px + 탭 44px = 53px)이 로고 아래에 붙어 헤더가 117px이 된다.
+ * lg에서는 탭이 로고 옆이라 높이가 같다.
  */
 :root {
   --site-header-height: 4rem;
 }
 
+:root:has([data-category-navigation]) {
+  --site-header-height: 7.3125rem;
+}
+
 @media (width >= 64rem) {
-  :root {
+  :root,
+  :root:has([data-category-navigation]) {
     --site-header-height: 4.5rem;
   }
 }

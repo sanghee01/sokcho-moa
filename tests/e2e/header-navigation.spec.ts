@@ -18,6 +18,24 @@ test("현재 주제만 주요 메뉴의 활성 링크로 표시한다", async ({
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
 });
 
+// 2026-11-07 사용자 결정: 목록(홈·분야)에서는 분야 탭이 헤더와 함께 화면 위에 고정된다.
+// PC는 로고 옆 한 줄, 모바일은 로고 아래 줄이다. 상세처럼 목록이 아닌 페이지에는 탭을 두지 않는다.
+test("목록에서 아래로 내려도 분야 탭이 화면 위에 남는다", async ({ page }) => {
+  await page.goto("/topics/festival");
+  await page.evaluate(() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "instant" }));
+
+  const navigation = page.getByRole("navigation", { name: "주요 메뉴" });
+  await expect(navigation.getByRole("link", { name: "전체", exact: true })).toBeInViewport();
+  await expect(navigation.getByRole("link", { name: "기타", exact: true })).toBeInViewport();
+});
+
+test("행사 상세에는 분야 탭을 두지 않는다", async ({ page }) => {
+  await page.goto("/events/demo-sea-family-festival");
+
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  await expect(page.getByRole("navigation", { name: "주요 메뉴" })).toHaveCount(0);
+});
+
 test("검색 로봇은 관리자·API 경로를 수집하지 않는다", async ({ request }) => {
   const response = await request.get("/robots.txt");
 

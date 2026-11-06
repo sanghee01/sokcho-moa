@@ -8,6 +8,7 @@ import type { ReactNode } from "react";
 import { AnalyticsRuntime } from "@/components/analytics/analytics-runtime";
 import { ScrollToTopButton } from "@/components/layout/scroll-to-top-button";
 import { iconProps } from "@/components/ui/icon";
+import { CategoryNavigation } from "@/features/events/components/category-navigation";
 import { googleAnalyticsId, shouldCollectGoogleAnalytics } from "@/lib/analytics/google-analytics";
 import { getPublicEnv, getRuntimeEnv } from "@/lib/env";
 import {
@@ -70,19 +71,23 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
         <a href="#main-content" className="fixed left-3 top-3 z-60 -translate-y-24 rounded-control bg-surface px-4 py-3 text-label font-semibold text-primary-text shadow-floating focus:translate-y-0">
           본문으로 건너뛰기
         </a>
-        {/* 어느 페이지든 내려도 헤더가 화면 위에 붙어 있다(2026-11-07 사용자 결정). 높이는 globals.css의 --site-header-height와 맞춘다. */}
+        {/* 어느 페이지든 내려도 헤더가 화면 위에 붙어 있다(2026-11-07 사용자 결정). 높이는 globals.css의 --site-header-height와 맞춘다.
+            목록(홈·분야)에서는 분야 탭도 헤더 안에 있다: lg는 로고 오른쪽 한 줄, 그보다 좁으면 로고 아래 줄(2026-11-07 사용자 결정). */}
         <header className="sticky top-0 z-30 border-b border-line bg-surface">
-          <div className="mx-auto flex h-16 max-w-6xl items-center px-4 sm:px-6 lg:h-18">
-            <Link href="/" className="block shrink-0 rounded-control">
-              <Image
-                src={headerLogo}
-                alt="속초모아"
-                priority
-                placeholder="blur"
-                sizes="(min-width: 1024px) 192px, 160px"
-                className="h-9 w-auto object-contain lg:h-11"
-              />
-            </Link>
+          <div className="mx-auto max-w-6xl lg:flex lg:h-18 lg:items-center lg:gap-8 lg:px-6">
+            <div className="flex h-16 items-center px-4 sm:px-6 lg:h-auto lg:px-0">
+              <Link href="/" className="block shrink-0 rounded-control">
+                <Image
+                  src={headerLogo}
+                  alt="속초모아"
+                  priority
+                  placeholder="blur"
+                  sizes="(min-width: 1024px) 192px, 160px"
+                  className="h-9 w-auto object-contain lg:h-11"
+                />
+              </Link>
+            </div>
+            <CategoryNavigation />
           </div>
         </header>
         <AnalyticsRuntime />
