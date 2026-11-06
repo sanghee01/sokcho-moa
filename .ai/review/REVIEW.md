@@ -8,9 +8,8 @@
 | 규칙 | 원본 |
 | --- | --- |
 | 코드 컨벤션(사용자가 결정한 것만) | [CONVENTIONS.md](../CONVENTIONS.md) |
-| 재구축 원칙, 검증, Supabase 안전 규칙 | [RULES.md](../RULES.md) |
+| 작업 원칙, 검증, Supabase 안전 규칙 | [RULES.md](../RULES.md) |
 | 라우트·데이터 흐름·테이블 권한 | [architecture.md](../../docs/architecture.md) |
-| 작업 범위를 정한 결정 | `docs/decisions/` 중 PR 본문이 링크한 문서 |
 | 알려진 오탐과 적용 조건 | [false-positives.md](false-positives.md) |
 
 > **PR 본문의 `👀 Review Point` 참고**: PR 본문에 `👀 Review Point` 섹션이 있으면, 그 항목은
@@ -34,7 +33,7 @@
   `"use client"` 파일, 또는 client component가 import하는 모듈에서 사용한 경우. 이 client를 쓰는
   모듈에 `import "server-only"`가 없어 client bundle로 들어갈 수 있는 경우.
 - **RLS를 우회하는 쓰기의 방어 누락**: service-role client로 사용자 입력을 쓰는데 Zod 검증이나
-  [요청 제한](../../docs/architecture.md#공개-제보와-요청-제한)이 빠진 경우.
+  [요청 제한](../../docs/architecture.md#방문자-쓰기제보의견)이 빠진 경우.
 - **server action 입력 검증 누락**: `"use server"` 함수가 `FormData`·인자를 Zod `safeParse` 없이
   DB 쓰기에 쓰는 경우. server action은 화면 밖에서도 누구나 호출할 수 있는 공개 HTTP endpoint입니다.
 - **관리자 권한 확인 누락**: 관리자 쓰기 action·route에서 `requireAdmin()`을 호출하지 않은 경우.
@@ -78,8 +77,8 @@
 - **공개 조회 필터 누락**: 공개 화면 조회에서 `review_status = 'published'`나 `is_demo = false`가 빠져
   검수 전·샘플 행사가 노출되는 경우
 - PR 설명의 의도와 코드 동작이 다른 경우
-- **결정 범위 밖 변경**: 삭제·리팩토링·구조 변경이 PR이 링크한 `docs/decisions/` 결정의 범위를 넘는 경우
-  ([재구축 원칙](../RULES.md#재구축-원칙))
+- **결정 범위 밖 변경**: 삭제·리팩토링·구조 변경이 PR 본문에 적힌 결정의 범위를 넘는 경우
+  ([작업 원칙](../RULES.md#작업-원칙))
 - 도달할 수 없는 코드 경로, 아무 동작도 하지 않는 버튼
 - 기존 유사 흐름에 GA4 이벤트가 있는데 새 흐름에 빠진 경우([analytics-events.md](../../docs/analytics-events.md))
 
@@ -94,7 +93,7 @@
 
 - lint·typecheck가 검사하는 항목
 - [CONVENTIONS.md](../CONVENTIONS.md)에 근거하지 않은 스타일·네이밍 취향
-- **"기존 구현과 다르다"는 이유만의 지적.** 기존 구현은 재구축 대상이며 규칙이 아닙니다.
+- **"기존 구현과 다르다"는 이유만의 지적.** 기존 구현은 그 자체로 규칙이 아닙니다.
   CONVENTIONS.md에 결정된 규칙이 있을 때만 지적합니다.
 - `useCallback`/`useMemo` 최적화 제안
 - "~를 고려해보세요" 같은 약한 제안이나 질문형 제안
@@ -164,7 +163,7 @@
 
 ## 리뷰 결과를 다루는 방법
 
-리뷰 후 사용자는 지적마다 수용하거나 반박합니다. 결과는 [재구축 루프의 6단계](../../docs/rebuild/loop.md#6-반영)에 따라 반영합니다.
+리뷰 후 사용자는 지적마다 수용하거나 반박합니다. 결과는 아래처럼 반영합니다.
 
 - 수용하고, 앞으로도 지켜야 할 규칙이면 → [CONVENTIONS.md](../CONVENTIONS.md)에 규칙으로 추가
 - 반박하고, 같은 오탐이 다시 나올 수 있으면 → [false-positives.md](false-positives.md)에 조건과 반례 추가

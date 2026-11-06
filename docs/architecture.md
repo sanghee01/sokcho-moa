@@ -1,9 +1,7 @@
 # 구조 지도
 
-> **상태: 1차 리팩토링 후 AI 초안(2026-11-05, branch `chore/rebuild-foundation`).**
-> 코드와 실제 실행(로컬 Supabase, pgTAP, E2E)으로 확인한 사실만 적었습니다. 2차 리팩토링을 하며 절마다 내 말로
-> 다시 쓰고, 다 쓴 절은 제목 옆에 `✍️ 내 설명`을 붙입니다. 폴더 규칙의 근거는 [목표 구조](rebuild/target-architecture.md),
-> DB 상세는 [database.md](database.md)에 있습니다.
+속초모아 코드가 어떻게 나뉘고 데이터가 어떻게 흐르는지 정리한 문서입니다. 코드와 실제 실행(로컬 Supabase, pgTAP, E2E)으로
+확인한 사실만 적습니다. 코드를 바꾸면 이 문서도 함께 고칩니다.
 
 ## 한 문장 요약
 
@@ -39,7 +37,7 @@ proxy.ts             없는 토픽 404, 관리자 세션 갱신
 ```
 
 의존 방향은 `app → features → components, lib` 한 방향입니다. feature끼리는 다른 feature의 `model`(타입·순수 함수)만
-import합니다. ❓ 이 규칙을 lint로 강제할지(예: `import/no-restricted-paths`) 2차에서 정합니다.
+import합니다. 이 규칙은 아직 lint로 강제하지 않습니다.
 
 ---
 
@@ -77,7 +75,7 @@ flowchart LR
 ```
 
 - 행사 수가 적어 전체 목록 하나만 캐시하고 필터·정렬은 메모리에서 합니다. 조건별 캐시는 적중률만 떨어뜨립니다.
-- `unstable_cache`는 Next.js 16에서 `use cache`로 대체 예정이지만, 배포를 넘어 유지되는 특성 때문에 1차에서는 유지했습니다.
+- `unstable_cache`는 Next.js 16에서 `use cache`로 대체 예정이지만, 배포를 넘어 유지되는 특성 때문에 유지합니다.
 
 ### 방문자 쓰기(제보·의견)
 
@@ -119,7 +117,7 @@ flowchart LR
 
 ## 테이블과 권한
 
-pgTAP(`supabase/tests/database/`)으로 실제 권한을 확인했습니다. 상세 근거는 [database.md](database.md#권한)에 있습니다.
+pgTAP(`supabase/tests/database/`)으로 실제 권한을 확인했습니다. 정의는 `supabase/migrations/`가 원본입니다.
 
 | table | 방문자(anon) | 관리자 | 확인한 방법 |
 | --- | --- | --- | --- |
@@ -142,16 +140,3 @@ Supabase는 table 권한(grant)을 기본으로 넓게 줍니다. 그래서 sele
 | 사용자 흐름 | Playwright(`tests/e2e`) | production build + 로컬 Supabase seed로 공개 화면·제보·관리자 화면 | `pnpm test:e2e` |
 
 E2E는 로컬 Supabase 주소가 아니면 시작하지 않습니다(`tests/e2e/local-supabase.ts`).
-
----
-
-## 질문 모음(2차 리팩토링에서 답할 것)
-
-1. 방문자 insert를 RLS가 아니라 server action + secret key로 받는 구조를 내 말로 설명할 수 있나요? (migration 주석: 검증된 server action을 유일한 쓰기 경로로)
-2. 삭제한 행사의 "재수집 제외"(migration 1,462줄)는 수집기가 지금도 돌아야 가치가 있습니다. 수집기를 계속 쓰나요?
-3. 공개할 때마다 `published_at`이 바뀌어 재공개한 행사가 "게시순" 맨 위로 갑니다. 의도인가요?
-4. 조회수 증가가 `events.updated_at`도 바꿉니다. `updated_at`을 "내용 수정 시각"으로 쓸 계획이 있나요?
-5. 조회수 API에는 요청 제한이 없습니다. 조회수를 "조회순" 정렬 외에 어디에 쓰나요?
-6. 데이터 캐시 5분 + 상세 ISR 1시간입니다. 외부 수집기가 `/api/revalidate`를 부르지 않으면 상세는 최대 1시간 늦습니다. 괜찮은가요?
-7. 토픽 페이지·IndexNow를 유지할지는 검색 유입 수치(Search Console·서치어드바이저)를 보고 정합니다.
-8. Cache Components(`use cache`)로 옮길지: Next.js 17 기본값이 되지만, Vercel에서 공개 목록 캐시가 배포를 넘어 유지되지 않는 점을 어떻게 볼지.

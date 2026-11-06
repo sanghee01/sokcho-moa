@@ -16,7 +16,7 @@ AI 행동 규칙(작업 범위, 검증, Supabase 안전)은 [RULES.md](RULES.md)
 
 이 문서는 일부러 비워 두었습니다. 규칙은 사용자가 구조를 읽고 내린 결정으로만 채웁니다.
 
-- 규칙은 [재구축 루프](../docs/rebuild/loop.md)를 돌며 `docs/decisions/`에 결정이 기록된 뒤에 추가합니다.
+- 규칙은 사용자가 결정한 뒤에 추가합니다.
 - AI 리뷰 지적을 사용자가 "앞으로도 지켜야 할 규칙"으로 수용하면 여기에 추가합니다.
   반박한 지적은 [false-positives.md](review/false-positives.md)로 갑니다.
 - 각 절의 "기존 구현에서 관찰한 것"은 규칙이 아닙니다. 결정을 돕는 재료이며, 결정이 끝나면 지웁니다.
@@ -29,7 +29,7 @@ AI 행동 규칙(작업 범위, 검증, Supabase 안전)은 [RULES.md](RULES.md)
 
 - **규칙**: 한 문장. 리뷰어가 diff만 보고 지켰는지 판단할 수 있게 씁니다.
 - **이유**: 이 규칙이 막는 문제. 대안을 택하지 않은 이유.
-- **결정**: [D-0000 제목](../docs/decisions/0000-제목.md)
+- **결정**: 언제, 어떤 근거로 정했는지(관련 PR 링크)
 - **확인 방법**: lint / typecheck / test / 리뷰 중 무엇으로 지키는지
 ```
 
@@ -41,8 +41,8 @@ AI 행동 규칙(작업 범위, 검증, Supabase 안전)은 [RULES.md](RULES.md)
 
 기존 구현에서 관찰한 것:
 
-- 1차 리팩토링에서 [목표 구조](../docs/rebuild/target-architecture.md#폴더와-규칙)로 옮겼습니다(AI가 근거 조사 후 제안, 사용자가 범위 승인).
-  2차에서 이 구조를 그대로 규칙으로 둘지 결정합니다.
+- [architecture.md의 폴더](../docs/architecture.md#폴더) 구조로 정리돼 있습니다(Next.js·Supabase 공식 문서와 오픈소스 사례 조사 후 적용).
+  이 구조를 규칙으로 확정할지 결정합니다.
 - `features/events/model/event.ts`에는 타입·상태 계산·필터·정렬과 수집 후보 Zod schema(`eventCandidateSchema`)가 함께 있습니다.
 
 ## 서버·클라이언트 경계
@@ -51,7 +51,7 @@ AI 행동 규칙(작업 범위, 검증, Supabase 안전)은 [RULES.md](RULES.md)
 
 기존 구현에서 관찰한 것:
 
-- 1차 리팩토링에서 조회(`queries.ts`)·Supabase client·비밀값·요청 제한 모듈에 모두 `import "server-only"`를 붙였습니다.
+- 조회(`queries.ts`)·Supabase client·비밀값·요청 제한 모듈에 모두 `import "server-only"`가 붙어 있습니다.
 
 ## Supabase client 선택
 
@@ -71,8 +71,8 @@ AI 행동 규칙(작업 범위, 검증, Supabase 안전)은 [RULES.md](RULES.md)
 
 기존 구현에서 관찰한 것:
 
-- 1차 리팩토링에서 관리자 action은 "인가 → 검증 → 쓰기 → 캐시 만료" 순서로 맞췄고, 사용자에게 DB 오류 원문을 보여 주지 않게
-  `lib/action-state.ts`의 helper를 쓰게 했습니다. 폼 action은 상태 객체를, 버튼 action은 `throwActionError`를 씁니다.
+- 관리자 action은 "인가 → 검증 → 쓰기 → 캐시 만료" 순서이고, 사용자에게 DB 오류 원문을 보여 주지 않게
+  `lib/action-state.ts`의 helper를 씁니다. 폼 action은 상태 객체를, 버튼 action은 `throwActionError`를 씁니다.
 
 ## 데이터 조회와 캐시
 
@@ -97,8 +97,7 @@ AI 행동 규칙(작업 범위, 검증, Supabase 안전)은 [RULES.md](RULES.md)
 
 상태: **결정 전** · 관련 영역: 전체
 
-결정할 것: 무엇을 unit test로, 무엇을 E2E로 확인할지. SQL 문자열을 검사하는 test를 유지할지
-([덜어낼 후보](../docs/rebuild/removal-candidates.md) 참고).
+결정할 것: 무엇을 unit test로, 무엇을 E2E로 확인할지. SQL 문자열을 검사하는 test를 유지할지.
 
 ## 네이밍
 

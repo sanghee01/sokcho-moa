@@ -26,8 +26,8 @@ AI가 읽는 문서의 원본은 `.ai/`에 둡니다. 이 문서에 적힌 경�
 
 | 경로 | 원본 내용 |
 | --- | --- |
-| `.ai/RULES.md` | 진입점, 재구축 원칙, AI 행동 규칙(이 문서) |
-| `.ai/CONVENTIONS.md` | 코드 컨벤션. 재구축하며 사용자가 내린 결정으로 채움 |
+| `.ai/RULES.md` | 진입점, 작업 원칙, AI 행동 규칙(이 문서) |
+| `.ai/CONVENTIONS.md` | 코드 컨벤션. 사용자가 결정한 규칙만 둠 |
 | `.ai/review/REVIEW.md` | PR 리뷰 정책: 무엇을 어떤 근거로 지적할지 |
 | `.ai/review/false-positives.md` | 사용자가 반박해 확정된 오탐과 적용 조건 |
 
@@ -35,13 +35,7 @@ AI가 읽는 문서의 원본은 `.ai/`에 둡니다. 이 문서에 적힌 경�
 
 | 경로 | 내용 |
 | --- | --- |
-| `docs/rebuild/target-architecture.md` | 목표 구조, 폴더별 규칙, 근거로 삼은 공식 문서·오픈소스 |
-| `docs/rebuild/refactor-1.md` | 1차 리팩토링 범위와 진행 상태 |
-| `docs/architecture.md` | 구조 지도(1차 리팩토링 후 다시 그림) |
-| `docs/database.md` | migration별 변화, 최종 schema, 권한(`파일:라인` 근거), 확인이 필요한 지점 |
-| `docs/rebuild/loop.md` | 2차 리팩토링: 영역별 재구축 루프 |
-| `docs/rebuild/removal-candidates.md` | 덜어낼 후보와 판단 기준 |
-| `docs/decisions/` | 사용자가 내린 판단 기록(ADR) |
+| `docs/architecture.md` | 구조 지도: 폴더 규칙, 라우트, 데이터 흐름, client 종류, 테이블 권한, 테스트 |
 | `docs/analytics-events.md` | GA4 측정 설계 |
 
 도구가 자동으로 읽는 위치에는 `.ai/`로 이어지는 연결만 둡니다. 연결 파일에는 내용을 쓰지 않습니다.
@@ -54,29 +48,12 @@ AI가 읽는 문서의 원본은 `.ai/`에 둡니다. 이 문서에 적힌 경�
 규칙을 다른 파일에 복제하지 않고 원본 문서의 절 제목으로 링크합니다. Codex는 instruction 파일을
 합계 32KiB까지만 읽으므로 이 파일을 그보다 작게 유지합니다.
 
-## 재구축 원칙
+## 작업 원칙
 
-이 저장소는 AI로 빠르게 만든 코드베이스를 사용자가 직접 설명하고 검증할 수 있게 다시 세우는
-중입니다. 단계는 세 개입니다.
-
-1. **1차 리팩토링**: 사용자가 정한 범위에서 AI가 문제와 코드 스멜을 한 번에 정리합니다.
-   범위와 진행 상태의 원본은 [refactor-1.md](../docs/rebuild/refactor-1.md)입니다.
-2. **구조 지도**: 1차가 끝난 코드로 [architecture.md](../docs/architecture.md)를 다시 그립니다.
-3. **2차 리팩토링**: [재구축 루프](../docs/rebuild/loop.md)로 사용자가 영역마다 설명·판단하고 AI는 좁은 작업만 맡습니다.
-
-- 1차에서는 refactor-1.md의 작업 목록 안에서만 삭제·구조 변경을 합니다. 목록에 없는 변경이 필요하면 먼저 목록에 추가하자고 제안합니다.
-- 2차부터 AI는 결정하지 않습니다. 삭제·리팩토링·구조 변경은 `docs/decisions/`에 사용자의 결정이
-  기록된 뒤에만, 그 결정이 정한 범위 안에서 합니다.
-- 결정 기록이 없는데 삭제나 구조 변경이 필요해 보이면 작업하지 않고 후보로 제안합니다.
-  제안은 [덜어낼 후보](../docs/rebuild/removal-candidates.md)의 형식(근거, 판단 기준, 사용자에게
-  필요한 수치)을 따릅니다.
-- 재구축 이전에 만들어진 코드와 결정은 "기존 구현"으로 부릅니다. 문서나 PR에서 사용자가
-  처음부터 설계한 것처럼 서술하지 않습니다. 이유를 모르는 코드는 추측하지 말고 "이유 확인 필요"로
-  남깁니다.
-- 한 작업은 한 영역의 좁은 변경으로 제한합니다. 영역 순서는 [재구축 루프](../docs/rebuild/loop.md#영역과-순서)를
-  따릅니다.
-- 설명 문서(`docs/architecture.md`의 사용자 설명 칸, `docs/decisions/`의 "내 설명")는 사용자가
-  씁니다. AI는 초안이나 질문을 남길 수 있지만 사용자의 문장을 대신 채우지 않습니다.
+- 삭제·리팩토링·구조 변경은 사용자가 이해하고 결정한 뒤에만, 그 범위 안에서 합니다. 필요해 보이면 작업하지 않고
+  근거와 함께 제안합니다.
+- 이유를 모르는 기존 코드는 추측해 설명하지 않고 "이유 확인 필요"로 남깁니다.
+- 한 작업은 한 영역의 좁은 변경으로 제한합니다.
 
 ## Start here
 
@@ -86,9 +63,7 @@ AI가 읽는 문서의 원본은 `.ai/`에 둡니다. 이 문서에 적힌 경�
 2. **코드를 변경하거나 리뷰하는 모든 작업에서 [`.ai/CONVENTIONS.md`](CONVENTIONS.md) 전체.** 도구가
    자동으로 불러오지 않았다면 직접 읽습니다.
 3. 작업에 해당하는 문서
-   - 코드 위치와 의존 방향: [목표 구조](../docs/rebuild/target-architecture.md#폴더와-규칙)
-   - 구조 파악, 영향 범위 확인: [`docs/architecture.md`](../docs/architecture.md)
-   - 작업 대상 영역의 결정: `docs/decisions/` 중 해당 영역 문서
+   - 코드 위치, 의존 방향, 영향 범위: [`docs/architecture.md`](../docs/architecture.md)
    - Pull request review: [review policy](review/REVIEW.md)와 [false positives](review/false-positives.md)
 4. 아래 '작업 범위 파악' 순서로 관련 code, configuration, test를 확인
 
@@ -108,7 +83,7 @@ AI가 읽는 문서의 원본은 `.ai/`에 둡니다. 이 문서에 적힌 경�
 
 Next.js App Router(서버 컴포넌트·server action)와 Supabase(Postgres, Auth, Storage, RLS)로 만든
 속초 지역 행사 서비스입니다. Vercel에 배포되어 있습니다. 폴더 규칙은
-[목표 구조](../docs/rebuild/target-architecture.md)가 원본입니다.
+[architecture.md의 폴더](../docs/architecture.md#폴더)가 원본입니다.
 
 - `supabase/review/`는 운영 행사 정보가 담긴 수집 검토 자료라 Git에 포함하지 않습니다. 사용자가 지정하지 않으면 근거로 쓰지 않습니다.
 
@@ -148,8 +123,7 @@ Next.js App Router(서버 컴포넌트·server action)와 Supabase(Postgres, Aut
   뒤에만 읽기 전용으로 실행합니다.
 - `.env.local` 등 실제 비밀값 파일을 읽거나 출력하지 않습니다. 필요한 변수 이름은 `.env.example`에서 확인합니다.
 - schema 변경은 `pnpm exec supabase migration new <이름>`으로 **새 파일**을 만들어 추가합니다. 이미 적용된 migration 파일은
-  수정하지 않습니다. 운영 DB의 migration 이력에는 `20260803015356` 이후 파일만 있으므로, `db push`를 쓰기 전 사용자가 이력을 맞춰야 합니다
-  ([refactor-1.md의 운영 환경 확인 결과](../docs/rebuild/refactor-1.md#운영-환경-확인-결과2026-11-05-대시보드-읽기-전용)).
+  수정하지 않습니다. 운영 DB 적용은 사용자가 하고, 적용 후 원격 migration 이력이 로컬 파일과 같은지 확인합니다.
 - `lib/supabase/database.types.ts`는 생성 파일입니다. 직접 고치지 않고 migration을 바꾼 뒤 `pnpm db:types`로 다시 만듭니다.
 - 새 migration에는 같은 이름의 rollback SQL을 `supabase/rollbacks/`에 함께 둡니다. 되돌릴 수 없는
   변경(데이터 삭제, 형 변환으로 정보 손실)이면 rollback 파일에 그 이유와 백업 방법을 적습니다.
