@@ -1,0 +1,20 @@
+-- 되돌리기: supabase/migrations/202607190003_verified_event_locations.sql
+-- 이 migration은 schema를 바꾸지 않고 2026-07-19 운영 감사 결과를 데이터에 반영(backfill)만 했다.
+-- 이후 migration의 rollback을 먼저 적용했다고 가정한다.
+--
+-- 되돌릴 수 없는 것(데이터 덮어쓰기)
+-- 이 migration이 덮어쓴 값의 이전 값은 어디에도 기록되지 않았으므로 SQL로 되돌리지 않는다.
+-- 이 파일에는 실행할 SQL이 없다.
+-- - 감사 행사 18건의 latitude, longitude, address(3건), location_source_url, location_verified_at
+-- - 무비 나잇 행사(729b8b08-...)의 source_url, official_url, last_verified_at
+-- - 무비 나잇 원문 이력 1건. 이전에 같은 (event_id, provider, original_url) 행이 있었으면 external_id·
+--   last_checked_at만 갱신했고 없었으면 새로 넣었는데, 둘 중 무엇이었는지 알 수 없다.
+-- - 감사 행사 20건의 events.last_verified_at, event_sources.last_checked_at
+-- 이전 값이 필요하면 이 migration 적용 전 시점의 백업(Supabase 대시보드의 일일 백업이나 PITR)에서
+-- 위 컬럼을 찾아 복원한다. 지금 값을 보존하려면 데이터를 바꾸기 전에 아래처럼 백업한다.
+--     create schema if not exists rollback_backup;
+--     create table rollback_backup.events_202607190003 as table public.events;
+--     create table rollback_backup.event_sources_202607190003 as table public.event_sources;
+--
+-- 권한 주의
+-- - 권한은 바꾸지 않았다.

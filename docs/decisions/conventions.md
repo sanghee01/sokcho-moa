@@ -16,6 +16,13 @@ AI가 읽는 규칙 문서(`AGENTS.md`)에는 규칙과 한 구절짜리 이유�
   - supabase/supabase 저장소가 같은 방식(폴더별 `AGENTS.md` + `CLAUDE.md`의 `@AGENTS.md`)을 씁니다.
 - **고르지 않은 대안**: 봄봄(Bombom-Team/client)처럼 `.ai/`에 원본을 모으고 폴더마다 symlink를 두는 방식. 한 곳에서 볼 수 있지만,
   symlink 위치에서 상대 링크가 깨지고 Claude의 편집이 symlink를 거쳐 쓰지 않으며, 링크를 검사하는 장치가 따로 필요합니다.
+- **실행 전 차단(2026-11-06)**: 예외 없는 운영 안전 규칙은 문장 대신 Claude Code 설정으로 막습니다.
+  `.claude/settings.json`의 PreToolUse hook(`.claude/hooks/guard-tool-use.mjs`)이 운영 Supabase 명령(`--remote`, `link`, `db push`,
+  `migration repair`, Supabase 호스트로의 `psql`), 비밀값 파일(.env, .env*.local) 읽기·쓰기, 커밋된 migration과 `database.types.ts` 수정을
+  막고, 같은 파일은 deny 규칙에도 둡니다. Bash deny 규칙은 명령 앞부분만 비교해 `pnpm exec supabase … --remote`를 놓치므로 hook으로 검사합니다
+  ([permissions](https://code.claude.com/docs/en/permissions), [hooks](https://code.claude.com/docs/en/hooks)).
+  Codex는 이 설정을 읽지 않고, 사용자가 터미널에서 직접 실행하는 명령은 거치지 않습니다.
+  `main` 직접 커밋은 리팩토링 기간(로드맵 0~9단계)에 사용자가 허용했으므로 막지 않고, 끝난 뒤 GitHub ruleset으로 보호합니다.
 - 결정 기록(이 문서)을 AI 문서 밖에 둔 이유: [Claude Code best practices](https://code.claude.com/docs/en/best-practices)는 AI 지침을 짧게,
   코드로 알 수 없는 것만 쓰라고 권합니다. 두 도구 모두 매번 읽는 문서의 토큰을 줄입니다.
 
@@ -75,7 +82,7 @@ AI가 읽는 규칙 문서(`AGENTS.md`)에는 규칙과 한 구절짜리 이유�
 | 상수 이름 | 고정 설정값만 `UPPER_SNAKE_CASE` | UPPER 52 : camel 82. Google: CONSTANT_CASE는 바뀌지 않는 최상위 값에 "쓸 수 있음" |
 | 예상한 실패 | throw하지 않고 반환값 | `N/01-getting-started/10-error-handling.md`. 버튼 action 21곳이 `throwActionError`로 throw하던 것을 `buttonActionFailed` 반환으로 바꿈. 관리자 화면이 "저장에 실패했습니다" 대신 실제 이유를 보여 줌 |
 | RLS 정책 | 작업별로 나누고 `for all` 금지 | Supabase 권고. 기존 `for all` 정책 8개를 migration `20261106132943`에서 grant가 있는 작업별 정책 23개로 나눔(권한은 그대로, `08_admin_policies_per_command`로 확인) |
-| lint 강제 | 추가 패키지 없이 가능한 규칙만 `eslint.config.mjs`에 추가 | 예외 없는 규칙은 문장보다 lint로 강제하라는 Claude Code best practices 권고. 켠 규칙: `consistent-type-definitions`(interface), `func-style`(function 선언, 타입 표기가 붙은 변수는 허용), enum 금지, `app/` 밖 default export 금지, 상대경로 import 금지(css 제외), `@ts-*` 주석 금지, `noInlineConfig`(eslint-disable 무시). 따옴표 규칙은 ESLint 9에서 deprecated라 켜지 않음. 켤 때 객체 `type` 33곳과 화살표 함수 선언 43곳을 고침 |
+| lint 강제 | 추가 패키지 없이 가능한 규칙만 `eslint.config.mjs`에 추가 | 예외 없는 규칙은 문장보다 lint로 강제하라는 Claude Code best practices 권고. 켠 규칙: `consistent-type-definitions`(interface), `func-style`(function 선언, 타입 표기가 붙은 변수는 허용), enum 금지, `app/` 밖 default export 금지, 상대경로 import 금지(css 제외), `@ts-*` 주석 금지, `noInlineConfig`(eslint-disable 무시). 따옴표 규칙은 ESLint 9에서 deprecated라 켜지 않음. 켤 때 객체 `type` 33곳과 화살표 함수 선언 43곳을 고침. 의존 방향(`components`·`lib` → `app`·`features` 금지, `features` → `app` 금지, 다른 feature는 `model`만)도 `no-restricted-imports`로 추가(2026-11-06, 켤 때 위반 0곳) |
 | 공식 skill | 성능은 Vercel `vercel-react-best-practices`를 링크로 참고 | Vercel 평가(2026-01): 항상 읽히는 문서가 skill보다 잘 지켜짐 → 꼭 지킬 규칙은 `AGENTS.md`에 |
 
 ### 아직 규칙에 맞추지 않은 코드

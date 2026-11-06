@@ -72,6 +72,8 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - `.env.local` 등 실제 비밀값 파일을 읽거나 출력하지 않습니다. 변수 이름은 `.env.example`에서 확인합니다.
 - `supabase/review/`는 운영 행사 정보가 담긴 수집 검토 자료라 Git에 넣지 않고, 사용자가 지정하지 않으면 근거로 쓰지 않습니다.
 - migration 작성 규칙은 [supabase/AGENTS.md](supabase/AGENTS.md)에 있습니다.
+- Claude Code에서는 이 중 운영 Supabase 명령, 비밀값 파일, 커밋된 migration·생성 타입 수정을 `.claude/hooks/guard-tool-use.mjs`가
+  실행 전에 막습니다. 막히면 우회하지 말고 사용자에게 알립니다.
 
 ## 검증 및 완료
 
@@ -97,7 +99,8 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 ## 코드 규칙
 
 저장소 전체에 적용합니다. 규칙이 생기기 전에 쓴 코드는 리뷰에서 지적하지 않고, 새로 쓰거나 고친 줄에 적용합니다.
-`function` 선언, named export, `interface`, `enum`·`@ts-*`·`eslint-disable` 금지, `@/` import는 `pnpm lint`가 강제합니다(`eslint.config.mjs`).
+`function` 선언, named export, `interface`, `enum`·`@ts-*`·`eslint-disable` 금지, `@/` import, 의존 방향(`app → features → components, lib`,
+다른 feature는 `model`만)은 `pnpm lint`가 강제합니다(`eslint.config.mjs`).
 결정 날짜·측정 숫자·공식 근거는 [docs/decisions/conventions.md](docs/decisions/conventions.md)에 있습니다.
 
 **함수와 모듈**

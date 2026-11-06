@@ -1,0 +1,18 @@
+-- 되돌리기: supabase/migrations/202607290001_merge_event_introductions.sql
+-- 이 migration은 schema를 바꾸지 않고, summary가 비어 있고 description만 있던 행사의 summary를
+-- description으로 채웠다(병합). 이후 migration의 rollback을 먼저 적용했다고 가정한다.
+--
+-- 되돌릴 수 없는 것(정보 손실)
+-- 이 파일에는 실행할 SQL이 없다.
+-- - 어떤 행의 summary를 채웠는지 기록하지 않았다. 지금 summary = description인 행에는 원래부터 두 값이
+--   같았던 행도 섞여 있어 구분할 수 없다. 원래 summary가 null이었는지 빈 문자열·공백이었는지도 사라졌다.
+--   `update ... set summary = null where summary = description` 같은 SQL은 원래 같았던 행의 summary까지
+--   지우므로 쓰지 않는다.
+-- - 원래 값이 필요하면 이 migration 적용 전 시점의 백업(대시보드 일일 백업이나 PITR)에서 events의 id, summary를
+--   찾아 복원한다. 지금 값을 보존하려면 데이터를 바꾸기 전에 아래처럼 백업한다.
+--     create schema if not exists rollback_backup;
+--     create table rollback_backup.events_introductions_202607290001
+--       as select id, summary, description from public.events;
+--
+-- 권한 주의
+-- - 권한은 바꾸지 않았다.

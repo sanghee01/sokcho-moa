@@ -36,7 +36,7 @@ proxy.ts             없는 토픽 404, 관리자 세션 갱신
 ```
 
 의존 방향은 `app → features → components, lib` 한 방향입니다. feature끼리는 다른 feature의 `model`(타입·순수 함수)만
-import합니다. 이 규칙은 아직 lint로 강제하지 않습니다.
+import합니다. 이 규칙은 `pnpm lint`가 강제합니다(`eslint.config.mjs`의 `no-restricted-imports`).
 
 ---
 
