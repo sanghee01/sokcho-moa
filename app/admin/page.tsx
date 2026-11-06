@@ -5,7 +5,7 @@ import { AdminEventsTab } from "@/app/admin/_components/events-tab";
 import { AdminExclusionsTab } from "@/app/admin/_components/exclusions-tab";
 import { AdminPlacesTab } from "@/app/admin/_components/places-tab";
 import { AdminFeedbackTab, AdminReportsTab } from "@/app/admin/_components/submission-tabs";
-import { getAdminDashboardFeedback } from "@/app/admin/dashboard-message";
+import { getAdminResultMessage } from "@/components/admin/admin-result";
 import { isEventReviewStatus } from "@/features/events/model/review-status";
 import { requireAdmin } from "@/lib/auth/admin";
 import { firstSearchParam } from "@/lib/search-params";
@@ -39,10 +39,10 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
     requireAdmin(),
     searchParams,
   ]);
-  const [tab, status, page, deleted, released, saved] = (["tab", "status", "page", "deleted", "released", "saved"] as const)
+  const [tab, status, page, result] = (["tab", "status", "page", "result"] as const)
     .map((name) => firstSearchParam(query[name]));
   const selectedTab = isAdminTab(tab) ? tab : "events";
-  const feedbackMessage = getAdminDashboardFeedback({ saved, deleted, released });
+  const feedbackMessage = getAdminResultMessage(result);
 
   return (
     <AdminShell email={admin.email}>

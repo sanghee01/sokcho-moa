@@ -93,6 +93,6 @@ test("서버 검증에 실패해도 입력이 남고, 고쳐서 다시 저장하
 
   await page.getByRole("textbox", { name: /행사 안내 URL.*필수/ }).fill("https://www.sokcho.go.kr/events/1");
   await page.getByRole("button", { name: "작성 완료" }).click();
-  await expect(page).toHaveURL(/\/admin\?saved=event-created/);
+  await expect(page).toHaveURL(/\/admin\?result=event-created/);
   await expect(page.getByText("입력이 남아야 하는 행사").first()).toBeVisible();
 });

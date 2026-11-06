@@ -33,5 +33,5 @@ AI 리뷰가 잘못 지적했고, 사용자가 반박해 확정한 케이스입�
 
 publishable key의 노출 자체는 지적하지 않습니다. 대신 이 키로 접근할 수 있는 table의 RLS가 비어
 있거나 너무 넓으면 [REVIEW.md의 데이터·권한](REVIEW.md#데이터권한)에 따라 지적합니다.
-`SUPABASE_SERVICE_ROLE_KEY`, `SUBMISSION_RATE_LIMIT_HMAC_SECRET`, `REVALIDATE_SECRET`에는 이 예외를
+`SUPABASE_SERVICE_ROLE_KEY`, `SUBMISSION_RATE_LIMIT_HMAC_SECRET`에는 이 예외를
 적용하지 않습니다.

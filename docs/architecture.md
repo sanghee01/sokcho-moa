@@ -61,7 +61,6 @@ import합니다. 이 규칙은 `pnpm lint`가 강제합니다(`eslint.config.mjs
 | `/report`, `/feedback` | 정적 | 방문자 제보·의견 폼 |
 | `/admin/**` | 동적(쿠키) | 모든 페이지가 `requireAdmin()`으로 시작 |
 | `POST /api/events/[slug]/view` | 동적 | 요청 제한(IP·행사별 10분 10회) 뒤 service_role로 조회수 +1 RPC |
-| `POST /api/revalidate` | 동적 | 외부 수집기용 캐시 무효화(Bearer 비밀값, timing-safe 비교). 지금은 부르는 곳이 없음: 행사 수집은 예약 실행되는 Aside 브라우저 에이전트가 관리자 화면 폼으로 검수 대기 등록을 하고, 공개할 때 관리자 action이 캐시를 만료함 |
 | `/sitemap.xml` | ISR 5분(`revalidate = 3600`이지만 안에서 쓰는 데이터 캐시 5분을 따름) | 검색엔진용 |
 | `/robots.txt`, `/indexnow-key.txt`, `/manifest.webmanifest` | 정적 | 검색엔진·PWA용 |
 

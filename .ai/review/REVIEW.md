@@ -41,7 +41,7 @@
   RLS가 막아 주더라도, 같은 함수가 나중에 service-role client로 바뀌면 바로 열립니다.
 - **route handler 인증 누락**: `app/api/**`에 쓰기·캐시 무효화가 있는데 인증 확인이 없는 경우.
 - **`NEXT_PUBLIC_`로 secret 노출**: `NEXT_PUBLIC_` 접두사 변수는 브라우저 bundle에 그대로 들어갑니다.
-  service-role key, HMAC secret, `REVALIDATE_SECRET` 같은 서버 비밀값에 붙은 경우.
+  service-role key, HMAC secret 같은 서버 비밀값에 붙은 경우.
   publishable key는 해당하지 않습니다([false-positives.md](false-positives.md)).
 - **DB 함수 권한**: `security definer` 함수(만든 사람 권한으로 실행되어 RLS를 건너뛰는 함수)에
   `set search_path`가 없거나, `revoke execute ... from public` 없이 만들어 `anon`이 호출할 수 있는 경우.

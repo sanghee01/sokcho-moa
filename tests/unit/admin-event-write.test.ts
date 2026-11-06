@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createEventSlug, eventSavedRedirect } from "@/features/events/admin/event-payload";
-import { getAdminDashboardFeedback } from "@/app/admin/dashboard-message";
+import { adminResultHref, getAdminResultMessage } from "@/components/admin/admin-result";
 
 describe("administrator event write helpers", () => {
   it("작성자가 입력하지 않아도 URL 규칙에 맞는 시스템 slug를 만든다", () => {
@@ -19,12 +19,19 @@ describe("administrator event write helpers", () => {
     function feedbackAfter(isEditing: boolean) {
       const url = new URL(eventSavedRedirect(isEditing), "https://sokcho-moa.test");
       expect(url.pathname).toBe("/admin");
-      return getAdminDashboardFeedback(Object.fromEntries(url.searchParams));
+      return getAdminResultMessage(url.searchParams.get("result") ?? undefined);
     }
 
     expect(feedbackAfter(false)).toBeDefined();
     expect(feedbackAfter(true)).toBeDefined();
     expect(feedbackAfter(false)).not.toBe(feedbackAfter(true));
+  });
+
+  it("결과 안내 주소는 기존 query를 지키고 result 하나로 결과를 전한다", () => {
+    const url = new URL(adminResultHref("/admin?tab=places", "place-deleted"), "https://sokcho-moa.test");
+    expect(url.searchParams.get("tab")).toBe("places");
+    expect(getAdminResultMessage(url.searchParams.get("result") ?? undefined)).toBeDefined();
+    expect(getAdminResultMessage("unknown")).toBeUndefined();
   });
 
 });

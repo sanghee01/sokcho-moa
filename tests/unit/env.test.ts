@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { getPublicEnv } from "@/lib/env";
-import { getRevalidateSecret, getSubmissionRateLimitHmacSecret } from "@/lib/env.server";
+import { getSubmissionRateLimitHmacSecret, getSupabaseSecretKey } from "@/lib/env.server";
 
 afterEach(() => vi.unstubAllEnvs());
 
@@ -34,15 +34,15 @@ describe("사이트 주소(NEXT_PUBLIC_SITE_URL)", () => {
 });
 
 describe("서버 비밀값은 기능별로 검증한다", () => {
-  it("캐시 무효화 비밀값 형식이 틀려도 요청 제한 비밀값은 읽을 수 있다", () => {
-    vi.stubEnv("REVALIDATE_SECRET", "too-short");
-    vi.stubEnv("SUBMISSION_RATE_LIMIT_HMAC_SECRET", "x".repeat(32));
-    expect(getSubmissionRateLimitHmacSecret()).toBe("x".repeat(32));
-    expect(() => getRevalidateSecret()).toThrow();
+  it("요청 제한 비밀값 형식이 틀려도 Supabase secret key는 읽을 수 있다", () => {
+    vi.stubEnv("SUBMISSION_RATE_LIMIT_HMAC_SECRET", "too-short");
+    vi.stubEnv("SUPABASE_SECRET_KEY", "sb_secret_for_unit_test");
+    expect(getSupabaseSecretKey()).toBe("sb_secret_for_unit_test");
+    expect(() => getSubmissionRateLimitHmacSecret()).toThrow();
   });
 
   it("값이 없으면 그 기능만 꺼진다(undefined)", () => {
-    vi.stubEnv("REVALIDATE_SECRET", "");
-    expect(getRevalidateSecret()).toBeUndefined();
+    vi.stubEnv("SUBMISSION_RATE_LIMIT_HMAC_SECRET", "");
+    expect(getSubmissionRateLimitHmacSecret()).toBeUndefined();
   });
 });

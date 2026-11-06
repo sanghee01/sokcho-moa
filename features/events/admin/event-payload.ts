@@ -1,3 +1,4 @@
+import { adminResultHref } from "@/components/admin/admin-result";
 import type { EventFormValues } from "@/features/events/admin/schemas";
 import { canonicalizeSourceUrl } from "@/features/events/model/source-url";
 
@@ -39,5 +40,5 @@ export function buildEventPayload(event: EventFormValues, verifiedAt: string) {
 }
 
 export function eventSavedRedirect(isEditing: boolean) {
-  return `/admin?saved=${isEditing ? "event-updated" : "event-created"}`;
+  return adminResultHref("/admin", isEditing ? "event-updated" : "event-created");
 }

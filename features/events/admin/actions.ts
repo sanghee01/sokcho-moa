@@ -1,5 +1,6 @@
 "use server";
 
+import { adminResultHref } from "@/components/admin/admin-result";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { after } from "next/server";
@@ -221,7 +222,7 @@ export async function deleteEventAction(
   if (slug && publication?.review_status === "published") {
     notifySearchEnginesAfterResponse(slug, [publication.category]);
   }
-  redirect("/admin?tab=events&deleted=event");
+  redirect(adminResultHref("/admin?tab=events", "event-deleted"));
 }
 
 export async function releaseEventCollectionExclusionAction(
@@ -242,5 +243,5 @@ export async function releaseEventCollectionExclusionAction(
   }
 
   revalidatePath("/admin");
-  redirect("/admin?tab=exclusions&released=event-exclusion");
+  redirect(adminResultHref("/admin?tab=exclusions", "exclusion-released"));
 }

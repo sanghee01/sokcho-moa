@@ -1,4 +1,4 @@
-import { revalidatePath, revalidateTag, updateTag } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { eventCategories, type EventCategory } from "@/features/events/model/taxonomy";
 import { eventTopicPath, eventTopics } from "@/features/events/model/topics";
 
@@ -21,15 +21,6 @@ export function expirePublicEvents(slug?: string | null) {
   updateTag(PUBLIC_EVENTS_CACHE_TAG);
   for (const path of publicEventPaths(slug)) revalidatePath(path);
   revalidatePath("/admin");
-}
-
-/**
- * 외부 수집기가 /api/revalidate로 알릴 때 호출한다. route handler에서는 updateTag를 쓸 수 없어,
- * 다음 요청에서 백그라운드로 새로 만드는 revalidateTag(…, "max")를 쓴다.
- */
-export function revalidatePublicEventsInBackground(slug?: string | null) {
-  revalidateTag(PUBLIC_EVENTS_CACHE_TAG, "max");
-  for (const path of publicEventPaths(slug)) revalidatePath(path);
 }
 
 /** IndexNow로 검색엔진에 알릴 경로: 홈, 행사 상세, 그 행사가 속한 토픽 페이지. */

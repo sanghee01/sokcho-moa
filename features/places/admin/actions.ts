@@ -1,5 +1,6 @@
 "use server";
 
+import { adminResultHref } from "@/components/admin/admin-result";
 import { redirect } from "next/navigation";
 import { adminActionFailed, invalidInput, type AdminActionState } from "@/lib/action-state";
 import { requireAdmin } from "@/lib/auth/admin";
@@ -54,7 +55,7 @@ export async function savePlaceAction(
   }
 
   expirePublicPlaces();
-  redirect(`/admin/places/${result.data.id}?saved=1`);
+  redirect(adminResultHref(`/admin/places/${result.data.id}`, "place-saved"));
 }
 
 export async function deletePlaceAction(
@@ -78,5 +79,5 @@ export async function deletePlaceAction(
   if (!deleted?.length) return adminActionFailed("이미 삭제되었거나 권한이 없는 항목입니다. 목록을 새로고침해 주세요.");
 
   expirePublicPlaces();
-  redirect("/admin?tab=places&deleted=place");
+  redirect(adminResultHref("/admin?tab=places", "place-deleted"));
 }

@@ -23,8 +23,3 @@ export function getSupabaseSecretKey() {
 export function getSubmissionRateLimitHmacSecret() {
   return readSecret("SUBMISSION_RATE_LIMIT_HMAC_SECRET", z.string().min(32, "32자 이상이어야 합니다."));
 }
-
-/** 외부 수집기가 /api/revalidate를 부를 때 쓰는 비밀값. */
-export function getRevalidateSecret() {
-  return readSecret("REVALIDATE_SECRET", z.string().min(16, "16자 이상이어야 합니다."));
-}

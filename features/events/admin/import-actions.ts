@@ -1,5 +1,6 @@
 "use server";
 
+import { adminResultHref } from "@/components/admin/admin-result";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { adminActionFailed, invalidInput, type AdminActionState } from "@/lib/action-state";
@@ -61,5 +62,5 @@ export async function importEventCandidateAction(
   }
 
   revalidatePath("/admin");
-  redirect(`/admin/events/${eventId}?created=1`);
+  redirect(adminResultHref(`/admin/events/${eventId}`, "event-imported"));
 }

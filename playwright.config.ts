@@ -39,7 +39,6 @@ export default defineConfig({
       ...readLocalSupabaseEnv(),
       NEXT_PUBLIC_SITE_URL: baseURL,
       SUBMISSION_RATE_LIMIT_HMAC_SECRET: "e2e-rate-limit-secret-for-local-tests-only",
-      REVALIDATE_SECRET: "e2e-revalidate-secret",
     },
   },
 });
