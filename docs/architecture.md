@@ -15,9 +15,12 @@ DB의 RLS·RPC가 다시 권한을 검사합니다.
 
 ```text
 app/                 URL과 1:1. 데이터 함수 호출 + feature 컴포넌트 조립. 전역 헤더·푸터는 layout.tsx
-  admin/_components/ 관리자 shell(로그아웃 버튼 포함)
+  admin/_components/ 관리자 shell, 대시보드 탭(행사·재수집 제외·제보·의견·명소)마다 자기 데이터를 조회하는 서버 컴포넌트
 features/
   events/            행사 탐색·상세·관리 (model, queries, cache, mappers, seo, components, admin/)
+    model/           event.ts(타입), event-state.ts(진행·신청 상태), event-list.ts(필터·정렬·인기 행사),
+                     review-status.ts, taxonomy.ts, location.ts(주변 명소), badges.ts, format.ts
+    admin/           관리자 queries·actions·components, candidate.ts(수집 후보 JSON 검증)
   places/            주변 명소 (model, queries, cache, mappers, components, admin/)
   reports/           방문자 행사 제보 (schemas, actions, components, admin/)
   feedback/          방문자 서비스 의견 (schemas, actions, components, admin/)
@@ -29,10 +32,14 @@ lib/                 도메인을 모르는 인프라
   env.ts, env.server.ts  공개·서버 환경 변수 검증
   public-submission.ts, rate-limit.ts  방문자 제출 관문과 요청 제한
   action-state.ts, form-data.ts        action 반환 형태와 폼 값 helper
+  seoul-time.ts      Asia/Seoul 날짜 계산의 원본(날짜 경계, 관리자 입력 시각 변환)
+  map.ts             거리 계산, 네이버 지도 링크(행사·명소가 함께 씀)
   seo/, analytics/   사이트 전체 SEO·GA4
-supabase/            migrations, seed.sql, tests/database(pgTAP), rollbacks, config.toml
+supabase/            migrations, seed.sql, tests/database(pgTAP), rollbacks(migration마다 같은 이름), config.toml
 tests/               unit/(Vitest), e2e/(Playwright, 로컬 Supabase)
 proxy.ts             없는 토픽 404, 관리자 세션 갱신
+.claude/             Claude Code 설정. hooks/guard-tool-use.mjs가 운영 DB 명령·비밀값 파일·커밋된 migration 수정을 실행 전에 막음
+.ai/                 화면 명세(DESIGN.md), 리뷰 정책(review/). AI 작업 규칙은 루트·폴더별 AGENTS.md
 ```
 
 의존 방향은 `app → features → components, lib` 한 방향입니다. feature끼리는 다른 feature의 `model`(타입·순수 함수)만
@@ -54,7 +61,7 @@ import합니다. 이 규칙은 `pnpm lint`가 강제합니다(`eslint.config.mjs
 | `/report`, `/feedback` | 정적 | 방문자 제보·의견 폼 |
 | `/admin/**` | 동적(쿠키) | 모든 페이지가 `requireAdmin()`으로 시작 |
 | `POST /api/events/[slug]/view` | 동적 | 요청 제한(IP·행사별 10분 10회) 뒤 service_role로 조회수 +1 RPC |
-| `POST /api/revalidate` | 동적 | 외부 수집기용 캐시 무효화(Bearer 비밀값, timing-safe 비교) |
+| `POST /api/revalidate` | 동적 | 외부 수집기용 캐시 무효화(Bearer 비밀값, timing-safe 비교). 지금은 부르는 곳이 없음: 행사 수집은 예약 실행되는 Aside 브라우저 에이전트가 관리자 화면 폼으로 검수 대기 등록을 하고, 공개할 때 관리자 action이 캐시를 만료함 |
 | `/sitemap.xml` | ISR 5분(`revalidate = 3600`이지만 안에서 쓰는 데이터 캐시 5분을 따름) | 검색엔진용 |
 | `/robots.txt`, `/indexnow-key.txt`, `/manifest.webmanifest` | 정적 | 검색엔진·PWA용 |
 
@@ -71,7 +78,7 @@ flowchart LR
   Cache --> Pub["lib/supabase/public.ts<br/>publishable key, 세션 없음 = anon"]
   Pub --> RLS["RLS: published 행만"]
   Q --> Map["mappers.ts: DB 행(생성 타입) → Event"]
-  Page --> Model["features/events/model<br/>filterEvents·sortEvents"]
+  Page --> Model["features/events/model/event-list.ts<br/>filterEvents·sortEvents·selectPopularEvents"]
 ```
 
 - 행사 수가 적어 전체 목록 하나만 캐시하고 필터·정렬은 메모리에서 합니다. 조건별 캐시는 적중률만 떨어뜨립니다.

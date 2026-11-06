@@ -10,6 +10,11 @@
 
 Next.js App Router, React, TypeScript, Tailwind CSS, Supabase, Zod, Vitest, Playwright, Vercel, Google Analytics 4 (GA4)
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="./docs/images/stack-diagram-dark.png" />
+  <img src="./docs/images/stack-diagram.png" alt="방문자 브라우저가 Vercel의 Next.js에 요청하고, Next.js가 Supabase의 Postgres·Storage·Auth를 쓰는 구성. 예약 실행되는 Aside 에이전트가 관리자 화면을 조작해 수집한 행사를 검수 대기로 등록한다. GitHub Actions가 CI를 돌리고 GitHub에서 Vercel로 배포하며, migration은 Supabase CLI로 적용한다" width="100%" />
+</picture>
+
 ## 화면
 
 <p align="center">
@@ -44,7 +49,7 @@ Next.js App Router, React, TypeScript, Tailwind CSS, Supabase, Zod, Vitest, Play
 - 공연·축제·체험·교육·전시·기타 카테고리 탐색
 - 행사명·장소·기관 검색
 - 진행 중·예정·마감 행사 구분
-- 게시순·행사일순·신청 마감일순·조회순 정렬
+- 행사일순·조회순 정렬, 지금 많이 보는 행사(7일 평균 조회수) 배너
 - 행사 기간, 운영 회차, 신청 상태, 대상, 요금, 장소 확인
 - 공식 행사 안내·신청·예매 페이지와 네이버 지도 연결
 - 주변 명소, 관련 행사 탐색
@@ -142,6 +147,8 @@ erDiagram
     text review_status
   }
 ```
+
+방문자 제출의 요청 제한 카운터(`private.public_submission_rate_limits`)는 Data API에 노출되지 않는 schema에 두어 그림에서 뺐습니다.
 
 행사 상태는 저장된 상태값을 중복하지 않고 행사 일정과 신청 기간에서 계산합니다. 운영 회차는 `event_occurrences`에 구조화하고, 공식 출처 변경은 `event_sources`에 기록합니다.
 
