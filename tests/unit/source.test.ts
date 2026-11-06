@@ -2,9 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   canonicalizeSourceUrl,
   extractSourceExternalId,
-  isKnownUnavailableOfficialUrl,
   isLikelyEventDetailUrl,
-  isSameSourceUrl,
 } from "@/features/events/model/source-url";
 
 describe("공식 원문 URL", () => {
@@ -82,30 +80,5 @@ describe("공식 원문 URL", () => {
     expect(isLikelyEventDetailUrl("https://events.example.com/board/list.do")).toBe(false);
     expect(isLikelyEventDetailUrl("https://events.example.com/festival/festivalList.jsp?id=1")).toBe(false);
     expect(isLikelyEventDetailUrl("https://events.example.com/events/summer-night-2026")).toBe(true);
-  });
-
-  it("슬래시·의미 있는 쿼리 순서 차이를 제거해 중복 링크를 판정한다", () => {
-    expect(isSameSourceUrl("https://example.com/event/?b=2&a=1", "https://example.com/event?a=1&b=2")).toBe(true);
-  });
-
-  it.each(["utm_source", "UTM_Medium", "fbclid", "GCLID", "dclid", "MSCLKID"])(
-    "%s 추적 쿼리를 중복 링크 판정에서 제외한다",
-    (trackingKey) => {
-      expect(
-        isSameSourceUrl(
-          `https://example.com/event?b=2&${trackingKey}=tracking-value&a=1`,
-          "https://example.com/event?a=1&b=2",
-        ),
-      ).toBe(true);
-    },
-  );
-
-  it("의미 있는 쿼리 값의 차이는 유지한다", () => {
-    expect(isSameSourceUrl("https://example.com/event?id=1&utm_campaign=summer", "https://example.com/event?id=2")).toBe(false);
-  });
-
-  it("현재 접속 불가능한 속초문화관광재단 링크는 공식 안내에서 제외한다", () => {
-    expect(isKnownUnavailableOfficialUrl("https://sokchocf.or.kr/sokchocf/community/notice?articleSeq=4139")).toBe(true);
-    expect(isKnownUnavailableOfficialUrl("https://www.sokcho.go.kr/sc/upload/popupzone/event-poster.jpg")).toBe(false);
   });
 });

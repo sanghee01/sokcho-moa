@@ -37,15 +37,10 @@ describe("eventCandidateSchema", () => {
     expect(result.success).toBe(false);
   });
 
-  it.each(["javascript:alert(1)", "data:text/plain,hello", "file:///tmp/event", "ftp://example.com/event"])(
-    "후보의 %s URL을 거부한다",
-    (sourceUrl) => {
-      expect(eventCandidateSchema.safeParse({ ...candidate, sourceUrl }).success).toBe(false);
-      expect(eventCandidateSchema.safeParse({ ...candidate, officialUrl: sourceUrl }).success).toBe(false);
-      expect(eventCandidateSchema.safeParse({ ...candidate, applicationUrl: sourceUrl }).success).toBe(false);
-      expect(eventCandidateSchema.safeParse({ ...candidate, imageUrl: sourceUrl }).success).toBe(false);
-    },
-  );
+  // 허용 프로토콜 전체 목록은 url.test.ts가 원본이다. 여기서는 모든 링크 필드가 그 경계를 쓰는지만 확인한다.
+  it.each(["sourceUrl", "officialUrl", "applicationUrl", "imageUrl"])("후보의 %s에 javascript: URL을 넣으면 거부한다", (field) => {
+    expect(eventCandidateSchema.safeParse({ ...candidate, [field]: "javascript:alert(1)" }).success).toBe(false);
+  });
 
   it("기관 대표 홈을 행사 원문으로 허용하지 않는다", () => {
     const result = eventCandidateSchema.safeParse({ ...candidate, sourceUrl: "https://www.sokcho.go.kr/sc/portal" });

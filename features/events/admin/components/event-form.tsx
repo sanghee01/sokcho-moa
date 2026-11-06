@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { AdminActionForm } from "@/components/admin/admin-action-form";
-import { FormSubmitButton } from "@/components/admin/form-submit-button";
+import { FormSubmitButton } from "@/components/ui/form-submit-button";
 import { saveEventAction } from "@/features/events/admin/actions";
 import { EventDeleteControl } from "@/features/events/admin/components/event-delete-control";
 import {

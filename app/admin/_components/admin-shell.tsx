@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { FormSubmitButton } from "@/components/admin/form-submit-button";
+import { FormSubmitButton } from "@/components/ui/form-submit-button";
 import { TransitionLink } from "@/components/ui/transition-link";
 import { signOutAction } from "@/features/auth/actions";
 

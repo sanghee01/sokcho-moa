@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { after } from "next/server";
 import { z } from "zod";
 import {
-  adminActionFailed as actionFailed,
+  adminActionFailed,
   invalidInput,
   throwActionError,
   type AdminActionState,
@@ -72,7 +72,7 @@ export async function saveEventAction(
 
   // 폼에서 미리 올린 이미지가 있으면 그것을 쓰고, 없으면 이번 저장에서 함께 올린다.
   const selectedImage = uploadedImageUrl ? { file: null, error: null } : readEventImageFile(formData);
-  if (selectedImage.error) return actionFailed(selectedImage.error);
+  if (selectedImage.error) return adminActionFailed(selectedImage.error);
 
   const event = parsed.data;
   const isEditing = Boolean(event.id);
@@ -85,7 +85,7 @@ export async function saveEventAction(
     const { publication, error } = await readPublication(client, event.id);
     if (error) {
       console.error("Event publication read failed", error.message);
-      return actionFailed("수정 전 행사의 공개 상태를 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.");
+      return adminActionFailed("수정 전 행사의 공개 상태를 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.");
     }
     previous = publication;
   }
@@ -97,7 +97,7 @@ export async function saveEventAction(
   let newImagePath: string | null = null;
   if (selectedImage.file) {
     const upload = await uploadEventImage(client, selectedImage.file);
-    if (upload.error || !upload.image) return actionFailed(upload.error ?? "이미지를 업로드하지 못했습니다.");
+    if (upload.error || !upload.image) return adminActionFailed(upload.error ?? "이미지를 업로드하지 못했습니다.");
     payload.image_url = upload.image.publicUrl;
     newImagePath = upload.image.path;
   }
@@ -121,7 +121,7 @@ export async function saveEventAction(
   if (error || typeof savedEventId !== "string") {
     await removeEventImage(client, newImagePath);
     if (error) console.error("Event save failed", error.message);
-    return actionFailed(error && isEventCollectionExcludedError(error.message) ? EXCLUDED_EVENT_MESSAGE : SAVE_FAILED_MESSAGE);
+    return adminActionFailed(error && isEventCollectionExcludedError(error.message) ? EXCLUDED_EVENT_MESSAGE : SAVE_FAILED_MESSAGE);
   }
 
   const { publication: saved, error: savedError } = await readPublication(client, savedEventId);
@@ -173,13 +173,13 @@ export async function deleteEventAction(
     id: formString(formData, "id"),
     confirmation: formString(formData, "confirmation"),
   });
-  if (!parsed.success) return actionFailed("삭제 요청을 확인한 뒤 다시 시도해 주세요.");
+  if (!parsed.success) return adminActionFailed("삭제 요청을 확인한 뒤 다시 시도해 주세요.");
 
   const client = await createSessionSupabaseClient();
   const { publication, error: readError } = await readPublication(client, parsed.data.id);
   if (readError) {
     console.error("Event publication read failed", readError.message);
-    return actionFailed("삭제할 행사의 공개 상태를 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.");
+    return adminActionFailed("삭제할 행사의 공개 상태를 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.");
   }
 
   const { data: deletedSlug, error } = await client.rpc("delete_event_and_exclude", {
@@ -188,7 +188,7 @@ export async function deleteEventAction(
   });
   if (error) {
     console.error("Event delete failed", error.message);
-    return actionFailed("행사를 삭제하지 못했습니다. 잠시 후 다시 시도해 주세요.");
+    return adminActionFailed("행사를 삭제하지 못했습니다. 잠시 후 다시 시도해 주세요.");
   }
 
   const slug = typeof deletedSlug === "string" ? deletedSlug : null;
@@ -205,7 +205,7 @@ export async function releaseEventCollectionExclusionAction(
 ): Promise<AdminActionState> {
   await requireAdmin();
   const parsed = eventCollectionExclusionSchema.safeParse({ id: formString(formData, "id") });
-  if (!parsed.success) return actionFailed("재수집 허용 대상을 확인해 주세요.");
+  if (!parsed.success) return adminActionFailed("재수집 허용 대상을 확인해 주세요.");
 
   const client = await createSessionSupabaseClient();
   const { data: released, error } = await client.rpc("release_event_collection_exclusion", {
@@ -213,7 +213,7 @@ export async function releaseEventCollectionExclusionAction(
   });
   if (error || released !== true) {
     if (error) console.error("Event exclusion release failed", error.message);
-    return actionFailed("재수집 제외를 해제하지 못했습니다. 잠시 후 다시 시도해 주세요.");
+    return adminActionFailed("재수집 제외를 해제하지 못했습니다. 잠시 후 다시 시도해 주세요.");
   }
 
   revalidatePath("/admin");

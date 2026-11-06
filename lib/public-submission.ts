@@ -1,6 +1,7 @@
 import "server-only";
 import { checkPublicSubmissionRateLimit, type PublicSubmissionRateLimitScope } from "@/lib/rate-limit";
 import { createAdminSupabaseClient, type AdminSupabaseClient } from "@/lib/supabase/admin";
+import { HONEYPOT_FIELD } from "@/lib/honeypot";
 
 /**
  * 로그인 없이 받는 방문자 제출(행사 제보, 서비스 의견)의 공통 관문.
@@ -10,7 +11,6 @@ import { createAdminSupabaseClient, type AdminSupabaseClient } from "@/lib/supab
  * 2. 저장 설정이 없으면 "준비 중"으로 응답한다.
  * 3. 같은 IP의 요청 수를 제한한다.
  */
-export const HONEYPOT_FIELD = "website";
 
 export function isBotSubmission(formData: FormData) {
   const value = formData.get(HONEYPOT_FIELD);

@@ -9,13 +9,11 @@ const EVENT_ID_QUERY_KEYS = [
   "ntt_id",
   "destid",
 ];
-const TRACKING_QUERY_KEYS = new Set(["fbclid", "gclid", "dclid", "msclkid"]);
 const OFFICIAL_IMAGE_PATTERN = /\.(?:avif|gif|jpe?g|png|webp)$/i;
 const SOKCHO_HOSTS = new Set(["sokcho.go.kr", "www.sokcho.go.kr"]);
 const SOKCHO_FACILITIES_HOSTS = new Set(["sokchosiseol.or.kr", "www.sokchosiseol.or.kr"]);
 const SOKCHO_LIBRARY_HOST = "library.sokcho.go.kr";
 const MCST_HOSTS = new Set(["mcst.go.kr", "www.mcst.go.kr"]);
-const UNAVAILABLE_OFFICIAL_HOSTS = new Set(["sokchocf.or.kr", "www.sokchocf.or.kr"]);
 
 const SOKCHO_ARTICLE_PATHS = new Set([
   "/ct/museum/archives/notice/news",
@@ -42,41 +40,6 @@ export function canonicalizeSourceUrl(value: string) {
     return url.toString();
   } catch {
     return value;
-  }
-}
-
-export function normalizeComparableUrl(value: string | null) {
-  if (!value) return null;
-  try {
-    const url = new URL(value);
-    url.hash = "";
-    url.hostname = url.hostname.toLowerCase();
-    url.pathname = url.pathname.length > 1 ? url.pathname.replace(/\/+$/, "") : url.pathname;
-    for (const key of [...url.searchParams.keys()]) {
-      const normalizedKey = key.toLowerCase();
-      if (normalizedKey.startsWith("utm_") || TRACKING_QUERY_KEYS.has(normalizedKey)) {
-        url.searchParams.delete(key);
-      }
-    }
-    url.searchParams.sort();
-    return url.toString();
-  } catch {
-    return null;
-  }
-}
-
-export function isSameSourceUrl(left: string | null, right: string | null) {
-  const normalizedLeft = normalizeComparableUrl(left);
-  const normalizedRight = normalizeComparableUrl(right);
-  return normalizedLeft != null && normalizedLeft === normalizedRight;
-}
-
-export function isKnownUnavailableOfficialUrl(value: string | null) {
-  if (!value) return false;
-  try {
-    return UNAVAILABLE_OFFICIAL_HOSTS.has(new URL(value).hostname.toLowerCase());
-  } catch {
-    return true;
   }
 }
 

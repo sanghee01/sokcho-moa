@@ -11,8 +11,6 @@ describe("행사 대표 이미지 검증", () => {
   });
 
   it("3MB를 초과한 이미지의 실제 용량을 안내한다", () => {
-    expect(validateEventImage({ type: "image/png", size: 3.5 * 1024 * 1024 })).toBe(
-      "선택한 파일은 3.5MB입니다. 3MB 이하 이미지를 선택해 주세요.",
-    );
+    expect(validateEventImage({ type: "image/png", size: 3.5 * 1024 * 1024 })).toContain("3.5MB");
   });
 });

@@ -32,16 +32,13 @@ describe("siteFeedbackSchema", () => {
     }).success).toBe(false);
   });
 
-  it.each(["javascript:alert(1)", "data:text/plain,hello", "file:///tmp/feedback", "ftp://example.com/feedback"])(
-    "웹에서 안전하게 열 수 없는 %s 링크를 거부한다",
-    (linkUrl) => {
-      expect(siteFeedbackSchema.safeParse({
-        title: "캘린더 의견",
-        body: "캘린더 화면에 대한 의견을 남깁니다.",
-        linkUrl,
-        }).success).toBe(false);
-    },
-  );
+  it("javascript: 링크를 거부한다(허용 프로토콜 목록은 url.test.ts가 원본)", () => {
+    expect(siteFeedbackSchema.safeParse({
+      title: "화면 의견",
+      body: "행사 목록 화면에 대한 의견을 남깁니다.",
+      linkUrl: "javascript:alert(1)",
+    }).success).toBe(false);
+  });
 
   it("짧은 제목·본문을 거부한다", () => {
     expect(siteFeedbackSchema.safeParse({ title: "의", body: "짧음", linkUrl: "" }).success).toBe(false);

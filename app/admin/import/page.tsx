@@ -1,6 +1,6 @@
 import { AdminActionForm } from "@/components/admin/admin-action-form";
 import { AdminShell } from "@/app/admin/_components/admin-shell";
-import { FormSubmitButton } from "@/components/admin/form-submit-button";
+import { FormSubmitButton } from "@/components/ui/form-submit-button";
 import { importEventCandidateAction } from "@/features/events/admin/import-actions";
 import { requireAdmin } from "@/lib/auth/admin";
 

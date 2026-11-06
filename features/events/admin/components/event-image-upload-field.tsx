@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { startTransition, useActionState, useEffect, useId, useRef, useState, type ChangeEvent } from "react";
-import type { EventImageUploadState } from "@/lib/action-state";
+import type { EventImageUploadState } from "@/features/events/admin/image-upload-state";
 import { FieldHelp, labelClassName } from "@/features/events/admin/components/event-form-fields";
 import { uploadEventImageAction } from "@/features/events/admin/image-actions";
 import { EVENT_IMAGE_ACCEPT, validateEventImage } from "@/features/events/admin/image-rules";

@@ -3,6 +3,7 @@ import { seoulDateOrDatetimeToIso } from "@/features/events/admin/datetime";
 import { eventAudiences, eventCandidateSchema, eventCategories } from "@/features/events/model/event";
 import { optionalTextField, optionalUrlField } from "@/lib/form-data";
 import { createHttpUrlSchema, isHttpUrl } from "@/lib/url";
+import { slugSchema } from "@/lib/slug";
 
 const optionalText = optionalTextField;
 const optionalUrl = optionalUrlField;
@@ -38,7 +39,7 @@ const occurrenceSchema = z.object({
 
 export const eventFormSchema = z.object({
   id: z.string().uuid().optional(),
-  slug: z.string().trim().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "영문 소문자·숫자·하이픈만 사용하세요."),
+  slug: z.string().trim().pipe(slugSchema),
   title: z.string().trim().min(1, "행사명을 입력하세요.").max(200),
   introduction: optionalText.pipe(z.string().max(5_000, "행사 소개는 5,000자 이하로 입력하세요.").nullable()),
   category: z.enum(eventCategories),

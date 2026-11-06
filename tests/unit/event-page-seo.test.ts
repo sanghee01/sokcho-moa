@@ -2,8 +2,6 @@ import { describe, expect, it, vi } from "vitest";
 
 vi.mock("@/features/events/queries", () => ({
   getAllPublicEvents: vi.fn(async () => []),
-  getPublicPlaces: vi.fn(async () => []),
-  getRelatedEvents: vi.fn(() => []),
   getPublicEventBySlug: vi.fn(async (slug: string) => ({
     slug,
     title: "2026 속초 여름축제",

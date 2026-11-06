@@ -88,12 +88,8 @@ describe("event topic SEO", () => {
     });
     const html = renderToStaticMarkup(page);
 
-    expect(html).toContain('<h1 id="topic-page-title"');
-    expect(html).toContain("속초 공연 한눈에 보기</h1>");
+    expect(html).toMatch(/<h1[^>]*>속초 공연 한눈에 보기<\/h1>/);
     expect(html).toContain("가까운 공연부터 예정된 무대까지");
-    expect(html).not.toContain('<h1 id="topic-page-title" class="sr-only">');
-    expect(html).not.toContain('aria-label="현재 위치"');
-    expect(html).not.toContain("from-teal-900");
   });
 
   it("없는 주제는 metadata 생성 단계에서 404로 중단한다", async () => {

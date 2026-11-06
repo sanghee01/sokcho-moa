@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { getDemoEvents } from "@/tests/unit/fixtures/events";
 import { filterEvents, parseEventFilters, sortEvents } from "@/features/events/model/event";
+import { makeEvent, NOW } from "@/tests/unit/support/event-builder";
 
 describe("parseEventFilters", () => {
   it("알 수 없는 URL 값은 버리고 유효한 필터만 보존한다", () => {
@@ -32,7 +32,7 @@ describe("parseEventFilters", () => {
 
 describe("sortEvents", () => {
   it("조회순은 조회수가 많은 행사를 먼저 보여주고 동률이면 최신 공개 행사부터 보여준다", () => {
-    const [first, second, third] = getDemoEvents();
+    const [first, second, third] = ["first", "second", "third"].map((slug) => makeEvent({ slug }));
     const events = [
       { ...first, viewCount: 12, publishedAt: "2026-07-18T00:00:00.000Z" },
       { ...second, viewCount: 45, publishedAt: "2026-07-10T00:00:00.000Z" },
@@ -47,7 +47,7 @@ describe("sortEvents", () => {
   });
 
   it("행사일순은 가까운 예정·먼 예정·진행 중·최근 종료 행사 순서로 보여준다", () => {
-    const [first, second, third, fourth] = getDemoEvents();
+    const [first, second, third, fourth] = ["first", "second", "third", "fourth"].map((slug) => makeEvent({ slug }));
     const now = new Date("2026-07-20T00:00:00.000Z");
     const events = [
       { ...first, eventStartAt: "2026-09-01T00:00:00.000Z", eventEndAt: "2026-09-02T00:00:00.000Z" },
@@ -65,7 +65,7 @@ describe("sortEvents", () => {
   });
 
   it("게시순은 공개일이 최신인 행사부터 보여준다", () => {
-    const [first, second] = getDemoEvents();
+    const [first, second] = ["first", "second"].map((slug) => makeEvent({ slug }));
     const events = [
       { ...first, publishedAt: "2026-07-01T00:00:00.000Z" },
       { ...second, publishedAt: "2026-07-20T00:00:00.000Z" },
@@ -76,7 +76,7 @@ describe("sortEvents", () => {
   });
 
   it("마감일순은 신청 가능한 가까운 마감을 먼저, 나머지는 행사일순으로 보여준다", () => {
-    const [first, second, third, fourth] = getDemoEvents();
+    const [first, second, third, fourth] = ["first", "second", "third", "fourth"].map((slug) => makeEvent({ slug }));
     const now = new Date("2026-07-20T00:00:00.000Z");
     const events = [
       { ...first, eventStartAt: "2026-07-21T00:00:00.000Z", eventEndAt: "2026-07-21T03:00:00.000Z", applicationStartAt: null, applicationEndAt: null, applicationUrl: null },
@@ -96,36 +96,50 @@ describe("sortEvents", () => {
 
 describe("filterEvents", () => {
   it("진행중과 마감 행사를 신청·행사 종료 상태로 나눈다", () => {
-    const events = getDemoEvents();
-    const now = new Date();
+    const events = [
+      makeEvent({ slug: "ongoing" }),
+      makeEvent({ slug: "upcoming", eventStartAt: "2026-08-01T00:00:00.000Z", eventEndAt: "2026-08-02T00:00:00.000Z" }),
+      makeEvent({ slug: "ended", eventStartAt: "2026-07-01T00:00:00.000Z", eventEndAt: "2026-07-02T00:00:00.000Z" }),
+      makeEvent({ slug: "application-closed", applicationEndAt: "2026-07-18T00:00:00.000Z", applicationUrl: "https://example.com/apply" }),
+    ];
 
-    expect(filterEvents(events, { status: "active" }, now)).toHaveLength(7);
-    expect(filterEvents(events, { status: "closed" }, now).map((event) => event.slug))
-      .toEqual(["demo-ended-winter-program"]);
+    expect(filterEvents(events, { status: "active" }, NOW).map((event) => event.slug)).toEqual(["ongoing", "upcoming"]);
+    expect(filterEvents(events, { status: "closed" }, NOW).map((event) => event.slug)).toEqual(["ended", "application-closed"]);
   });
 
   it("카테고리, 대상, 검색어를 함께 적용한다", () => {
-    const result = filterEvents(getDemoEvents(), {
-      category: "festival",
-      audience: "family",
-      query: "바다빛",
-    });
-    expect(result.map((event) => event.slug)).toEqual(["demo-sea-family-festival"]);
+    const events = [
+      makeEvent({ slug: "match", title: "바다빛 가족 축제", category: "festival", audiences: ["family"] }),
+      makeEvent({ slug: "everyone", title: "바다빛 시민 축제", category: "festival", audiences: ["all"] }),
+      makeEvent({ slug: "other-category", title: "바다빛 공연", category: "performance", audiences: ["family"] }),
+      makeEvent({ slug: "other-audience", title: "바다빛 청소년 축제", category: "festival", audiences: ["youth"] }),
+      makeEvent({ slug: "other-query", title: "산빛 가족 축제", category: "festival", audiences: ["family"] }),
+    ];
+
+    const result = filterEvents(events, { category: "festival", audience: "family", query: "바다빛" }, NOW);
+
+    // 대상이 "전체"인 행사는 어떤 대상 필터에도 포함된다.
+    expect(result.map((event) => event.slug)).toEqual(["match", "everyone"]);
   });
 
   it("신청 가능한 행사에 오늘 마감과 별도 신청 없음을 포함한다", () => {
-    const now = new Date();
-    const result = filterEvents(getDemoEvents(), { applicationOpen: true }, now);
-    const slugs = result.map((event) => event.slug);
-    expect(result.length).toBeGreaterThan(0);
-    expect(slugs).toContain("demo-youth-media-class");
-    expect(slugs).toContain("demo-sea-family-festival");
-    expect(slugs).toContain("demo-mountain-exhibition");
-    expect(slugs).not.toContain("demo-ended-winter-program");
+    const apply = "https://example.com/apply";
+    const events = [
+      makeEvent({ slug: "no-application" }),
+      makeEvent({ slug: "open", applicationStartAt: "2026-07-01T00:00:00.000Z", applicationEndAt: "2026-07-30T00:00:00.000Z", applicationUrl: apply }),
+      // 2026-07-20 23:00 KST 마감 = 오늘 마감
+      makeEvent({ slug: "closing-today", applicationEndAt: "2026-07-20T14:00:00.000Z", applicationUrl: apply }),
+      makeEvent({ slug: "not-started", applicationStartAt: "2026-07-25T00:00:00.000Z", applicationUrl: apply }),
+      makeEvent({ slug: "closed", applicationEndAt: "2026-07-18T00:00:00.000Z", applicationUrl: apply }),
+      makeEvent({ slug: "ended", eventStartAt: "2026-07-01T00:00:00.000Z", eventEndAt: "2026-07-02T00:00:00.000Z" }),
+    ];
+
+    expect(filterEvents(events, { applicationOpen: true }, NOW).map((event) => event.slug))
+      .toEqual(["no-application", "open", "closing-today"]);
   });
 
   it("신청 가능 결과는 마감 시각이 지나면 제외된다", () => {
-    const [sample] = getDemoEvents();
+    const sample = makeEvent();
     const event = {
       ...sample,
       reviewStatus: "published" as const,
@@ -141,10 +155,19 @@ describe("filterEvents", () => {
   });
 
   it("선택 운영 행사는 행사기간 중간의 비운영일 날짜 필터에서 제외한다", () => {
-    const events = getDemoEvents();
-    const gapDay = new Date(Date.now() + 8 * 24 * 60 * 60 * 1_000);
-    const slugs = filterEvents(events, { when: "today" }, gapDay).map((event) => event.slug);
+    const event = makeEvent({
+      slug: "occurrences",
+      eventStartAt: "2026-07-21T01:00:00.000Z",
+      eventEndAt: "2026-07-28T03:00:00.000Z",
+      scheduleMode: "occurrences",
+      occurrences: [
+        { id: "first", startsAt: "2026-07-21T01:00:00.000Z", endsAt: "2026-07-21T03:00:00.000Z" },
+        { id: "second", startsAt: "2026-07-28T01:00:00.000Z", endsAt: "2026-07-28T03:00:00.000Z" },
+      ],
+    });
 
-    expect(slugs).not.toContain("demo-youth-media-class");
+    // 2026-07-21 KST(운영일)과 2026-07-24 KST(행사기간 안의 비운영일)
+    expect(filterEvents([event], { when: "today" }, new Date("2026-07-21T03:00:00.000Z"))).toHaveLength(1);
+    expect(filterEvents([event], { when: "today" }, new Date("2026-07-24T03:00:00.000Z"))).toHaveLength(0);
   });
 });

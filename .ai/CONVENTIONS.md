@@ -95,9 +95,39 @@ AI 행동 규칙(작업 범위, 검증, Supabase 안전)은 [RULES.md](RULES.md)
 
 ## 테스트
 
-상태: **결정 전** · 관련 영역: 전체
+상태: **결정됨**(2026-11-06, 사용자가 AI 제안을 일단 채택하고 쓰면서 고치기로 함) · 관련 영역: 전체
 
-결정할 것: 무엇을 unit test로, 무엇을 E2E로 확인할지. SQL 문자열을 검사하는 test를 유지할지.
+층별 역할: lint·typecheck는 모든 변경에서 돌린다. unit test(Vitest)는 `features/*/model`의 순수 로직, zod 검증,
+server action·API route의 분기 결과를 맡는다. pgTAP은 RLS·grant·RPC를, E2E(Playwright)는 핵심 사용자 여정과
+async Server Component 렌더링을 맡는다.
+
+#### 버그는 실패하는 테스트로 먼저 재현한다
+
+- **규칙**: 버그 수정과 동작 변경은 기대 동작을 담은 테스트를 먼저 쓰고, 실패하는 출력을 확인한 뒤 코드를 고친다.
+- **이유**: 실패를 확인하지 않은 테스트는 처음부터 통과해 아무것도 보호하지 않을 수 있다.
+- **결정**: 2026-11-06. 근거: [Claude Code best practices](https://code.claude.com/docs/en/best-practices), Simon Willison red/green TDD
+- **확인 방법**: 리뷰. 완료 보고에 실패→통과 출력을 붙인다.
+
+#### 기존 테스트를 바꾸거나 지우기 전에 묻는다
+
+- **규칙**: 기존 테스트의 assertion 변경, 테스트 삭제, `.skip`·`.only` 추가는 이유를 들어 사용자에게 먼저 묻는다. 구현 버그를 테스트 수정으로 가리지 않는다.
+- **이유**: AI는 테스트를 고쳐 통과시키는 경향이 있다(ImpossibleBench, arXiv 2510.20270: Claude 계열 부정행위의 79% 이상이 테스트 수정).
+- **결정**: 2026-11-06
+- **확인 방법**: 리뷰. diff에서 `tests/`, `supabase/tests/`의 기존 assertion 변경을 본다.
+
+#### 동작을 검사하고 구현 세부는 검사하지 않는다
+
+- **규칙**: 공개 함수의 입력·출력, 응답 상태 코드, 사용자가 보는 결과를 검사한다. CSS 값·클래스명·픽셀 위치, UI 문구 전체, 설정값·SQL·seed 문자열, snapshot, mock 호출 순서는 검사하지 않는다. 날짜 로직은 고정된 `now`를 쓴다(`tests/unit/support/event-builder.ts`).
+- **이유**: 구현 세부 테스트는 동작이 같아도 리팩토링마다 깨지고 실제 버그는 잡지 못한다.
+- **결정**: 2026-11-06. 근거: Google SWE book 12장, Testing Trophy
+- **확인 방법**: 리뷰
+
+#### 권한을 바꾸면 pgTAP에 허용과 거부를 함께 추가한다
+
+- **규칙**: RLS·grant·RPC를 추가하거나 바꾸면 `supabase/tests/database/`에 허용되는 경우와 거부되는 경우를 각각 하나 이상 추가한다.
+- **이유**: DB 권한은 보안의 마지막 방어선이고, RLS 거부는 오류 없이 0행이 되어 눈에 띄지 않는다.
+- **결정**: 2026-11-06. 근거: [Supabase RLS testing](https://supabase.com/docs/guides/database/postgres/testing-row-level-security)
+- **확인 방법**: `pnpm db:test`, 리뷰
 
 ## 네이밍
 

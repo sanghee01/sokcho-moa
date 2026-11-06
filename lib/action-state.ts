@@ -26,14 +26,6 @@ export function invalidInput(error: z.ZodError): AdminActionState {
   return adminActionFailed(first ? `입력값을 확인해 주세요. ${first}` : "입력값을 확인해 주세요.");
 }
 
-export type EventImageUploadState = {
-  error: string | null;
-  publicUrl: string | null;
-  uploadedPath: string | null;
-  selectionToken: string | null;
-  fileName: string | null;
-};
-
 /** zod 검증 실패 중 첫 번째 메시지를 사용자에게 보여 줄 문장으로 쓴다. */
 export function firstIssueMessage(error: z.ZodError, fallback = "입력 내용을 확인해 주세요.") {
   return error.issues[0]?.message ?? fallback;

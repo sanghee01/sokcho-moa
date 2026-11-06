@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { AdminActionForm } from "@/components/admin/admin-action-form";
-import { FormSubmitButton } from "@/components/admin/form-submit-button";
+import { FormSubmitButton } from "@/components/ui/form-submit-button";
 import { statusControlStyles } from "@/features/events/admin/components/status-control-styles";
 import { deleteEventAction } from "@/features/events/admin/actions";
 

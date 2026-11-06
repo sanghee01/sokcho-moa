@@ -17,16 +17,13 @@ describe("eventReportSchema", () => {
     expect(eventReportSchema.safeParse({ title: "제보", body: "본문을 충분히 입력했습니다.", sourceUrl: "not-a-url" }).success).toBe(false);
   });
 
-  it.each(["javascript:alert(1)", "data:text/plain,hello", "file:///tmp/report", "ftp://example.com/report"])(
-    "웹에서 안전하게 열 수 없는 %s 링크를 거부한다",
-    (sourceUrl) => {
-      expect(eventReportSchema.safeParse({
-        title: "행사 제보",
-        body: "본문을 충분히 입력했습니다.",
-        sourceUrl,
-        }).success).toBe(false);
-    },
-  );
+  it("javascript: 링크를 거부한다(허용 프로토콜 목록은 url.test.ts가 원본)", () => {
+    expect(eventReportSchema.safeParse({
+      title: "행사 제보",
+      body: "본문을 충분히 입력했습니다.",
+      sourceUrl: "javascript:alert(1)",
+    }).success).toBe(false);
+  });
 });
 
 describe("event report admin schemas", () => {

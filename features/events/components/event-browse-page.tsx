@@ -20,6 +20,7 @@ import {
 import type { EventTopic } from "@/features/events/model/topics";
 import { buildSiteStructuredData } from "@/lib/seo/site-structured-data";
 import { buildTopicStructuredData } from "@/features/events/topic-seo";
+import { JsonLd } from "@/components/seo/json-ld";
 
 function HeroBurst({ side }: { side: "left" | "right" }) {
   const rayColors = side === "left"
@@ -105,10 +106,7 @@ export async function EventBrowsePage({
 
   return (
     <main id="main-content">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
-      />
+      <JsonLd data={jsonLd} />
       <EventHero topic={topic} />
 
       <div className="mx-auto max-w-6xl space-y-9 px-4 py-8 sm:px-6 sm:py-12">

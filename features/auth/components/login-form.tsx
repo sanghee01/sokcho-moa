@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { FormSubmitButton } from "@/components/admin/form-submit-button";
+import { FormSubmitButton } from "@/components/ui/form-submit-button";
 import { getButtonClassName } from "@/components/ui/button-styles";
 import { signInAction } from "@/features/auth/actions";
 import type { AdminActionState } from "@/lib/action-state";

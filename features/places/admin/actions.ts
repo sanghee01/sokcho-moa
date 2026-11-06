@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { adminActionFailed as actionFailed, invalidInput, type AdminActionState } from "@/lib/action-state";
+import { adminActionFailed, invalidInput, type AdminActionState } from "@/lib/action-state";
 import { requireAdmin } from "@/lib/auth/admin";
 import { formString } from "@/lib/form-data";
 import { createSessionSupabaseClient } from "@/lib/supabase/server";
@@ -50,7 +50,7 @@ export async function savePlaceAction(
     : await client.from("places").insert(payload).select("id").single();
   if (result.error) {
     console.error("Place save failed", result.error.message);
-    return actionFailed("명소를 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.");
+    return adminActionFailed("명소를 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.");
   }
 
   expirePublicPlaces();
@@ -66,13 +66,13 @@ export async function deletePlaceAction(
     id: formString(formData, "id"),
     confirmation: formString(formData, "confirmation"),
   });
-  if (!parsed.success) return actionFailed("삭제 확인에 체크한 뒤 다시 시도해 주세요.");
+  if (!parsed.success) return adminActionFailed("삭제 확인에 체크한 뒤 다시 시도해 주세요.");
 
   const client = await createSessionSupabaseClient();
   const { error } = await client.from("places").delete().eq("id", parsed.data.id);
   if (error) {
     console.error("Place delete failed", error.message);
-    return actionFailed("명소를 삭제하지 못했습니다. 잠시 후 다시 시도해 주세요.");
+    return adminActionFailed("명소를 삭제하지 못했습니다. 잠시 후 다시 시도해 주세요.");
   }
 
   expirePublicPlaces();

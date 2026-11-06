@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { FormSubmitButton } from "@/components/admin/form-submit-button";
+import { FormSubmitButton } from "@/components/ui/form-submit-button";
 import { getButtonClassName } from "@/components/ui/button-styles";
 import {
   formContainerClassName,
@@ -19,6 +19,7 @@ import {
   SITE_FEEDBACK_IMAGE_ACCEPT,
   SITE_FEEDBACK_IMAGE_MAX_MB,
 } from "@/features/feedback/schemas";
+import { HoneypotField } from "@/components/ui/honeypot-field";
 
 export function SiteFeedbackForm() {
   const [state, formAction] = useActionState(submitSiteFeedbackAction, initialFormActionState);
@@ -108,9 +109,7 @@ export function SiteFeedbackForm() {
         </p>
       )}
 
-      <div className="absolute -left-[9999px]" aria-hidden="true">
-        <label>웹사이트<input name="website" tabIndex={-1} autoComplete="off" /></label>
-      </div>
+      <HoneypotField />
 
       {state.error && !imageError && (
         <p role="alert" className={formErrorMessageClassName}>

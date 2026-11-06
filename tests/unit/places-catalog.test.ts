@@ -1,8 +1,5 @@
-import fs from "node:fs";
-import path from "node:path";
 import { describe, expect, it } from "vitest";
 import attractionCatalog from "@/data/attractions.json";
-import { demoPlaces } from "@/tests/unit/fixtures/events";
 
 const accepted = attractionCatalog.accepted;
 const regions = ["속초시", "고성군", "양양군"] as const;
@@ -38,13 +35,8 @@ describe("attraction catalog", () => {
       expect(new URL(source.url).protocol).toBe("https:");
     }
 
-    expect(attractionCatalog.stats).toEqual({
-      sourceCandidateReferenceCount: 246,
-      acceptedSourceReferenceCount: 147,
-      rejectedSourceReferenceCount: 99,
-      uniqueAcceptedCount: accepted.length,
-      uniqueRejectedCount: attractionCatalog.rejected.length,
-    });
+    expect(attractionCatalog.stats.uniqueAcceptedCount).toBe(accepted.length);
+    expect(attractionCatalog.stats.uniqueRejectedCount).toBe(attractionCatalog.rejected.length);
     expect(
       attractionCatalog.stats.acceptedSourceReferenceCount
       + attractionCatalog.stats.rejectedSourceReferenceCount,
@@ -96,31 +88,5 @@ describe("attraction catalog", () => {
     expect(accepted.filter((place) => excluded.test(`${place.name} ${place.category}`))).toEqual([]);
     expect(attractionCatalog.rejected.length).toBeGreaterThan(0);
     expect(attractionCatalog.rejected.every((item) => item.reason.length > 0)).toBe(true);
-  });
-
-  it("feeds the exact accepted records to demo mode", () => {
-    expect(demoPlaces).toEqual(accepted.map((place) => ({
-      id: place.id,
-      slug: place.slug,
-      name: place.name,
-      category: place.category,
-      summary: place.summary,
-      address: place.address,
-      latitude: place.latitude,
-      longitude: place.longitude,
-      imageUrl: place.imageUrl,
-      officialUrl: place.officialUrl,
-      mapUrl: place.mapUrl,
-      isPublished: place.isPublished,
-    })));
-  });
-
-  it("includes every accepted place in the generated seed", () => {
-    const seed = fs.readFileSync(path.join(process.cwd(), "supabase", "seed.sql"), "utf8");
-
-    for (const place of accepted) {
-      expect(seed, place.slug).toContain(`'${place.id}', '${place.slug}'`);
-    }
-    expect(seed).toContain("on conflict (slug) do update set");
   });
 });

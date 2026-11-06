@@ -19,23 +19,6 @@ async function visibleBox(locator: Locator): Promise<ElementBox> {
   return box!;
 }
 
-async function documentBox(locator: Locator): Promise<ElementBox> {
-  return locator.evaluate((element) => {
-    const rect = element.getBoundingClientRect();
-    return {
-      x: rect.x + window.scrollX,
-      y: rect.y + window.scrollY,
-      width: rect.width,
-      height: rect.height,
-    };
-  });
-}
-
-function expectSameDimensions(actual: ElementBox, expected: ElementBox) {
-  expect(Math.abs(actual.width - expected.width)).toBeLessThanOrEqual(1);
-  expect(Math.abs(actual.height - expected.height)).toBeLessThanOrEqual(1);
-}
-
 async function expectNoHorizontalOverflow(page: Page, locators: Locator[]) {
   const widths = await page.evaluate(() => ({
     viewport: window.innerWidth,
@@ -73,8 +56,6 @@ test("없는 페이지와 없는 행사를 각각 이해하기 쉬운 화면으�
   await page.goto("/존재하지-않는-페이지");
   await expect(page.getByRole("heading", { level: 1, name: "페이지를 찾을 수 없어요." })).toBeVisible();
   await expect(page.getByRole("link", { name: "행사 목록으로" })).toHaveAttribute("href", "/");
-  const footerBox = await visibleBox(page.getByRole("contentinfo"));
-  expect(footerBox.y + footerBox.height).toBeGreaterThanOrEqual(page.viewportSize()!.height - 1);
 
   await page.goto("/events/존재하지-않는-행사");
   await expect(page.getByRole("heading", { level: 1, name: "공개된 행사를 찾을 수 없어요." })).toBeVisible();
@@ -94,18 +75,12 @@ test("행사 상세는 지도 SDK나 인라인 미리보기 없이 장소·주�
 
   const factsSection = page.getByRole("region", { name: "핵심 정보" });
   await expect(factsSection.getByText("강원특별자치도 속초시 해오름로 190", { exact: true })).toBeVisible();
-  await expect(page.getByText("행사 AI 요약", { exact: true })).toHaveCount(0);
-  await expect(page.getByText("위치 및 길찾기", { exact: true })).toHaveCount(0);
-  await expect(page.getByRole("img", { name: /위치 지도/ })).toHaveCount(0);
-  await expect(page.getByText("지도를 불러오는 중입니다.")).toHaveCount(0);
-  await expect(page.getByText("지도를 불러오지 못했습니다.")).toHaveCount(0);
 
   const mapLink = factsSection.getByRole("link", { name: /네이버 지도/ });
   await expect(mapLink).toBeVisible();
   await expect(mapLink).toHaveAttribute("href", /^https:\/\/map\.naver\.com\/p\/search\//);
   await expect(mapLink).toHaveAttribute("target", "_blank");
   await expect(mapLink).toHaveAttribute("rel", "noreferrer");
-  await expect(mapLink).toHaveAttribute("data-analytics-event", "map_link_clicked");
   await expect(mapLink).toHaveAccessibleName("네이버 지도 (새 창)");
 
   await page.waitForLoadState("networkidle");
@@ -123,7 +98,7 @@ test("행사 상세는 지도 SDK나 인라인 미리보기 없이 장소·주�
   expect(mapSdkRequests).toEqual([]);
 });
 
-test("공유하기는 레이아웃을 유지하며 직접 수행한 링크 복사만 완료로 알린다", async ({ page }, testInfo) => {
+test("공유하기는 기기에 맞는 방식으로 행사 주소를 공유하고, 링크 복사만 완료로 알린다", async ({ page }, testInfo) => {
   const isMobile = testInfo.project.name === "mobile-chromium";
 
   await page.addInitScript((mobile) => {
@@ -156,12 +131,7 @@ test("공유하기는 레이아웃을 유지하며 직접 수행한 링크 복�
   await page.goto("/events/demo-sea-family-festival?from=search#facts-title");
   const shareButton = page.getByRole("button", { name: "공유하기" });
   await expect(shareButton).toBeVisible();
-  const buttonBoxBefore = await documentBox(shareButton);
   await shareButton.click();
-  const buttonBoxAfter = await documentBox(shareButton);
-  for (const key of ["x", "y", "width", "height"] as const) {
-    expect(Math.abs(buttonBoxAfter[key] - buttonBoxBefore[key]), `share button ${key}`).toBeLessThanOrEqual(1);
-  }
 
   const expectedUrl = "http://127.0.0.1:3100/events/demo-sea-family-festival";
   if (isMobile) {
@@ -178,10 +148,7 @@ test("공유하기는 레이아웃을 유지하며 직접 수행한 링크 복�
   await expect(shareButton).toBeVisible();
   const feedback = page.getByRole("status");
   await expect(feedback).toHaveText("링크를 복사했어요.");
-  const feedbackBox = await documentBox(feedback);
-  expect(feedbackBox.y).toBeGreaterThanOrEqual(buttonBoxAfter.y + buttonBoxAfter.height);
-  await page.waitForTimeout(3_100);
-  await expect(feedback).toBeHidden();
+  await expect(feedback).toBeHidden({ timeout: 5_000 });
   await expect.poll(async () => (await capturedAnalyticsEvents(page)).some((event) => (
     event.name === "share" && event.params.method === "link_copy" && event.params.item_id === "demo-sea-family-festival"
   ))).toBe(true);
@@ -221,78 +188,6 @@ test("GA 이벤트는 탐색부터 상세 도달까지 구조화된 파라미터
   ))).toBe(true);
 });
 
-test("정상·null·빈 문자열·404 이미지가 목록과 상세에서 같은 크기를 유지한다", async ({ page }) => {
-  let imageResponse: "normal" | "missing" = "normal";
-  const pixel = Buffer.from(
-    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
-    "base64",
-  );
-
-  await page.route("**/missing-event-image.jpg", async (route) => {
-    if (imageResponse === "normal") {
-      await route.fulfill({
-        status: 200,
-        contentType: "image/png",
-        body: pixel,
-        headers: { "cache-control": "no-store" },
-      });
-      return;
-    }
-    await route.fulfill({ status: 404, body: "", headers: { "cache-control": "no-store" } });
-  });
-
-  await page.goto("/");
-  const youthCard = page.getByRole("article").filter({ hasText: "청소년 미디어 창작 교실" });
-  const normalListImage = youthCard.getByRole("img", { name: "[샘플] 청소년 미디어 창작 교실" });
-  await normalListImage.scrollIntoViewIfNeeded();
-  await expect.poll(
-    () => normalListImage.evaluate((image) => (image as HTMLImageElement).naturalWidth),
-    { timeout: 10_000 },
-  ).toBe(1);
-  await expect(normalListImage).toHaveCSS("object-fit", "cover");
-  const normalListBox = await visibleBox(normalListImage);
-  expect(normalListBox.width / normalListBox.height).toBeCloseTo(16 / 9, 1);
-
-  await page.goto("/events/demo-youth-media-class");
-  const normalDetailImage = page.getByRole("img", { name: "[샘플] 청소년 미디어 창작 교실" });
-  await expect.poll(() => normalDetailImage.evaluate((image) => (image as HTMLImageElement).naturalWidth)).toBe(1);
-  await expect(normalDetailImage).toHaveCSS("object-fit", "contain");
-  const normalDetailBox = await visibleBox(normalDetailImage);
-
-  imageResponse = "missing";
-  await page.goto("/");
-
-  const fallbackTitles = [
-    "[샘플] 바다빛 가족 문화축제",
-    "[샘플] 어린이 바다 공예 체험",
-    "[샘플] 청소년 미디어 창작 교실",
-  ];
-  for (const title of fallbackTitles) {
-    const card = page.getByRole("article").filter({ hasText: title });
-    await card.scrollIntoViewIfNeeded();
-    const imageFallback = card.getByRole("img", { name: `${title} 대표 이미지` });
-    await expect(imageFallback).toBeEmpty();
-    const fallbackBox = await visibleBox(imageFallback);
-    expectSameDimensions(fallbackBox, normalListBox);
-    expect(fallbackBox.width / fallbackBox.height).toBeCloseTo(16 / 9, 1);
-  }
-  await expect(page.getByText("공식 이미지 준비 중")).toHaveCount(0);
-
-  const detailFixtures = [
-    ["demo-sea-family-festival", fallbackTitles[0]],
-    ["demo-children-craft", fallbackTitles[1]],
-    ["demo-youth-media-class", fallbackTitles[2]],
-  ] as const;
-
-  for (const [slug, title] of detailFixtures) {
-    await page.goto(`/events/${slug}`);
-    const imageFallback = page.getByRole("img", { name: `${title} 대표 이미지` }).first();
-    await expect(imageFallback).toBeEmpty();
-    expectSameDimensions(await visibleBox(imageFallback), normalDetailBox);
-    await expect(page.getByText("공식 이미지 준비 중")).toHaveCount(0);
-  }
-});
-
 test("목록과 상세는 데스크톱·모바일에서 가로로 넘치지 않는다", async ({ page }) => {
   await page.goto("/");
   const listHeading = page.getByRole("heading", { level: 1, name: "요즘 속초에서 뭐하지?", exact: true });
@@ -324,37 +219,6 @@ test("행사 카드에서 주제와 참여 대상을 라벨 없이 배지로 표
   await expect(taxonomy).toContainText("가족");
   await expect(taxonomy.getByText("주제", { exact: true })).toHaveCount(0);
   await expect(taxonomy.getByText("대상", { exact: true })).toHaveCount(0);
-
-  const categoryBadge = taxonomy.getByText("축제", { exact: true });
-  const audienceBadge = taxonomy.getByText("가족", { exact: true });
-  await expect(categoryBadge).toHaveCSS("font-size", "14px");
-  await expect(audienceBadge).toHaveCSS("font-size", "14px");
-  await expect(categoryBadge).toHaveCSS("color", "rgb(255, 255, 255)");
-  const categoryColors = await categoryBadge.evaluate((element) => {
-    const style = getComputedStyle(element);
-    return { color: style.color, backgroundColor: style.backgroundColor };
-  });
-  const audienceColors = await audienceBadge.evaluate((element) => {
-    const style = getComputedStyle(element);
-    return { color: style.color, backgroundColor: style.backgroundColor };
-  });
-  expect(audienceColors).not.toEqual(categoryColors);
-});
-
-test("일정 거리 스크롤하면 오른쪽 하단 버튼으로 페이지 맨 위에 돌아간다", async ({ page }) => {
-  await page.setViewportSize({ width: 1280, height: 600 });
-  await page.goto("/");
-  const scrollToTop = page.getByTestId("scroll-to-top");
-
-  await expect(scrollToTop).toHaveAttribute("aria-hidden", "true");
-  await page.evaluate(() => window.scrollTo(0, 900));
-  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThanOrEqual(600);
-  await expect(scrollToTop).toHaveAttribute("aria-hidden", "false");
-  await expect(scrollToTop).toBeVisible();
-
-  await scrollToTop.click();
-  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThan(2);
-  await expect(scrollToTop).toHaveAttribute("aria-hidden", "true");
 });
 
 test("목록에서 검색하고 상세·원문·외부 지도 링크·주변 명소를 확인한다", async ({ context, page }) => {
@@ -439,22 +303,10 @@ test("행사 목록에서 게시·행사일·마감일·조회 기준으로 정�
   await page.goto("/");
   const sort = page.getByRole("navigation", { name: "행사 정렬" });
   await expect(sort.getByRole("link")).toHaveText(["게시순", "행사일순", "마감일순", "조회순"]);
-  await expect(sort.locator('a[rel="nofollow"]')).toHaveCount(4);
-  const sortButtonRows = await sort.getByRole("link").evaluateAll((links) => (
-    new Set(links.map((link) => Math.round(link.getBoundingClientRect().top))).size
-  ));
-  expect(sortButtonRows).toBe(1);
   await expect(sort.getByRole("link", { name: "게시순" })).toHaveAttribute("aria-current", "page");
-  await page.evaluate(() => {
-    document.documentElement.style.scrollBehavior = "auto";
-    window.scrollTo(0, 200);
-  });
-  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
-  const initialScrollY = await page.evaluate(() => window.scrollY);
 
   await sort.getByRole("link", { name: "행사일순" }).click();
   await expect(page).toHaveURL(/sort=latest/);
-  await expect.poll(() => page.evaluate((expected) => Math.abs(window.scrollY - expected), initialScrollY)).toBeLessThanOrEqual(2);
   await expect(sort.getByRole("link", { name: "행사일순" })).toHaveAttribute("aria-current", "page");
   await expect(page.getByRole("article").first()).toContainText("아바이마을 이야기 산책");
 

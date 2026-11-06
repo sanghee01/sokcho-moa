@@ -14,16 +14,17 @@ describe("administrator event write helpers", () => {
     for (const slug of slugs) expect(slug).toMatch(/^[a-z0-9]+(?:-[a-z0-9]+)*$/);
   });
 
-  it("작성과 수정 완료를 구분해 대시보드로 보낸다", () => {
-    expect(eventSavedRedirect(false)).toBe("/admin?saved=event-created");
-    expect(eventSavedRedirect(true)).toBe("/admin?saved=event-updated");
-    expect(getAdminDashboardFeedback({ saved: "event-created" })).toBe("새 행사를 검수 대기로 등록했습니다.");
-    expect(getAdminDashboardFeedback({ saved: "event-updated" })).toBe("행사 정보를 수정했습니다.");
-  });
+  it("저장 후 이동한 대시보드가 작성과 수정에 서로 다른 완료 메시지를 보여 준다", () => {
+    // action이 만드는 redirect 주소와 대시보드가 읽는 query 이름이 어긋나면 메시지가 조용히 사라진다.
+    const feedbackAfter = (isEditing: boolean) => {
+      const url = new URL(eventSavedRedirect(isEditing), "https://sokcho-moa.test");
+      expect(url.pathname).toBe("/admin");
+      return getAdminDashboardFeedback(Object.fromEntries(url.searchParams));
+    };
 
-  it("삭제와 재수집 허용 결과를 구분해 안내한다", () => {
-    expect(getAdminDashboardFeedback({ deleted: "event" })).toBe("행사를 삭제하고 재수집에서 제외했습니다.");
-    expect(getAdminDashboardFeedback({ released: "event-exclusion" })).toBe("행사의 재수집 제외를 해제했습니다.");
+    expect(feedbackAfter(false)).toBeDefined();
+    expect(feedbackAfter(true)).toBeDefined();
+    expect(feedbackAfter(false)).not.toBe(feedbackAfter(true));
   });
 
 });

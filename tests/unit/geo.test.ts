@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { demoPlaces, getDemoEvents } from "@/tests/unit/fixtures/events";
+import { catalogPlaces, makeEvent } from "@/tests/unit/support/event-builder";
 import { createEventMapLinks, createMapSearchName, distanceInKm, findNearbyPlaces, getNearbyPlacesLabel } from "@/features/events/model/location";
 
 describe("distanceInKm", () => {
@@ -16,22 +16,19 @@ describe("distanceInKm", () => {
 
 describe("findNearbyPlaces", () => {
   it("행사 좌표에서 가까운 명소를 최대 4개 반환한다", () => {
-    const event = getDemoEvents()[0];
-    const result = findNearbyPlaces(event, demoPlaces);
+    const event = makeEvent({ locationName: "속초해수욕장", latitude: 38.1907, longitude: 128.6015 });
+    const result = findNearbyPlaces(event, catalogPlaces);
     expect(result).toHaveLength(4);
     expect(result[0].slug).toBe("sokcho-beach");
     expect(result[0].distanceKm).toBe(0);
   });
 
   it("행사 좌표가 없으면 같은 지역의 다양한 명소를 거리 표시 없이 반환한다", () => {
-    const event = {
-      ...getDemoEvents()[0],
+    const event = makeEvent({
       locationName: "한화리조트 설악",
       address: "강원특별자치도 속초시 미시령로2983번길 111",
-      latitude: null,
-      longitude: null,
-    };
-    const result = findNearbyPlaces(event, demoPlaces);
+    });
+    const result = findNearbyPlaces(event, catalogPlaces);
 
     expect(result).toHaveLength(4);
     expect(result.every((place) => place.address?.includes("속초시"))).toBe(true);
@@ -45,15 +42,9 @@ describe("findNearbyPlaces", () => {
   });
 
   it("주소가 없어도 장소명에서 지역을 판별한다", () => {
-    const event = {
-      ...getDemoEvents()[0],
-      locationName: "속초시청소년수련관·설악워터피아",
-      address: null,
-      latitude: null,
-      longitude: null,
-    };
+    const event = makeEvent({ locationName: "속초시청소년수련관·설악워터피아" });
 
-    expect(findNearbyPlaces(event, demoPlaces)).toHaveLength(4);
+    expect(findNearbyPlaces(event, catalogPlaces)).toHaveLength(4);
     expect(getNearbyPlacesLabel(event).title).toBe("속초 지역 명소 둘러보기");
   });
 });

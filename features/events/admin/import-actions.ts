@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { adminActionFailed as actionFailed, invalidInput, type AdminActionState } from "@/lib/action-state";
+import { adminActionFailed, invalidInput, type AdminActionState } from "@/lib/action-state";
 import { requireAdmin } from "@/lib/auth/admin";
 import { formString } from "@/lib/form-data";
 import { createSessionSupabaseClient } from "@/lib/supabase/server";
@@ -41,7 +41,7 @@ export async function importEventCandidateAction(
   if (parsed.data.imageUrl) {
     const imageImport = await importOfficialEventImage(client, parsed.data.imageUrl);
     if (imageImport.error || !imageImport.image) {
-      return actionFailed(imageImport.error ?? "공식 포스터 이미지를 최적화해 저장하지 못했습니다.");
+      return adminActionFailed(imageImport.error ?? "공식 포스터 이미지를 최적화해 저장하지 못했습니다.");
     }
     eventPayload.image_url = imageImport.image.publicUrl;
     importedImagePath = imageImport.image.path;
@@ -55,7 +55,7 @@ export async function importEventCandidateAction(
   if (error || typeof eventId !== "string") {
     await removeEventImage(client, importedImagePath);
     if (error) console.error("Event candidate import failed", error.message);
-    return actionFailed(error && isEventCollectionExcludedError(error.message)
+    return adminActionFailed(error && isEventCollectionExcludedError(error.message)
       ? EXCLUDED_EVENT_MESSAGE
       : "후보 행사를 등록하지 못했습니다. JSON 내용을 확인해 주세요.");
   }

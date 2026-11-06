@@ -1,17 +1,26 @@
 import { describe, expect, it } from "vitest";
-import { getDemoEvents } from "@/tests/unit/fixtures/events";
-import { getRelatedEvents, isEventClosedForDiscovery } from "@/features/events/model/event";
+import { getRelatedEvents } from "@/features/events/model/event";
+import { makeEvent, NOW } from "@/tests/unit/support/event-builder";
 
 describe("getRelatedEvents", () => {
   it("이 행사도 살펴보세요에서 신청 마감·종료 행사를 추천하지 않는다", () => {
-    const events = getDemoEvents();
-    const current = events.find((event) => event.slug === "demo-sunset-concert");
-    expect(current).toBeDefined();
+    const current = makeEvent({ slug: "current", category: "performance" });
+    const ongoing = makeEvent({ slug: "ongoing", category: "performance" });
+    const ended = makeEvent({
+      slug: "ended",
+      category: "performance",
+      eventStartAt: "2026-07-01T00:00:00.000Z",
+      eventEndAt: "2026-07-02T00:00:00.000Z",
+    });
+    const applicationClosed = makeEvent({
+      slug: "application-closed",
+      category: "performance",
+      applicationEndAt: "2026-07-18T00:00:00.000Z",
+      applicationUrl: "https://example.com/apply",
+    });
 
-    const now = new Date();
-    const related = getRelatedEvents(current!, events, 4, now);
+    const related = getRelatedEvents(current, [current, ongoing, ended, applicationClosed], 4, NOW);
 
-    expect(related.map((event) => event.slug)).not.toContain("demo-ended-winter-program");
-    expect(related.every((event) => !isEventClosedForDiscovery(event, now))).toBe(true);
+    expect(related.map((event) => event.slug)).toEqual(["ongoing"]);
   });
 });

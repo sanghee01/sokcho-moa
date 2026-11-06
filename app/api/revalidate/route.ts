@@ -3,8 +3,9 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getServerEnv } from "@/lib/env.server";
 import { revalidatePublicEventsInBackground } from "@/features/events/cache";
+import { slugSchema } from "@/lib/slug";
 
-const requestSchema = z.object({ slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).optional() });
+const requestSchema = z.object({ slug: slugSchema.optional() });
 
 /** 비밀값 비교에 걸린 시간으로 값을 추측하지 못하게 길이와 상관없이 같은 방식으로 비교한다. */
 function isAuthorized(header: string | null, secret: string) {

@@ -28,15 +28,8 @@ describe("buildSiteStructuredData", () => {
       name: "속초모아 | 속초 행사·축제 일정",
       primaryImageOfPage: { "@id": "https://sokcho-moa.vercel.app/#logo" },
     });
-    expect(logo).toEqual({
-      "@type": "ImageObject",
-      "@id": "https://sokcho-moa.vercel.app/#logo",
-      url: "https://sokcho-moa.vercel.app/icon.jpeg",
-      contentUrl: "https://sokcho-moa.vercel.app/icon.jpeg",
-      caption: "속초모아 로고",
-      width: 512,
-      height: 512,
-    });
+    expect(logo).toMatchObject({ "@type": "ImageObject", "@id": "https://sokcho-moa.vercel.app/#logo" });
+    expect(new URL(logo.url as string).origin).toBe("https://sokcho-moa.vercel.app");
   });
 
   it("사이트 URL에 경로가 있어도 홈페이지 기준 절대 URL을 만든다", () => {

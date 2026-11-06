@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { FormSubmitButton } from "@/components/admin/form-submit-button";
+import { FormSubmitButton } from "@/components/ui/form-submit-button";
 import { getButtonClassName } from "@/components/ui/button-styles";
 import {
   formContainerClassName,
@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/form-styles";
 import { submitEventReportAction } from "@/features/reports/actions";
 import { initialFormActionState } from "@/lib/action-state";
+import { HoneypotField } from "@/components/ui/honeypot-field";
 
 export function EventReportForm() {
   const [state, formAction] = useActionState(submitEventReportAction, initialFormActionState);
@@ -75,9 +76,7 @@ export function EventReportForm() {
         <span className={formFieldHelpTextClassName}>공식 안내 페이지나 신청 페이지 링크를 입력해 주세요.</span>
       </label>
 
-      <div className="absolute -left-[9999px]" aria-hidden="true">
-        <label>웹사이트<input name="website" tabIndex={-1} autoComplete="off" /></label>
-      </div>
+      <HoneypotField />
 
       {state.error && (
         <p role="alert" className={formErrorMessageClassName}>

@@ -1,6 +1,7 @@
 import { AdminActionForm } from "@/components/admin/admin-action-form";
-import { FormSubmitButton } from "@/components/admin/form-submit-button";
+import { FormSubmitButton } from "@/components/ui/form-submit-button";
 import { deletePlaceAction, savePlaceAction } from "@/features/places/admin/actions";
+import { SLUG_PATTERN_SOURCE } from "@/lib/slug";
 
 type Row = Record<string, unknown> | null;
 const input = "mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5";
@@ -15,7 +16,7 @@ export function PlaceForm({ row }: { row: Row }) {
       <AdminActionForm action={savePlaceAction} className="grid gap-5 rounded-3xl bg-white p-5 ring-1 ring-slate-200 sm:grid-cols-2 sm:p-8">
         {id && <input type="hidden" name="id" value={id} />}
         <label className={label}>명소명<input required name="name" defaultValue={text(row, "name")} className={input} /></label>
-        <label className={label}>슬러그<input required name="slug" defaultValue={slug} pattern="[a-z0-9]+(?:-[a-z0-9]+)*" className={input} /></label>
+        <label className={label}>슬러그<input required name="slug" defaultValue={slug} pattern={SLUG_PATTERN_SOURCE} className={input} /></label>
         <label className={label}>카테고리<input required name="category" defaultValue={text(row, "category")} className={input} /></label>
         <label className={label}>주소<input name="address" defaultValue={text(row, "address")} className={input} /></label>
         <label className={`${label} sm:col-span-2`}>짧은 소개<textarea name="summary" defaultValue={text(row, "summary")} rows={3} className={input} /></label>
