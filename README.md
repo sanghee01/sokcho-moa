@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  <a href="https://sokcho-moa.vercel.app/"><img src="https://img.shields.io/badge/서비스_바로가기-0B6E8F?style=for-the-badge&logo=googlechrome&logoColor=white" alt="서비스 바로가기" /></a>
+  <a href="https://sokchomoa.com/"><img src="https://img.shields.io/badge/서비스_바로가기-0B6E8F?style=for-the-badge&logo=googlechrome&logoColor=white" alt="서비스 바로가기" /></a>
 </p>
 
 <p align="center">
