@@ -1,7 +1,7 @@
 export const googleAnalyticsId = "G-QYZT8W8GZH";
 const excludedAnalyticsPathPrefixes = ["/admin"];
 
-export function shouldCollectGoogleAnalytics(vercelEnv = process.env.VERCEL_ENV) {
+export function shouldCollectGoogleAnalytics(vercelEnv: string | undefined) {
   return vercelEnv === "production";
 }
 

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { submissionReviewDecisions } from "@/components/admin/submission-review-status";
 import { createHttpUrlSchema } from "@/lib/url";
 
 export const SITE_FEEDBACK_IMAGE_MAX_MB = 3;
@@ -43,7 +44,7 @@ export const siteFeedbackSchema = z.object({
 
 export const siteFeedbackReviewSchema = z.object({
   id: z.string().uuid(),
-  status: z.enum(["reviewed", "rejected"]),
+  status: z.enum(submissionReviewDecisions),
 });
 
 export const siteFeedbackDeleteSchema = z.object({

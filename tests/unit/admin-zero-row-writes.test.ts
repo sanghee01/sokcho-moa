@@ -52,12 +52,14 @@ describe("관리자 쓰기가 0행을 처리하면 성공으로 보고하지 않
 
   it.each(writes)("%s: 바뀐 행이 없으면 실패한다", async (_, run) => {
     mocks.affectedRows = [];
-    await expect(run()).rejects.toThrow();
+    const result = await run();
+    expect(result.error).toBeTruthy();
   });
 
   it.each(writes)("%s: 행이 바뀌면 성공한다", async (_, run) => {
     mocks.affectedRows = [{ id: ID }];
-    await expect(run()).resolves.toBeDefined();
+    const result = await run();
+    expect(result.error).toBeNull();
   });
 
   it("명소 삭제: 지운 행이 없으면 오류 문장을 돌려주고 목록으로 보내지 않는다", async () => {

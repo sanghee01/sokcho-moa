@@ -48,7 +48,9 @@ export function formatShortDateRange(start: string | null, end: string | null, n
   const isSameDay = !endParts
     || (endParts.year === startParts.year && endParts.month === startParts.month && endParts.day === startParts.day);
   const withYear = startParts.year !== currentYear || Boolean(endParts && endParts.year !== currentYear);
-  const short = (parts: NonNullable<typeof startParts>) => `${withYear ? `${parts.year}.` : ""}${Number(parts.month)}.${Number(parts.day)}`;
+  function short(parts: NonNullable<typeof startParts>) {
+    return `${withYear ? `${parts.year}.` : ""}${Number(parts.month)}.${Number(parts.day)}`;
+  }
 
   if (isSameDay) {
     const weekday = koreanWeekdays[new Date(Date.UTC(Number(startParts.year), Number(startParts.month) - 1, Number(startParts.day))).getUTCDay()];
@@ -75,7 +77,9 @@ function getDateParts(formatter: Intl.DateTimeFormat, value: string) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return null;
   const parts = formatter.formatToParts(date);
-  const read = (type: Intl.DateTimeFormatPartTypes) => parts.find((part) => part.type === type)?.value;
+  function read(type: Intl.DateTimeFormatPartTypes) {
+    return parts.find((part) => part.type === type)?.value;
+  }
   const year = read("year");
   const month = read("month");
   const day = read("day");

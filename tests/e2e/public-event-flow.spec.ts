@@ -1,16 +1,16 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
 
-type ElementBox = {
+interface ElementBox {
   x: number;
   y: number;
   width: number;
   height: number;
-};
+}
 
-type CapturedAnalyticsEvent = {
+interface CapturedAnalyticsEvent {
   name: string;
   params: Record<string, string | number | boolean>;
-};
+}
 
 async function visibleBox(locator: Locator): Promise<ElementBox> {
   await expect(locator).toBeVisible();
@@ -85,7 +85,9 @@ test("행사 상세는 지도 SDK나 인라인 미리보기 없이 장소·주�
 
   await page.waitForLoadState("networkidle");
   await page.evaluate(() => new Promise<void>((resolve) => {
-    const settle = () => window.setTimeout(resolve, 100);
+    function settle() {
+      window.setTimeout(resolve, 100);
+    }
     if ("requestIdleCallback" in window) {
       window.requestIdleCallback(settle, { timeout: 500 });
     } else {
@@ -256,7 +258,7 @@ test("목록에서 검색하고 상세·원문·외부 지도 링크·주변 명
 });
 
 test("검색 응답이 늦어도 제출 즉시 진행 상태를 알린다", async ({ page }) => {
-  let releaseRequest = () => {};
+  let releaseRequest: () => void = () => {};
   const delayedResponse = new Promise<void>((resolve) => {
     releaseRequest = resolve;
   });

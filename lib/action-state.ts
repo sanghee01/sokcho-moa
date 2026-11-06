@@ -1,7 +1,7 @@
 import type { z } from "zod";
 
 /** `useActionState`로 쓰는 폼 action의 공통 반환 형태. 성공하면 error가 null이다. */
-export type FormActionState = { error: string | null; success: boolean };
+export interface FormActionState { error: string | null; success: boolean }
 
 export const initialFormActionState: FormActionState = { error: null, success: false };
 
@@ -14,7 +14,7 @@ export function actionSucceeded(): FormActionState {
 }
 
 /** 관리자 폼은 성공하면 redirect하므로 실패 메시지만 돌려준다. */
-export type AdminActionState = { error: string | null };
+export interface AdminActionState { error: string | null }
 
 export function adminActionFailed(message: string): AdminActionState {
   return { error: message };
@@ -32,10 +32,16 @@ export function firstIssueMessage(error: z.ZodError, fallback = "입력 내용�
 }
 
 /**
- * 폼이 아닌 action(상태 변경·삭제 버튼)의 실패. 사용자에게는 정해 둔 문장만 보여 주고,
- * DB 오류 원문은 서버 로그에만 남긴다. 오류 원문에는 table·제약 이름 같은 내부 정보가 담긴다.
+ * 폼이 아닌 action(상태 변경·삭제 버튼)의 반환. 성공하면 error가 null이고 결과 값을 함께 담는다.
+ * 예상한 실패는 throw하지 않고 돌려준다(Next.js 문서: throw는 예상하지 못한 오류에만 쓰고, 운영에서는 문구가 가려진다).
  */
-export function throwActionError(userMessage: string, cause?: { message: string } | null): never {
+export type ButtonActionResult<T extends object = object> = ({ error: null } & T) | { error: string };
+
+/**
+ * 버튼 action의 예상한 실패. 사용자에게는 정해 둔 문장만 돌려주고, DB 오류 원문은 서버 로그에만 남긴다.
+ * 오류 원문에는 table·제약 이름 같은 내부 정보가 담긴다.
+ */
+export function buttonActionFailed(userMessage: string, cause?: { message: string } | null): { error: string } {
   if (cause) console.error(userMessage, cause.message);
-  throw new Error(userMessage);
+  return { error: userMessage };
 }

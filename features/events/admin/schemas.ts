@@ -19,15 +19,17 @@ const requiredHttpsUrl = z.string()
     (value) => isHttpUrl(value) && new URL(value).protocol === "https:",
     "HTTPS 행사 안내 URL을 입력하세요.",
   );
-const optionalDate = (dateOnlyBoundary: "start" | "end" = "start") => z.string().trim().transform((value, context) => {
-  if (!value) return null;
-  try {
-    return seoulDateOrDatetimeToIso(value, dateOnlyBoundary);
-  } catch {
-    context.addIssue({ code: "custom", message: "올바른 날짜를 입력하세요." });
-    return z.NEVER;
-  }
-});
+function optionalDate(dateOnlyBoundary: "start" | "end" = "start") {
+  return z.string().trim().transform((value, context) => {
+    if (!value) return null;
+    try {
+      return seoulDateOrDatetimeToIso(value, dateOnlyBoundary);
+    } catch {
+      context.addIssue({ code: "custom", message: "올바른 날짜를 입력하세요." });
+      return z.NEVER;
+    }
+  });
+}
 
 const optionalStartDate = optionalDate();
 const optionalEndDate = optionalDate("end");

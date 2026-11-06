@@ -4,7 +4,7 @@ import {
   type EventCategory,
 } from "@/features/events/model/taxonomy";
 
-export type EventTopic = {
+export interface EventTopic {
   category: EventCategory;
   slug: EventCategory;
   path: `/topics/${EventCategory}`;
@@ -12,7 +12,7 @@ export type EventTopic = {
   title: string;
   heading: string;
   description: string;
-};
+}
 
 const topicCopy: Record<
   EventCategory,

@@ -1,5 +1,5 @@
 /** 행사 상세의 "주변 명소"로 보여 주는 장소. */
-export type Place = {
+export interface Place {
   id: string;
   slug: string;
   name: string;
@@ -12,4 +12,4 @@ export type Place = {
   officialUrl: string | null;
   mapUrl: string | null;
   isPublished: boolean;
-};
+}

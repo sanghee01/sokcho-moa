@@ -9,7 +9,7 @@ vi.mock("next/navigation", () => ({ redirect }));
 import CalendarPage from "@/app/calendar/page";
 
 async function redirectTarget(params: Record<string, string>) {
-  await CalendarPage({ searchParams: Promise.resolve(params) }).catch(() => {});
+  await CalendarPage({ params: Promise.resolve({}), searchParams: Promise.resolve(params) }).catch(() => {});
   return redirect.mock.calls.at(-1)?.[0];
 }
 

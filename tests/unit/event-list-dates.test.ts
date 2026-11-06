@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import { formatShortDateRange } from "@/features/events/model/format";
 
 // 목록 화면(.ai/DESIGN.md 3단계)의 짧은 날짜 표기를 확인한다. 모든 기준 시각은 KST로 적는다.
-const kst = (value: string) => new Date(`${value}+09:00`);
+function kst(value: string) {
+  return new Date(`${value}+09:00`);
+}
 const MONDAY_NOON = kst("2026-07-20T12:00:00"); // 2026-07-20은 월요일
 
 describe("formatShortDateRange", () => {

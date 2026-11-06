@@ -8,7 +8,9 @@ function dateTimeValue(formData: FormData, key: string) {
 
 /** 회차 입력은 시작일·시작시각·종료일·종료시각 네 칸이 같은 순서로 반복된다. 빈 줄은 버린다. */
 function occurrenceValues(formData: FormData) {
-  const strings = (key: string) => formData.getAll(key).map((item) => typeof item === "string" ? item : "");
+  function strings(key: string) {
+    return formData.getAll(key).map((item) => typeof item === "string" ? item : "");
+  }
   const starts = strings("occurrenceStartsAt");
   const startTimes = strings("occurrenceStartsAtTime");
   const ends = strings("occurrenceEndsAt");

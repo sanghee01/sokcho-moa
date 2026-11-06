@@ -18,7 +18,7 @@ import { generateMetadata } from "@/app/events/[slug]/page";
 
 describe("event page metadata", () => {
   it("행사별 canonical, 사이트명, 대표 이미지와 큰 미리보기 허용값을 함께 제공한다", async () => {
-    const metadata = await generateMetadata({ params: Promise.resolve({ slug: "sokcho-summer-festival" }) });
+    const metadata = await generateMetadata({ params: Promise.resolve({ slug: "sokcho-summer-festival" }), searchParams: Promise.resolve({}) });
 
     expect(metadata).toMatchObject({
       title: "2026 속초 여름축제 일정·장소·신청 안내",
@@ -38,7 +38,7 @@ describe("event page metadata", () => {
   });
 
   it("공백 이미지 URL을 홈페이지나 깨진 썸네일로 해석하지 않는다", async () => {
-    const metadata = await generateMetadata({ params: Promise.resolve({ slug: "no-image" }) });
+    const metadata = await generateMetadata({ params: Promise.resolve({ slug: "no-image" }), searchParams: Promise.resolve({}) });
 
     expect(metadata.openGraph).not.toHaveProperty("images");
     expect(metadata.twitter).not.toHaveProperty("images");

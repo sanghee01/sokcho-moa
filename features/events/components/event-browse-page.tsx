@@ -25,9 +25,11 @@ import { buildTopicStructuredData } from "@/features/events/topic-seo";
 import { JsonLd } from "@/components/seo/json-ld";
 
 // 진행중/마감은 밑줄 탭, 정렬은 묶음 버튼으로 모양을 구분한다(.ai/DESIGN.md 페이지 구조 > 홈·주제 목록).
-const statusTabClassName = (selected: boolean) => `-mb-px inline-flex min-h-11 items-center border-b-2 px-3 text-label lg:min-h-12 lg:px-4 lg:text-body ${selected
-  ? "border-primary font-semibold text-primary-text"
-  : "border-transparent text-content-subtle hover:text-content"}`;
+function statusTabClassName(selected: boolean) {
+  return `-mb-px inline-flex min-h-11 items-center border-b-2 px-3 text-label lg:min-h-12 lg:px-4 lg:text-body ${selected
+    ? "border-primary font-semibold text-primary-text"
+    : "border-transparent text-content-subtle hover:text-content"}`;
+}
 
 function EventCardGrid({ events, showCategory }: { events: Event[]; showCategory: boolean }) {
   return (

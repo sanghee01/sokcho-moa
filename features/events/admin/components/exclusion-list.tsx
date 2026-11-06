@@ -53,12 +53,12 @@ export function EventCollectionExclusionList({
                       {formatDeletedAt(exclusion.deletedAt)}
                     </time>
                   </div>
-                  {exclusion.originalTitle && exclusion.originalSlug ? (
+                  {Boolean(exclusion.originalTitle && exclusion.originalSlug) && (
                     <p className="mt-1 break-all text-xs text-slate-500">/{exclusion.originalSlug}</p>
-                  ) : null}
-                  {exclusion.reason ? (
+                  )}
+                  {Boolean(exclusion.reason) && (
                     <p className="mt-2 text-sm leading-6 text-slate-600">사유: {exclusion.reason}</p>
-                  ) : null}
+                  )}
                   <ul className="mt-3 flex flex-wrap gap-2" aria-label="재수집 제외 식별 정보">
                     {exclusion.identities.map((identity, index) => (
                       <li
@@ -67,14 +67,14 @@ export function EventCollectionExclusionList({
                       >
                         <span className="font-bold">{identityKindLabels[identity.kind] ?? identity.kind}</span>{" "}
                         <span className="break-all">{identity.identityValue}</span>
-                        {identity.sourceUrl && identity.sourceUrl !== identity.identityValue ? (
+                        {Boolean(identity.sourceUrl) && identity.sourceUrl !== identity.identityValue && (
                           <span className="mt-0.5 block break-all text-slate-500">출처: {identity.sourceUrl}</span>
-                        ) : null}
+                        )}
                       </li>
                     ))}
-                    {exclusion.identities.length === 0 ? (
+                    {exclusion.identities.length === 0 && (
                       <li className="text-xs text-slate-500">저장된 식별 정보가 없습니다.</li>
-                    ) : null}
+                    )}
                   </ul>
                 </div>
                 <EventCollectionExclusionReleaseControl

@@ -16,10 +16,10 @@ export function EventCollectionExclusionReleaseControl({
   const [isOpen, setIsOpen] = useState(false);
   const titleId = `event-exclusion-release-${id}`;
 
-  const openDialog = () => {
+  function openDialog() {
     dialogRef.current?.showModal();
     setIsOpen(true);
-  };
+  }
 
   return (
     <>

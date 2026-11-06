@@ -5,25 +5,25 @@ import {
   type EventAudience,
   type EventCategory,
 } from "@/features/events/model/taxonomy";
+import type { EventReviewStatus } from "@/features/events/model/review-status";
 import { isLikelyEventDetailUrl } from "@/features/events/model/source-url";
 import { httpUrlSchema } from "@/lib/url";
 
 export { eventAudiences, eventCategories, type EventAudience, type EventCategory } from "@/features/events/model/taxonomy";
-export type ReviewStatus = "pending" | "published" | "rejected";
 export type EventScheduleMode = "continuous" | "occurrences";
 
-export type EventOccurrence = {
+export interface EventOccurrence {
   id: string;
   startsAt: string;
   endsAt: string | null;
-};
+}
 
-export type EventPerformer = {
+export interface EventPerformer {
   name: string;
   type: "Person" | "PerformingGroup";
-};
+}
 
-export type Event = {
+export interface Event {
   id: string;
   slug: string;
   title: string;
@@ -58,13 +58,13 @@ export type Event = {
   imageUrl: string | null;
   sourceName: string;
   sourceUrl: string;
-  reviewStatus: ReviewStatus;
+  reviewStatus: EventReviewStatus;
   isFeatured: boolean;
   /** 공개 행사 상세 페이지가 열린 횟수. 마이그레이션 전 데이터는 0으로 취급한다. */
   viewCount?: number;
   lastVerifiedAt: string | null;
   publishedAt: string | null;
-};
+}
 
 /**
  * The public event introduction is stored in `summary`. `description` remains
@@ -74,7 +74,7 @@ export function getEventIntroduction(event: Pick<Event, "summary" | "description
   return event.summary ?? event.description;
 }
 
-export type EventCandidate = {
+export interface EventCandidate {
   title: string;
   summary: string | null;
   description: string | null;
@@ -98,7 +98,7 @@ export type EventCandidate = {
   imageUrl: string | null;
   sourceName: string;
   sourceUrl: string;
-};
+}
 
 const nullableUrl = httpUrlSchema.nullable();
 const nullableDateTime = z.string().datetime({ offset: true }).nullable();
@@ -191,7 +191,7 @@ export function deriveEventUnavailableReason(
   return null;
 }
 
-export type EventFilters = {
+export interface EventFilters {
   when?: "today" | "week" | "month";
   applicationOpen?: boolean;
   status?: "active" | "closed";
@@ -199,10 +199,12 @@ export type EventFilters = {
   category?: EventCategory;
   query?: string;
   sort?: "latest" | "deadline" | "views" | "published";
-};
+}
 
 export function parseEventFilters(params: Record<string, string | string[] | undefined>): EventFilters {
-  const one = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value);
+  function one(value: string | string[] | undefined) {
+    return Array.isArray(value) ? value[0] : value;
+  }
   const when = one(params.when);
   const audience = one(params.audience);
   const category = one(params.category);
@@ -397,7 +399,9 @@ export function getKoreanParts(date: Date) {
     month: "2-digit",
     day: "2-digit",
   }).formatToParts(date);
-  const value = (type: Intl.DateTimeFormatPartTypes) => Number(parts.find((part) => part.type === type)?.value);
+  function value(type: Intl.DateTimeFormatPartTypes) {
+    return Number(parts.find((part) => part.type === type)?.value);
+  }
   return { year: value("year"), month: value("month"), day: value("day") };
 }
 

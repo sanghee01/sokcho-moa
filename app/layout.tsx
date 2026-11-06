@@ -9,7 +9,7 @@ import { AnalyticsRuntime } from "@/components/analytics/analytics-runtime";
 import { ScrollToTopButton } from "@/components/layout/scroll-to-top-button";
 import { iconProps } from "@/components/ui/icon";
 import { googleAnalyticsId, shouldCollectGoogleAnalytics } from "@/lib/analytics/google-analytics";
-import { getPublicEnv } from "@/lib/env";
+import { getPublicEnv, getRuntimeEnv } from "@/lib/env";
 import {
   HOME_TITLE,
   INDEXABLE_ROBOTS,
@@ -32,7 +32,7 @@ const pretendard = localFont({
 });
 
 const siteUrl = getPublicEnv().NEXT_PUBLIC_SITE_URL;
-const collectGoogleAnalytics = shouldCollectGoogleAnalytics();
+const collectGoogleAnalytics = shouldCollectGoogleAnalytics(getRuntimeEnv().vercelEnv);
 const logoUrl = new URL(SITE_LOGO_PATH, siteUrl).toString();
 
 export const metadata: Metadata = {

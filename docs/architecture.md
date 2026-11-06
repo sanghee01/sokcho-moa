@@ -121,8 +121,9 @@ pgTAP(`supabase/tests/database/`)으로 실제 권한을 확인했습니다. 정
 
 | table | 방문자(anon) | 관리자 | 확인한 방법 |
 | --- | --- | --- | --- |
-| `events` | 공개 행만 읽기. 쓰기는 권한 오류(42501) | 읽기·추가·수정. **직접 delete 불가**(RPC만) | `01_public_access`, `03_event_admin_rpc` |
-| `event_reports`, `site_feedback` | 직접 쓰기 불가(권한 오류), 조회는 0행 | 상태 변경·삭제 | `01_public_access`, `07_api_role_grants` |
+| `events` | 공개 행만 읽기. 쓰기는 권한 오류(42501) | 읽기·추가·수정. **직접 delete 불가**(RPC만) | `01_public_access`, `03_event_admin_rpc`, `08_admin_policies_per_command` |
+| `event_sources`, `event_occurrences`, `places` | 공개 행사·공개 명소에 딸린 행만 읽기 | 읽기·추가·수정·삭제 | `01_public_access`, `08_admin_policies_per_command` |
+| `event_reports`, `site_feedback` | 직접 쓰기 불가(권한 오류), 조회는 0행 | 읽기·상태 변경·삭제 | `01_public_access`, `07_api_role_grants`, `08_admin_policies_per_command` |
 | `admin_users` | 접근 불가 | 접근 불가(`is_admin()` RPC로만 확인) | `07_api_role_grants` |
 | `public_submission_rate_limits`(private) | 함수 실행 불가 | 함수 실행 불가(서버만) | `02_rate_limit` |
 | `event_deletion_*` | 없음 | 읽기만(쓰기는 RPC) | `03_event_admin_rpc` |
@@ -130,6 +131,7 @@ pgTAP(`supabase/tests/database/`)으로 실제 권한을 확인했습니다. 정
 Supabase는 table 권한(grant)을 기본으로 넓게 줍니다. migration `20261106084625`가 anon의 쓰기 grant와 새 함수의 기본 실행 권한을
 회수해서, 방문자 쓰기는 RLS에 닿기 전에 권한 오류(42501)가 납니다. 관리자(authenticated)의 쓰기와 select는 grant가 있고 RLS가 막으므로,
 막힌 경우 오류 대신 "0행"이 됩니다. 그래서 관리자 action은 바뀐 행이 있는지 확인합니다.
+관리자 정책은 작업(select·insert·update·delete)별로 나뉘어 있고, grant가 있는 작업에만 있습니다(migration `20261106132943`).
 `event-images` bucket은 공개 URL로 누구나 볼 수 있지만, 목록 조회(list)는 관리자만 할 수 있습니다.
 
 ---

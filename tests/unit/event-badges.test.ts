@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { selectEventBadges } from "@/features/events/model/badges";
-import { makeEvent, NOW } from "./support/event-builder";
+import { makeEvent, NOW } from "@/tests/unit/support/event-builder";
 
 // 기준 시각 NOW = 2026-07-20 12:00 KST. 배지 규칙의 원본은 .ai/DESIGN.md의 "행사 상태의 색"이다.
-const labels = (event: Parameters<typeof selectEventBadges>[0]) => selectEventBadges(event, NOW).map((badge) => badge.label);
+function labels(event: Parameters<typeof selectEventBadges>[0]) {
+  return selectEventBadges(event, NOW).map((badge) => badge.label);
+}
 
 describe("selectEventBadges", () => {
   it("종료된 행사는 종료 안내 하나만 보여 준다", () => {
@@ -34,7 +36,9 @@ describe("selectEventBadges", () => {
   });
 
   it("마감이 1~3일 남으면 신청 D-day를 강조 색으로 보여 준다(KST 날짜 기준)", () => {
-    const dayAfter = (date: string) => makeEvent({ applicationEndAt: `${date}T23:59:59+09:00` });
+    function dayAfter(date: string) {
+      return makeEvent({ applicationEndAt: `${date}T23:59:59+09:00` });
+    }
     expect(labels(dayAfter("2026-07-21"))).toEqual(["신청 D-1"]);
     expect(labels(dayAfter("2026-07-23"))).toEqual(["신청 D-3"]);
     expect(labels(dayAfter("2026-07-24"))).toEqual(["사전 신청"]);

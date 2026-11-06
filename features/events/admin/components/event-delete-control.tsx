@@ -6,23 +6,25 @@ import { FormSubmitButton } from "@/components/ui/form-submit-button";
 import { statusControlStyles } from "@/features/events/admin/components/status-control-styles";
 import { deleteEventAction } from "@/features/events/admin/actions";
 
-type EventDeletionTarget = {
+interface EventDeletionTarget {
   id: string;
   slug: string;
   title: string;
-};
+}
 
 export function EventDeleteControl({ event }: { event: EventDeletionTarget }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [isOpen, setIsOpen] = useState(false);
   const titleId = `event-delete-${event.id}`;
 
-  const openDialog = () => {
+  function openDialog() {
     dialogRef.current?.showModal();
     setIsOpen(true);
-  };
+  }
 
-  const closeDialog = () => dialogRef.current?.close();
+  function closeDialog() {
+    dialogRef.current?.close();
+  }
 
   return (
     <>

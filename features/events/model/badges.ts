@@ -2,7 +2,7 @@ import { deriveApplicationState, deriveEventUnavailableReason, getKoreanParts } 
 import type { EventStatusFields } from "@/features/events/model/status-fields";
 
 export type EventBadgeTone = "danger" | "success" | "neutral" | "muted";
-export type EventBadge = { label: string; tone: EventBadgeTone };
+export interface EventBadge { label: string; tone: EventBadgeTone }
 
 const MAX_BADGES = 2;
 /** 마감까지 이 일수 이하로 남으면 "사전 신청" 대신 "신청 D-N"을 강조 색으로 보여 준다. */

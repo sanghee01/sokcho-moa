@@ -97,6 +97,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 ## 코드 규칙
 
 저장소 전체에 적용합니다. 규칙이 생기기 전에 쓴 코드는 리뷰에서 지적하지 않고, 새로 쓰거나 고친 줄에 적용합니다.
+`function` 선언, named export, `interface`, `enum`·`@ts-*`·`eslint-disable` 금지, `@/` import는 `pnpm lint`가 강제합니다(`eslint.config.mjs`).
 결정 날짜·측정 숫자·공식 근거는 [docs/decisions/conventions.md](docs/decisions/conventions.md)에 있습니다.
 
 **함수와 모듈**

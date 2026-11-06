@@ -23,6 +23,24 @@ function resolveSiteUrl() {
   return "http://localhost:3000";
 }
 
+export interface RuntimeEnv {
+  /** Vercel 위에서 실행 중인지(Vercel이 VERCEL=1을 넣어 줌) */
+  isVercel: boolean;
+  /** Vercel 배포 종류: production, preview, development. Vercel 밖이면 undefined */
+  vercelEnv: string | undefined;
+  /** production build로 실행 중인지 */
+  isProduction: boolean;
+}
+
+/** 실행 환경 정보. 비밀값은 아니지만 process.env를 읽는 곳을 lib/env*.ts로 모은다(lib/AGENTS.md). */
+export function getRuntimeEnv(): RuntimeEnv {
+  return {
+    isVercel: process.env.VERCEL === "1",
+    vercelEnv: process.env.VERCEL_ENV || undefined,
+    isProduction: process.env.NODE_ENV === "production",
+  };
+}
+
 export function getPublicEnv(): PublicEnv {
   const parsed = publicEnvSchema.safeParse({
     NEXT_PUBLIC_SITE_URL: resolveSiteUrl(),

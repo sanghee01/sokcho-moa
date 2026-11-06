@@ -4,12 +4,12 @@ import { useEffect, useRef } from "react";
 import { trackAnalyticsEvent } from "@/lib/analytics/events";
 import type { EventAudience, EventCategory } from "@/features/events/model/event";
 
-type EventDetailAnalyticsProps = {
+interface EventDetailAnalyticsProps {
   slug: string;
   category: EventCategory;
   audiences: EventAudience[];
   applicationAvailable: boolean;
-};
+}
 
 export function EventDetailAnalytics({ slug, category, audiences, applicationAvailable }: EventDetailAnalyticsProps) {
   const trackedSlug = useRef<string | null>(null);

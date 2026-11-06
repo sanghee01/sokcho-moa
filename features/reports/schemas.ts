@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { submissionReviewDecisions } from "@/components/admin/submission-review-status";
 import { createHttpUrlSchema } from "@/lib/url";
 
 const reportUrlSchema = createHttpUrlSchema({
@@ -17,7 +18,7 @@ export const eventReportSchema = z.object({
 
 export const eventReportReviewSchema = z.object({
   id: z.string().uuid(),
-  status: z.enum(["reviewed", "rejected"]),
+  status: z.enum(submissionReviewDecisions),
 });
 
 export const eventReportDeleteSchema = z.object({

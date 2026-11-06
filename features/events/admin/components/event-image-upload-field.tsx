@@ -41,7 +41,7 @@ export function ImageUploadField({ initialUrl, onUploaded }: { initialUrl: strin
     if (isUploaded && uploadState.publicUrl) onUploaded(uploadState.publicUrl);
   }, [isUploaded, onUploaded, uploadState.publicUrl]);
 
-  const handleImageChange = (event: ChangeEvent<HTMLInputElement>) => {
+  function handleImageChange(event: ChangeEvent<HTMLInputElement>) {
     if (objectUrlRef.current) {
       URL.revokeObjectURL(objectUrlRef.current);
       objectUrlRef.current = null;
@@ -75,9 +75,9 @@ export function ImageUploadField({ initialUrl, onUploaded }: { initialUrl: strin
     setSelectionToken(crypto.randomUUID());
     setClientValidationError(null);
     setFailedPreviewUrl(null);
-  };
+  }
 
-  const handleUpload = () => {
+  function handleUpload() {
     const file = inputRef.current?.files?.[0];
     if (!file || !selectionToken || isUploading) return;
     const formData = new FormData();
@@ -85,7 +85,7 @@ export function ImageUploadField({ initialUrl, onUploaded }: { initialUrl: strin
     formData.set("imageSelectionToken", selectionToken);
     if (uploadState.uploadedPath) formData.set("previousUploadedImagePath", uploadState.uploadedPath);
     startTransition(() => uploadAction(formData));
-  };
+  }
 
   return (
     <div className="rounded-2xl border border-cyan-200 bg-cyan-50 p-4 sm:col-span-2">

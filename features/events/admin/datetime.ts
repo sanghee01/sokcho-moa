@@ -2,7 +2,9 @@ const SEOUL_OFFSET_MS = 9 * 60 * 60 * 1_000;
 const dateOnlyPattern = /^(\d{4})-(\d{2})-(\d{2})$/;
 const datetimeLocalPattern = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/;
 
-const pad = (value: number) => String(value).padStart(2, "0");
+function pad(value: number) {
+  return String(value).padStart(2, "0");
+}
 
 /** Combines the separate date and optional time controls used by administrator forms. */
 export function combineDateAndOptionalTime(date: string, time: string) {

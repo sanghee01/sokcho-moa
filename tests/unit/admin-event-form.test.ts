@@ -77,16 +77,18 @@ describe("관리자 입력 시각은 한국 시간으로 해석한다", () => {
 });
 
 describe("운영 회차", () => {
-  const occurrenceForm = (overrides: Record<string, unknown> = {}) => form({
-    eventStartAt: "2026-07-22T09:00",
-    eventEndAt: "2026-07-29T21:00",
-    scheduleMode: "occurrences",
-    occurrences: [
-      { startsAt: "2026-07-22T19:00", endsAt: "2026-07-22T21:00" },
-      { startsAt: "2026-07-29T19:00", endsAt: "2026-07-29T21:00" },
-    ],
-    ...overrides,
-  });
+  function occurrenceForm(overrides: Record<string, unknown> = {}) {
+    return form({
+      eventStartAt: "2026-07-22T09:00",
+      eventEndAt: "2026-07-29T21:00",
+      scheduleMode: "occurrences",
+      occurrences: [
+        { startsAt: "2026-07-22T19:00", endsAt: "2026-07-22T21:00" },
+        { startsAt: "2026-07-29T19:00", endsAt: "2026-07-29T21:00" },
+      ],
+      ...overrides,
+    });
+  }
 
   it("KST 회차 입력을 UTC로 저장한다", () => {
     expect(eventFormSchema.parse(occurrenceForm()).occurrences).toEqual([

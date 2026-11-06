@@ -1,66 +1,43 @@
 "use client";
 
-import { useOptimistic, useState, useTransition } from "react";
-import { setEventReviewStatusAction } from "@/features/events/admin/actions";
 import { statusControlStyles } from "@/features/events/admin/components/status-control-styles";
+import { useEventReviewStatus } from "@/features/events/admin/components/use-event-review-status";
+import { eventReviewStatusActionLabels, type EventReviewStatus } from "@/features/events/model/review-status";
 
-type ReviewStatus = "pending" | "published" | "rejected";
+const buttonTones: [EventReviewStatus, string][] = [
+  ["published", "bg-emerald-700 text-white"],
+  ["pending", "bg-slate-200 text-slate-800"],
+  ["rejected", "bg-rose-100 text-rose-900"],
+];
 
-export function StatusControls({
-  id,
-  current,
-  onStatusChange,
+/** 상태 버튼 묶음. 상태는 부모가 useEventReviewStatus로 들고 있고, 여기서는 그리기만 한다. */
+export function StatusButtons({
+  status,
+  isPending,
+  error,
+  onChange,
 }: {
-  id: string;
-  current: string;
-  onStatusChange?: (status: ReviewStatus) => void;
+  status: EventReviewStatus;
+  isPending: boolean;
+  error: string | null;
+  onChange: (status: EventReviewStatus) => void;
 }) {
-  const [confirmedStatus, setConfirmedStatus] = useState<ReviewStatus>(current as ReviewStatus);
-  const [optimisticStatus, setOptimisticStatus] = useOptimistic(
-    confirmedStatus,
-    (_, nextStatus: ReviewStatus) => nextStatus,
-  );
-  const [isPending, startTransition] = useTransition();
-  const [error, setError] = useState<string | null>(null);
-
-  const actions = [
-    ["published", "공개", "bg-emerald-700 text-white"],
-    ["pending", "비공개", "bg-slate-200 text-slate-800"],
-    ["rejected", "반려", "bg-rose-100 text-rose-900"],
-  ] as const satisfies readonly [ReviewStatus, string, string][];
-
-  function updateStatus(nextStatus: ReviewStatus) {
-    const previousStatus = confirmedStatus;
-    setError(null);
-    startTransition(async () => {
-      setOptimisticStatus(nextStatus);
-      onStatusChange?.(nextStatus);
-      try {
-        const result = await setEventReviewStatusAction({ id, status: nextStatus });
-        setConfirmedStatus(result.status);
-      } catch {
-        onStatusChange?.(previousStatus);
-        setError("저장에 실패했습니다. 잠시 후 다시 시도해 주세요.");
-      }
-    });
-  }
-
   return (
     <div className={statusControlStyles.controls} aria-label="공개 상태 변경" aria-busy={isPending}>
-      {actions.map(([status, label, tone]) => (
+      {buttonTones.map(([buttonStatus, tone]) => (
         <button
-          key={status}
+          key={buttonStatus}
           type="button"
-          disabled={isPending || optimisticStatus === status}
-          aria-pressed={optimisticStatus === status}
-          onClick={() => updateStatus(status)}
+          disabled={isPending || status === buttonStatus}
+          aria-pressed={status === buttonStatus}
+          onClick={() => onChange(buttonStatus)}
           className={`${statusControlStyles.button} ${tone}`}
         >
           <span
             aria-hidden="true"
-            className={`${statusControlStyles.spinner} ${isPending && optimisticStatus === status ? "animate-spin" : "invisible"}`}
+            className={`${statusControlStyles.spinner} ${isPending && status === buttonStatus ? "animate-spin" : "invisible"}`}
           />
-          <span>{label}</span>
+          <span>{eventReviewStatusActionLabels[buttonStatus]}</span>
         </button>
       ))}
       <p
@@ -72,4 +49,10 @@ export function StatusControls({
       </p>
     </div>
   );
+}
+
+/** 행사 수정 화면처럼 상태 배지 없이 버튼만 있는 곳에서 쓴다. */
+export function StatusControls({ id, current }: { id: string; current: EventReviewStatus }) {
+  const { status, isPending, error, changeStatus } = useEventReviewStatus(id, current);
+  return <StatusButtons status={status} isPending={isPending} error={error} onChange={changeStatus} />;
 }

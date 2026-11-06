@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { E2E_ADMIN_EVENT, loginAsAdmin } from "./fixtures";
+import { E2E_ADMIN_EVENT, loginAsAdmin } from "@/tests/e2e/fixtures";
 
 function eventRow(page: Page) {
   return page.getByRole("row").filter({ hasText: E2E_ADMIN_EVENT.title });
@@ -37,14 +37,14 @@ test("관리자 상태 변경은 저장 중임을 알리고, 성공하면 반영
 
   await page.unroute("**/admin**");
   await interceptServerActions(page, "fail");
-  await row.getByRole("button", { name: "비공개", exact: true }).click();
+  await row.getByRole("button", { name: "비공개로 전환", exact: true }).click();
   await expect(controls.getByRole("status")).toHaveText("저장에 실패했습니다. 잠시 후 다시 시도해 주세요.");
   await expect(controls).toHaveAttribute("aria-busy", "false");
   await expect(row).toContainText("반려");
 
   // 다음 실행을 위해 검수 대기로 되돌린다.
   await page.unroute("**/admin**");
-  await row.getByRole("button", { name: "비공개", exact: true }).click();
+  await row.getByRole("button", { name: "비공개로 전환", exact: true }).click();
   await expect(row).toContainText("검수 대기");
 });
 

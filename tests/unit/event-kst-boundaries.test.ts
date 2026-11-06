@@ -18,8 +18,12 @@ const LAST_SECOND_OF_JULY_31 = new Date("2026-07-31T14:59:59Z");
 const MIDNIGHT_AUGUST_1 = new Date("2026-07-31T15:00:00Z");
 
 /** 관리자 폼에 KST 날짜(와 시각)를 입력했을 때 DB에 저장되는 값 */
-const kstStart = (value: string) => seoulDateOrDatetimeToIso(value, "start");
-const kstEnd = (value: string) => seoulDateOrDatetimeToIso(value, "end");
+function kstStart(value: string) {
+  return seoulDateOrDatetimeToIso(value, "start");
+}
+function kstEnd(value: string) {
+  return seoulDateOrDatetimeToIso(value, "end");
+}
 
 function publishedEvent(slug: string, overrides: Partial<Event> = {}): Event {
   return {
@@ -58,10 +62,12 @@ function publishedEvent(slug: string, overrides: Partial<Event> = {}): Event {
   };
 }
 
-const at = (start: string, end: string | null = null) => ({
-  eventStartAt: kstStart(start),
-  eventEndAt: end ? kstStart(end) : null,
-});
+function at(start: string, end: string | null = null) {
+  return {
+    eventStartAt: kstStart(start),
+    eventEndAt: end ? kstStart(end) : null,
+  };
+}
 
 const events = [
   // 종료일만 입력한 행사처럼 KST 7/31 23:59:59.999에 끝난다.

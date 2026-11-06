@@ -28,11 +28,11 @@ export function EventForm({ row }: { row: EventRow }) {
   const [imageUrl, setImageUrl] = useState(text(row, "image_url"));
   const [selectedAudiences, setSelectedAudiences] = useState(initialAudiences);
 
-  const toggleAudience = (value: string, selected: boolean) => {
+  function toggleAudience(value: string, selected: boolean) {
     setSelectedAudiences((current) => selected
       ? [...current, value]
       : current.filter((audience) => audience !== value));
-  };
+  }
 
   return (
     <div className="space-y-6">

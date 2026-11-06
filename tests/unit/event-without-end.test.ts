@@ -7,7 +7,9 @@ import { makeEvent } from "@/tests/unit/support/event-builder";
 const startsAt7pm = makeEvent({ slug: "concert", eventStartAt: "2026-11-20T10:00:00.000Z", eventEndAt: null }); // 11/20 19:00 KST
 const dateOnly = makeEvent({ slug: "date-only", eventStartAt: "2026-11-19T15:00:00.000Z", eventEndAt: null }); // 11/20 00:00 KST
 
-const kst = (value: string) => new Date(`${value}+09:00`);
+function kst(value: string) {
+  return new Date(`${value}+09:00`);
+}
 
 describe("종료일이 없는 행사", () => {
   it("시작 시각이 지나도 그날(KST)이 끝나기 전까지는 진행 중이다", () => {

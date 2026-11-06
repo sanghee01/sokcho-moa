@@ -33,6 +33,6 @@
 
 - 관리자 action 순서: `requireAdmin()` → zod 검증 → 쓰기 → 캐시 만료. 페이지에서 한 인가는 action에 이어지지 않으므로 action마다 다시 합니다.
 - 방문자 action 순서: 봇 확인(`isBotSubmission`) → zod 검증 → 요청 제한(`openPublicSubmission`) → 쓰기.
-- 예상한 실패(검증 실패, 권한 없음, 저장 실패)는 throw하지 않고 `lib/action-state.ts`의 helper로 상태를 반환합니다. throw는 예상하지 못한 오류에만 씁니다.
-  `throwActionError`를 쓰는 기존 버튼 action은 리팩토링 때 반환값으로 바꿉니다.
+- 예상한 실패(검증 실패, 권한 없음, 저장 실패)는 throw하지 않고 `lib/action-state.ts`의 helper로 반환합니다. 폼 action은 `actionFailed`·`adminActionFailed`,
+  버튼 action은 `buttonActionFailed`(`ButtonActionResult`)입니다. throw는 예상하지 못한 오류에만 씁니다.
 - DB 오류 원문은 사용자에게 보여 주지 않고 `console.error`로 서버 로그에만 남깁니다. action은 UI에 필요한 값만 돌려줍니다.

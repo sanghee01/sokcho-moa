@@ -73,20 +73,14 @@ AI가 읽는 규칙 문서(`AGENTS.md`)에는 규칙과 한 구절짜리 이유�
 | 객체 타입 | `interface`로 전환 | 현재 `type` 73 : `interface` 0. TS 핸드북·Google·typescript-eslint 기본값이 `interface`. union·`z.infer`·Supabase 파생 타입은 `type`으로 남음 |
 | props 타입 위치 | 시그니처 안, 페이지는 `PageProps<"/route">` | 시그니처 안 약 36 : `XxxProps` 7. `PageProps`는 Next.js 16 전역 helper(`page.md`) |
 | 상수 이름 | 고정 설정값만 `UPPER_SNAKE_CASE` | UPPER 52 : camel 82. Google: CONSTANT_CASE는 바뀌지 않는 최상위 값에 "쓸 수 있음" |
-| 예상한 실패 | throw하지 않고 반환값 | `N/01-getting-started/10-error-handling.md`. 버튼 action 21곳이 `throwActionError` 사용 중 → 리팩토링 때 변경 |
-| RLS 정책 | 작업별로 나누고 `for all` 금지 | Supabase 권고. 기존 `for all` 정책 8개 → 별도 migration |
-| lint 강제 | 추가 패키지 없이 가능한 규칙만 `eslint.config.mjs`에 추가 | 예외 없는 규칙은 문장보다 lint로 강제하라는 Claude Code best practices 권고 |
+| 예상한 실패 | throw하지 않고 반환값 | `N/01-getting-started/10-error-handling.md`. 버튼 action 21곳이 `throwActionError`로 throw하던 것을 `buttonActionFailed` 반환으로 바꿈. 관리자 화면이 "저장에 실패했습니다" 대신 실제 이유를 보여 줌 |
+| RLS 정책 | 작업별로 나누고 `for all` 금지 | Supabase 권고. 기존 `for all` 정책 8개를 migration `20261106132943`에서 grant가 있는 작업별 정책 23개로 나눔(권한은 그대로, `08_admin_policies_per_command`로 확인) |
+| lint 강제 | 추가 패키지 없이 가능한 규칙만 `eslint.config.mjs`에 추가 | 예외 없는 규칙은 문장보다 lint로 강제하라는 Claude Code best practices 권고. 켠 규칙: `consistent-type-definitions`(interface), `func-style`(function 선언, 타입 표기가 붙은 변수는 허용), enum 금지, `app/` 밖 default export 금지, 상대경로 import 금지(css 제외), `@ts-*` 주석 금지, `noInlineConfig`(eslint-disable 무시). 따옴표 규칙은 ESLint 9에서 deprecated라 켜지 않음. 켤 때 객체 `type` 33곳과 화살표 함수 선언 43곳을 고침 |
 | 공식 skill | 성능은 Vercel `vercel-react-best-practices`를 링크로 참고 | Vercel 평가(2026-01): 항상 읽히는 문서가 skill보다 잘 지켜짐 → 꼭 지킬 규칙은 `AGENTS.md`에 |
 
 ### 아직 규칙에 맞추지 않은 코드
 
 규칙 이전 코드는 리뷰에서 지적하지 않습니다. 리팩토링에서 맞출 곳입니다.
 
-- 객체 `type` 73곳 → `interface`
-- 화살표 함수 선언 8곳(`features/events/admin/components/event-form-row.ts` 4곳 등)
-- `features/events/admin/components/exclusion-list.tsx`의 `: null` 4곳
-- `lib/rate-limit.ts`, `lib/analytics/google-analytics.ts`의 `process.env` 직접 읽기
-- `app/` 페이지 props → `PageProps<"/route">`
-- `throwActionError` 21곳 → 반환값
-- `for all` RLS 정책 8개 → 작업별 정책
+- `proxy.ts`의 `process.env` 직접 읽기. 값이 없으면 오류 대신 그냥 통과시키는 동작이라, `getPublicEnv()`(값이 없으면 throw)로 바꾸면 동작이 달라져 남겨 둠
 - 원색 class가 남은 28개 파일(디자인 개편 4~6단계)

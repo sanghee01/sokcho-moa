@@ -10,7 +10,9 @@ const nearbyRegions = [
 ] as const;
 
 export function distanceInKm(lat1: number, lon1: number, lat2: number, lon2: number) {
-  const toRadians = (degree: number) => (degree * Math.PI) / 180;
+  function toRadians(degree: number) {
+    return (degree * Math.PI) / 180;
+  }
   const latDelta = toRadians(lat2 - lat1);
   const lonDelta = toRadians(lon2 - lon1);
   const a =
@@ -113,10 +115,10 @@ export function createNaverMapUrl(name: string, latitude: number, longitude: num
   return `https://map.naver.com/p/search/${query}?c=${longitude},${latitude},15,0,0,0,dh`;
 }
 
-export type EventMapLinks = {
+export interface EventMapLinks {
   naver: string;
   hasCoordinates: boolean;
-};
+}
 
 export function createEventMapLinks(
   name: string,

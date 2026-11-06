@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { EventBrowsePage } from "@/features/events/components/event-browse-page";
-import type { EventSearchParams } from "@/features/events/model/browse-url";
 import { findEventTopicByCategory } from "@/features/events/model/topics";
+import { firstSearchParam } from "@/lib/search-params";
 import {
   HOME_TITLE,
   INDEXABLE_ROBOTS,
@@ -10,17 +10,9 @@ import {
   SITE_OPEN_GRAPH_IMAGE_PATH,
 } from "@/lib/seo/site-identity";
 
-type HomePageProps = {
-  searchParams: Promise<EventSearchParams>;
-};
-
-function one(value: string | string[] | undefined) {
-  return Array.isArray(value) ? value[0] : value;
-}
-
-export async function generateMetadata({ searchParams }: HomePageProps): Promise<Metadata> {
+export async function generateMetadata({ searchParams }: PageProps<"/">): Promise<Metadata> {
   const params = await searchParams;
-  const topic = findEventTopicByCategory(one(params.category));
+  const topic = findEventTopicByCategory(firstSearchParam(params.category));
 
   if (topic) {
     return {
@@ -69,6 +61,6 @@ export async function generateMetadata({ searchParams }: HomePageProps): Promise
   };
 }
 
-export default function HomePage({ searchParams }: HomePageProps) {
+export default function HomePage({ searchParams }: PageProps<"/">) {
   return <EventBrowsePage searchParams={searchParams} />;
 }

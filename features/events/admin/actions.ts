@@ -7,7 +7,7 @@ import { z } from "zod";
 import {
   adminActionFailed,
   invalidInput,
-  throwActionError,
+  buttonActionFailed,
   type AdminActionState,
 } from "@/lib/action-state";
 import { requireAdmin } from "@/lib/auth/admin";
@@ -24,10 +24,11 @@ import { readEventFormInput } from "@/features/events/admin/form-input";
 import { cleanupUnusedEventImage, readEventImageFile, removeEventImage, uploadEventImage } from "@/features/events/admin/image-storage";
 import { eventFormSchema } from "@/features/events/admin/schemas";
 import { eventIndexNowPaths, expirePublicEvents } from "@/features/events/cache";
+import { eventReviewStatuses } from "@/features/events/model/review-status";
 
 const reviewSchema = z.object({
   id: z.string().uuid(),
-  status: z.enum(["pending", "published", "rejected"]),
+  status: z.enum(eventReviewStatuses),
 });
 
 const eventDeleteSchema = z.object({
@@ -148,7 +149,7 @@ export async function saveEventAction(
 export async function setEventReviewStatusAction(input: unknown) {
   await requireAdmin();
   const parsed = reviewSchema.safeParse(input);
-  if (!parsed.success) throwActionError("변경할 공개 상태를 확인해 주세요.");
+  if (!parsed.success) return buttonActionFailed("변경할 공개 상태를 확인해 주세요.");
 
   const client = await createSessionSupabaseClient();
 
@@ -157,11 +158,11 @@ export async function setEventReviewStatusAction(input: unknown) {
     .select("slug, category, review_status, published_at, event_start_at")
     .eq("id", parsed.data.id)
     .maybeSingle();
-  if (readError) throwActionError("행사의 현재 공개 상태를 확인하지 못했습니다.", readError);
-  if (!current) throwActionError("이미 삭제되었거나 권한이 없는 행사입니다. 목록을 새로고침해 주세요.");
+  if (readError) return buttonActionFailed("행사의 현재 공개 상태를 확인하지 못했습니다.", readError);
+  if (!current) return buttonActionFailed("이미 삭제되었거나 권한이 없는 행사입니다. 목록을 새로고침해 주세요.");
   // DB 제약(events_published_fields)과 같은 조건. 그대로 보내면 이유 없이 "바꾸지 못했습니다"만 보인다.
   if (parsed.data.status === "published" && !current.event_start_at) {
-    throwActionError("행사 시작 일시가 있어야 공개할 수 있습니다. 행사를 수정해 시작 일시를 입력해 주세요.");
+    return buttonActionFailed("행사 시작 일시가 있어야 공개할 수 있습니다. 행사를 수정해 시작 일시를 입력해 주세요.");
   }
 
   const { data: updatedEvent, error } = await client
@@ -175,14 +176,14 @@ export async function setEventReviewStatusAction(input: unknown) {
     .eq("id", parsed.data.id)
     .select("slug, category")
     .single();
-  if (error) throwActionError("공개 상태를 바꾸지 못했습니다.", error);
+  if (error) return buttonActionFailed("공개 상태를 바꾸지 못했습니다.", error);
 
   expirePublicEvents(updatedEvent.slug);
   // 공개 페이지가 새로 생기거나 사라질 때만 검색엔진에 알린다(대기↔반려는 공개 URL에 변화가 없다).
   if (current.review_status === "published" || parsed.data.status === "published") {
     notifySearchEnginesAfterResponse(updatedEvent.slug, [updatedEvent.category]);
   }
-  return { status: parsed.data.status };
+  return { error: null, status: parsed.data.status };
 }
 
 /** 행사 삭제. DB가 직접 delete를 막아 두어 RPC로만 지울 수 있고, RPC가 재수집 제외 기록을 남긴다. */

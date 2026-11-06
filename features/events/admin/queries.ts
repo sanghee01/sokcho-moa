@@ -1,14 +1,15 @@
 import "server-only";
 import { createSessionSupabaseClient } from "@/lib/supabase/server";
 import { isUuid } from "@/lib/uuid";
+import { eventReviewStatuses, isEventReviewStatus, type EventReviewStatus } from "@/features/events/model/review-status";
 
-export type AdminEventDeletionIdentity = {
+export interface AdminEventDeletionIdentity {
   kind: string;
   identityValue: string;
   sourceUrl: string | null;
-};
+}
 
-export type AdminEventCollectionExclusion = {
+export interface AdminEventCollectionExclusion {
   id: string;
   originalTitle: string | null;
   originalSlug: string | null;
@@ -16,17 +17,9 @@ export type AdminEventCollectionExclusion = {
   deletedBy: string | null;
   reason: string | null;
   identities: AdminEventDeletionIdentity[];
-};
+}
 
 export const ADMIN_EVENT_PAGE_SIZE = 20;
-
-const eventReviewStatuses = ["pending", "published", "rejected"] as const;
-
-type EventReviewStatus = (typeof eventReviewStatuses)[number];
-
-function isEventReviewStatus(status?: string): status is EventReviewStatus {
-  return Boolean(status && eventReviewStatuses.includes(status as EventReviewStatus));
-}
 
 export async function getAdminEvents({
   status,
@@ -108,16 +101,17 @@ export async function getAdminEventCollectionExclusions(): Promise<AdminEventCol
     .order("deleted_at", { ascending: false });
   if (error) throw new Error(`재수집 제외 목록을 불러오지 못했습니다: ${error.message}`);
   return (data ?? []).map((row) => ({
-    id: String(row.id),
-    originalTitle: row.original_title ? String(row.original_title) : null,
-    originalSlug: row.original_slug ? String(row.original_slug) : null,
-    deletedAt: String(row.deleted_at),
-    deletedBy: row.deleted_by ? String(row.deleted_by) : null,
-    reason: row.reason ? String(row.reason) : null,
+    // 생성 타입을 그대로 옮긴다. 제목·slug가 빈 문자열이 되지 않게 DB check 제약이 막는다.
+    id: row.id,
+    originalTitle: row.original_title,
+    originalSlug: row.original_slug,
+    deletedAt: row.deleted_at,
+    deletedBy: row.deleted_by,
+    reason: row.reason,
     identities: (row.event_deletion_identities ?? []).map((identity) => ({
-      kind: String(identity.kind),
-      identityValue: String(identity.identity_value),
-      sourceUrl: identity.source_url ? String(identity.source_url) : null,
+      kind: identity.kind,
+      identityValue: identity.identity_value,
+      sourceUrl: identity.source_url,
     })),
   }));
 }

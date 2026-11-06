@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { cache } from "react";
 import { createSessionSupabaseClient } from "@/lib/supabase/server";
 
-export type AdminIdentity = { id: string; email: string };
+export interface AdminIdentity { id: string; email: string }
 
 /**
  * 로그인 사용자가 관리자 허용 목록(admin_users)에 있는지 확인한다.

@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { E2E_ADMIN_EVENT, loginAsAdmin } from "./fixtures";
+import { E2E_ADMIN_EVENT, loginAsAdmin } from "@/tests/e2e/fixtures";
 import path from "node:path";
 
 test.beforeEach(async ({ page }) => {

@@ -30,14 +30,12 @@ import { JsonLd } from "@/components/seo/json-ld";
 
 export const revalidate = 3600;
 
-type EventPageProps = { params: Promise<{ slug: string }> };
-
 export async function generateStaticParams() {
   const events = await getAllPublicEvents();
   return events.map((event) => ({ slug: event.slug }));
 }
 
-export async function generateMetadata({ params }: EventPageProps): Promise<Metadata> {
+export async function generateMetadata({ params }: PageProps<"/events/[slug]">): Promise<Metadata> {
   const { slug } = await params;
   const event = await getPublicEventBySlug(slug);
   if (!event) return { title: "행사를 찾을 수 없습니다" };
@@ -68,7 +66,7 @@ export async function generateMetadata({ params }: EventPageProps): Promise<Meta
   };
 }
 
-export default async function EventDetailPage({ params }: EventPageProps) {
+export default async function EventDetailPage({ params }: PageProps<"/events/[slug]">) {
   const [{ slug }, allEvents, places] = await Promise.all([params, getAllPublicEvents(), getPublicPlaces()]);
   const event = allEvents.find((item) => item.slug === slug) ?? null;
   if (!event) notFound();

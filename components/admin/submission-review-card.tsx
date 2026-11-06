@@ -2,10 +2,14 @@
 
 import Image from "next/image";
 import { useOptimistic, useState, useTransition } from "react";
+import {
+  submissionReviewStatusLabels,
+  type SubmissionReviewDecision,
+  type SubmissionReviewStatus,
+} from "@/components/admin/submission-review-status";
+import type { ButtonActionResult } from "@/lib/action-state";
 
-export type SubmissionReviewStatus = "pending" | "reviewed" | "rejected";
-
-export type SubmissionReviewCardData = {
+export interface SubmissionReviewCardData {
   id: string;
   title: string;
   body: string;
@@ -13,14 +17,14 @@ export type SubmissionReviewCardData = {
   imageUrl?: string | null;
   reviewStatus: SubmissionReviewStatus;
   createdAt: string;
-};
+}
 
 type SubmissionKind = "event_report" | "site_feedback";
 
-const statusMeta: Record<SubmissionReviewStatus, { label: string; className: string }> = {
-  pending: { label: "검토 대기", className: "bg-amber-50 text-amber-900" },
-  reviewed: { label: "검토 완료", className: "bg-emerald-50 text-emerald-900" },
-  rejected: { label: "철회", className: "bg-slate-100 text-slate-700" },
+const statusClassNames: Record<SubmissionReviewStatus, string> = {
+  pending: "bg-amber-50 text-amber-900",
+  reviewed: "bg-emerald-50 text-emerald-900",
+  rejected: "bg-slate-100 text-slate-700",
 };
 
 const kindMeta: Record<SubmissionKind, { noun: string; linkLabel: string }> = {
@@ -40,8 +44,8 @@ export function SubmissionReviewCard({
 }: {
   submission: SubmissionReviewCardData;
   kind: SubmissionKind;
-  setReviewStatus: (input: { id: string; status: "reviewed" | "rejected" }) => Promise<{ status: SubmissionReviewStatus }>;
-  deleteSubmission: (input: { id: string }) => Promise<unknown>;
+  setReviewStatus: (input: { id: string; status: SubmissionReviewDecision }) => Promise<ButtonActionResult<{ status: SubmissionReviewStatus }>>;
+  deleteSubmission: (input: { id: string }) => Promise<ButtonActionResult>;
 }) {
   const [confirmedStatus, setConfirmedStatus] = useState(submission.reviewStatus);
   const [optimisticStatus, setOptimisticStatus] = useOptimistic(
@@ -51,15 +55,18 @@ export function SubmissionReviewCard({
   const [isPending, startTransition] = useTransition();
   const [isDeleted, setIsDeleted] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const currentMeta = statusMeta[optimisticStatus];
   const labels = kindMeta[kind];
 
-  function updateStatus(status: "reviewed" | "rejected") {
+  function updateStatus(status: SubmissionReviewDecision) {
     setError(null);
     startTransition(async () => {
       setOptimisticStatus(status);
       try {
         const result = await setReviewStatus({ id: submission.id, status });
+        if (result.error !== null) {
+          setError(result.error);
+          return;
+        }
         setConfirmedStatus(result.status);
       } catch {
         setError("상태를 변경하지 못했습니다. 잠시 후 다시 시도해 주세요.");
@@ -72,7 +79,11 @@ export function SubmissionReviewCard({
     setError(null);
     startTransition(async () => {
       try {
-        await deleteAction({ id: submission.id });
+        const result = await deleteAction({ id: submission.id });
+        if (result.error !== null) {
+          setError(result.error);
+          return;
+        }
         setIsDeleted(true);
       } catch {
         setError(`${labels.noun}을 삭제하지 못했습니다. 잠시 후 다시 시도해 주세요.`);
@@ -86,7 +97,7 @@ export function SubmissionReviewCard({
     <article className="rounded-2xl bg-white p-5 ring-1 ring-slate-200" aria-busy={isPending}>
       <div className="flex flex-wrap items-start justify-between gap-2">
         <h3 className="text-lg font-black text-slate-950">{submission.title}</h3>
-        <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${currentMeta.className}`}>{currentMeta.label}</span>
+        <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${statusClassNames[optimisticStatus]}`}>{submissionReviewStatusLabels[optimisticStatus]}</span>
       </div>
       <p className="mt-3 whitespace-pre-line leading-7 text-slate-700">{submission.body}</p>
       {submission.imageUrl && (

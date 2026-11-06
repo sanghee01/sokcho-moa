@@ -16,11 +16,11 @@ describe("administrator event write helpers", () => {
 
   it("저장 후 이동한 대시보드가 작성과 수정에 서로 다른 완료 메시지를 보여 준다", () => {
     // action이 만드는 redirect 주소와 대시보드가 읽는 query 이름이 어긋나면 메시지가 조용히 사라진다.
-    const feedbackAfter = (isEditing: boolean) => {
+    function feedbackAfter(isEditing: boolean) {
       const url = new URL(eventSavedRedirect(isEditing), "https://sokcho-moa.test");
       expect(url.pathname).toBe("/admin");
       return getAdminDashboardFeedback(Object.fromEntries(url.searchParams));
-    };
+    }
 
     expect(feedbackAfter(false)).toBeDefined();
     expect(feedbackAfter(true)).toBeDefined();

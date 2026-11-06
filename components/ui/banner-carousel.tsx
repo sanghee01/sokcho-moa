@@ -29,7 +29,9 @@ export function BannerCarousel({ label, slides }: { label: string; slides: React
   const hasMany = slides.length > 1;
 
   const slideCount = slides.length;
-  const goTo = (index: number) => scrollToSlide(scrollerRef.current, index, slideCount);
+  function goTo(index: number) {
+    scrollToSlide(scrollerRef.current, index, slideCount);
+  }
 
   function handleScroll() {
     const scroller = scrollerRef.current;

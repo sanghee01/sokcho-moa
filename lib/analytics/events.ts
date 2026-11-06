@@ -12,15 +12,15 @@ export const analyticsEvents = [
 
 export type AnalyticsEvent = (typeof analyticsEvents)[number];
 export type AnalyticsProperties = Record<string, string | number | boolean | null | undefined>;
-export type PageViewProperties = {
+export interface PageViewProperties {
   page_title: string;
   page_location: string;
   page_referrer?: string;
-};
-export type AnalyticsDataAttributes = {
+}
+export interface AnalyticsDataAttributes {
   "data-analytics-event": AnalyticsEvent;
   "data-analytics-properties"?: string;
-};
+}
 
 declare global {
   interface Window {
@@ -35,7 +35,8 @@ export function trackAnalyticsEvent(name: AnalyticsEvent, properties: AnalyticsP
 
 export function trackPageView(properties: PageViewProperties) {
   if (typeof window === "undefined") return;
-  window.gtag?.("event", "page_view", compactProperties(properties));
+  // interface는 index signature가 없어 Record로 바로 넘길 수 없다. 펼쳐서 일반 객체로 넘긴다.
+  window.gtag?.("event", "page_view", compactProperties({ ...properties }));
 }
 
 export function analyticsData(name: AnalyticsEvent, properties: AnalyticsProperties = {}): AnalyticsDataAttributes {

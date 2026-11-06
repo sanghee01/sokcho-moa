@@ -5,17 +5,19 @@ const dns = vi.hoisted(() => ({ addresses: [] as { address: string; family: numb
 
 vi.mock("node:dns", async (importOriginal) => {
   const original = await importOriginal<typeof import("node:dns")>();
-  const lookup = (_hostname: string, options: unknown, callback?: unknown) => {
+  function lookup(_hostname: string, options: unknown, callback?: unknown) {
     const done = (typeof options === "function" ? options : callback) as (...args: unknown[]) => void;
     const all = typeof options === "object" && options !== null && (options as { all?: boolean }).all;
     if (all) done(null, dns.addresses);
     else done(null, dns.addresses[0]?.address, dns.addresses[0]?.family);
-  };
+  }
   return { ...original, default: { ...original, lookup }, lookup };
 });
 vi.mock("node:dns/promises", async (importOriginal) => {
   const original = await importOriginal<typeof import("node:dns/promises")>();
-  const lookup = async () => dns.addresses;
+  async function lookup() {
+    return dns.addresses;
+  }
   return { ...original, default: { ...original, lookup }, lookup };
 });
 

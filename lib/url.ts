@@ -1,9 +1,9 @@
 import { z } from "zod";
 
-type HttpUrlSchemaMessages = {
+interface HttpUrlSchemaMessages {
   invalidUrl?: string;
   unsupportedProtocol?: string;
-};
+}
 
 export function isHttpUrl(value: string) {
   try {

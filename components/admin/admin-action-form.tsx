@@ -31,18 +31,18 @@ export function AdminActionForm({
   const [dismissedState, setDismissedState] = useState<AdminActionState | null>(null);
   const error = dismissedState === state ? null : state.error;
 
-  const dismissCurrentError = () => {
+  function dismissCurrentError() {
     if (state.error) setDismissedState(state);
-  };
+  }
 
-  const submit = (event: FormEvent<HTMLFormElement>) => {
+  function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (isPending) return;
     dismissCurrentError();
     const submitter = (event.nativeEvent as SubmitEvent).submitter;
     const formData = new FormData(event.currentTarget, submitter);
     startTransition(() => formAction(formData));
-  };
+  }
 
   return (
     <FormPendingContext value={isPending}>

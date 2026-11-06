@@ -13,7 +13,7 @@ DB schema, 권한, DB test의 규칙입니다. 운영 DB 안전 규칙은 [루�
 ## RLS 정책
 
 - 새 table은 같은 migration에서 RLS를 켜고 policy와 grant를 명시합니다.
-- 정책은 작업(`select`·`insert`·`update`·`delete`)별로 나눠 쓰고 `for all`을 쓰지 않습니다. 기존 `for all` 정책은 별도 migration으로 나눕니다.
+- 정책은 작업(`select`·`insert`·`update`·`delete`)별로 나눠 쓰고 `for all`을 쓰지 않습니다. 정책은 그 역할이 grant를 가진 작업에만 만듭니다.
 - 정책에는 `to` 역할(`anon`, `authenticated`)을 반드시 적습니다.
 - 정책 안의 `auth.uid()`·`public.is_admin()`은 `(select …)`로 감싸 행마다 다시 계산되지 않게 합니다.
 

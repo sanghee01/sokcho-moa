@@ -9,10 +9,12 @@ const bounds = {
   양양군: { south: 37.8, west: 128.35, north: 38.2, east: 128.85 },
 };
 
-const normalize = (value: string) => value
-  .normalize("NFKC")
-  .toLowerCase()
-  .replace(/[^가-힣a-z0-9]/g, "");
+function normalize(value: string) {
+  return value
+    .normalize("NFKC")
+    .toLowerCase()
+    .replace(/[^가-힣a-z0-9]/g, "");
+}
 
 describe("attraction catalog", () => {
   it("expands the original catalog with substantial coverage in every region", () => {

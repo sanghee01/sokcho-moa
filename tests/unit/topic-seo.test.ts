@@ -105,9 +105,11 @@ describe("event topic SEO", () => {
 
   it("기존 category 쿼리는 대응 주제 경로를 canonical로 사용한다", async () => {
     const legacyMetadata = await generateHomeMetadata({
+      params: Promise.resolve({}),
       searchParams: Promise.resolve({ category: "performance", audience: "family" }),
     });
     const homeMetadata = await generateHomeMetadata({
+      params: Promise.resolve({}),
       searchParams: Promise.resolve({ audience: "family" }),
     });
 

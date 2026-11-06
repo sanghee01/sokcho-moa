@@ -12,17 +12,14 @@ import { text } from "@/features/events/admin/components/event-form-row";
 import { isoToSeoulDatetimeLocal } from "@/features/events/admin/datetime";
 
 type ScheduleMode = "continuous" | "occurrences";
-type OccurrenceDraft = { key: string; startsAt: string; endsAt: string };
+interface OccurrenceDraft { key: string; startsAt: string; endsAt: string }
 
 function initialOccurrences(row: EventRow): OccurrenceDraft[] {
-  const values = Array.isArray(row?.event_occurrences)
-    ? row.event_occurrences.filter((value): value is Record<string, unknown> => value != null && typeof value === "object")
-    : [];
-  return values
-    .map((occurrence, index) => ({
-      key: String(occurrence.id ?? index),
-      startsAt: occurrence.starts_at ? isoToSeoulDatetimeLocal(String(occurrence.starts_at)) : "",
-      endsAt: occurrence.ends_at ? isoToSeoulDatetimeLocal(String(occurrence.ends_at)) : "",
+  return (row?.event_occurrences ?? [])
+    .map((occurrence) => ({
+      key: occurrence.id,
+      startsAt: isoToSeoulDatetimeLocal(occurrence.starts_at),
+      endsAt: occurrence.ends_at ? isoToSeoulDatetimeLocal(occurrence.ends_at) : "",
     }))
     .sort((a, b) => a.startsAt.localeCompare(b.startsAt));
 }
@@ -37,17 +34,21 @@ export function ScheduleModeField({ row }: { row: EventRow }) {
   );
   const [occurrences, setOccurrences] = useState<OccurrenceDraft[]>(() => initialOccurrences(row));
 
-  const selectScheduleMode = (value: ScheduleMode) => {
+  function selectScheduleMode(value: ScheduleMode) {
     setScheduleMode(value);
     if (value === "occurrences" && occurrences.length === 0) {
       setOccurrences([{ key: "new-0", startsAt: "", endsAt: "" }]);
     }
-  };
-  const addOccurrence = () => setOccurrences((current) => [
-    ...current,
-    { key: `new-${Date.now()}`, startsAt: "", endsAt: "" },
-  ]);
-  const removeOccurrence = (key: string) => setOccurrences((current) => current.filter((item) => item.key !== key));
+  }
+  function addOccurrence() {
+    setOccurrences((current) => [
+      ...current,
+      { key: `new-${Date.now()}`, startsAt: "", endsAt: "" },
+    ]);
+  }
+  function removeOccurrence(key: string) {
+    setOccurrences((current) => current.filter((item) => item.key !== key));
+  }
 
   return (
     <>

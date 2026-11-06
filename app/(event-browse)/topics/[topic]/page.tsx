@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { EventBrowsePage } from "@/features/events/components/event-browse-page";
-import type { EventSearchParams } from "@/features/events/model/browse-url";
 import {
   eventTopics,
   findEventTopicBySlug,
@@ -12,18 +11,13 @@ import {
   SITE_OPEN_GRAPH_IMAGE_PATH,
 } from "@/lib/seo/site-identity";
 
-type TopicPageProps = {
-  params: Promise<{ topic: string }>;
-  searchParams: Promise<EventSearchParams>;
-};
-
 export const dynamicParams = false;
 
 export function generateStaticParams() {
   return eventTopics.map((topic) => ({ topic: topic.slug }));
 }
 
-export async function generateMetadata({ params }: TopicPageProps): Promise<Metadata> {
+export async function generateMetadata({ params }: PageProps<"/topics/[topic]">): Promise<Metadata> {
   const { topic: slug } = await params;
   const topic = findEventTopicBySlug(slug);
 
@@ -52,7 +46,7 @@ export async function generateMetadata({ params }: TopicPageProps): Promise<Meta
   };
 }
 
-export default async function TopicPage({ params, searchParams }: TopicPageProps) {
+export default async function TopicPage({ params, searchParams }: PageProps<"/topics/[topic]">) {
   const { topic: slug } = await params;
   const topic = findEventTopicBySlug(slug);
   if (!topic) notFound();

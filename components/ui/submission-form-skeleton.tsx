@@ -1,8 +1,8 @@
 import { formContainerClassName } from "@/components/ui/form-styles";
 
-type SubmissionFormSkeletonProps = {
+interface SubmissionFormSkeletonProps {
   kind: "report" | "feedback";
-};
+}
 
 const skeletonBlockClassName = "rounded-xl bg-skeleton";
 

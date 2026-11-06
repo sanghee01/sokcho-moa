@@ -2,11 +2,15 @@ import { AdminActionForm } from "@/components/admin/admin-action-form";
 import { FormSubmitButton } from "@/components/ui/form-submit-button";
 import { deletePlaceAction, savePlaceAction } from "@/features/places/admin/actions";
 import { SLUG_PATTERN_SOURCE } from "@/lib/slug";
+import type { Tables } from "@/lib/supabase/database.types";
 
-type Row = Record<string, unknown> | null;
+/** 수정 화면에서 받은 DB 행. 새 명소는 null. 생성 타입을 써서 컬럼 이름이 바뀌면 typecheck가 잡는다. */
+type Row = Tables<"places"> | null;
 const input = "mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5";
 const label = "text-sm font-bold text-slate-700";
-const text = (row: Row, key: string) => row?.[key] == null ? "" : String(row[key]);
+function text(row: Row, key: keyof Tables<"places">) {
+  return row?.[key] == null ? "" : String(row[key]);
+}
 
 export function PlaceForm({ row }: { row: Row }) {
   const id = text(row, "id");

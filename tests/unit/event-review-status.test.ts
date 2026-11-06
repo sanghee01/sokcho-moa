@@ -88,7 +88,8 @@ describe("행사 공개 상태 변경", () => {
 
   it("시작 일시가 없는 행사는 공개하지 않고 이유를 알려 준다", async () => {
     mocks.current = { slug: "real-slug", category: "festival", review_status: "pending", published_at: null, event_start_at: null };
-    await expect(setEventReviewStatusAction({ id: ID, status: "published" })).rejects.toThrow(/시작/);
+    const result = await setEventReviewStatusAction({ id: ID, status: "published" });
+    expect(result.error).toMatch(/시작/);
     expect(mocks.updates).toHaveLength(0);
   });
 });

@@ -2,6 +2,7 @@ import "server-only";
 import { createHmac } from "node:crypto";
 import { isIP } from "node:net";
 import { headers } from "next/headers";
+import { getRuntimeEnv } from "@/lib/env";
 import { getSubmissionRateLimitHmacSecret } from "@/lib/env.server";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 
@@ -20,15 +21,15 @@ const policies = {
   event_view: { limit: 10, windowSeconds: 10 * 60 },
 } satisfies Record<PublicSubmissionRateLimitScope, { limit: number; windowSeconds: number }>;
 
-export type PublicSubmissionRateLimitResult = {
+export interface PublicSubmissionRateLimitResult {
   allowed: boolean;
   retryAfterSeconds: number;
-};
+}
 
-export type PublicSubmissionRateLimitOptions = {
+export interface PublicSubmissionRateLimitOptions {
   /** 같은 scope 안에서 따로 셀 대상(예: 행사 slug). 원문은 저장하지 않고 HMAC에만 들어간다. */
   subject?: string;
-};
+}
 
 /** 압축(::)·IPv4 꼬리를 풀어 8개의 16비트 그룹으로 만든다. isIP()로 IPv6임을 확인한 값만 받는다. */
 function ipv6Groups(address: string) {
@@ -71,13 +72,14 @@ function normalizedAddress(value: string | null) {
  * Vercel 밖의 운영 환경은 프록시 경계를 알 수 없어 IP를 쓰지 않는다(그러면 요청을 거부한다).
  */
 function trustedClientAddress(requestHeaders: Pick<Headers, "get">) {
-  if (process.env.VERCEL === "1") {
+  const runtime = getRuntimeEnv();
+  if (runtime.isVercel) {
     return (
       normalizedAddress(requestHeaders.get("x-vercel-forwarded-for")) ??
       normalizedAddress(requestHeaders.get("x-forwarded-for"))
     );
   }
-  if (process.env.NODE_ENV === "production") return null;
+  if (runtime.isProduction) return null;
   return (
     normalizedAddress(requestHeaders.get("x-forwarded-for")) ??
     normalizedAddress(requestHeaders.get("x-real-ip"))
