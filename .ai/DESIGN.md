@@ -269,7 +269,7 @@ class 하나로 함께 적용됩니다.
 
 - 기본은 평면 + 1px `line` 테두리입니다. 포스터 카드는 이미지에만 얇은 안쪽 테두리를 두고, 카드 바탕·그림자는 쓰지 않습니다.
 - 그림자는 화면 위에 떠 있는 요소에만 `shadow-floating`으로 씁니다: 하단 고정 행동 바, 맨 위로 버튼, 시트·대화상자.
-- 블러는 장식으로 쓰지 않습니다. 예외는 배너의 흐린 포스터 배경 하나입니다. 그 행사 포스터에서 나온 배경이라 장식이 아닙니다.
+- 블러는 장식으로 쓰지 않습니다. 예외는 흐린 포스터 배경 하나입니다(배너와 상세가 함께 쓰는 `features/events/components/poster-backdrop.tsx`). 그 행사 포스터에서 나온 배경이라 장식이 아닙니다.
 - hover 때 떠오르는 효과(`hover:-translate-y-*`, `hover:shadow-xl`)를 쓰지 않습니다. hover는 배경색 변화로 충분합니다.
 - 겹침 순서: 헤더 30, 하단 고정 바 40, 시트 50, 본문 건너뛰기 링크 60.
 
@@ -315,8 +315,8 @@ Tailwind 기본 `rounded-sm`·`rounded-md`·`rounded-lg`와 겹치지 않게 역
 | **BannerCarousel** | `components/ui/banner-carousel.tsx`. 5초 자동 넘김(멈춤 버튼, 마우스·초점·터치 시 잠시 멈춤, 움직임 줄이기 설정 시 끔), 밀어서·`md` 이상 좌우 버튼으로도 넘김, 아래 점 표시. `md` 이상에서는 장의 내용을 좌우 버튼 안쪽(좌우 여백 64px)에만 둬 버튼이 글자를 가리지 않게 합니다. 장마다 `role="group"`, 묶음은 `aria-roledescription="carousel"` |
 | **Badge** | 상태 표시. `text-caption`, 굵기 500, `rounded-badge`. 한 항목 최대 2개([행사 상태의 색](#행사-상태의-색)) |
 | **EventCard**(포스터 카드) | `features/events/components/event-card.tsx`. 카드 전체가 링크 하나. 포스터(4:5) 위에 분야(왼쪽 위, 주제 페이지에서는 생략), NEW(오른쪽 위), 날짜와 상태 배지 ≤2(아래)를 흰 바탕 글자 띠로 얹고, 포스터 아래에는 제목(`text-body font-semibold`, 2줄)과 장소(1줄)만 둡니다. 참여 대상(가족·성인·누구나)과 조회수·출처는 카드에 쓰지 않고 상세에 둡니다. 참여 대상은 필터에도 없고 대부분 "누구나"라 판단에 도움이 적습니다. 조회수는 대부분 작은 숫자라 "아무도 안 보는 행사"처럼 보이고, 갈지 말지 정하는 정보가 아니어서입니다(상세에 둠) |
-| **FactList**(핵심 정보) | 아이콘 + 값 행. 행 사이는 `line` 구분선. 지도·원문 링크는 값 오른쪽 글자 링크 |
-| **BottomActionBar** | 모바일 상세 전용. 흰 배경 + 위쪽 그림자. 위 여백 12px, 아래 여백 20px + safe-area(12px이면 실제 iPhone의 둥근 화면 모서리에 버튼 끝이 잘렸음, 2026-11-07) |
+| **FactList**(핵심 정보) | `features/events/components/event-fact-list.tsx`. 아이콘 + 값 행. 행 사이는 `line` 구분선. 지도·원문 링크는 값 오른쪽 글자 링크 |
+| **BottomActionBar** | `features/events/components/event-action-bar.tsx`. 모바일 상세 전용. 흰 배경 + 위쪽 그림자. 위 여백 12px, 아래 여백 20px + safe-area(12px이면 실제 iPhone의 둥근 화면 모서리에 버튼 끝이 잘렸음, 2026-11-07) |
 | **FormField** | `components/ui/form-field.tsx`. 라벨(위) + 입력창 + 도움말 + 칸 오류(아래, `role="alert"`, `danger`). 선택 칸만 `(선택)`. 입력창에는 `getFieldControlProps`로 `aria-invalid`·`aria-describedby`를 붙입니다 |
 | **SearchField** | 둥근(`rounded-full`) 입력창, 높이 48px, 글자 16px, 테두리 `line-input`. 왼쪽 돋보기 아이콘이 제출 버튼("검색"). `search` 역할과 이름 "행사 검색"을 유지합니다 |
 | **EmptyState** | 실제 상황을 말하는 한 문장 + 갈 만한 곳 하나(보조 버튼). 사용자가 하지 않은 일을 시키지 않습니다. 검색 결과 없음 → "검색 지우기", 마감 탭이 빔 → "진행 중인 ○○ 보기", 분야에 일정이 없음 → "전체 행사 보기", 예전 주소의 조건 → "조건 지우기". 분야 이름 뒤에는 받침에 따라 바뀌는 조사를 붙이지 않고 "기록이", "일정이" 같은 고정된 말을 씁니다 |

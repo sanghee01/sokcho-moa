@@ -6,6 +6,7 @@ import Link from "next/link";
 import Script from "next/script";
 import type { ReactNode } from "react";
 import { AnalyticsRuntime } from "@/components/analytics/analytics-runtime";
+import { CopyrightYear } from "@/components/layout/copyright-year";
 import { ScrollToTopButton } from "@/components/layout/scroll-to-top-button";
 import { iconProps } from "@/components/ui/icon";
 import { CategoryNavigation } from "@/features/events/components/category-navigation";
@@ -18,6 +19,7 @@ import {
   SITE_NAME,
   SITE_OPEN_GRAPH_IMAGE_PATH,
 } from "@/lib/seo/site-identity";
+import { getSeoulDateParts } from "@/lib/seoul-time";
 // 그림은 예전 로고에서 그라데이션·구름·갈매기를 빼고 산·바다를 한 색씩으로, 글자는 G마켓 산스 Bold 남색으로 바꿨다.
 // 글꼴 파일을 사이트에 넣지 않도록 글자까지 한 장의 투명 이미지로 만든다(2026-11-07).
 import headerLogo from "@/public/sokchomoa-wordmark.webp";
@@ -34,6 +36,9 @@ const pretendard = localFont({
 
 const siteUrl = getPublicEnv().NEXT_PUBLIC_SITE_URL;
 const collectGoogleAnalytics = shouldCollectGoogleAnalytics(getRuntimeEnv().vercelEnv);
+
+const footerLinkClassName =
+  "inline-flex min-h-11 items-center gap-1 text-label font-medium text-primary-text underline decoration-line-strong underline-offset-4 hover:decoration-primary";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -62,7 +67,9 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
-  const currentYear = new Date().getFullYear();
+  // 서버(Vercel)는 UTC라 getFullYear()는 1월 1일 0~9시(KST)에 전년도를 돌려준다. 서울 날짜로 센다(2026-11-07).
+  // 정적 페이지는 build 때의 연도가 굳으므로, 브라우저에서 CopyrightYear가 지금 연도로 다시 그린다.
+  const currentYear = getSeoulDateParts(new Date()).year;
 
   return (
     <html lang="ko" data-scroll-behavior="smooth" className={pretendard.variable}>
@@ -101,9 +108,9 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
               <p className="mt-3 text-caption text-content-subtle">각 기관의 공고를 옮긴 정보라 실제와 다를 수 있어요. 방문하거나 신청하기 전에 원문을 꼭 확인해 주세요.</p>
             </div>
             <nav aria-label="사이트 이용" className="flex flex-wrap gap-x-5">
-              <Link href="/report" className="inline-flex min-h-11 items-center gap-1 text-label font-medium text-primary-text underline decoration-line-strong underline-offset-4 hover:decoration-primary">행사 제보하기</Link>
-              <Link href="/feedback" className="inline-flex min-h-11 items-center gap-1 text-label font-medium text-primary-text underline decoration-line-strong underline-offset-4 hover:decoration-primary">의견 보내기</Link>
-              <a className="inline-flex min-h-11 items-center gap-1 text-label font-medium text-primary-text underline decoration-line-strong underline-offset-4 hover:decoration-primary" href="https://open.kakao.com/o/s7kFbUEi" target="_blank" rel="noreferrer">
+              <Link href="/report" className={footerLinkClassName}>행사 제보하기</Link>
+              <Link href="/feedback" className={footerLinkClassName}>의견 보내기</Link>
+              <a className={footerLinkClassName} href="https://open.kakao.com/o/s7kFbUEi" target="_blank" rel="noreferrer">
                 카카오톡 문의 <ExternalLink {...iconProps} size={14} /><span className="sr-only">(새 창)</span>
               </a>
             </nav>
@@ -111,7 +118,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
           {/* 저작권 줄은 구분선으로 위 내용과 나누고, 흔히 쓰는 "All rights reserved."를 붙인다. */}
           <div className="border-t border-line">
             <p className="mx-auto max-w-6xl px-4 py-4 text-caption text-content-subtle sm:px-6">
-              © {currentYear} <span className="font-semibold text-content-muted">속초모아</span>. All rights reserved.
+              © <CopyrightYear serverYear={currentYear} /> <span className="font-semibold text-content-muted">{SITE_NAME}</span>. All rights reserved.
             </p>
           </div>
         </footer>

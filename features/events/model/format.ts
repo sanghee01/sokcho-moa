@@ -1,4 +1,6 @@
+import type { Event } from "@/features/events/model/event";
 import type { ApplicationState } from "@/features/events/model/event-state";
+import { audienceLabels, type EventAudience } from "@/features/events/model/taxonomy";
 import { SEOUL_TIME_ZONE } from "@/lib/seoul-time";
 
 // 화면 표기는 0을 채운 문자열 조각("07")이 필요해 lib/seoul-time의 숫자 조각 대신 formatter를 따로 둔다.
@@ -82,6 +84,16 @@ export function formatOperatingSchedule(value: string | null) {
 
 export function formatViewCount(value: number) {
   return numberFormatter.format(Math.max(0, value));
+}
+
+/** 참여 대상 이름을 " · "로 잇는다. 수집 데이터는 비어 있을 수 있어(DB는 빈 값 허용) 그때는 빈 문자열이다. */
+export function formatAudiences(audiences: readonly EventAudience[]) {
+  return audiences.map((audience) => audienceLabels[audience]).join(" · ");
+}
+
+/** 상세 핵심 정보의 요금. 요금 문구가 없으면 무료 여부로, 그것도 모르면 원문 확인 안내를 보여 준다. */
+export function formatPrice(event: Pick<Event, "priceText" | "isFree">) {
+  return event.priceText ?? (event.isFree ? "무료" : "요금은 원문에서 확인해 주세요");
 }
 
 /** 서울 기준 연·월·일을 0을 채운 문자열로("2026", "07", "05"). 날짜가 아니면 null. */

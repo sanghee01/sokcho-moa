@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { catalogPlaces, makeEvent } from "@/tests/unit/support/event-builder";
-import { createEventMapLinks, findNearbyPlaces, getNearbyPlacesLabel } from "@/features/events/model/location";
+import { createEventMapLinks, findNearbyPlaces, getNearbyPlacesTitle } from "@/features/events/model/location";
 import { createMapSearchName, distanceInKm } from "@/lib/map";
 
 describe("distanceInKm", () => {
@@ -35,14 +35,14 @@ describe("findNearbyPlaces", () => {
     expect(result.every((place) => place.address?.includes("속초시"))).toBe(true);
     expect(result.every((place) => place.distanceKm === null)).toBe(true);
     expect(new Set(result.map((place) => place.category)).size).toBe(4);
-    expect(getNearbyPlacesLabel(event)).toEqual({ title: "속초 지역 명소 둘러보기" });
+    expect(getNearbyPlacesTitle(event)).toBe("속초 지역 명소 둘러보기");
   });
 
   it("주소가 없어도 장소명에서 지역을 판별한다", () => {
     const event = makeEvent({ locationName: "속초시청소년수련관·설악워터피아" });
 
     expect(findNearbyPlaces(event, catalogPlaces)).toHaveLength(4);
-    expect(getNearbyPlacesLabel(event).title).toBe("속초 지역 명소 둘러보기");
+    expect(getNearbyPlacesTitle(event)).toBe("속초 지역 명소 둘러보기");
   });
 });
 

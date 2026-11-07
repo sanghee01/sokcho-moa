@@ -2,6 +2,7 @@ import Link from "next/link";
 import { BannerCarousel } from "@/components/ui/banner-carousel";
 import { EventImage } from "@/features/events/components/event-image";
 import { EventImagePlaceholder } from "@/features/events/components/event-image-placeholder";
+import { PosterBackdrop } from "@/features/events/components/poster-backdrop";
 import { formatShortDateRange } from "@/features/events/model/format";
 import type { Event } from "@/features/events/model/event";
 import { analyticsData } from "@/lib/analytics/events";
@@ -25,11 +26,7 @@ function PopularSlide({ event }: { event: Event }) {
       })}
       className={`relative block overflow-hidden bg-content-strong ${bannerHeightClassName}`}
     >
-      {/* 배경: 포스터를 흐리게 키워 색만 남긴다. 장식이 아니라 포스터에서 나온 배경이라 .ai/DESIGN.md의 블러 금지에서 뺀다. */}
-      <div aria-hidden="true" className="absolute inset-0 scale-125 blur-2xl">
-        <EventImage src={event.imageUrl} alt="" sizes="20vw" fallback={<EventImagePlaceholder />} />
-      </div>
-      <div aria-hidden="true" className="absolute inset-0 bg-image-scrim" />
+      <PosterBackdrop imageUrl={event.imageUrl} />
       {/* md 이상에서는 좌우 넘김 버튼(왼쪽·오른쪽 12px + 40px)이 내용을 가리지 않게 안쪽 여백을 64px로 둔다(2026-11-06). */}
       <div className="relative mx-auto flex h-full max-w-6xl items-center gap-4 px-4 pb-7 pt-5 sm:px-6 md:px-16 lg:gap-10">
         <div className="min-w-0 flex-1 text-on-image">

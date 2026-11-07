@@ -40,41 +40,60 @@ function EventCardGrid({ events, showCategory }: { events: Event[]; showCategory
   );
 }
 
+interface EmptyResultContent {
+  title: string;
+  description?: string;
+  action?: { label: string; href: string };
+}
+
 /**
  * 목록이 비었을 때 상황에 맞는 안내(2026-11-06). 사용자가 하지 않은 일("검색어를 바꾸거나 조건을 지우고")을 말하지 않고,
  * 실제로 갈 만한 곳 하나를 버튼으로 준다. 분야 이름 뒤에는 받침에 따라 바뀌는 조사를 붙이지 않는다.
+ * 고르는 순서: 검색어 → 예전 주소의 조건 → 마감 탭 → 기본(예전에는 중첩 삼항 한 식이었다, 2026-11-07).
  */
-function EmptyResult({
+function getEmptyResultContent({
   query,
   closedView,
   topicLabel,
-  hasOtherFilters,
+  hasLegacyFilters,
   params,
 }: {
   query?: string;
   closedView: boolean;
   topicLabel?: string;
-  hasOtherFilters: boolean;
+  hasLegacyFilters: boolean;
   params: EventSearchParams;
-}) {
+}): EmptyResultContent {
   const label = topicLabel ?? "행사";
-  const content: { title: string; description?: string; action?: { label: string; href: string } } = query
-    ? { title: `'${query}' 검색 결과가 없어요`, description: "다른 단어로 검색해 보세요.", action: { label: "검색 지우기", href: buildEventBrowseHref(params, { q: undefined }) } }
-    : hasOtherFilters
-      ? { title: "조건에 맞는 행사가 없어요", action: { label: "조건 지우기", href: clearEventFiltersHref(params) } }
-      : closedView
-        ? { title: `마감된 ${label} 기록이 아직 없어요`, action: { label: `진행 중인 ${label} 보기`, href: buildEventBrowseHref(params, { status: undefined }) } }
-        : {
-          title: `예정되거나 진행 중인 ${label} 일정이 아직 없어요`,
-          description: "새 일정이 올라오면 여기에 보여 드릴게요.",
-          action: topicLabel ? { label: "전체 행사 보기", href: "/" } : undefined,
-        };
+  if (query) {
+    return {
+      title: `'${query}' 검색 결과가 없어요`,
+      description: "다른 단어로 검색해 보세요.",
+      action: { label: "검색 지우기", href: buildEventBrowseHref(params, { q: undefined }) },
+    };
+  }
+  if (hasLegacyFilters) {
+    return { title: "조건에 맞는 행사가 없어요", action: { label: "조건 지우기", href: clearEventFiltersHref(params) } };
+  }
+  if (closedView) {
+    return {
+      title: `마감된 ${label} 기록이 아직 없어요`,
+      action: { label: `진행 중인 ${label} 보기`, href: buildEventBrowseHref(params, { status: undefined }) },
+    };
+  }
+  return {
+    title: `예정되거나 진행 중인 ${label} 일정이 아직 없어요`,
+    description: "새 일정이 올라오면 여기에 보여 드릴게요.",
+    action: topicLabel ? { label: "전체 행사 보기", href: "/" } : undefined,
+  };
+}
 
+function EmptyResult({ content }: { content: EmptyResultContent }) {
   return (
     <div className="rounded-card bg-surface-subtle px-6 py-12 text-center">
       <p className="text-title-3 text-content-strong">{content.title}</p>
-      {content.description && <p className="mt-2 text-body text-content-muted">{content.description}</p>}
-      {content.action && (
+      {content.description !== undefined && <p className="mt-2 text-body text-content-muted">{content.description}</p>}
+      {content.action !== undefined && (
         <Link href={content.action.href} className={`${getButtonClassName({ variant: "secondary" })} mt-6`}>{content.action.label}</Link>
       )}
     </div>
@@ -156,11 +175,13 @@ export async function EventBrowsePage({
           </div>
           {events.length === 0 ? (
             <EmptyResult
-              query={filters.query}
-              closedView={closedView}
-              topicLabel={topic?.label}
-              hasOtherFilters={hasLegacyEventFilters(filters)}
-              params={navigationParams}
+              content={getEmptyResultContent({
+                query: filters.query,
+                closedView,
+                topicLabel: topic?.label,
+                hasLegacyFilters: hasLegacyEventFilters(filters),
+                params: navigationParams,
+              })}
             />
           ) : (
             <EventCardGrid events={events} showCategory={!topic} />
