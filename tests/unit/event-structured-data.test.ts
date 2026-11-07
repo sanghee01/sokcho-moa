@@ -160,6 +160,14 @@ describe("event structured data", () => {
     expect(eventOfferPrice({ isFree: false, priceText: "요금은 원문 확인" })).toBeNull();
   });
 
+  it("만·천 단위로 쓴 요금 문구도 원화 금액으로 읽는다", () => {
+    expect(eventOfferPrice({ isFree: false, priceText: "2만원 (설악권 주민 50% 할인)" })).toBe(20_000);
+    expect(eventOfferPrice({ isFree: false, priceText: "1만 5천원" })).toBe(15_000);
+    expect(eventOfferPrice({ isFree: false, priceText: "1만5000원" })).toBe(15_000);
+    expect(eventOfferPrice({ isFree: false, priceText: "성인 1만원 · 어린이 5천원" })).toBe(5_000);
+    expect(eventOfferPrice({ isFree: false, priceText: "선착순 1만 명, 입장료 3,000원" })).toBe(3_000);
+  });
+
   it("직접 신청 URL이 없으면 일반 출처 페이지를 예매 Offer로 표시하지 않는다", () => {
     const result = buildEventStructuredData({
       ...event,

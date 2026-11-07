@@ -107,10 +107,25 @@ export function eventOfferPrice(event: Pick<Event, "isFree" | "priceText">) {
   if (!event.priceText) return null;
   if (event.isFree !== false && /(?:^|\s)무료(?:\s|$|\(|,)/.test(event.priceText)) return 0;
 
-  const prices = Array.from(event.priceText.matchAll(/(\d[\d,]*)\s*원/g))
-    .map((match) => Number(match[1].replaceAll(",", "")))
-    .filter((price) => Number.isFinite(price));
+  const prices = Array.from(event.priceText.matchAll(KRW_AMOUNT_PATTERN))
+    .map(parseKrwAmount)
+    .filter((price): price is number => price !== null && Number.isFinite(price));
   return prices.length > 0 ? Math.min(...prices) : null;
+}
+
+// 기관 공고는 "20,000원"뿐 아니라 "2만원", "1만 5천원"으로도 요금을 쓴다. 만·천 단위를 읽지 못하면
+// 유료 행사의 Offer가 통째로 빠져 Search Console에 offers 누락으로 잡힌다(2026-11-07).
+const KRW_AMOUNT_PATTERN = /(?:(\d[\d,]*)\s*만\s*)?(?:(\d[\d,]*)\s*천\s*)?(\d[\d,]*)?\s*원/g;
+
+function parseKrwAmount(match: RegExpMatchArray) {
+  const [, tenThousands, thousands, units] = match;
+  // "원문"처럼 숫자 없이 "원"만 걸린 경우는 금액이 아니다.
+  if (tenThousands === undefined && thousands === undefined && units === undefined) return null;
+  return toNumber(tenThousands) * 10_000 + toNumber(thousands) * 1_000 + toNumber(units);
+}
+
+function toNumber(value: string | undefined) {
+  return value === undefined ? 0 : Number(value.replaceAll(",", ""));
 }
 
 function buildEventOffer(event: Event, applicationUrl: string, now: Date) {
