@@ -17,6 +17,10 @@
 - `app/admin/` 아래 각 `page.tsx`는 직접 `requireAdmin()`을 부릅니다. layout에서만 확인하지 않습니다(layout은 페이지 이동 때 다시 실행되지 않음).
 - 관리자 쓰기는 페이지가 아니라 `features/<도메인>/admin/actions.ts`의 server action이 하고, action도 다시 인가합니다.
 
+## 개인정보 처리방침
+
+- `app/privacy/page.tsx`를 고치거나 새 수집 항목(알림 구독 등)을 더할 때, 법률 검토 전인 문구를 먼저 사용자에게 알리고 확인받습니다: 국외 이전 근거(법 제28조의8 제1항 제3호로 적음), 보유 기간 표현(2026-11-08 사용자 결정, 근거는 개인 메모 09 GA 검토 10절).
+
 ## 검증
 
 - route를 추가·삭제하거나 정적 생성(`generateStaticParams`, `revalidate`)을 바꾸면 `pnpm test:e2e` 전체를 돌립니다.
