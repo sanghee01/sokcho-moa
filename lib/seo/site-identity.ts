@@ -8,6 +8,8 @@ export const SITE_DESCRIPTION = "속초모아(속초 모아)는 속초의 행사
 // 이 URL은 구조화 데이터·사이트맵으로 검색엔진에 이미 알려져 있어, 다른 브랜드 이미지와 달리 public/brand/로 옮기지 않았다(2026-11-07).
 export const SITE_LOGO_PATH = "/icon.jpeg";
 export const SITE_OPEN_GRAPH_IMAGE_PATH = "/opengraph-image";
+// 방문자 문의 창구. 푸터와 개인정보 처리방침의 연락처가 함께 쓴다(2026-11-07).
+export const SITE_INQUIRY_URL = "https://open.kakao.com/o/s7kFbUEi";
 
 export const INDEXABLE_ROBOTS: Metadata["robots"] = {
   index: true,

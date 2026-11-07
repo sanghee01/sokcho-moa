@@ -1,9 +1,11 @@
 import Link from "next/link";
+import { AnalyticsMountTracking } from "@/components/analytics/analytics-mount-tracking";
 import { getButtonClassName } from "@/components/ui/button-styles";
 import { TransitionLink } from "@/components/ui/transition-link";
 import { EventCard, eventCardGridClassName } from "@/features/events/components/event-card";
 import { EventSearch } from "@/features/events/components/browse/event-search";
 import { EventSort } from "@/features/events/components/browse/event-sort";
+import { analyticsData } from "@/lib/analytics/events";
 import { getPublicEnv } from "@/lib/env";
 import { getAllPublicEvents } from "@/features/events/queries";
 import {
@@ -121,6 +123,7 @@ export async function EventBrowsePage({
   const sort = filters.sort ?? DEFAULT_EVENT_SORT;
   const events = sortEvents(filteredEvents, sort, now);
   const closedView = filters.status === "closed";
+  const statusTab = closedView ? "closed" : "active";
   const siteUrl = getPublicEnv().NEXT_PUBLIC_SITE_URL;
   const jsonLd = topic
     ? buildTopicStructuredData(topic, siteUrl)
@@ -141,17 +144,28 @@ export async function EventBrowsePage({
           <EventSearch params={navigationParams} query={filters.query} />
         </div>
 
-        <section aria-labelledby="event-results-title" data-event-view={closedView ? "closed" : "active"} className="mt-6 lg:mt-10">
+        <section aria-labelledby="event-results-title" data-event-view={statusTab} className="mt-6 lg:mt-10">
           {/* 행사 개수는 보여 주지 않는다(2026-11-06). 구역 제목은 화면 읽기 프로그램용으로 남긴다. */}
           <h2 id="event-results-title" className="sr-only">{closedView ? "마감 행사" : "행사 목록"}</h2>
+          {/* 검색어가 있는 목록이 그려지면 결과 수를 GA에 남긴다. 검색어 원문은 보내지 않고,
+              같은 분야·탭·검색어에서 정렬만 바꾼 것은 다시 세지 않는다(2026-11-07). */}
+          {filters.query !== undefined && (
+            <AnalyticsMountTracking
+              name="search_results_viewed"
+              properties={{ result_count: events.length, query_length: Array.from(filters.query).length, status_tab: statusTab }}
+              onceKey={`${topic?.path ?? "/"}|${statusTab}|${filters.query}`}
+            />
+          )}
           <div className="mb-4 flex items-center justify-between gap-3 border-b border-line">
             <nav aria-label="행사 상태" className="flex items-center">
+                {/* 이미 선택된 탭을 다시 누른 것은 세지 않는다. 정렬(sort_changed)과 같은 방식이다(2026-11-07). */}
                 <TransitionLink
                   href={buildEventBrowseHref(navigationParams, { status: undefined, application: undefined })}
                   pendingLabel="진행중 행사 불러오는 중"
                   showPendingIndicator={false}
                   scroll={false}
                   rel="nofollow"
+                  {...(closedView ? analyticsData("status_tab_changed", { status_tab: "active" }) : {})}
                   aria-current={!closedView ? "page" : undefined}
                   className={statusTabClassName(!closedView)}
                 >
@@ -163,6 +177,7 @@ export async function EventBrowsePage({
                   showPendingIndicator={false}
                   scroll={false}
                   rel="nofollow"
+                  {...(!closedView ? analyticsData("status_tab_changed", { status_tab: "closed" }) : {})}
                   aria-current={closedView ? "page" : undefined}
                   className={statusTabClassName(closedView)}
                 >

@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { InternalTrafficMarker } from "@/components/analytics/internal-traffic-marker";
 import { getButtonClassName } from "@/components/ui/button-styles";
 import { FormSubmitButton } from "@/components/ui/form-submit-button";
 import { TransitionLink } from "@/components/ui/transition-link";
@@ -10,6 +11,8 @@ const menuLinkClassName = getButtonClassName({ variant: "neutral" });
 export function AdminShell({ email, children }: { email: string; children: ReactNode }) {
   return (
     <main id="main-content" className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-12">
+      {/* 이 기기의 GA 이벤트를 운영자 방문으로 표시해 GA 내부 트래픽 필터로 뺀다(2026-11-07). */}
+      <InternalTrafficMarker />
       <header className="mb-8 flex flex-col gap-4 rounded-card bg-surface-subtle p-5 ring-1 ring-line sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-label font-bold text-primary-text">속초모아 운영자</p>

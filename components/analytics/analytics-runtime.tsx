@@ -5,7 +5,7 @@ import { useEffect, useRef } from "react";
 import {
   isAnalyticsEvent,
   parseAnalyticsProperties,
-  trackAnalyticsEvent,
+  trackAnalyticsAttributes,
   trackPageView,
 } from "@/lib/analytics/events";
 import { shouldTrackGoogleAnalyticsPage } from "@/lib/analytics/google-analytics";
@@ -36,7 +36,7 @@ export function AnalyticsRuntime() {
       if (!target) return;
       const name = target.dataset.analyticsEvent;
       if (!isAnalyticsEvent(name)) return;
-      trackAnalyticsEvent(name, parseAnalyticsProperties(target.dataset.analyticsProperties));
+      trackAnalyticsAttributes(name, parseAnalyticsProperties(target.dataset.analyticsProperties));
     }
     document.addEventListener("click", handleClick);
     return () => document.removeEventListener("click", handleClick);

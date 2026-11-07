@@ -37,6 +37,15 @@ test("행사 상세에는 분야 탭을 두지 않는다", async ({ page }) => {
   await expect(page.getByRole("navigation", { name: "주요 메뉴" })).toHaveCount(0);
 });
 
+test("푸터에서 개인정보 처리방침을 열면 GA 사용을 안내한다", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("contentinfo").getByRole("link", { name: "개인정보 처리방침" }).click();
+
+  await expect(page).toHaveURL(/\/privacy$/);
+  await expect(page.getByRole("heading", { level: 1, name: "개인정보 처리방침" })).toBeVisible();
+  await expect(page.getByRole("main")).toContainText("Google Analytics");
+});
+
 test("검색 로봇은 관리자·API 경로를 수집하지 않는다", async ({ request }) => {
   const response = await request.get("/robots.txt");
 

@@ -1,16 +1,16 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
-import { SAMPLE_EVENT_PATH, SAMPLE_EVENT_SLUG } from "@/tests/e2e/fixtures";
+import {
+  analyticsEventParams,
+  capturedAnalyticsEvents,
+  SAMPLE_EVENT_PATH,
+  SAMPLE_EVENT_SLUG,
+} from "@/tests/e2e/fixtures";
 
 interface ElementBox {
   x: number;
   y: number;
   width: number;
   height: number;
-}
-
-interface CapturedAnalyticsEvent {
-  name: string;
-  params: Record<string, string | number | boolean>;
 }
 
 async function visibleBox(locator: Locator): Promise<ElementBox> {
@@ -35,22 +35,6 @@ async function expectNoHorizontalOverflow(page: Page, locators: Locator[]) {
     expect(box.x).toBeGreaterThanOrEqual(-1);
     expect(box.x + box.width).toBeLessThanOrEqual(widths.viewport + 1);
   }
-}
-
-async function capturedAnalyticsEvents(page: Page): Promise<CapturedAnalyticsEvent[]> {
-  return page.evaluate(() => {
-    const dataLayer = (window as Window & { dataLayer?: Array<ArrayLike<unknown>> }).dataLayer ?? [];
-    return dataLayer.flatMap((entry) => {
-      const values = Array.from(entry);
-      if (values[0] !== "event" || typeof values[1] !== "string") return [];
-      return [{
-        name: values[1],
-        params: values[2] && typeof values[2] === "object"
-          ? values[2] as Record<string, string | number | boolean>
-          : {},
-      }];
-    });
-  });
 }
 
 test("없는 페이지와 없는 행사를 각각 이해하기 쉬운 화면으로 안내한다", async ({ page }) => {
@@ -189,6 +173,107 @@ test("GA 이벤트는 탐색부터 상세 도달까지 구조화된 파라미터
       && event.params.event_slug === SAMPLE_EVENT_SLUG
       && event.params.event_category === "festival"
   ))).toBe(true);
+});
+
+test("GA 이벤트는 목록의 진행중·마감 탭 전환과 검색 결과 수를 기록한다", async ({ page }) => {
+  await page.goto("/");
+  const statusTabs = page.getByRole("navigation", { name: "행사 상태" });
+  const activeTab = statusTabs.getByRole("link", { name: "진행중", exact: true });
+  const closedTab = statusTabs.getByRole("link", { name: "마감", exact: true });
+
+  // 이미 선택된 탭을 다시 누른 것은 세지 않는다(정렬과 같은 방식).
+  await activeTab.click();
+  await closedTab.click();
+  await expect(closedTab).toHaveAttribute("aria-current", "page");
+  await activeTab.click();
+  await expect(activeTab).toHaveAttribute("aria-current", "page");
+  await expect.poll(() => analyticsEventParams(page, "status_tab_changed")).toEqual([
+    { status_tab: "closed" },
+    { status_tab: "active" },
+  ]);
+
+  const search = page.getByRole("search", { name: "행사 검색" });
+  await search.getByRole("searchbox").fill("바다빛");
+  await search.getByRole("button", { name: "검색", exact: true }).click();
+  await expect(page).toHaveURL(/q=/);
+  await expect.poll(() => analyticsEventParams(page, "search_results_viewed")).toEqual([
+    { result_count: 1, query_length: 3, status_tab: "active" },
+  ]);
+
+  // 같은 검색어에서 정렬만 바꾼 것은 새 검색 결과로 세지 않는다. 다음 검색까지 기록이 하나여야 한다.
+  const sort = page.getByRole("navigation", { name: "행사 정렬" });
+  await sort.getByRole("link", { name: "조회순" }).click();
+  await expect(sort.getByRole("link", { name: "조회순" })).toHaveAttribute("aria-current", "page");
+
+  await search.getByRole("searchbox").fill("없는행사이름");
+  await search.getByRole("button", { name: "검색", exact: true }).click();
+  await expect.poll(() => analyticsEventParams(page, "search_results_viewed")).toEqual([
+    { result_count: 1, query_length: 3, status_tab: "active" },
+    { result_count: 0, query_length: 6, status_tab: "active" },
+  ]);
+  // 검색어 원문은 보내지 않는다.
+  expect(JSON.stringify(await analyticsEventParams(page, "search_results_viewed"))).not.toContain("바다빛");
+});
+
+test("GA 이벤트는 주변 명소가 화면에 들어왔을 때 상세 화면마다 한 번만 노출로 기록한다", async ({ page }) => {
+  await page.goto(SAMPLE_EVENT_PATH);
+  await expect.poll(() => analyticsEventParams(page, "event_detail_viewed")).toHaveLength(1);
+  const nearby = page.getByRole("region", { name: "주변 명소 둘러보기" });
+
+  // 상세 위쪽만 본 사람은 명소를 본 것으로 세지 않는다.
+  await expect(nearby).not.toBeInViewport();
+  expect(await analyticsEventParams(page, "nearby_places_viewed")).toEqual([]);
+
+  await nearby.evaluate((element) => element.scrollIntoView({ block: "start" }));
+  await expect.poll(() => analyticsEventParams(page, "nearby_places_viewed")).toEqual([
+    { event_category: "festival" },
+  ]);
+
+  // 다시 올라갔다 내려와도 같은 상세 화면에서는 한 번만 센다.
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await expect(nearby).not.toBeInViewport();
+  await nearby.evaluate((element) => element.scrollIntoView({ block: "start" }));
+  await expect(nearby.getByRole("article").first()).toBeInViewport();
+  expect(await analyticsEventParams(page, "nearby_places_viewed")).toEqual([
+    { event_category: "festival" },
+  ]);
+});
+
+// 명소 클릭률과 비교할 기준. 같은 상세 아래쪽에 있는 관련 행사 목록도 같은 방식으로 노출을 센다(2026-11-07).
+test("GA 이벤트는 관련 행사 목록이 화면에 들어왔을 때 상세 화면마다 한 번만 노출로 기록한다", async ({ page }) => {
+  await page.goto(SAMPLE_EVENT_PATH);
+  await expect.poll(() => analyticsEventParams(page, "event_detail_viewed")).toHaveLength(1);
+  const related = page.getByRole("region", { name: "이 행사도 살펴보세요" });
+
+  await expect(related).not.toBeInViewport();
+  expect(await analyticsEventParams(page, "related_events_viewed")).toEqual([]);
+
+  await related.evaluate((element) => element.scrollIntoView({ block: "start" }));
+  await expect.poll(() => analyticsEventParams(page, "related_events_viewed")).toEqual([
+    { event_category: "festival" },
+  ]);
+});
+
+test("GA page_view는 주소에 담긴 검색어를 가려서 보낸다", async ({ page }) => {
+  const query = "바다빛";
+  await page.goto(`/?q=${encodeURIComponent(query)}`);
+  await expect.poll(() => analyticsEventParams(page, "page_view")).toHaveLength(1);
+
+  // 검색 결과 → 상세 → 뒤로 가기에서 검색어가 page_location·page_referrer로 실려 갈 수 있다.
+  await page.getByRole("link", { name: /바다빛 가족 문화축제/ }).click();
+  await expect(page).toHaveURL(new RegExp(`${SAMPLE_EVENT_PATH}$`));
+  await page.goBack();
+  await expect(page).toHaveURL(/q=/);
+  await expect.poll(() => analyticsEventParams(page, "page_view")).toHaveLength(3);
+
+  // 샘플 행사 제목에도 같은 단어가 있어 page_title은 빼고 주소만 본다.
+  const urls = (await analyticsEventParams(page, "page_view"))
+    .flatMap((params) => [params.page_location, params.page_referrer])
+    .filter((value) => typeof value === "string")
+    .join(" ");
+  expect(urls).not.toContain(query);
+  expect(urls).not.toContain(encodeURIComponent(query));
+  expect(urls).toContain("q=%28redacted%29");
 });
 
 test("목록과 상세는 데스크톱·모바일에서 가로로 넘치지 않는다", async ({ page }) => {

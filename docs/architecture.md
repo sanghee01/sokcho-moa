@@ -66,6 +66,7 @@ import합니다. 이 규칙은 `pnpm lint`가 강제합니다(`eslint.config.mjs
 | `/events/[slug]` | ISR 1시간, 공개 행사 전부 미리 생성 | 행사 상세, 관련 행사, 주변 명소(`features/places/queries`) |
 | `/calendar` | 동적 | 목록으로 redirect만(캘린더는 삭제, 옛 북마크 보호) |
 | `/report`, `/feedback` | 정적 | 방문자 제보·의견 폼 |
+| `/privacy` | 정적 | 개인정보 처리방침(GA 사용, 쿠키 거부 방법, 보호책임자) |
 | `/admin/**` | 동적(쿠키) | 모든 페이지가 `requireAdmin()`으로 시작 |
 | `POST /api/events/[slug]/view` | 동적 | 요청 제한(IP·행사별 10분 10회) 뒤 service_role로 조회수 +1 RPC |
 | `/sitemap.xml` | ISR 5분(`revalidate = 3600`이지만 안에서 쓰는 데이터 캐시 5분을 따름) | 검색엔진용 |

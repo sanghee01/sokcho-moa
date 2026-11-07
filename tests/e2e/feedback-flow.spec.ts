@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { analyticsEventParams } from "@/tests/e2e/fixtures";
 
 test("푸터에서 의견 보내기 폼으로 이동해 링크 없이도 의견을 보낼 수 있다", async ({ page }) => {
   await page.goto("/");
@@ -29,6 +30,8 @@ test("푸터에서 의견 보내기 폼으로 이동해 링크 없이도 의견�
   await page.getByRole("button", { name: "의견 보내기", exact: true }).click();
 
   await expect(page.getByRole("status")).toContainText("의견을 보내주셔서 감사합니다.");
+  // 서버가 접수한 의견만 GA에 기록한다. 제목·본문은 보내지 않는다(2026-11-07).
+  await expect.poll(() => analyticsEventParams(page, "feedback_submitted")).toEqual([{}]);
 });
 
 test("행사 제보는 서버 검증에 실패하면 작성한 내용을 유지하고, 고치면 접수된다", async ({ page }) => {
@@ -46,8 +49,11 @@ test("행사 제보는 서버 검증에 실패하면 작성한 내용을 유지�
   await expect(page.locator("form").getByRole("alert")).toHaveText("링크를 올바른 주소로 입력해 주세요.");
   await expect(title).toHaveValue("속초 시민 행사 제보");
   await expect(body).toHaveValue("다음 달 시민회관에서 열리는 행사 정보를 제보합니다.");
+  // 서버 검증에 실패한 제출은 GA에 접수로 세지 않는다.
+  expect(await analyticsEventParams(page, "event_report_submitted")).toEqual([]);
 
   await sourceUrl.fill("https://example.com/event");
   await page.getByRole("button", { name: "제보 보내기", exact: true }).click();
   await expect(page.getByRole("status")).toContainText("제보가 접수되었습니다.");
+  await expect.poll(() => analyticsEventParams(page, "event_report_submitted")).toEqual([{}]);
 });

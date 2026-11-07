@@ -11,11 +11,13 @@ import { ScrollToTopButton } from "@/components/layout/scroll-to-top-button";
 import { iconProps } from "@/components/ui/icon";
 import { CategoryNavigation } from "@/features/events/components/browse/category-navigation";
 import { GOOGLE_ANALYTICS_ID, shouldCollectGoogleAnalytics } from "@/lib/analytics/google-analytics";
+import { INTERNAL_TRAFFIC_STORAGE_KEY, INTERNAL_TRAFFIC_TYPE } from "@/lib/analytics/internal-traffic";
 import { getPublicEnv, getRuntimeEnv } from "@/lib/env";
 import {
   HOME_TITLE,
   INDEXABLE_ROBOTS,
   SITE_DESCRIPTION,
+  SITE_INQUIRY_URL,
   SITE_NAME,
   SITE_OPEN_GRAPH_IMAGE_PATH,
 } from "@/lib/seo/site-identity";
@@ -110,9 +112,10 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
             <nav aria-label="사이트 이용" className="flex flex-wrap gap-x-5">
               <Link href="/report" className={footerLinkClassName}>행사 제보하기</Link>
               <Link href="/feedback" className={footerLinkClassName}>의견 보내기</Link>
-              <a className={footerLinkClassName} href="https://open.kakao.com/o/s7kFbUEi" target="_blank" rel="noreferrer">
+              <a className={footerLinkClassName} href={SITE_INQUIRY_URL} target="_blank" rel="noreferrer">
                 카카오톡 문의 <ExternalLink {...iconProps} size={14} /><span className="sr-only">(새 창)</span>
               </a>
+              <Link href="/privacy" className={footerLinkClassName}>개인정보 처리방침</Link>
             </nav>
           </div>
           {/* 저작권 줄은 구분선으로 위 내용과 나누고, 흔히 쓰는 "All rights reserved."를 붙인다. */}
@@ -123,10 +126,17 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
           </div>
         </footer>
         <ScrollToTopButton />
+        {/* 관리자 화면에 들어간 기기(운영자)는 첫 page_view보다 먼저 내부 트래픽 표시를 붙인다(lib/analytics/internal-traffic.ts, 2026-11-07).
+            gtag('set')은 그 뒤 모든 이벤트에 적용된다. 저장소를 막은 브라우저에서는 건너뛴다. */}
         <Script id="analytics-event-queue" strategy="beforeInteractive">
           {`
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
+            try {
+              if (window.localStorage.getItem('${INTERNAL_TRAFFIC_STORAGE_KEY}') === '1') {
+                gtag('set', { traffic_type: '${INTERNAL_TRAFFIC_TYPE}' });
+              }
+            } catch (error) {}
           `}
         </Script>
         {Boolean(collectGoogleAnalytics) && (

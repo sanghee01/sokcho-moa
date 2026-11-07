@@ -24,7 +24,7 @@ const viewports = [
 ];
 
 // 개편으로 제목 문구가 바뀌어도 깨지지 않게, 화면이 다 그려졌는지는 h1이 보이는지로만 확인한다.
-const publicPages = ["/", "/topics/festival", SAMPLE_EVENT_PATH, "/report", "/feedback"];
+const publicPages = ["/", "/topics/festival", SAMPLE_EVENT_PATH, "/report", "/feedback", "/privacy"];
 
 async function horizontalOverflow(page: Page) {
   return page.evaluate(() => ({

@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { AnalyticsMountTracking } from "@/components/analytics/analytics-mount-tracking";
 import { FormField, getFieldControlProps } from "@/components/ui/form-field";
 import { FormSubmitButton } from "@/components/ui/form-submit-button";
 import { getButtonClassName } from "@/components/ui/button-styles";
@@ -23,6 +24,8 @@ export function EventReportForm() {
   if (state.success) {
     return (
       <div role="status" className={formSuccessMessageClassName}>
+        {/* 서버가 접수한 제보만 센다. GA 자동 수집 form_submit은 이 폼에서 기록되지 않고 실패한 제출도 센다(2026-11-07). */}
+        <AnalyticsMountTracking name="event_report_submitted" properties={{}} />
         <p className="text-title-3">제보가 접수되었습니다.</p>
         <p className="mt-2 text-body">보내주신 내용을 확인한 뒤 반영 가능한 행사라면 속초모아에 등록하겠습니다. 감사합니다.</p>
       </div>

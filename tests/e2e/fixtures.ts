@@ -20,6 +20,38 @@ export const E2E_ADMIN_EVENT = {
   title: "[E2E] 관리자 검수 테스트 행사",
 };
 
+export interface CapturedAnalyticsEvent {
+  name: string;
+  params: Record<string, string | number | boolean>;
+}
+
+/**
+ * gtag가 dataLayer에 쌓은 GA 이벤트를 꺼낸다. E2E 서버는 운영 배포가 아니어서 GA 스크립트 없이 대기열만 채우므로,
+ * 외부로 보내지 않고 보낼 내용을 확인할 수 있다. 공개 화면과 제보·의견 E2E가 함께 쓴다(2026-11-07).
+ */
+export async function capturedAnalyticsEvents(page: Page): Promise<CapturedAnalyticsEvent[]> {
+  return page.evaluate(() => {
+    const dataLayer = (window as Window & { dataLayer?: Array<ArrayLike<unknown>> }).dataLayer ?? [];
+    return dataLayer.flatMap((entry) => {
+      const values = Array.from(entry);
+      if (values[0] !== "event" || typeof values[1] !== "string") return [];
+      return [{
+        name: values[1],
+        params: values[2] && typeof values[2] === "object"
+          ? values[2] as Record<string, string | number | boolean>
+          : {},
+      }];
+    });
+  });
+}
+
+/** 이름이 같은 GA 이벤트의 파라미터를 보낸 순서대로 돌려준다. 횟수와 값을 한 번에 확인할 때 쓴다. */
+export async function analyticsEventParams(page: Page, name: string) {
+  return (await capturedAnalyticsEvents(page))
+    .filter((event) => event.name === name)
+    .map((event) => event.params);
+}
+
 export async function loginAsAdmin(page: Page) {
   await page.goto("/admin/login");
   await page.getByLabel("이메일").fill(LOCAL_ADMIN.email);

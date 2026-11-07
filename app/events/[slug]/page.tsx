@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { AnalyticsViewTracking } from "@/components/analytics/analytics-view-tracking";
 import { getButtonClassName } from "@/components/ui/button-styles";
 import { JsonLd } from "@/components/seo/json-ld";
 import { EventActionBar } from "@/features/events/components/detail/event-action-bar";
@@ -142,16 +143,22 @@ export default async function EventDetailPage({ params }: PageProps<"/events/[sl
       {nearbyPlaces.length > 0 && (
         <section aria-labelledby="nearby-title" className={lowerSectionClassName}>
           <h2 id="nearby-title" className={sectionTitleClassName}>{getNearbyPlacesTitle(event)}</h2>
-          <div className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-4">
-            {nearbyPlaces.map((place) => <PlaceCard key={place.id} place={place} />)}
-          </div>
+          {/* 명소를 남길지 정하려고, 카드를 본 사람 대비 클릭률의 분모로 노출을 센다(2026-11-07). */}
+          <AnalyticsViewTracking name="nearby_places_viewed" properties={{ event_category: event.category }}>
+            <div className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+              {nearbyPlaces.map((place) => <PlaceCard key={place.id} place={place} />)}
+            </div>
+          </AnalyticsViewTracking>
         </section>
       )}
 
       {relatedEvents.length > 0 && (
         <section aria-labelledby="related-title" className={lowerSectionClassName}>
           <h2 id="related-title" className={sectionTitleClassName}>이 행사도 살펴보세요</h2>
-          <div className={`mt-4 ${eventCardGridClassName}`}>{relatedEvents.map((item) => <EventCard key={item.id} event={item} contentSource="related_events" />)}</div>
+          {/* 명소와 같은 방식으로 노출을 센다. 명소를 안 누른 이유가 "아래까지 안 내려와서"인지 비교하는 기준이다(2026-11-07). */}
+          <AnalyticsViewTracking name="related_events_viewed" properties={{ event_category: event.category }}>
+            <div className={`mt-4 ${eventCardGridClassName}`}>{relatedEvents.map((item) => <EventCard key={item.id} event={item} contentSource="related_events" />)}</div>
+          </AnalyticsViewTracking>
         </section>
       )}
 

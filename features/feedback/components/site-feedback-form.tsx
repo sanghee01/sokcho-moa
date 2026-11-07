@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { AnalyticsMountTracking } from "@/components/analytics/analytics-mount-tracking";
 import { FormField, getFieldControlProps } from "@/components/ui/form-field";
 import { FormSubmitButton } from "@/components/ui/form-submit-button";
 import { getButtonClassName } from "@/components/ui/button-styles";
@@ -31,6 +32,8 @@ export function SiteFeedbackForm() {
   if (state.success) {
     return (
       <div role="status" className={formSuccessMessageClassName}>
+        {/* 서버가 접수한 의견만 센다. GA 자동 수집 form_submit은 이 폼에서 기록되지 않고 실패한 제출도 센다(2026-11-07). */}
+        <AnalyticsMountTracking name="feedback_submitted" properties={{}} />
         <p className="text-title-3">의견을 보내주셔서 감사합니다.</p>
         <p className="mt-2 text-body">보내주신 내용은 속초모아를 더 편리하게 만드는 데 소중히 참고하겠습니다.</p>
       </div>
