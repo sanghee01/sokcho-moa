@@ -81,6 +81,7 @@ const cases: Array<[string, string, () => Promise<unknown>]> = [
     category: "performance",
     audiences: "family",
     eventStartAt: "2026-08-15",
+    eventEndAt: "2026-08-15",
     isFree: "true",
     sourceName: "속초문화재단",
     sourceUrl: "https://example.org/events/summer-concert-2026",

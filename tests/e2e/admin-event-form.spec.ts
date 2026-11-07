@@ -81,7 +81,9 @@ test("서버 검증에 실패해도 입력이 남고, 고쳐서 다시 저장하
   // 브라우저 type=url 검사는 통과하지만 서버는 HTTPS만 받으므로 서버 오류가 난다.
   await page.getByRole("textbox", { name: /행사 안내 URL.*필수/ }).fill("http://www.sokcho.go.kr/events/1");
   const dateInputs = page.locator('input[type="date"]');
-  if (await dateInputs.count()) await dateInputs.first().fill("2026-12-01");
+  // 시작이 있으면 종료도 필수라 행사 시작·종료 두 칸을 채운다(2026-11-07).
+  await dateInputs.nth(0).fill("2026-12-01");
+  await dateInputs.nth(1).fill("2026-12-01");
 
   const responded = page.waitForResponse((response) => response.request().method() === "POST" && response.url().includes("/admin"));
   await page.getByRole("button", { name: "작성 완료" }).click();

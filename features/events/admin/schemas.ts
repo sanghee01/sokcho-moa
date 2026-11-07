@@ -69,6 +69,11 @@ export const eventFormSchema = z.object({
 }).superRefine((event, context) => {
   // 아래 검사는 DB 제약(events_time_order, events_application_order, event_occurrences_unique_start)과 같다.
   // 저장 전에 이유를 알려 주지 않으면 "잠시 후 다시 시도"라는 일반 오류만 나고 다시 해도 성공하지 않는다.
+  // 종료가 비면 시작한 날 하루 행사로 계산돼, 여러 날 행사가 다음 날 마감으로 넘어간다(2026-11-07 사용자 결정).
+  // 시작도 없는 초안은 막지 않는다. 공개 버튼은 actions.ts에서 따로 막는다.
+  if (event.eventStartAt && !event.eventEndAt) {
+    context.addIssue({ code: "custom", path: ["eventEndAt"], message: "행사 종료 날짜를 입력하세요. 하루 행사는 시작과 같은 날짜를 넣으면 됩니다." });
+  }
   if (event.eventEndAt && !event.eventStartAt) {
     context.addIssue({ code: "custom", path: ["eventStartAt"], message: "행사 종료를 입력하려면 시작 일시도 입력하세요." });
   }

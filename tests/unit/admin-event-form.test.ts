@@ -17,7 +17,7 @@ function form(overrides: Record<string, unknown> = {}) {
     category: "other",
     audiences: ["all"],
     eventStartAt: "2026-07-19T14:30",
-    eventEndAt: "",
+    eventEndAt: "2026-07-19",
     operatingHours: "",
     scheduleMode: "continuous",
     occurrences: [],
@@ -174,6 +174,17 @@ describe("저장 payload", () => {
 // DB 제약(events_time_order, events_application_order, event_occurrences_unique_start)에 걸릴 입력은
 // 저장 전에 이유를 알려 준다. 그대로 보내면 "잠시 후 다시 시도"라는 일반 오류만 나고 다시 해도 성공하지 않는다.
 describe("DB 저장 규칙과 같은 입력 검증", () => {
+  // 종료가 비면 시작한 날 하루 행사로 계산돼, 여러 날 행사가 다음 날 마감으로 넘어갔다(2026-11-07 양미리축제).
+  it("시작이 있는데 종료가 없으면 거부한다", () => {
+    const result = eventFormSchema.safeParse(form({ eventEndAt: "" }));
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.error.issues.some((issue) => issue.path[0] === "eventEndAt")).toBe(true);
+  });
+
+  it("시작과 종료가 모두 없는 초안은 저장할 수 있다", () => {
+    expect(eventFormSchema.safeParse(form({ eventStartAt: "", eventEndAt: "" })).success).toBe(true);
+  });
+
   it("시작 없이 종료만 입력하면 거부한다", () => {
     expect(eventFormSchema.safeParse(form({ eventStartAt: "", eventEndAt: "2026-07-20" })).success).toBe(false);
   });

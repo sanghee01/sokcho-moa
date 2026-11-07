@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // 행사 공개 상태 변경: 최초 공개일을 지키고, 캐시·검색엔진 알림은 DB의 실제 slug와 공개 여부로 정한다.
 const mocks = vi.hoisted(() => ({
-  current: null as null | { slug: string; category: string; review_status: string; published_at: string | null; event_start_at?: string | null },
+  current: null as null | { slug: string; category: string; review_status: string; published_at: string | null; event_start_at?: string | null; event_end_at?: string | null },
   updates: [] as Record<string, unknown>[],
   expirePublicEvents: vi.fn(),
   notifyIndexNow: vi.fn(),
@@ -53,35 +53,35 @@ describe("행사 공개 상태 변경", () => {
   });
 
   it("다시 공개해도 처음 공개한 날짜를 유지한다", async () => {
-    mocks.current = { slug: "real-slug", category: "festival", review_status: "pending", published_at: FIRST_PUBLISHED, event_start_at: "2026-08-01T00:00:00.000Z" };
+    mocks.current = { slug: "real-slug", category: "festival", review_status: "pending", published_at: FIRST_PUBLISHED, event_start_at: "2026-08-01T00:00:00.000Z", event_end_at: "2026-08-03T14:59:59.999Z" };
     await setEventReviewStatusAction({ id: ID, status: "published" });
     expect(mocks.updates[0]).toMatchObject({ review_status: "published", published_at: FIRST_PUBLISHED });
   });
 
   it("처음 공개하면 공개 시각을 기록하고, 비공개로 바꿔도 지우지 않는다", async () => {
-    mocks.current = { slug: "real-slug", category: "festival", review_status: "pending", published_at: null, event_start_at: "2026-08-01T00:00:00.000Z" };
+    mocks.current = { slug: "real-slug", category: "festival", review_status: "pending", published_at: null, event_start_at: "2026-08-01T00:00:00.000Z", event_end_at: "2026-08-03T14:59:59.999Z" };
     await setEventReviewStatusAction({ id: ID, status: "published" });
     expect(mocks.updates[0].published_at).toEqual(expect.any(String));
 
-    mocks.current = { slug: "real-slug", category: "festival", review_status: "published", published_at: FIRST_PUBLISHED, event_start_at: "2026-08-01T00:00:00.000Z" };
+    mocks.current = { slug: "real-slug", category: "festival", review_status: "published", published_at: FIRST_PUBLISHED, event_start_at: "2026-08-01T00:00:00.000Z", event_end_at: "2026-08-03T14:59:59.999Z" };
     await setEventReviewStatusAction({ id: ID, status: "pending" });
     expect(mocks.updates[1]).toMatchObject({ review_status: "pending", published_at: FIRST_PUBLISHED });
   });
 
   it("화면이 보낸 slug가 아니라 DB의 slug로 캐시를 만료한다", async () => {
-    mocks.current = { slug: "real-slug", category: "festival", review_status: "pending", published_at: null, event_start_at: "2026-08-01T00:00:00.000Z" };
+    mocks.current = { slug: "real-slug", category: "festival", review_status: "pending", published_at: null, event_start_at: "2026-08-01T00:00:00.000Z", event_end_at: "2026-08-03T14:59:59.999Z" };
     await setEventReviewStatusAction({ id: ID, slug: "stale-slug", status: "published" });
     expect(mocks.expirePublicEvents).toHaveBeenCalledWith("real-slug");
   });
 
   it("공개와 무관한 변경(대기↔반려)은 검색엔진에 알리지 않는다", async () => {
-    mocks.current = { slug: "real-slug", category: "festival", review_status: "pending", published_at: null, event_start_at: "2026-08-01T00:00:00.000Z" };
+    mocks.current = { slug: "real-slug", category: "festival", review_status: "pending", published_at: null, event_start_at: "2026-08-01T00:00:00.000Z", event_end_at: "2026-08-03T14:59:59.999Z" };
     await setEventReviewStatusAction({ id: ID, status: "rejected" });
     expect(mocks.notifyIndexNow).not.toHaveBeenCalled();
   });
 
   it("공개하거나 공개를 내리면 검색엔진에 알린다", async () => {
-    mocks.current = { slug: "real-slug", category: "festival", review_status: "published", published_at: FIRST_PUBLISHED, event_start_at: "2026-08-01T00:00:00.000Z" };
+    mocks.current = { slug: "real-slug", category: "festival", review_status: "published", published_at: FIRST_PUBLISHED, event_start_at: "2026-08-01T00:00:00.000Z", event_end_at: "2026-08-03T14:59:59.999Z" };
     await setEventReviewStatusAction({ id: ID, status: "rejected" });
     expect(mocks.notifyIndexNow).toHaveBeenCalledTimes(1);
   });
@@ -91,5 +91,19 @@ describe("행사 공개 상태 변경", () => {
     const result = await setEventReviewStatusAction({ id: ID, status: "published" });
     expect(result.error).toMatch(/시작/);
     expect(mocks.updates).toHaveLength(0);
+  });
+
+  // 폼을 거치지 않는 공개 버튼도 막는다. 수집 후보는 종료일 없이 들어올 수 있다(2026-11-07).
+  it("종료 일시가 없는 행사는 공개하지 않고 이유를 알려 준다", async () => {
+    mocks.current = { slug: "real-slug", category: "festival", review_status: "pending", published_at: null, event_start_at: "2026-08-01T00:00:00.000Z", event_end_at: null };
+    const result = await setEventReviewStatusAction({ id: ID, status: "published" });
+    expect(result.error).toMatch(/종료/);
+    expect(mocks.updates).toHaveLength(0);
+  });
+
+  it("종료 일시가 없어도 공개를 내리는 것은 막지 않는다", async () => {
+    mocks.current = { slug: "real-slug", category: "festival", review_status: "published", published_at: FIRST_PUBLISHED, event_start_at: "2026-08-01T00:00:00.000Z", event_end_at: null };
+    const result = await setEventReviewStatusAction({ id: ID, status: "pending" });
+    expect(result.error).toBeNull();
   });
 });

@@ -161,7 +161,7 @@ export async function setEventReviewStatusAction(input: unknown) {
 
   const { data: current, error: readError } = await client
     .from("events")
-    .select("slug, category, review_status, published_at, event_start_at")
+    .select("slug, category, review_status, published_at, event_start_at, event_end_at")
     .eq("id", parsed.data.id)
     .maybeSingle();
   if (readError) return buttonActionFailed("행사의 현재 공개 상태를 확인하지 못했습니다.", readError);
@@ -169,6 +169,10 @@ export async function setEventReviewStatusAction(input: unknown) {
   // DB 제약(events_published_fields)과 같은 조건. 그대로 보내면 이유 없이 "바꾸지 못했습니다"만 보인다.
   if (parsed.data.status === "published" && !current.event_start_at) {
     return buttonActionFailed("행사 시작 일시가 있어야 공개할 수 있습니다. 행사를 수정해 시작 일시를 입력해 주세요.");
+  }
+  // 이 버튼은 폼 검증을 거치지 않는다. 수집 후보는 종료 없이 들어올 수 있어 여기서도 막는다(2026-11-07 사용자 결정).
+  if (parsed.data.status === "published" && !current.event_end_at) {
+    return buttonActionFailed("행사 종료 일시가 있어야 공개할 수 있습니다. 행사를 수정해 종료 날짜를 입력해 주세요.");
   }
 
   const { data: updatedEvent, error } = await client
