@@ -13,6 +13,18 @@ const identityKindLabels: Record<string, string> = {
   url: "출처 URL",
 };
 
+/**
+ * URL 식별 값은 DB가 퍼센트 인코딩 차이를 없애려고 경로를 hex로 바꾼 비교용 값이라 사람이 읽을 수 없다.
+ * 그래서 URL은 원래 주소(sourceUrl)만 보이고, 다른 종류는 값과 함께 원래 주소를 덧붙인다(2026-11-07 사용자 결정).
+ */
+function getIdentityDisplay(identity: AdminEventCollectionExclusion["identities"][number]) {
+  if (identity.kind === "url" && identity.sourceUrl !== null) {
+    return { value: identity.sourceUrl, source: null };
+  }
+  const hasSeparateSource = identity.sourceUrl !== null && identity.sourceUrl !== identity.identityValue;
+  return { value: identity.identityValue, source: hasSeparateSource ? identity.sourceUrl : null };
+}
+
 function formatDeletedAt(value: string) {
   const deletedAt = new Date(value);
   return Number.isNaN(deletedAt.getTime()) ? "삭제일 미상" : `${formatSeoulDateTime(deletedAt)} 삭제`;
@@ -56,18 +68,21 @@ export function EventCollectionExclusionList({
                     <p className="mt-2 text-label leading-6 text-content-muted">사유: {exclusion.reason}</p>
                   )}
                   <ul className="mt-3 flex flex-wrap gap-2" aria-label="재수집 제외 식별 정보">
-                    {exclusion.identities.map((identity, index) => (
-                      <li
-                        key={`${identity.kind}-${identity.identityValue}-${index}`}
-                        className="max-w-full rounded-control bg-surface-muted px-2.5 py-1 text-caption text-content"
-                      >
-                        <span className="font-bold">{identityKindLabels[identity.kind] ?? identity.kind}</span>{" "}
-                        <span className="break-all">{identity.identityValue}</span>
-                        {Boolean(identity.sourceUrl) && identity.sourceUrl !== identity.identityValue && (
-                          <span className="mt-0.5 block break-all text-content-subtle">출처: {identity.sourceUrl}</span>
-                        )}
-                      </li>
-                    ))}
+                    {exclusion.identities.map((identity, index) => {
+                      const display = getIdentityDisplay(identity);
+                      return (
+                        <li
+                          key={`${identity.kind}-${identity.identityValue}-${index}`}
+                          className="max-w-full rounded-control bg-surface-muted px-2.5 py-1 text-caption text-content"
+                        >
+                          <span className="font-bold">{identityKindLabels[identity.kind] ?? identity.kind}</span>{" "}
+                          <span className="break-all">{display.value}</span>
+                          {display.source !== null && (
+                            <span className="mt-0.5 block break-all text-content-subtle">출처: {display.source}</span>
+                          )}
+                        </li>
+                      );
+                    })}
                     {exclusion.identities.length === 0 && (
                       <li className="text-caption text-content-subtle">저장된 식별 정보가 없습니다.</li>
                     )}

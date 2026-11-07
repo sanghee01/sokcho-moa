@@ -78,3 +78,11 @@ test("범위를 넘는 목록 페이지는 마지막 페이지를, 형식이 틀
     await expect(page.getByRole("heading", { level: 1, name: "페이지를 찾을 수 없어요." }), path).toBeVisible();
   }
 });
+
+test("재수집 제외 목록은 URL 식별 정보를 사람이 읽을 수 있는 주소로 보여 준다", async ({ page }) => {
+  // DB는 퍼센트 인코딩 차이를 없애려고 URL 경로를 hex로 바꿔 비교한다. 화면에는 그 비교용 값 대신 원래 주소를 보여 준다(2026-11-07).
+  await page.goto("/admin?tab=exclusions");
+  const identities = page.getByRole("list", { name: "재수집 제외 식별 정보" }).first();
+  await expect(identities).toBeVisible();
+  await expect(identities).not.toContainText(/[0-9a-f]{20,}/);
+});
