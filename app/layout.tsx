@@ -129,7 +129,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
             function gtag(){dataLayer.push(arguments);}
           `}
         </Script>
-        {collectGoogleAnalytics && (
+        {Boolean(collectGoogleAnalytics) && (
           <>
             <Script id="google-analytics-config" strategy="beforeInteractive">
               {`

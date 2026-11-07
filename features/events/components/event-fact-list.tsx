@@ -37,7 +37,6 @@ export function EventFactList({ event, renderedAt }: { event: Event; renderedAt:
     event.longitude,
   );
   const applicationPeriod = formatApplicationPeriod(event.applicationStartAt, event.applicationEndAt);
-  const hasOperatingHours = Boolean(event.operatingHours?.trim());
 
   return (
     <section aria-labelledby="facts-title" className="mt-5">
@@ -46,7 +45,7 @@ export function EventFactList({ event, renderedAt }: { event: Event; renderedAt:
         <Fact icon={<CalendarDays {...iconProps} />} label="날짜">
           <span className="tabular-nums">{formatShortDateRange(event.eventStartAt, event.eventEndAt)}</span>
         </Fact>
-        {hasOperatingHours && (
+        {Boolean(event.operatingHours?.trim()) && (
           <Fact icon={<Clock {...iconProps} />} label="운영 시간">
             <span className="whitespace-pre-line">{formatOperatingSchedule(event.operatingHours)}</span>
           </Fact>

@@ -132,7 +132,7 @@ export async function EventBrowsePage({
 
       <div className="mx-auto max-w-6xl px-4 pb-8 pt-4 sm:px-6 lg:pt-6">
         {/* 주제 페이지 제목은 화면 읽기 프로그램·검색엔진용으로만 남긴다. 소개 문장은 쓰지 않는다(2026-11-06). */}
-        {topic && <h1 id="topic-page-title" className="sr-only">{topic.heading}</h1>}
+        {topic !== undefined && <h1 id="topic-page-title" className="sr-only">{topic.heading}</h1>}
         {!topic && <h1 id="home-hero-title" className="sr-only">요즘 속초에서 뭐하지?</h1>}
         {!topic && <p className="sr-only">공연·체험·교육·전시를 포함한 속초의 최신 행사 정보를 확인하세요.</p>}
 

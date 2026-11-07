@@ -99,7 +99,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 ## 코드 규칙
 
 저장소 전체에 적용합니다. 규칙이 생기기 전에 쓴 코드는 리뷰에서 지적하지 않고, 새로 쓰거나 고친 줄에 적용합니다.
-`function` 선언, named export, `interface`, `enum`·`@ts-*`·`eslint-disable` 금지, `@/` import, 의존 방향(`app → features → components, lib`,
+`function` 선언, named export, `interface`, `enum`·`@ts-*`·`eslint-disable` 금지, `@/` import, JSX `&&` 왼쪽, 의존 방향(`app → features → components, lib`,
 다른 feature는 `model`만)은 `pnpm lint`가 강제합니다(`eslint.config.mjs`).
 결정 날짜·측정 숫자·공식 근거는 [docs/decisions/conventions.md](docs/decisions/conventions.md)에 있습니다.
 
@@ -120,7 +120,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - 컴포넌트는 기본이 Server Component입니다. `"use client"`는 상태·이벤트·브라우저 API가 필요한 가장 작은 컴포넌트에만 붙입니다.
 - Client Component에는 화면에 필요한 필드만 props로 넘깁니다.
 - props 타입은 함수 시그니처에 바로 씁니다(`({ event }: { event: Event })`). `app/` 페이지는 `PageProps<"/route">`를 씁니다.
-- 한쪽만 그리는 조건은 `cond && <X />`로 쓰고, `&&` 왼쪽에는 boolean만 둡니다(숫자 0이 화면에 찍힘).
+- 한쪽만 그리는 조건은 `cond && <X />`로 쓰고, `&&` 왼쪽에는 boolean만 둡니다(숫자 0이 화면에 찍힘). lint는 타입을 몰라 boolean 변수도 `Boolean(x)`나 비교식(`x !== null`)으로 씁니다.
 - 여러 곳에서 쓰는 className 조합은 `xxxClassName` 상수나 `getXxxClassName()` 함수로 뺍니다.
 
 **이름**

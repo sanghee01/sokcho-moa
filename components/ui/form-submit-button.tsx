@@ -36,7 +36,7 @@ export function FormSubmitButton({
       aria-busy={pending}
       className={`${className} inline-flex items-center justify-center gap-2 disabled:opacity-60 disabled:aria-busy:cursor-wait`}
     >
-      {pending && <LoadingSpinner className="size-4" />}
+      {Boolean(pending) && <LoadingSpinner className="size-4" />}
       <span>{pending ? pendingLabel : idleLabel}</span>
     </button>
   );

@@ -79,7 +79,7 @@ export function EventReportForm() {
       <HoneypotField />
 
       {/* 칸별 오류가 있으면 칸 아래에만 보여 준다. 칸과 관계없는 오류(요청 제한, 저장 실패)만 여기 둔다. */}
-      {state.error && !hasFieldErrors && (
+      {Boolean(state.error) && !hasFieldErrors && (
         <p role="alert" className={formErrorMessageClassName}>
           {state.error}
         </p>

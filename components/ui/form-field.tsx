@@ -32,11 +32,11 @@ export function FormField({
     <div>
       <label htmlFor={id} className={formFieldLabelClassName}>
         {label}
-        {optional && <span className={formFieldLabelNoteClassName}> (선택)</span>}
+        {Boolean(optional) && <span className={formFieldLabelNoteClassName}> (선택)</span>}
       </label>
       {children}
-      {help && <p id={`${id}-help`} className={formFieldHelpTextClassName}>{help}</p>}
-      {error && (
+      {Boolean(help) && <p id={`${id}-help`} className={formFieldHelpTextClassName}>{help}</p>}
+      {Boolean(error) && (
         <p id={`${id}-error`} role="alert" className={formFieldErrorClassName}>
           <CircleAlert {...iconProps} size={16} className="mt-0.5 shrink-0" />
           {error}

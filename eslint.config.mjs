@@ -73,6 +73,9 @@ export default defineConfig([
       "func-style": ["error", "declaration", { allowTypeAnnotation: true }],
       "no-restricted-syntax": ["error", noEnum],
       "no-restricted-imports": ["error", { patterns: [relativeImport] }],
+      // JSX `cond && <X />`의 왼쪽이 숫자 0이면 화면에 0이 찍힌다. 이 규칙은 타입을 모르므로 boolean 변수도
+      // 비교식(`x !== null`)이나 `Boolean(x)`로 쓴다(AGENTS.md 코드 규칙, 2026-11-07 사용자 결정).
+      "react/jsx-no-leaked-render": ["error", { validStrategies: ["coerce", "ternary"] }],
     },
   },
   ...dependencyDirection,

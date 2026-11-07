@@ -50,9 +50,9 @@ export function TransitionLink({
     // transition(색·투명도 함께)을 쓴다. transition-opacity였을 때 버튼 helper의 transition-colors와 같은 속성을 다퉈 한쪽 효과가 사라졌다(2026-11-07).
     <Link href={href} prefetch={prefetch} onClick={handleClick} aria-busy={isPending} rel={rel} {...analyticsAttributes} className={`relative transition aria-busy:opacity-70 ${className}`}>
       {children}
-      {isPending && (
+      {Boolean(isPending) && (
         <>
-          {showPendingIndicator && (
+          {Boolean(showPendingIndicator) && (
             <span className="pointer-events-none absolute right-1.5 top-1.5 rounded-full bg-current/10 p-1">
               <LoadingSpinner className="size-3" />
             </span>

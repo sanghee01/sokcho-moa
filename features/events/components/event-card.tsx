@@ -65,7 +65,7 @@ export function EventCard({
               </ul>
             ) : <span />}
             {/* 새로 올라온 행사 표시. 상태 배지(최대 2개)와 자리를 다투지 않게 오른쪽 위에 따로 둔다(.ai/DESIGN.md 행사 상태의 색). */}
-            {isNew && (
+            {Boolean(isNew) && (
               <span className="shrink-0 rounded-badge bg-primary px-1.5 py-0.5 text-caption font-bold tracking-wide text-on-primary">
                 NEW<span className="sr-only"> 새로 올라온 행사</span>
               </span>

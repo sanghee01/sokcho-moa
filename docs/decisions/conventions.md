@@ -85,6 +85,15 @@ AI가 읽는 규칙 문서(`AGENTS.md`)에는 규칙과 한 구절짜리 이유�
 | lint 강제 | 추가 패키지 없이 가능한 규칙만 `eslint.config.mjs`에 추가 | 예외 없는 규칙은 문장보다 lint로 강제하라는 Claude Code best practices 권고. 켠 규칙: `consistent-type-definitions`(interface), `func-style`(function 선언, 타입 표기가 붙은 변수는 허용), enum 금지, `app/` 밖 default export 금지, 상대경로 import 금지(css 제외), `@ts-*` 주석 금지, `noInlineConfig`(eslint-disable 무시). 따옴표 규칙은 ESLint 9에서 deprecated라 켜지 않음. 켤 때 객체 `type` 33곳과 화살표 함수 선언 43곳을 고침. 의존 방향(`components`·`lib` → `app`·`features` 금지, `features` → `app` 금지, 다른 feature는 `model`만)도 `no-restricted-imports`로 추가(2026-11-06, 켤 때 위반 0곳) |
 | 공식 skill | 성능은 Vercel `vercel-react-best-practices`를 링크로 참고 | Vercel 평가(2026-01): 항상 읽히는 문서가 skill보다 잘 지켜짐 → 꼭 지킬 규칙은 `AGENTS.md`에 |
 
+## 코드 품질 점검 후속 (2026-11-07)
+
+코드베이스 전체 점검(개인 메모 09) 뒤 사용자가 고칠 항목과 아래 규칙을 정했습니다.
+
+| 규칙 | 선택 | 측정과 근거 |
+| --- | --- | --- |
+| JSX `&&` 왼쪽 | `react/jsx-no-leaked-render`로 강제(`validStrategies: coerce, ternary`) | 문장 규칙과 코드가 달랐음(왼쪽이 문자열·객체인 곳). 왼쪽에 숫자가 온 곳은 없어 실제 버그는 없었음. eslint-config-next에 이미 들어 있는 eslint-plugin-react 규칙이라 새 패키지 없음. 이 규칙은 타입을 몰라 boolean 변수도 `Boolean()`이나 비교식으로 써야 함. 켤 때 21곳 수정. 고르지 않은 대안: 문장을 "숫자만 금지"로 좁히기(lint로 강제 못 함), 타입 기반 `strict-boolean-expressions`(typed lint 설정이 필요하고 JSX 밖 조건문까지 바뀜) |
+| 버튼 `danger` | 확인 창 안의 확정 버튼에만, 확인 창을 여는 "삭제"는 `secondary` | 확인 창이 따로 버튼 class를 가지고 있었음. 관리자 화면도 공통 helper·입력 스타일을 쓰게 바꿈(입력 글자 14px → 16px, 버튼 36~40px → 44px). 원본은 [.ai/DESIGN.md](../../.ai/DESIGN.md) Components |
+
 ### 아직 규칙에 맞추지 않은 코드
 
 규칙 이전 코드는 리뷰에서 지적하지 않습니다. 리팩토링에서 맞출 곳입니다.

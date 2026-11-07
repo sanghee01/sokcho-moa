@@ -91,7 +91,7 @@ export function ShareEventButton({ slug }: { slug: string }) {
         <Share2 {...iconProps} size={18} />
         공유하기
       </button>
-      {feedback && (
+      {feedback !== null && (
         <div
           role="status"
           aria-live="polite"
