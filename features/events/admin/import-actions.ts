@@ -12,6 +12,7 @@ import {
   findExclusionFailure,
   isEventCollectionExcludedError,
 } from "@/features/events/admin/collection-exclusion";
+import { createEventSlug } from "@/features/events/admin/event-payload";
 import { importOfficialEventImage } from "@/features/events/admin/image-import";
 import { removeEventImage } from "@/features/events/admin/image-storage";
 import { buildCandidateEventPayload } from "@/features/events/admin/import-payload";
@@ -31,7 +32,8 @@ export async function importEventCandidateAction(
 
   const client = await createSessionSupabaseClient();
 
-  const eventPayload = buildCandidateEventPayload(parsed.data, `candidate-${Date.now()}`);
+  // 관리자가 직접 작성한 행사와 같은 slug 규칙을 쓴다. 예전 candidate-<시각>은 공개 주소 규칙을 둘로 나눴다(2026-11-07).
+  const eventPayload = buildCandidateEventPayload(parsed.data, createEventSlug());
   const exclusionFailure = await findExclusionFailure(client, {
     slug: eventPayload.slug,
     sourceUrl: eventPayload.source_url,

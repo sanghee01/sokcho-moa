@@ -67,7 +67,7 @@ export async function deletePlaceAction(
     id: formString(formData, "id"),
     confirmation: formString(formData, "confirmation"),
   });
-  if (!parsed.success) return adminActionFailed("삭제 확인에 체크한 뒤 다시 시도해 주세요.");
+  if (!parsed.success) return adminActionFailed("삭제 요청을 확인한 뒤 다시 시도해 주세요.");
 
   const client = await createSessionSupabaseClient();
   const { data: deleted, error } = await client.from("places").delete().eq("id", parsed.data.id).select("id");

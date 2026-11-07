@@ -29,9 +29,11 @@ const statusClassNames: Record<SubmissionReviewStatus, string> = {
   rejected: "bg-surface-muted text-content",
 };
 
-const kindMeta: Record<SubmissionKind, { noun: string; linkLabel: string }> = {
-  event_report: { noun: "제보", linkLabel: "제보 링크" },
-  site_feedback: { noun: "의견", linkLabel: "관련 링크" },
+// 목적어 조사는 받침에 따라 달라서("제보를", "의견을") 계산하지 않고 완성된 말로 둔다.
+// 예전에는 noun 뒤에 "을"을 붙여 "제보을"로 보였다(2026-11-07).
+const kindMeta: Record<SubmissionKind, { noun: string; objectNoun: string; linkLabel: string }> = {
+  event_report: { noun: "제보", objectNoun: "제보를", linkLabel: "제보 링크" },
+  site_feedback: { noun: "의견", objectNoun: "의견을", linkLabel: "관련 링크" },
 };
 
 /**
@@ -87,7 +89,7 @@ export function SubmissionReviewCard({
         }
         setIsDeleted(true);
       } catch {
-        setError(`${labels.noun}을 삭제하지 못했습니다. 잠시 후 다시 시도해 주세요.`);
+        setError(`${labels.objectNoun} 삭제하지 못했습니다. 잠시 후 다시 시도해 주세요.`);
       }
     });
   }
@@ -126,7 +128,7 @@ export function SubmissionReviewCard({
           triggerDisabled={isPending}
           triggerClassName="rounded-control bg-danger-subtle px-3.5 py-2 text-label font-bold text-danger ring-1 ring-danger-subtle disabled:cursor-not-allowed disabled:opacity-40"
           title={`${submission.title} 삭제`}
-          description={`이 ${labels.noun}을 삭제하면 복구할 수 없습니다.`}
+          description={`이 ${labels.objectNoun} 삭제하면 복구할 수 없습니다.`}
         >
           <ConfirmDialogActions>
             <ConfirmDialogButton tone="danger" onConfirm={deleteSubmission}>{labels.noun} 삭제</ConfirmDialogButton>

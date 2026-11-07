@@ -5,8 +5,9 @@ import { buildEventBrowseHref, type EventSearchParams } from "@/features/events/
 
 type EventSort = NonNullable<EventFilters["sort"]>;
 
-// 정렬 칩은 두 개만 둔다(2026-11-06). 새로 올라온 행사는 목록의 "N" 표시로, 마감 순서는 "신청 마감 임박" 바로가기로 본다.
-// URL의 sort=published·deadline은 예전 북마크와 바로가기를 위해 계속 동작한다(features/events/model/event.ts).
+// 정렬 칩은 두 개만 둔다(2026-11-06). 새로 올라온 행사는 카드의 NEW 표시로 알린다.
+// 마감순 정렬과 "신청 마감 임박" 바로가기는 글이 많아 보여 뺐다(.ai/DESIGN.md 홈·주제 목록).
+// URL의 sort=published·deadline은 예전 북마크를 위해 계속 동작한다(features/events/model/event-list.ts).
 const sortOptions: { value: EventSort; label: string; title?: string }[] = [
   { value: "latest", label: "행사일순", title: "가까운 예정 행사부터 날짜별로, 이후 진행 중 행사" },
   { value: "views", label: "조회순" },
