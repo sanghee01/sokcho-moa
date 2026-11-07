@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { SAMPLE_EVENT_PATH } from "@/tests/e2e/fixtures";
 
 test("일반 방문자 헤더는 대표 행사 주제를 주요 메뉴로 표시한다", async ({ page }) => {
   await page.goto("/");
@@ -30,7 +31,7 @@ test("목록에서 아래로 내려도 분야 탭이 화면 위에 남는다", a
 });
 
 test("행사 상세에는 분야 탭을 두지 않는다", async ({ page }) => {
-  await page.goto("/events/demo-sea-family-festival");
+  await page.goto(SAMPLE_EVENT_PATH);
 
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   await expect(page.getByRole("navigation", { name: "주요 메뉴" })).toHaveCount(0);

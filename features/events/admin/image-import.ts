@@ -5,14 +5,13 @@ import https from "node:https";
 import { BlockList, isIP, type LookupFunction } from "node:net";
 import { Readable } from "node:stream";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { EVENT_IMAGE_MAX_BYTES } from "@/features/events/admin/image-rules";
+import { EVENT_IMAGE_MAX_BYTES, isAllowedEventImageType } from "@/features/events/admin/image-rules";
 import { EventImageOptimizationError, optimizeEventImage } from "@/features/events/admin/image-optimize";
 import { uploadEventImageBuffer } from "@/features/events/admin/image-storage";
 
 const MAX_REMOTE_IMAGE_BYTES = 12 * 1024 * 1024;
 const FETCH_TIMEOUT_MS = 15_000;
 const MAX_REDIRECTS = 3;
-const imageContentTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
 const NOT_PUBLIC_MESSAGE = "공개된 포스터 이미지 URL만 가져올 수 있습니다.";
 
 /** 공개 인터넷이 아닌 대역(IANA special-purpose). 서버가 내부망·클라우드 메타데이터에 요청하지 않게 막는다. */
@@ -157,7 +156,7 @@ async function downloadOfficialImage(imageUrl: string) {
     if (!response.ok) throw new Error(`포스터 이미지를 가져오지 못했습니다. (HTTP ${response.status})`);
 
     const contentType = response.headers.get("content-type")?.split(";", 1)[0]?.toLowerCase();
-    if (!contentType || !imageContentTypes.has(contentType)) {
+    if (!contentType || !isAllowedEventImageType(contentType)) {
       throw new Error("JPG, PNG 또는 WebP 포스터 이미지만 가져올 수 있습니다.");
     }
     return readLimitedBody(response);

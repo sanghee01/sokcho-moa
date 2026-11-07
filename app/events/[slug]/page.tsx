@@ -19,12 +19,11 @@ import { getAllPublicEvents, getPublicEventBySlug } from "@/features/events/quer
 import { getPublicPlaces } from "@/features/places/queries";
 import {
   applicationStateLabels,
-  audienceLabels,
-  categoryLabels,
   formatApplicationPeriod,
   formatOperatingSchedule,
   formatShortDateRange,
 } from "@/features/events/model/format";
+import { audienceLabels, categoryLabels } from "@/features/events/model/taxonomy";
 import { getEventIntroduction } from "@/features/events/model/event";
 import { getRelatedEvents } from "@/features/events/model/event-list";
 import { eventTopicPath } from "@/features/events/model/topics";

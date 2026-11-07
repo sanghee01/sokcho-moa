@@ -36,17 +36,14 @@ export function findNearbyPlaces(event: Event, places: Place[], limit = 4): Near
   return takeCategoryDiversePlaces(sorted, limit);
 }
 
+/** 주변 명소 구역의 제목. 좌표가 없으면 지역 이름으로 바꾼다. 화면이 쓰지 않던 eyebrow·isRegionalFallback은 지웠다(2026-11-07). */
 export function getNearbyPlacesLabel(event: Event) {
   if (event.latitude != null && event.longitude != null) {
-    return { eyebrow: "행사 전후로 함께", title: "주변 명소 둘러보기", isRegionalFallback: false };
+    return { title: "주변 명소 둘러보기" };
   }
 
   const region = getEventRegion(event);
-  return {
-    eyebrow: "행사와 함께 둘러보기",
-    title: region ? `${region.label} 지역 명소 둘러보기` : "속초·고성·양양 명소 둘러보기",
-    isRegionalFallback: true,
-  };
+  return { title: region ? `${region.label} 지역 명소 둘러보기` : "속초·고성·양양 명소 둘러보기" };
 }
 
 function getEventRegion(event: Pick<Event, "address" | "locationName">) {

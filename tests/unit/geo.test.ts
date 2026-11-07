@@ -35,11 +35,7 @@ describe("findNearbyPlaces", () => {
     expect(result.every((place) => place.address?.includes("속초시"))).toBe(true);
     expect(result.every((place) => place.distanceKm === null)).toBe(true);
     expect(new Set(result.map((place) => place.category)).size).toBe(4);
-    expect(getNearbyPlacesLabel(event)).toEqual({
-      eyebrow: "행사와 함께 둘러보기",
-      title: "속초 지역 명소 둘러보기",
-      isRegionalFallback: true,
-    });
+    expect(getNearbyPlacesLabel(event)).toEqual({ title: "속초 지역 명소 둘러보기" });
   });
 
   it("주소가 없어도 장소명에서 지역을 판별한다", () => {

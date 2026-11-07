@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { buttonActionFailed } from "@/lib/action-state";
 import { requireAdmin } from "@/lib/auth/admin";
 import { createSessionSupabaseClient } from "@/lib/supabase/server";
-import { siteFeedbackDeleteSchema, siteFeedbackReviewSchema } from "@/features/feedback/schemas";
+import { FEEDBACK_IMAGE_BUCKET, siteFeedbackDeleteSchema, siteFeedbackReviewSchema } from "@/features/feedback/schemas";
 
 export async function setSiteFeedbackReviewStatusAction(input: unknown) {
   await requireAdmin();
@@ -44,7 +44,7 @@ export async function deleteSiteFeedbackAction(input: unknown) {
   if (!deleted?.length) return buttonActionFailed("이미 삭제되었거나 권한이 없는 항목입니다. 목록을 새로고침해 주세요.");
 
   if (feedback?.image_path) {
-    const { error: imageError } = await client.storage.from("feedback-images").remove([feedback.image_path]);
+    const { error: imageError } = await client.storage.from(FEEDBACK_IMAGE_BUCKET).remove([feedback.image_path]);
     if (imageError) console.error("Deleted feedback image cleanup failed", imageError.message);
   }
   revalidatePath("/admin");

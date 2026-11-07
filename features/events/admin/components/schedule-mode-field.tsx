@@ -10,9 +10,14 @@ import {
 import type { EventRow } from "@/features/events/admin/components/event-form-row";
 import { text } from "@/features/events/admin/components/event-form-row";
 import { isoToSeoulDatetimeLocal } from "@/features/events/admin/datetime";
+import { eventScheduleModes, isEventScheduleMode, type EventScheduleMode } from "@/features/events/model/event";
 
-type ScheduleMode = "continuous" | "occurrences";
 interface OccurrenceDraft { key: string; startsAt: string; endsAt: string }
+
+const scheduleModeLabels: Record<EventScheduleMode, string> = {
+  continuous: "행사기간 동안 계속 운영",
+  occurrences: "지정한 운영 회차에만 운영",
+};
 
 function initialOccurrences(row: EventRow): OccurrenceDraft[] {
   return (row?.event_occurrences ?? [])
@@ -29,12 +34,13 @@ function initialOccurrences(row: EventRow): OccurrenceDraft[] {
  * "지정 회차"면 입력한 회차만 운영일로 저장한다(저장은 행사와 같은 RPC에서 한 번에).
  */
 export function ScheduleModeField({ row }: { row: EventRow }) {
-  const [scheduleMode, setScheduleMode] = useState<ScheduleMode>(
-    text(row, "schedule_mode") === "occurrences" ? "occurrences" : "continuous",
+  const savedScheduleMode = text(row, "schedule_mode");
+  const [scheduleMode, setScheduleMode] = useState<EventScheduleMode>(
+    isEventScheduleMode(savedScheduleMode) ? savedScheduleMode : "continuous",
   );
   const [occurrences, setOccurrences] = useState<OccurrenceDraft[]>(() => initialOccurrences(row));
 
-  function selectScheduleMode(value: ScheduleMode) {
+  function selectScheduleMode(value: EventScheduleMode) {
     setScheduleMode(value);
     if (value === "occurrences" && occurrences.length === 0) {
       setOccurrences([{ key: "new-0", startsAt: "", endsAt: "" }]);
@@ -54,9 +60,15 @@ export function ScheduleModeField({ row }: { row: EventRow }) {
     <>
       <label className={`${labelClassName} sm:col-span-2`}>
         운영 방식
-        <select name="scheduleMode" value={scheduleMode} onChange={(event) => selectScheduleMode(event.target.value as ScheduleMode)} className={inputClassName}>
-          <option value="continuous">행사기간 동안 계속 운영</option>
-          <option value="occurrences">지정한 운영 회차에만 운영</option>
+        <select
+          name="scheduleMode"
+          value={scheduleMode}
+          onChange={(event) => {
+            if (isEventScheduleMode(event.target.value)) selectScheduleMode(event.target.value);
+          }}
+          className={inputClassName}
+        >
+          {eventScheduleModes.map((mode) => <option key={mode} value={mode}>{scheduleModeLabels[mode]}</option>)}
         </select>
         <FieldHelp>매일 이어지는 행사는 행사기간을, 특정 날짜·요일에만 열리면 실제 운영 회차를 선택하세요.</FieldHelp>
       </label>

@@ -1,4 +1,5 @@
 import type { EventTopic } from "@/features/events/model/topics";
+import { SITE_NAME } from "@/lib/seo/site-identity";
 
 export function buildTopicStructuredData(topic: EventTopic, siteUrl: string) {
   const homeUrl = new URL("/", siteUrl).toString();
@@ -29,7 +30,7 @@ export function buildTopicStructuredData(topic: EventTopic, siteUrl: string) {
           {
             "@type": "ListItem",
             position: 1,
-            name: "속초모아",
+            name: SITE_NAME,
             item: homeUrl,
           },
           {

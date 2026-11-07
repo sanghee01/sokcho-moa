@@ -1,5 +1,5 @@
 import { revalidatePath, updateTag } from "next/cache";
-import { eventCategories, type EventCategory } from "@/features/events/model/taxonomy";
+import { isEventCategory } from "@/features/events/model/taxonomy";
 import { eventTopicPath, eventTopics } from "@/features/events/model/topics";
 
 /** 공개 행사 목록 캐시의 tag. 조회(queries.ts)와 무효화(이 파일)가 같은 이름을 쓴다. */
@@ -23,13 +23,11 @@ export function expirePublicEvents(slug?: string | null) {
   revalidatePath("/admin");
 }
 
-/** IndexNow로 검색엔진에 알릴 경로: 홈, 행사 상세, 그 행사가 속한 토픽 페이지. */
+/** IndexNow로 검색엔진에 알릴 경로: 홈, 행사 상세, 그 행사가 속한 토픽 페이지. 분류가 아닌 값은 건너뛴다. */
 export function eventIndexNowPaths(slug: string, categories: readonly unknown[] = []) {
   const paths = ["/", `/events/${slug}`];
   for (const category of categories) {
-    if (typeof category === "string" && eventCategories.includes(category as EventCategory)) {
-      paths.push(eventTopicPath(category as EventCategory));
-    }
+    if (typeof category === "string" && isEventCategory(category)) paths.push(eventTopicPath(category));
   }
   return Array.from(new Set(paths));
 }

@@ -12,6 +12,15 @@ export const eventAudiences = ["child", "youth", "family", "adult", "all"] as co
 export type EventCategory = (typeof eventCategories)[number];
 export type EventAudience = (typeof eventAudiences)[number];
 
+/** 주소·외부 입력 값이 분류인지. 검사와 함께 타입을 좁혀 `as` 캐스팅을 쓰지 않는다(2026-11-07). */
+export function isEventCategory(value: string | undefined): value is EventCategory {
+  return eventCategories.some((category) => category === value);
+}
+
+export function isEventAudience(value: string | undefined): value is EventAudience {
+  return eventAudiences.some((audience) => audience === value);
+}
+
 export const categoryLabels: Record<EventCategory, string> = {
   performance: "공연",
   festival: "축제",

@@ -18,6 +18,8 @@ const event: Event = {
   eventStartAt: "2026-08-01T19:00:00+09:00",
   eventEndAt: "2026-08-01T21:00:00+09:00",
   operatingHours: null,
+  scheduleMode: "continuous",
+  occurrences: [],
   applicationStartAt: "2026-07-01T09:00:00+09:00",
   applicationEndAt: null,
   locationName: "속초문화예술회관",
@@ -42,6 +44,7 @@ const event: Event = {
   sourceUrl: "https://example.org/events/summer-concert",
   reviewStatus: "published",
   isFeatured: true,
+  viewCount: 0,
   lastVerifiedAt: "2026-07-20T00:00:00+09:00",
   publishedAt: "2026-07-20T00:00:00+09:00",
 };

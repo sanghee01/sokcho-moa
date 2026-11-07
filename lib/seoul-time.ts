@@ -3,6 +3,7 @@
 // 한국은 1988년 이후 서머타임이 없어 UTC+9 고정 차이로 계산한다.
 
 export const SEOUL_TIME_ZONE = "Asia/Seoul";
+export const DAY_MS = 24 * 60 * 60 * 1_000;
 const SEOUL_OFFSET_MS = 9 * 60 * 60 * 1_000;
 
 export interface SeoulDateParts {
@@ -47,6 +48,13 @@ export function isSameSeoulDate(a: Date, b: Date) {
   const ap = getSeoulDateParts(a);
   const bp = getSeoulDateParts(b);
   return ap.year === bp.year && ap.month === bp.month && ap.day === bp.day;
+}
+
+/** 두 시각 사이의 서울 달력 날짜 차이. 밤 11시 30분과 다음 날 0시 30분은 1일이다(시간 차이가 아니라 날짜 차이). */
+export function seoulDaysBetween(from: Date, to: Date) {
+  const a = getSeoulDateParts(from);
+  const b = getSeoulDateParts(to);
+  return Math.round((Date.UTC(b.year, b.month - 1, b.day) - Date.UTC(a.year, a.month - 1, a.day)) / DAY_MS);
 }
 
 /** 서울 벽시계 시각(예: 관리자가 입력한 2026-11-06 18:30)을 실제 시각으로 */

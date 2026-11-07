@@ -2,14 +2,12 @@
 
 import { startTransition, useActionState, useState, type FormEvent, type ReactNode } from "react";
 import { FormPendingContext } from "@/components/ui/form-submit-button";
-import type { AdminActionState } from "@/lib/action-state";
+import { initialAdminActionState, type AdminActionState } from "@/lib/action-state";
 
 type AdminFormAction = (
   previousState: AdminActionState,
   formData: FormData,
 ) => Promise<AdminActionState>;
-
-const initialState: AdminActionState = { error: null };
 
 /**
  * 관리자 폼. 성공하면 action이 redirect하고, 실패하면 오류 문장을 보여 준다.
@@ -27,7 +25,7 @@ export function AdminActionForm({
   className?: string;
   children: ReactNode;
 }) {
-  const [state, formAction, isPending] = useActionState(action, initialState);
+  const [state, formAction, isPending] = useActionState(action, initialAdminActionState);
   const [dismissedState, setDismissedState] = useState<AdminActionState | null>(null);
   const error = dismissedState === state ? null : state.error;
 

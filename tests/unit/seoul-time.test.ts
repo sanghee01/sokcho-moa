@@ -4,6 +4,7 @@ import {
   getSeoulDateParts,
   getSeoulMidnight,
   isSameSeoulDate,
+  seoulDaysBetween,
   toSeoulWallClock,
 } from "@/lib/seoul-time";
 
@@ -23,6 +24,15 @@ describe("서울 시간 계산", () => {
   it("같은 서울 날짜인지 자정 앞뒤로 구분한다", () => {
     expect(isSameSeoulDate(new Date("2026-11-06T00:00:00Z"), new Date("2026-11-06T14:59:00Z"))).toBe(true);
     expect(isSameSeoulDate(new Date("2026-11-06T14:59:00Z"), new Date("2026-11-06T15:00:00Z"))).toBe(false);
+  });
+
+  it("두 시각의 서울 달력 날짜 차이를 센다(시간 차이가 아님)", () => {
+    // 서울 밤 11시 30분과 다음 날 0시 30분은 1시간 차이지만 날짜로는 1일이다.
+    expect(seoulDaysBetween(new Date("2026-11-06T14:30:00Z"), new Date("2026-11-06T15:30:00Z"))).toBe(1);
+    // 같은 서울 날짜 안이면 0일이다.
+    expect(seoulDaysBetween(new Date("2026-11-05T15:00:00Z"), new Date("2026-11-06T14:59:00Z"))).toBe(0);
+    // 월말을 넘어도 달력 날짜로 센다(서울 10월 31일 → 11월 3일).
+    expect(seoulDaysBetween(new Date("2026-10-31T03:00:00Z"), new Date("2026-11-03T03:00:00Z"))).toBe(3);
   });
 
   it("서울 벽시계 시각과 실제 시각을 서로 바꾼다", () => {

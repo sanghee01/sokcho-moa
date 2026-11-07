@@ -1,8 +1,5 @@
 import type { ApplicationState } from "@/features/events/model/event-state";
-
 import { SEOUL_TIME_ZONE } from "@/lib/seoul-time";
-
-export { audienceLabels, categoryLabels } from "@/features/events/model/taxonomy";
 
 // 화면 표기는 0을 채운 문자열 조각("07")이 필요해 lib/seoul-time의 숫자 조각 대신 formatter를 따로 둔다.
 const datePartsFormatter = new Intl.DateTimeFormat("en-CA", {
@@ -24,7 +21,7 @@ export const applicationStateLabels: Record<ApplicationState, string> = {
 
 export function formatDate(value: string | null) {
   if (!value) return "확인 필요";
-  const parts = getDateParts(datePartsFormatter, value);
+  const parts = getDateParts(value);
   return parts ? `${parts.year}.${parts.month}.${parts.day}` : "확인 필요";
 }
 
@@ -44,10 +41,10 @@ const koreanWeekdays = ["일", "월", "화", "수", "목", "금", "토"];
  * 여러 날 행사는 "10.3 – 11.21". 올해(KST)가 아닌 날짜가 섞이면 연도를 붙인다.
  */
 export function formatShortDateRange(start: string | null, end: string | null, now = new Date()) {
-  const startParts = start ? getDateParts(datePartsFormatter, start) : null;
+  const startParts = start ? getDateParts(start) : null;
   if (!startParts) return "날짜 확인 필요";
-  const endParts = end ? getDateParts(datePartsFormatter, end) : null;
-  const currentYear = getDateParts(datePartsFormatter, now.toISOString())?.year;
+  const endParts = end ? getDateParts(end) : null;
+  const currentYear = getDateParts(now.toISOString())?.year;
   const isSameDay = !endParts
     || (endParts.year === startParts.year && endParts.month === startParts.month && endParts.day === startParts.day);
   const withYear = startParts.year !== currentYear || Boolean(endParts && endParts.year !== currentYear);
@@ -83,14 +80,15 @@ export function formatOperatingSchedule(value: string | null) {
     .join("\n");
 }
 
-export function formatViewCount(value?: number | null) {
-  return numberFormatter.format(Math.max(0, value ?? 0));
+export function formatViewCount(value: number) {
+  return numberFormatter.format(Math.max(0, value));
 }
 
-function getDateParts(formatter: Intl.DateTimeFormat, value: string) {
+/** 서울 기준 연·월·일을 0을 채운 문자열로("2026", "07", "05"). 날짜가 아니면 null. */
+function getDateParts(value: string) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return null;
-  const parts = formatter.formatToParts(date);
+  const parts = datePartsFormatter.formatToParts(date);
   function read(type: Intl.DateTimeFormatPartTypes) {
     return parts.find((part) => part.type === type)?.value;
   }
@@ -98,5 +96,5 @@ function getDateParts(formatter: Intl.DateTimeFormat, value: string) {
   const month = read("month");
   const day = read("day");
   if (!year || !month || !day) return null;
-  return { year, month, day, hour: read("hour") ?? "00", minute: read("minute") ?? "00" };
+  return { year, month, day };
 }

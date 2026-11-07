@@ -38,6 +38,8 @@ export function actionSucceeded(): FormActionState {
 /** 관리자 폼은 성공하면 redirect하므로 실패 메시지만 돌려준다. */
 export interface AdminActionState { error: string | null }
 
+export const initialAdminActionState: AdminActionState = { error: null };
+
 export function adminActionFailed(message: string): AdminActionState {
   return { error: message };
 }

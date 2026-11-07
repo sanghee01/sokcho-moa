@@ -3,11 +3,10 @@
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 import {
-  analyticsEvents,
+  isAnalyticsEvent,
   parseAnalyticsProperties,
   trackAnalyticsEvent,
   trackPageView,
-  type AnalyticsEvent,
 } from "@/lib/analytics/events";
 import { shouldTrackGoogleAnalyticsPage } from "@/lib/analytics/google-analytics";
 
@@ -36,8 +35,8 @@ export function AnalyticsRuntime() {
       const target = nativeEvent.target instanceof Element ? nativeEvent.target.closest<HTMLElement>("[data-analytics-event]") : null;
       if (!target) return;
       const name = target.dataset.analyticsEvent;
-      if (!analyticsEvents.includes(name as AnalyticsEvent)) return;
-      trackAnalyticsEvent(name as AnalyticsEvent, parseAnalyticsProperties(target.dataset.analyticsProperties));
+      if (!isAnalyticsEvent(name)) return;
+      trackAnalyticsEvent(name, parseAnalyticsProperties(target.dataset.analyticsProperties));
     }
     document.addEventListener("click", handleClick);
     return () => document.removeEventListener("click", handleClick);

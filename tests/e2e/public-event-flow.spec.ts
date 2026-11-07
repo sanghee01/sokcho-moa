@@ -1,4 +1,5 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
+import { SAMPLE_EVENT_PATH, SAMPLE_EVENT_SLUG } from "@/tests/e2e/fixtures";
 
 interface ElementBox {
   x: number;
@@ -71,7 +72,7 @@ test("행사 상세는 지도 SDK나 인라인 미리보기 없이 장소·주�
     }
   });
 
-  await page.goto("/events/demo-sea-family-festival");
+  await page.goto(SAMPLE_EVENT_PATH);
 
   const factsSection = page.getByRole("region", { name: "핵심 정보" });
   await expect(factsSection.getByText("강원특별자치도 속초시 해오름로 190", { exact: true })).toBeVisible();
@@ -130,18 +131,18 @@ test("공유하기는 기기에 맞는 방식으로 행사 주소를 공유하�
     });
   }, isMobile);
 
-  await page.goto("/events/demo-sea-family-festival?from=search#facts-title");
+  await page.goto(`${SAMPLE_EVENT_PATH}?from=search#facts-title`);
   const shareButton = page.getByRole("button", { name: "공유하기" });
   await expect(shareButton).toBeVisible();
   await shareButton.click();
 
-  const expectedUrl = "http://127.0.0.1:3100/events/demo-sea-family-festival";
+  const expectedUrl = `http://127.0.0.1:3100${SAMPLE_EVENT_PATH}`;
   if (isMobile) {
     await expect.poll(() => page.evaluate(() => (window as Window & { __sharedEventUrl?: string }).__sharedEventUrl)).toBe(expectedUrl);
     await expect(shareButton).toBeVisible();
     await expect(page.getByRole("status")).toHaveCount(0);
     await expect.poll(async () => (await capturedAnalyticsEvents(page)).some((event) => (
-      event.name === "share" && event.params.method === "native_share_sheet" && event.params.item_id === "demo-sea-family-festival"
+      event.name === "share" && event.params.method === "native_share_sheet" && event.params.item_id === SAMPLE_EVENT_SLUG
     ))).toBe(true);
     return;
   }
@@ -152,7 +153,7 @@ test("공유하기는 기기에 맞는 방식으로 행사 주소를 공유하�
   await expect(feedback).toHaveText("링크를 복사했어요.");
   await expect(feedback).toBeHidden({ timeout: 5_000 });
   await expect.poll(async () => (await capturedAnalyticsEvents(page)).some((event) => (
-    event.name === "share" && event.params.method === "link_copy" && event.params.item_id === "demo-sea-family-festival"
+    event.name === "share" && event.params.method === "link_copy" && event.params.item_id === SAMPLE_EVENT_SLUG
   ))).toBe(true);
 });
 
@@ -177,15 +178,15 @@ test("GA 이벤트는 탐색부터 상세 도달까지 구조화된 파라미터
   expect(searchEvent?.params).not.toHaveProperty("search_term");
 
   await page.getByRole("link", { name: /바다빛 가족 문화축제/ }).click();
-  await expect(page).toHaveURL(/\/events\/demo-sea-family-festival$/);
+  await expect(page).toHaveURL(new RegExp(`${SAMPLE_EVENT_PATH}$`));
   await expect.poll(async () => (await capturedAnalyticsEvents(page)).some((event) => (
     event.name === "select_content"
-      && event.params.content_id === "demo-sea-family-festival"
+      && event.params.content_id === SAMPLE_EVENT_SLUG
       && event.params.content_source === "event_list"
   ))).toBe(true);
   await expect.poll(async () => (await capturedAnalyticsEvents(page)).some((event) => (
     event.name === "event_detail_viewed"
-      && event.params.event_slug === "demo-sea-family-festival"
+      && event.params.event_slug === SAMPLE_EVENT_SLUG
       && event.params.event_category === "festival"
   ))).toBe(true);
 });
@@ -202,7 +203,7 @@ test("목록과 상세는 데스크톱·모바일에서 가로로 넘치지 않�
     page.getByRole("article").first(),
   ]);
 
-  await page.goto("/events/demo-sea-family-festival");
+  await page.goto(SAMPLE_EVENT_PATH);
   const detailHeading = page.getByRole("heading", { level: 1, name: /바다빛 가족 문화축제/ });
   const locationSection = page.getByRole("region", { name: "핵심 정보" });
   await expectNoHorizontalOverflow(page, [
@@ -238,7 +239,7 @@ test("목록에서 검색하고 상세·원문·외부 지도 링크·주변 명
   await expect(results.getByRole("article")).toHaveCount(1);
 
   await page.getByRole("link", { name: /바다빛 가족 문화축제/ }).click();
-  await expect(page).toHaveURL(/\/events\/demo-sea-family-festival$/);
+  await expect(page).toHaveURL(new RegExp(`${SAMPLE_EVENT_PATH}$`));
   await expect(page.getByRole("heading", { level: 1, name: /바다빛 가족 문화축제/ })).toBeVisible();
   await expect(page.getByRole("link", { name: "목록으로 돌아가기" })).toHaveAttribute("href", "/");
 

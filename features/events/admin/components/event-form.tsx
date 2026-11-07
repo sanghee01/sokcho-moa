@@ -17,8 +17,7 @@ import {
 import { checked, dateValue, listText, text, type EventRow } from "@/features/events/admin/components/event-form-row";
 import { ImageUploadField } from "@/features/events/admin/components/event-image-upload-field";
 import { ScheduleModeField } from "@/features/events/admin/components/schedule-mode-field";
-import { audienceLabels, categoryLabels } from "@/features/events/model/format";
-import { eventAudiences, eventCategories } from "@/features/events/model/taxonomy";
+import { audienceLabels, categoryLabels, eventAudiences, eventCategories } from "@/features/events/model/taxonomy";
 import { getEventIntroduction } from "@/features/events/model/event";
 
 /** 행사 작성·수정 폼. 섹션을 조립하고, 입력값 해석과 저장은 saveEventAction이 맡는다. */
@@ -192,7 +191,7 @@ export function EventForm({ row }: { row: EventRow }) {
         <section className="space-y-4 rounded-card bg-danger-subtle p-5 ring-1 ring-danger-subtle sm:p-6">
           <p className="font-bold text-danger">행사 삭제</p>
           <p className="mt-1 text-label leading-6 text-danger">행사와 연결된 출처 기록이 영구 삭제되고, 같은 행사는 재수집 제외 목록에 저장됩니다.</p>
-          <EventDeleteControl event={{ id, slug, title: text(row, "title") || "행사" }} />
+          <EventDeleteControl event={{ id, title: text(row, "title") || "행사" }} />
         </section>
       )}
     </div>

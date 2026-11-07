@@ -1,16 +1,10 @@
 import "server-only";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { validateEventImage } from "@/features/events/admin/image-rules";
+import { isAllowedEventImageType, validateEventImage } from "@/features/events/admin/image-rules";
 import { EventImageOptimizationError, optimizeEventImage } from "@/features/events/admin/image-optimize";
 
 const EVENT_IMAGE_BUCKET = "event-images";
-
-const eventImageExtensions = {
-  "image/jpeg": "jpg",
-  "image/png": "png",
-  "image/webp": "webp",
-} as const;
 
 export function readEventImageFile(formData: FormData) {
   const file = formData.get("image");
@@ -21,7 +15,8 @@ export function readEventImageFile(formData: FormData) {
 }
 
 export async function uploadEventImage(client: SupabaseClient, file: File) {
-  if (!eventImageExtensions[file.type as keyof typeof eventImageExtensions]) {
+  // 저장은 늘 WebP로 최적화하므로 원본 형식은 허용 여부만 본다.
+  if (!isAllowedEventImageType(file.type)) {
     return { image: null, error: "지원하지 않는 파일 형식입니다." };
   }
 

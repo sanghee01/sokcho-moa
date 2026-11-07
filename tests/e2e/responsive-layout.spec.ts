@@ -1,4 +1,5 @@
 import { devices, expect, test, type Page } from "@playwright/test";
+import { SAMPLE_EVENT_PATH } from "@/tests/e2e/fixtures";
 
 // 화면 폭 기준은 .ai/DESIGN.md의 "반응형 검증"이 원본이다.
 // 412px(Pixel 7)와 데스크톱은 playwright 프로젝트로 public-event-flow.spec.ts가 확인하므로,
@@ -23,7 +24,7 @@ const viewports = [
 ];
 
 // 개편으로 제목 문구가 바뀌어도 깨지지 않게, 화면이 다 그려졌는지는 h1이 보이는지로만 확인한다.
-const publicPages = ["/", "/topics/festival", "/events/demo-sea-family-festival", "/report", "/feedback"];
+const publicPages = ["/", "/topics/festival", SAMPLE_EVENT_PATH, "/report", "/feedback"];
 
 async function horizontalOverflow(page: Page) {
   return page.evaluate(() => ({
@@ -91,7 +92,7 @@ test.describe("360×740 첫 화면", () => {
   test("상세 첫 화면에 제목, 날짜, 장소, 행사 안내 버튼이 보인다", async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== "desktop-chromium", "화면 폭을 직접 지정하므로 프로젝트마다 반복하지 않는다");
 
-    await page.goto("/events/demo-sea-family-festival");
+    await page.goto(SAMPLE_EVENT_PATH);
     const facts = page.getByRole("region", { name: "핵심 정보" });
     function factValue(label: string) {
       return facts.locator("dt", { hasText: label }).locator("xpath=following-sibling::dd[1]");
@@ -116,7 +117,7 @@ test.describe("360×740 첫 화면", () => {
   test("상세를 끝까지 내리면 푸터 마지막 줄이 하단 행동 바에 가려지지 않는다", async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== "desktop-chromium", "화면 폭을 직접 지정하므로 프로젝트마다 반복하지 않는다");
 
-    await page.goto("/events/demo-sea-family-festival");
+    await page.goto(SAMPLE_EVENT_PATH);
     await page.evaluate(() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "instant" }));
 
     const lastFooterLine = page.getByRole("contentinfo").getByText(/All rights reserved/);

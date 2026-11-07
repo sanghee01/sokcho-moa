@@ -5,7 +5,7 @@ import { startTransition, useActionState, useEffect, useId, useRef, useState, ty
 import type { EventImageUploadState } from "@/features/events/admin/image-upload-state";
 import { FieldHelp, labelClassName } from "@/features/events/admin/components/event-form-fields";
 import { uploadEventImageAction } from "@/features/events/admin/image-actions";
-import { EVENT_IMAGE_ACCEPT, validateEventImage } from "@/features/events/admin/image-rules";
+import { EVENT_IMAGE_ACCEPT, EVENT_IMAGE_MAX_MB, validateEventImage } from "@/features/events/admin/image-rules";
 
 const initialImageUploadState: EventImageUploadState = {
   error: null,
@@ -134,7 +134,7 @@ export function ImageUploadField({ initialUrl, onUploaded }: { initialUrl: strin
           </p>
         </div>
       </div>
-      <FieldHelp>JPG·PNG·WebP, 최대 3MB. 파일 선택 후 ‘이미지 업로드’를 누르세요. 업로드한 파일은 WebP로 최적화되며, 위의 대표 이미지 URL보다 우선 사용합니다.</FieldHelp>
+      <FieldHelp>JPG·PNG·WebP, 최대 {EVENT_IMAGE_MAX_MB}MB. 파일 선택 후 ‘이미지 업로드’를 누르세요. 업로드한 파일은 WebP로 최적화되며, 위의 대표 이미지 URL보다 우선 사용합니다.</FieldHelp>
       <FieldHelp tone="warning">공식 원본과 재사용 허가·공공누리 조건을 확인한 파일만 업로드하세요.</FieldHelp>
     </div>
   );

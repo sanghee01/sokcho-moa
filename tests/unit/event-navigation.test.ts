@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buildEventBrowseHref,
+  carriedEventParams,
   clearEventFiltersHref,
   withEventBrowsePath,
 } from "@/features/events/model/browse-url";
@@ -59,5 +60,12 @@ describe("event browse navigation", () => {
     expect(buildEventBrowseHref(
       withEventBrowsePath({}, "/topics/education"),
     )).toBe("/topics/education");
+  });
+
+  it("__로 시작하는 내부용 이름은 링크와 검색 폼으로 이어 가지 않는다", () => {
+    const params = withEventBrowsePath({ __preview: "1", category: "festival" }, "/topics/festival");
+
+    expect(buildEventBrowseHref(params)).toBe("/topics/festival?category=festival");
+    expect(carriedEventParams(params)).toEqual([["category", "festival"]]);
   });
 });

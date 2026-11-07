@@ -7,8 +7,9 @@ import {
   isEventClosedForDiscovery,
   type EventState,
 } from "@/features/events/model/event-state";
-import { eventAudiences, eventCategories, type EventAudience, type EventCategory } from "@/features/events/model/taxonomy";
-import { getSeoulDateParts, getSeoulMidnight } from "@/lib/seoul-time";
+import { isEventAudience, isEventCategory, type EventAudience, type EventCategory } from "@/features/events/model/taxonomy";
+import { firstSearchParam } from "@/lib/search-params";
+import { DAY_MS, getSeoulDateParts, getSeoulMidnight } from "@/lib/seoul-time";
 
 export interface EventFilters {
   when?: "today" | "week" | "month";
@@ -21,24 +22,30 @@ export interface EventFilters {
 }
 
 export function parseEventFilters(params: Record<string, string | string[] | undefined>): EventFilters {
-  function one(value: string | string[] | undefined) {
-    return Array.isArray(value) ? value[0] : value;
-  }
-  const when = one(params.when);
-  const audience = one(params.audience);
-  const category = one(params.category);
-  const query = one(params.q)?.trim();
-  const sort = one(params.sort);
-  const status = one(params.status);
+  const when = firstSearchParam(params.when);
+  const audience = firstSearchParam(params.audience);
+  const category = firstSearchParam(params.category);
+  const query = firstSearchParam(params.q)?.trim();
+  const sort = firstSearchParam(params.sort);
+  const status = firstSearchParam(params.status);
   return {
     when: when === "today" || when === "week" || when === "month" ? when : undefined,
-    applicationOpen: one(params.application) === "open" || undefined,
+    applicationOpen: firstSearchParam(params.application) === "open" || undefined,
     status: status === "closed" ? "closed" : "active",
-    audience: eventAudiences.includes(audience as EventAudience) ? (audience as EventAudience) : undefined,
-    category: eventCategories.includes(category as EventCategory) ? (category as EventCategory) : undefined,
+    audience: isEventAudience(audience) ? audience : undefined,
+    category: isEventCategory(category) ? category : undefined,
     query: query || undefined,
     sort: sort === "latest" || sort === "deadline" || sort === "views" || sort === "published" ? sort : undefined,
   };
+}
+
+/**
+ * 화면에서 고를 수 없게 된 예전 조건(오늘·이번 주·이번 달, 신청 가능, 참여 대상)이 있는지.
+ * 예전 북마크로 들어온 경우에만 값이 있고, 빈 목록 안내가 "조건 지우기"를 보여 줄지 정한다(.ai/DESIGN.md EmptyState).
+ * 주소 이름 목록은 browse-url.ts의 EVENT_FILTER_PARAMS에 있다.
+ */
+export function hasLegacyEventFilters(filters: EventFilters) {
+  return Boolean(filters.when || filters.applicationOpen || filters.audience);
 }
 
 export function filterEvents(events: Event[], filters: EventFilters, now = new Date()): Event[] {
@@ -92,7 +99,7 @@ export function getRelatedEvents(current: Event, events: Event[], limit = 4, now
     .map(({ event }) => event);
 }
 
-const WEEK_MS = 7 * 24 * 60 * 60 * 1_000;
+const WEEK_MS = 7 * DAY_MS;
 
 /**
  * 7일 평균 조회수 = 누적 조회수 ÷ 올라온 뒤 지난 주 수. 올라온 지 7일이 안 됐으면 7일로 친다(하루 이틀 조회로 튀지 않게).
@@ -101,7 +108,7 @@ const WEEK_MS = 7 * 24 * 60 * 60 * 1_000;
 function weeklyAverageViews(event: Event, now: Date) {
   const publishedAt = event.publishedAt ? new Date(event.publishedAt).getTime() : now.getTime();
   const weeks = Math.max(1, (now.getTime() - publishedAt) / WEEK_MS);
-  return (event.viewCount ?? 0) / weeks;
+  return event.viewCount / weeks;
 }
 
 /**
@@ -111,7 +118,7 @@ function weeklyAverageViews(event: Event, now: Date) {
  */
 export function selectPopularEvents(events: Event[], now = new Date(), limit = 3): Event[] {
   return events
-    .filter((event) => (event.viewCount ?? 0) > 0 && !isEventClosedForDiscovery(event, now))
+    .filter((event) => event.viewCount > 0 && !isEventClosedForDiscovery(event, now))
     .map((event) => ({ event, score: weeklyAverageViews(event, now) }))
     .sort((a, b) => b.score - a.score || a.event.eventStartAt.localeCompare(b.event.eventStartAt))
     .slice(0, limit)
@@ -121,7 +128,7 @@ export function selectPopularEvents(events: Event[], now = new Date(), limit = 3
 /** 목록의 기본 정렬. 2026-11-06 게시순에서 행사일순(날짜 묶음)으로 바꿨다(.ai/DESIGN.md). */
 export const DEFAULT_EVENT_SORT = "latest" satisfies NonNullable<EventFilters["sort"]>;
 
-const RECENTLY_PUBLISHED_MS = 7 * 24 * 60 * 60 * 1_000;
+const RECENTLY_PUBLISHED_MS = 7 * DAY_MS;
 
 /**
  * 속초모아에 공개된 지 7일이 지나지 않은 행사인지. 행사 날짜가 아니라 published_at(사이트에 올라온 시각)을 본다.
@@ -133,13 +140,11 @@ export function isRecentlyPublished(event: Pick<Event, "publishedAt">, now = new
   return elapsed >= 0 && elapsed < RECENTLY_PUBLISHED_MS;
 }
 
-/**
- * 목록 정렬은 필터 적용 뒤에 수행한다. 조회수가 없는 기존 행사는 0으로 취급한다.
- */
+/** 목록 정렬은 필터 적용 뒤에 수행한다. */
 export function sortEvents(events: Event[], sort: EventFilters["sort"] = "published", now = new Date()): Event[] {
   return [...events].sort((a, b) => {
     if (sort === "views") {
-      const viewDifference = (b.viewCount ?? 0) - (a.viewCount ?? 0);
+      const viewDifference = b.viewCount - a.viewCount;
       if (viewDifference !== 0) return viewDifference;
     }
 
@@ -206,7 +211,7 @@ function dateTimestamp(value: string | null) {
 
 function eventScheduleRanges(event: Event) {
   const values = event.scheduleMode === "occurrences"
-    ? (event.occurrences ?? []).map((occurrence) => ({ startsAt: occurrence.startsAt, endsAt: occurrence.endsAt }))
+    ? event.occurrences.map((occurrence) => ({ startsAt: occurrence.startsAt, endsAt: occurrence.endsAt }))
     : [{ startsAt: event.eventStartAt, endsAt: event.eventEndAt }];
 
   return values.flatMap(({ startsAt, endsAt }) => {
@@ -225,5 +230,5 @@ function getSeoulFilterRange(when: NonNullable<EventFilters["when"]>, now: Date)
   }
   const start = getSeoulMidnight(year, month, day);
   const days = when === "today" ? 1 : 7;
-  return { start, end: new Date(start.getTime() + days * 24 * 60 * 60 * 1_000) };
+  return { start, end: new Date(start.getTime() + days * DAY_MS) };
 }

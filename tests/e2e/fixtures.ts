@@ -6,6 +6,10 @@ export const LOCAL_ADMIN = {
   password: "local-admin-password",
 };
 
+/** supabase/seed.sql의 공개 샘플 행사. 상세 화면 E2E가 이 행사를 연다(seed를 바꾸면 여기 한 곳만 고친다). */
+export const SAMPLE_EVENT_SLUG = "demo-sea-family-festival";
+export const SAMPLE_EVENT_PATH = `/events/${SAMPLE_EVENT_SLUG}`;
+
 /** supabase/seed.sql의 관리자 E2E 전용 행사(검수 대기). 공개 화면에는 보이지 않는다. */
 export const E2E_ADMIN_EVENT = {
   id: "10000000-0000-4000-8000-000000000091",

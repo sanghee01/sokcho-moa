@@ -11,6 +11,11 @@ export const analyticsEvents = [
 ] as const;
 
 export type AnalyticsEvent = (typeof analyticsEvents)[number];
+
+/** 화면의 data-analytics-event 값이 정해 둔 이벤트 이름인지. 검사와 함께 타입을 좁혀 `as` 캐스팅을 쓰지 않는다. */
+export function isAnalyticsEvent(value: string | undefined): value is AnalyticsEvent {
+  return analyticsEvents.some((event) => event === value);
+}
 export type AnalyticsProperties = Record<string, string | number | boolean | null | undefined>;
 export interface PageViewProperties {
   page_title: string;

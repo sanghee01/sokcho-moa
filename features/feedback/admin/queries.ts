@@ -1,5 +1,6 @@
 import "server-only";
 import { createSessionSupabaseClient } from "@/lib/supabase/server";
+import { FEEDBACK_IMAGE_BUCKET } from "@/features/feedback/schemas";
 
 const IMAGE_URL_TTL_SECONDS = 60 * 60;
 
@@ -18,7 +19,7 @@ export async function getAdminSiteFeedback() {
 
   // 사진마다 따로 부르지 않고 한 번에 서명 URL을 만든다(의견 수만큼 Storage를 호출하던 N+1 제거).
   const { data: signed, error: imageError } = await client.storage
-    .from("feedback-images")
+    .from(FEEDBACK_IMAGE_BUCKET)
     .createSignedUrls(imagePaths, IMAGE_URL_TTL_SECONDS);
   if (imageError) console.error("Site feedback image URL creation failed", imageError.message);
   const urlByPath = new Map((signed ?? []).flatMap((item) => (item.path && item.signedUrl ? [[item.path, item.signedUrl] as const] : [])));

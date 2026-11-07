@@ -14,6 +14,7 @@ import {
 import { requireAdmin } from "@/lib/auth/admin";
 import { formString } from "@/lib/form-data";
 import { notifyIndexNow } from "@/lib/seo/indexnow";
+import type { Tables } from "@/lib/supabase/database.types";
 import { createSessionSupabaseClient, type SessionSupabaseClient } from "@/lib/supabase/server";
 import {
   EXCLUDED_EVENT_MESSAGE,
@@ -26,6 +27,7 @@ import { cleanupUnusedEventImage, readEventImageFile, removeEventImage, uploadEv
 import { eventFormSchema } from "@/features/events/admin/schemas";
 import { eventIndexNowPaths, expirePublicEvents } from "@/features/events/cache";
 import { eventReviewStatuses } from "@/features/events/model/review-status";
+import type { EventCategory } from "@/features/events/model/taxonomy";
 
 const reviewSchema = z.object({
   id: z.string().uuid(),
@@ -43,17 +45,20 @@ const eventCollectionExclusionSchema = z.object({
 
 const SAVE_FAILED_MESSAGE = "행사를 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.";
 
+/** 공개 상태 판단과 이미지 정리에 필요한 행사 필드. 생성 타입을 그대로 써서 분류·검수 상태가 union으로 남는다. */
+type EventPublication = Pick<Tables<"events">, "category" | "review_status" | "image_url">;
+
 async function readPublication(client: SessionSupabaseClient, id: string) {
   const { data, error } = await client
     .from("events")
     .select("category, review_status, image_url")
     .eq("id", id)
     .maybeSingle();
-  return { publication: data as { category: string; review_status: string; image_url: string | null } | null, error };
+  return { publication: data, error };
 }
 
 /** 공개 중이었거나 공개된 행사만 검색엔진에 알린다. 응답을 늦추지 않도록 응답 뒤(after)에 보낸다. */
-function notifySearchEnginesAfterResponse(slug: string, categories: readonly unknown[]) {
+function notifySearchEnginesAfterResponse(slug: string, categories: readonly (EventCategory | undefined)[]) {
   after(() => notifyIndexNow(eventIndexNowPaths(slug, categories)));
 }
 
@@ -81,7 +86,7 @@ export async function saveEventAction(
   const payload = buildEventPayload(event, verifiedAt);
   const client = await createSessionSupabaseClient();
 
-  let previous: { category: string; review_status: string; image_url: string | null } | null = null;
+  let previous: EventPublication | null = null;
   if (event.id) {
     const { publication, error } = await readPublication(client, event.id);
     if (error) {

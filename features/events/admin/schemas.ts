@@ -1,13 +1,12 @@
 import { z } from "zod";
 import { seoulDateOrDatetimeToIso } from "@/features/events/admin/datetime";
+import { eventScheduleModes } from "@/features/events/model/event";
 import { eventAudiences, eventCategories } from "@/features/events/model/taxonomy";
 import { eventCandidateSchema } from "@/features/events/admin/candidate";
 import { optionalTextField, optionalUrlField } from "@/lib/form-data";
 import { createHttpUrlSchema, isHttpUrl } from "@/lib/url";
 import { slugSchema } from "@/lib/slug";
 
-const optionalText = optionalTextField;
-const optionalUrl = optionalUrlField;
 const eventSourceUrlSchema = createHttpUrlSchema({
   invalidUrl: "올바른 행사 안내 URL을 입력하세요.",
   unsupportedProtocol: "HTTPS 행사 안내 URL을 입력하세요.",
@@ -44,27 +43,27 @@ export const eventFormSchema = z.object({
   id: z.string().uuid().optional(),
   slug: z.string().trim().pipe(slugSchema),
   title: z.string().trim().min(1, "행사명을 입력하세요.").max(200),
-  introduction: optionalText.pipe(z.string().max(5_000, "행사 소개는 5,000자 이하로 입력하세요.").nullable()),
+  introduction: optionalTextField.pipe(z.string().max(5_000, "행사 소개는 5,000자 이하로 입력하세요.").nullable()),
   category: z.enum(eventCategories),
   audiences: z.array(z.enum(eventAudiences)).min(1, "참여 대상을 한 개 이상 선택하세요."),
   eventStartAt: optionalStartDate,
   eventEndAt: optionalEndDate,
-  operatingHours: optionalText,
-  scheduleMode: z.enum(["continuous", "occurrences"]).default("continuous"),
+  operatingHours: optionalTextField,
+  scheduleMode: z.enum(eventScheduleModes).default("continuous"),
   occurrences: z.array(occurrenceSchema).max(100, "운영 회차는 한 번에 100개까지 저장할 수 있습니다.").default([]),
   applicationStartAt: optionalStartDate,
   applicationEndAt: optionalEndDate,
-  locationName: optionalText,
-  address: optionalText,
-  priceText: optionalText,
+  locationName: optionalTextField,
+  address: optionalTextField,
+  priceText: optionalTextField,
   isFree: z.enum(["true", "false", "unknown"]).transform((value) => value === "unknown" ? null : value === "true"),
   performerPeople: z.array(z.string().trim().min(1).max(200)).max(50).default([]),
   performerGroups: z.array(z.string().trim().min(1).max(200)).max(50).default([]),
-  organizer: optionalText,
-  organizerUrl: optionalUrl.optional().transform((value) => value ?? null),
-  contact: optionalText,
-  applicationUrl: optionalUrl,
-  imageUrl: optionalUrl,
+  organizer: optionalTextField,
+  organizerUrl: optionalUrlField.optional().transform((value) => value ?? null),
+  contact: optionalTextField,
+  applicationUrl: optionalUrlField,
+  imageUrl: optionalUrlField,
   sourceName: z.string().trim().min(1, "출처 기관을 입력하세요.").max(200),
   sourceUrl: requiredHttpsUrl,
   isFeatured: z.boolean(),

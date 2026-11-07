@@ -6,7 +6,13 @@ import { EventSearch } from "@/features/events/components/event-search";
 import { EventSort } from "@/features/events/components/event-sort";
 import { getPublicEnv } from "@/lib/env";
 import { getAllPublicEvents } from "@/features/events/queries";
-import { DEFAULT_EVENT_SORT, filterEvents, parseEventFilters, sortEvents } from "@/features/events/model/event-list";
+import {
+  DEFAULT_EVENT_SORT,
+  filterEvents,
+  hasLegacyEventFilters,
+  parseEventFilters,
+  sortEvents,
+} from "@/features/events/model/event-list";
 import type { Event } from "@/features/events/model/event";
 import {
   buildEventBrowseHref,
@@ -153,7 +159,7 @@ export async function EventBrowsePage({
               query={filters.query}
               closedView={closedView}
               topicLabel={topic?.label}
-              hasOtherFilters={Boolean(filters.when || filters.applicationOpen || filters.audience)}
+              hasOtherFilters={hasLegacyEventFilters(filters)}
               params={navigationParams}
             />
           ) : (

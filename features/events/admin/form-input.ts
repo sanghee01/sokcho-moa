@@ -47,7 +47,8 @@ export function readEventFormInput(formData: FormData) {
       eventStartAt: dateTimeValue(formData, "eventStartAt"),
       eventEndAt: dateTimeValue(formData, "eventEndAt"),
       operatingHours: formString(formData, "operatingHours"),
-      scheduleMode: formString(formData, "scheduleMode") || "continuous",
+      // 비어 있으면 schema 기본값(continuous)을 쓴다. 기본값은 eventFormSchema 한 곳에 둔다.
+      scheduleMode: formString(formData, "scheduleMode") || undefined,
       occurrences: occurrenceValues(formData),
       applicationStartAt: dateTimeValue(formData, "applicationStartAt"),
       applicationEndAt: dateTimeValue(formData, "applicationEndAt"),

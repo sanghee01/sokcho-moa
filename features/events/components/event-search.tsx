@@ -8,6 +8,8 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { trackAnalyticsEvent } from "@/lib/analytics/events";
 import {
   buildEventBrowseHref,
+  carriedEventParams,
+  countActiveEventFilters,
   eventBrowsePath,
   type EventSearchParams,
 } from "@/features/events/model/browse-url";
@@ -31,8 +33,7 @@ export function EventSearch({
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const activeFilterCount = ["when", "application", "audience", "category"]
-    .filter((key) => Boolean(params[key])).length;
+  const activeFilterCount = countActiveEventFilters(params);
 
   function submitSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -58,12 +59,10 @@ export function EventSearch({
       onSubmit={submitSearch}
       className="w-full min-w-0"
     >
-      {Object.entries(params).map(([key, raw]) => {
-        const value = Array.isArray(raw) ? raw[0] : raw;
-        return !key.startsWith("__") && key !== "q" && key !== "free" && value
-          ? <input key={key} type="hidden" name={key} value={value} />
-          : null;
-      })}
+      {/* JavaScript 없이 제출해도 지금 조건이 유지되도록 숨김 입력으로 넘긴다. 검색어(q)는 아래 입력창이 보낸다. */}
+      {carriedEventParams(params)
+        .filter(([name]) => name !== "q")
+        .map(([name, value]) => <input key={name} type="hidden" name={name} value={value} />)}
       <div className="relative">
         <label htmlFor="event-search" className="sr-only">행사명, 장소, 기관 검색</label>
         {/* 같은 route에서 검색어만 바뀌면(뒤로 가기, 조건 초기화) 컴포넌트가 유지되어 defaultValue가 다시 적용되지 않는다.

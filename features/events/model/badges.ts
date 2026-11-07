@@ -1,5 +1,5 @@
 import { deriveApplicationState, deriveEventUnavailableReason } from "@/features/events/model/event-state";
-import { getSeoulDateParts } from "@/lib/seoul-time";
+import { seoulDaysBetween } from "@/lib/seoul-time";
 import type { EventStatusFields } from "@/features/events/model/status-fields";
 
 export type EventBadgeTone = "danger" | "success" | "neutral" | "muted";
@@ -26,7 +26,7 @@ export function selectEventBadges(event: EventStatusFields, now = new Date()): E
   const applicationState = deriveApplicationState(event, now);
   if (applicationState === "closing_today") badges.push({ label: "오늘 마감", tone: "danger" });
   if (applicationState === "open") {
-    const daysLeft = event.applicationEndAt ? koreanDaysBetween(now, new Date(event.applicationEndAt)) : null;
+    const daysLeft = event.applicationEndAt ? seoulDaysBetween(now, new Date(event.applicationEndAt)) : null;
     badges.push(daysLeft !== null && daysLeft <= DEADLINE_SOON_DAYS
       ? { label: `신청 D-${daysLeft}`, tone: "danger" }
       : { label: "사전 신청", tone: "success" });
@@ -34,11 +34,4 @@ export function selectEventBadges(event: EventStatusFields, now = new Date()): E
   if (event.isFree) badges.push({ label: "무료", tone: "neutral" });
 
   return badges.slice(0, MAX_BADGES);
-}
-
-/** 두 시각 사이의 KST 달력 날짜 차이. 밤 11시 30분과 다음 날 새벽 0시 30분은 1일이다. */
-function koreanDaysBetween(from: Date, to: Date) {
-  const a = getSeoulDateParts(from);
-  const b = getSeoulDateParts(to);
-  return Math.round((Date.UTC(b.year, b.month - 1, b.day) - Date.UTC(a.year, a.month - 1, a.day)) / 86_400_000);
 }

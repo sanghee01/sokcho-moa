@@ -8,7 +8,6 @@ import { deleteEventAction } from "@/features/events/admin/actions";
 
 interface EventDeletionTarget {
   id: string;
-  slug: string;
   title: string;
 }
 

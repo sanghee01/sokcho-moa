@@ -1,7 +1,10 @@
 import { type Event, getEventIntroduction } from "@/features/events/model/event";
 import { deriveApplicationState, deriveEventState } from "@/features/events/model/event-state";
-import { categoryLabels, formatDateRange } from "@/features/events/model/format";
+import { formatDateRange } from "@/features/events/model/format";
+import { categoryLabels } from "@/features/events/model/taxonomy";
 import { eventTopicPath } from "@/features/events/model/topics";
+import { SITE_NAME } from "@/lib/seo/site-identity";
+import { isHttpUrl } from "@/lib/url";
 
 type EventStructuredData = Record<string, unknown>;
 
@@ -18,7 +21,7 @@ export function buildEventStructuredData(
   const applicationUrl = cleanUrl(event.applicationUrl);
   const imageUrl = cleanUrl(event.imageUrl, true);
   const offer = applicationUrl ? buildEventOffer(event, applicationUrl, now) : undefined;
-  const performers = (event.performers ?? []).map((performer) => ({
+  const performers = event.performers.map((performer) => ({
     "@type": performer.type,
     name: performer.name,
   }));
@@ -80,7 +83,7 @@ export function buildEventBreadcrumbStructuredData(event: Event, siteUrl: string
       {
         "@type": "ListItem",
         position: 1,
-        name: "속초모아",
+        name: SITE_NAME,
         item: homeUrl,
       },
       {
@@ -117,8 +120,7 @@ function buildEventOffer(event: Event, applicationUrl: string, now: Date) {
   const applicationState = deriveApplicationState(event, now);
   if (applicationState === "closed" || applicationState === "not_applicable") return undefined;
 
-  // An open application window does not prove that tickets or seats remain.
-  // Keep availability absent until the event data carries a verified stock status.
+  // 신청 기간이 열려 있어도 표나 자리가 남았다는 뜻은 아니다. 확인된 잔여 정보가 생기기 전까지 availability는 넣지 않는다.
   return compactObject({
     "@type": "Offer",
     url: applicationUrl,
@@ -146,12 +148,7 @@ function cleanUrl(value: string | null | undefined, allowRootRelative = false) {
   const normalized = value?.trim();
   if (!normalized) return undefined;
   if (allowRootRelative && normalized.startsWith("/")) return normalized;
-  try {
-    const url = new URL(normalized);
-    return url.protocol === "http:" || url.protocol === "https:" ? normalized : undefined;
-  } catch {
-    return undefined;
-  }
+  return isHttpUrl(normalized) ? normalized : undefined;
 }
 
 function compactObject<T extends Record<string, unknown>>(value: T) {

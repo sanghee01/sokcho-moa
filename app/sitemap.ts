@@ -1,6 +1,9 @@
 import type { MetadataRoute } from "next";
 import { getPublicEnv } from "@/lib/env";
+import { SITE_LOGO_PATH } from "@/lib/seo/site-identity";
+import { isHttpUrl } from "@/lib/url";
 import { getAllPublicEvents } from "@/features/events/queries";
+import type { Event } from "@/features/events/model/event";
 import { eventTopics } from "@/features/events/model/topics";
 
 export const revalidate = 3600;
@@ -15,7 +18,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       ...(homeLastModified ? { lastModified: homeLastModified } : {}),
       changeFrequency: "daily",
       priority: 1,
-      images: [`${baseUrl}/icon.jpeg`],
+      images: [`${baseUrl}${SITE_LOGO_PATH}`],
     },
     ...eventTopics.map((topic) => {
       const lastModified = latestModifiedAt(events.filter((event) => event.category === topic.category));
@@ -44,7 +47,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
  * 공개 페이지가 마지막으로 바뀐 시각. 확인 시각과 공개 시각 중 더 늦은 값을 쓴다.
  * (먼저 확인하고 나중에 공개한 행사가 공개 전 날짜로 보이지 않게. updated_at은 조회수에도 바뀌어 쓰지 않는다.)
  */
-function eventModifiedAt(event: Awaited<ReturnType<typeof getAllPublicEvents>>[number]) {
+function eventModifiedAt(event: Event) {
   const candidates = [event.lastVerifiedAt, event.publishedAt]
     .map((value) => (value ? new Date(value) : null))
     .filter((date): date is Date => date !== null && !Number.isNaN(date.getTime()));
@@ -53,7 +56,7 @@ function eventModifiedAt(event: Awaited<ReturnType<typeof getAllPublicEvents>>[n
   return Number.isNaN(start.getTime()) ? undefined : start;
 }
 
-function latestModifiedAt(events: Awaited<ReturnType<typeof getAllPublicEvents>>) {
+function latestModifiedAt(events: Event[]) {
   return events.reduce<Date | undefined>((latest, event) => {
     const modifiedAt = eventModifiedAt(event);
     return modifiedAt && (!latest || modifiedAt > latest) ? modifiedAt : latest;
@@ -66,8 +69,7 @@ function sameOriginHttpUrl(value: string | null, baseUrl: string) {
   try {
     const siteUrl = new URL(`${baseUrl}/`);
     const url = new URL(normalized, siteUrl);
-    const isHttp = url.protocol === "http:" || url.protocol === "https:";
-    return isHttp && url.origin === siteUrl.origin ? url.toString() : undefined;
+    return isHttpUrl(url.href) && url.origin === siteUrl.origin ? url.toString() : undefined;
   } catch {
     return undefined;
   }

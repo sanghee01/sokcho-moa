@@ -10,13 +10,14 @@ import {
 import { formString } from "@/lib/form-data";
 import { isBotSubmission, openPublicSubmission } from "@/lib/public-submission";
 import {
+  FEEDBACK_IMAGE_BUCKET,
   getSiteFeedbackImageValidationError,
   hasValidSiteFeedbackImageSignature,
+  SITE_FEEDBACK_IMAGE_EXTENSIONS,
   siteFeedbackSchema,
 } from "@/features/feedback/schemas";
 
 const UNAVAILABLE = "현재 의견 접수를 준비 중입니다. 잠시 후 다시 이용해 주세요.";
-const IMAGE_EXTENSIONS: Record<string, string> = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
 
 function selectedImage(formData: FormData) {
   const entry = formData.get("image");
@@ -50,10 +51,10 @@ export async function submitSiteFeedbackAction(
   }
 
   const feedbackId = crypto.randomUUID();
-  const imagePath = image ? `${feedbackId}/${crypto.randomUUID()}.${IMAGE_EXTENSIONS[image.type]}` : null;
+  const imagePath = image ? `${feedbackId}/${crypto.randomUUID()}.${SITE_FEEDBACK_IMAGE_EXTENSIONS[image.type]}` : null;
   if (image && imagePath) {
     const { error: uploadError } = await client.storage
-      .from("feedback-images")
+      .from(FEEDBACK_IMAGE_BUCKET)
       .upload(imagePath, await image.arrayBuffer(), { contentType: image.type, upsert: false });
     if (uploadError) {
       console.error("Site feedback image upload failed", uploadError.message);
@@ -69,7 +70,7 @@ export async function submitSiteFeedbackAction(
     image_path: imagePath,
   });
   if (error) {
-    if (imagePath) await client.storage.from("feedback-images").remove([imagePath]);
+    if (imagePath) await client.storage.from(FEEDBACK_IMAGE_BUCKET).remove([imagePath]);
     console.error("Site feedback insert failed", error.message);
     return actionFailed("의견을 보내지 못했습니다. 잠시 후 다시 시도해 주세요.");
   }

@@ -1,5 +1,5 @@
 import type { Tables } from "@/lib/supabase/database.types";
-import type { Event, EventOccurrence, EventScheduleMode } from "@/features/events/model/event";
+import { isEventScheduleMode, type Event, type EventOccurrence } from "@/features/events/model/event";
 import type { EventAudience } from "@/features/events/model/taxonomy";
 
 type OccurrenceRow = Pick<Tables<"event_occurrences">, "id" | "starts_at" | "ends_at">;
@@ -26,7 +26,8 @@ export function mapPublicEventRow(row: PublicEventRow): Event | null {
     eventStartAt: row.event_start_at,
     eventEndAt: row.event_end_at,
     operatingHours: row.operating_hours,
-    scheduleMode: scheduleMode(row.schedule_mode),
+    // DB 컬럼은 text라 생성 타입이 string이다. 모르는 값이면 기간 내내 운영으로 본다.
+    scheduleMode: isEventScheduleMode(row.schedule_mode) ? row.schedule_mode : "continuous",
     occurrences: occurrences(row.event_occurrences ?? []),
     applicationStartAt: row.application_start_at,
     applicationEndAt: row.application_end_at,
@@ -60,10 +61,6 @@ export function mapPublicEventRow(row: PublicEventRow): Event | null {
 
 function trimmed(values: string[]) {
   return values.map((item) => item.trim()).filter(Boolean);
-}
-
-function scheduleMode(value: string): EventScheduleMode {
-  return value === "occurrences" ? "occurrences" : "continuous";
 }
 
 function occurrences(rows: OccurrenceRow[]): EventOccurrence[] {

@@ -4,12 +4,10 @@ import { useActionState, useState } from "react";
 import { FormSubmitButton } from "@/components/ui/form-submit-button";
 import { getButtonClassName } from "@/components/ui/button-styles";
 import { signInAction } from "@/features/auth/actions";
-import type { AdminActionState } from "@/lib/action-state";
-
-const initialState: AdminActionState = { error: null };
+import { initialAdminActionState } from "@/lib/action-state";
 
 export function AdminLoginForm() {
-  const [state, formAction] = useActionState(signInAction, initialState);
+  const [state, formAction] = useActionState(signInAction, initialAdminActionState);
   const [email, setEmail] = useState("");
 
   return (
