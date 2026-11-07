@@ -7,6 +7,8 @@ import { signOutAction } from "@/features/auth/actions";
 
 // 관리자 메뉴 버튼도 공통 helper를 쓴다. 행사 등록이 이 화면의 primary이고 나머지는 회색 보조 버튼이다(.ai/DESIGN.md Button, 2026-11-07).
 const menuLinkClassName = getButtonClassName({ variant: "neutral" });
+// 메뉴 링크는 모서리 스피너를 끈다(showPendingIndicator). 44px 버튼에서는 글자 옆에 붙어 "["처럼 보였다. 누른 버튼이 흐려지고
+// 관리자 loading.tsx가 곧 뜨므로 이동 중임은 그대로 알 수 있다(2026-11-07 사용자 결정).
 
 export function AdminShell({ email, children }: { email: string; children: ReactNode }) {
   return (
@@ -19,10 +21,10 @@ export function AdminShell({ email, children }: { email: string; children: React
           <p className="mt-1 text-label font-normal text-content-subtle">{email}</p>
         </div>
         <nav className="flex flex-wrap gap-2" aria-label="관리자 메뉴">
-          <TransitionLink href="/admin" prefetch={false} className={menuLinkClassName}>대시보드</TransitionLink>
-          <TransitionLink href="/admin/events/new" prefetch={false} className={getButtonClassName({ variant: "primary" })}>행사 등록</TransitionLink>
-          <TransitionLink href="/admin/places/new" prefetch={false} className={menuLinkClassName}>명소 등록</TransitionLink>
-          <TransitionLink href="/admin/import" prefetch={false} className={menuLinkClassName}>후보 JSON</TransitionLink>
+          <TransitionLink href="/admin" prefetch={false} showPendingIndicator={false} className={menuLinkClassName}>대시보드</TransitionLink>
+          <TransitionLink href="/admin/events/new" prefetch={false} showPendingIndicator={false} className={getButtonClassName({ variant: "primary" })}>행사 등록</TransitionLink>
+          <TransitionLink href="/admin/places/new" prefetch={false} showPendingIndicator={false} className={menuLinkClassName}>명소 등록</TransitionLink>
+          <TransitionLink href="/admin/import" prefetch={false} showPendingIndicator={false} className={menuLinkClassName}>후보 JSON</TransitionLink>
           <form action={signOutAction}>
             <FormSubmitButton idleLabel="로그아웃" pendingLabel="로그아웃 중…" className={getButtonClassName({ variant: "secondary" })} />
           </form>

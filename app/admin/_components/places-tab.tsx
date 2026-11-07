@@ -10,7 +10,7 @@ export async function AdminPlacesTab() {
       <div className="mb-4 flex items-center justify-between gap-3">
         <h1 id="admin-places-title" className="text-title-2 text-content-strong">주변 명소 {places.length}곳</h1>
         {/* 글자만 있는 링크 버튼은 쓰지 않는다(.ai/DESIGN.md Button). 위 관리자 메뉴와 같은 곳으로 가는 보조 버튼이다. */}
-        <TransitionLink href="/admin/places/new" className={getButtonClassName({ variant: "tonal" })}>명소 등록</TransitionLink>
+        <TransitionLink href="/admin/places/new" showPendingIndicator={false} className={getButtonClassName({ variant: "tonal" })}>명소 등록</TransitionLink>
       </div>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {places.map((row) => (

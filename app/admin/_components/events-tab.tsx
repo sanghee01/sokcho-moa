@@ -57,7 +57,8 @@ export async function AdminEventsTab({ status, requestedPage }: { status?: Event
         <div className="mb-4 flex items-center justify-between gap-3">
           <h1 id="admin-events-title" className="text-title-2 text-content-strong">행사 관리</h1>
           {/* 위 관리자 메뉴의 "행사 등록"이 이 화면의 primary라, 같은 곳으로 가는 이 버튼은 보조 색으로 둔다(.ai/DESIGN.md Button). */}
-          <TransitionLink href="/admin/events/new" className={getButtonClassName({ variant: "tonal" })}>신규 행사</TransitionLink>
+          {/* 버튼 모양 링크라 모서리 스피너를 끈다(admin-shell.tsx와 같은 이유). */}
+          <TransitionLink href="/admin/events/new" showPendingIndicator={false} className={getButtonClassName({ variant: "tonal" })}>신규 행사</TransitionLink>
         </div>
         <div className="overflow-x-auto rounded-card bg-surface ring-1 ring-line">
           <table className="min-w-full text-left text-label">
