@@ -29,8 +29,8 @@ vi.mock("next/cache", () => ({
 }));
 
 import * as eventActions from "@/features/events/admin/actions";
-import * as eventImageActions from "@/features/events/admin/image-actions";
-import * as eventImportActions from "@/features/events/admin/import-actions";
+import * as eventImageActions from "@/features/events/admin/image/actions";
+import * as eventImportActions from "@/features/events/admin/candidate/actions";
 import * as feedbackActions from "@/features/feedback/admin/actions";
 import * as placeActions from "@/features/places/admin/actions";
 import * as reportActions from "@/features/reports/admin/actions";
@@ -95,11 +95,11 @@ const cases: Array<[string, string, () => Promise<unknown>]> = [
     adminState,
     form({ id: ID }),
   )],
-  ["events/admin/import-actions", "importEventCandidateAction", () => eventImportActions.importEventCandidateAction(
+  ["events/admin/candidate/actions", "importEventCandidateAction", () => eventImportActions.importEventCandidateAction(
     adminState,
     form({ candidateJson }),
   )],
-  ["events/admin/image-actions", "uploadEventImageAction", () => eventImageActions.uploadEventImageAction(imageState, form({
+  ["events/admin/image/actions", "uploadEventImageAction", () => eventImageActions.uploadEventImageAction(imageState, form({
     image: new File([new Uint8Array([0xff, 0xd8, 0xff, 0xe0])], "poster.jpg", { type: "image/jpeg" }),
     imageSelectionToken: "selection-1",
   }))],
@@ -126,8 +126,8 @@ const cases: Array<[string, string, () => Promise<unknown>]> = [
 
 const modules = {
   "events/admin/actions": eventActions,
-  "events/admin/import-actions": eventImportActions,
-  "events/admin/image-actions": eventImageActions,
+  "events/admin/candidate/actions": eventImportActions,
+  "events/admin/image/actions": eventImageActions,
   "places/admin/actions": placeActions,
   "reports/admin/actions": reportActions,
   "feedback/admin/actions": feedbackActions,

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { cleanupUnusedEventImage, eventImagePathFromPublicUrl } from "@/features/events/admin/image-storage";
+import { cleanupUnusedEventImage, eventImagePathFromPublicUrl } from "@/features/events/admin/image/storage";
 
 const BASE = "http://127.0.0.1:54321/storage/v1/object/public/event-images";
 

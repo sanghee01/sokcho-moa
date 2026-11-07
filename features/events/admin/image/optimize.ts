@@ -1,4 +1,4 @@
-import { EVENT_IMAGE_MAX_BYTES, EVENT_IMAGE_MAX_MB } from "@/features/events/admin/image-rules";
+import { EVENT_IMAGE_MAX_BYTES, EVENT_IMAGE_MAX_MB } from "@/features/events/admin/image/rules";
 
 const MAX_INPUT_PIXELS = 40_000_000;
 const MAX_WIDTH = 1_600;

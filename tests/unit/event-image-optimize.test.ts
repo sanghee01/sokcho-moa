@@ -1,6 +1,6 @@
 import sharp from "sharp";
 import { describe, expect, it } from "vitest";
-import { EventImageOptimizationError, optimizeEventImage } from "@/features/events/admin/image-optimize";
+import { EventImageOptimizationError, optimizeEventImage } from "@/features/events/admin/image/optimize";
 
 describe("행사 포스터 최적화", () => {
   it("지원 이미지 입력을 WebP로 변환한다", async () => {

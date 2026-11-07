@@ -9,7 +9,7 @@ import { AnalyticsRuntime } from "@/components/analytics/analytics-runtime";
 import { CopyrightYear } from "@/components/layout/copyright-year";
 import { ScrollToTopButton } from "@/components/layout/scroll-to-top-button";
 import { iconProps } from "@/components/ui/icon";
-import { CategoryNavigation } from "@/features/events/components/category-navigation";
+import { CategoryNavigation } from "@/features/events/components/browse/category-navigation";
 import { googleAnalyticsId, shouldCollectGoogleAnalytics } from "@/lib/analytics/google-analytics";
 import { getPublicEnv, getRuntimeEnv } from "@/lib/env";
 import {
@@ -22,7 +22,7 @@ import {
 import { getSeoulDateParts } from "@/lib/seoul-time";
 // 그림은 예전 로고에서 그라데이션·구름·갈매기를 빼고 산·바다를 한 색씩으로, 글자는 G마켓 산스 Bold 남색으로 바꿨다.
 // 글꼴 파일을 사이트에 넣지 않도록 글자까지 한 장의 투명 이미지로 만든다(2026-11-07).
-import headerLogo from "@/public/sokchomoa-wordmark.webp";
+import headerLogo from "@/public/brand/wordmark.webp";
 import "./globals.css";
 
 // 한글 2,350자(KS X 1001)만 담은 Std 판(약 290KB)을 쓴다. 전체 판은 2MB라 모바일 첫 화면에 무겁다.

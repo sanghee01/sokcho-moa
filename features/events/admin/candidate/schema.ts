@@ -1,4 +1,5 @@
 // 수집 후보(JSON 가져오기) 한 건의 형식과 검증. 관리자 가져오기에서만 쓰므로 공개 model이 아니라 admin에 둔다(2026-11-06).
+// 가져오기의 action·저장 payload와 함께 admin/candidate/ 폴더에 모았다(2026-11-07).
 import { z } from "zod";
 import { isLikelyEventDetailUrl } from "@/features/events/model/source-url";
 import { eventAudiences, eventCategories, type EventAudience, type EventCategory } from "@/features/events/model/taxonomy";
@@ -71,5 +72,15 @@ export const eventCandidateSchema: z.ZodType<EventCandidate> = z.object({
   }
   if ((candidate.latitude === null) !== (candidate.longitude === null)) {
     context.addIssue({ code: "custom", path: ["latitude"], message: "latitude와 longitude는 함께 입력하거나 함께 비워야 합니다." });
+  }
+});
+
+/** 관리자 화면에 붙여 넣은 후보 JSON 문자열을 읽어 검증한다. JSON 문법 오류와 형식 오류를 같은 칸 오류로 돌려준다. */
+export const candidateJsonSchema = z.string().min(2).transform((value, context) => {
+  try {
+    return eventCandidateSchema.parse(JSON.parse(value));
+  } catch (error) {
+    context.addIssue({ code: "custom", message: error instanceof Error ? error.message : "JSON을 확인하세요." });
+    return z.NEVER;
   }
 });

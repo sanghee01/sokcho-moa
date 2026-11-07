@@ -1,8 +1,8 @@
 import "server-only";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { isAllowedEventImageType, validateEventImage } from "@/features/events/admin/image-rules";
-import { EventImageOptimizationError, optimizeEventImage } from "@/features/events/admin/image-optimize";
+import { isAllowedEventImageType, validateEventImage } from "@/features/events/admin/image/rules";
+import { EventImageOptimizationError, optimizeEventImage } from "@/features/events/admin/image/optimize";
 
 const EVENT_IMAGE_BUCKET = "event-images";
 

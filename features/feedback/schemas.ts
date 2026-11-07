@@ -7,7 +7,7 @@ export const SITE_FEEDBACK_IMAGE_MAX_BYTES = SITE_FEEDBACK_IMAGE_MAX_MB * 1024 *
 
 /**
  * 의견 사진의 허용 형식과 저장 확장자. 첨부 칸(accept), 형식 검사, 저장 경로가 모두 이 표를 쓴다(예전에는 세 벌, 2026-11-07).
- * 행사 대표 이미지 규칙(features/events/admin/image-rules.ts)과는 합치지 않는다. 행사는 WebP로 최적화해 공개 bucket에,
+ * 행사 대표 이미지 규칙(features/events/admin/image/rules.ts)과는 합치지 않는다. 행사는 WebP로 최적화해 공개 bucket에,
  * 의견은 원본 그대로 비공개 bucket에 두는 다른 흐름이라 앞으로 갈라질 수 있다.
  */
 export const SITE_FEEDBACK_IMAGE_EXTENSIONS: Readonly<Record<string, string>> = {

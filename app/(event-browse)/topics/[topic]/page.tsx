@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { EventBrowsePage } from "@/features/events/components/event-browse-page";
+import { EventBrowsePage } from "@/features/events/components/browse/event-browse-page";
 import {
   eventTopics,
   findEventTopicBySlug,

@@ -191,7 +191,7 @@ class 하나로 함께 적용됩니다.
   상세·제보·관리자에는 탭이 없습니다(2026-11-07 사용자 결정, E2E `header-navigation.spec.ts`).
 - 모든 페이지(관리자 포함)에서 화면 위에 고정합니다(`sticky`, 겹침 순서 30). 목록의 분야 탭도 함께 고정됩니다(2026-11-07 사용자 결정). 높이를 바꾸면 `globals.css`의
   `--site-header-height`(# 이동·초점 이동 때 위 여백)와 상세 `lg` 오른쪽 열의 고정 위치(`lg:top-24` = 헤더 72px + 24px)도 함께 바꿉니다.
-- 로고는 위아래 여백을 잘라 낸 `public/sokchomoa-wordmark.webp`를 높이 36px(`lg` 44px)로 둡니다. 예전 로고 파일은
+- 로고는 위아래 여백을 잘라 낸 `public/brand/wordmark.webp`를 높이 36px(`lg` 44px)로 둡니다. 예전 로고 파일은
   여백이 커서 키워도 글자가 작게 보여 지웠습니다(2026-11-06).
 - 로고 그림은 예전 로고의 등대·산·파도를 살리고 그라데이션·구름·갈매기·글자 아래 곡선을 뺐습니다. 산은 연두 한 색, 바다는 파랑 한 색입니다.
   글자는 G마켓 산스 Bold `sea-900` 한 색이고, 글꼴 파일을 사이트에 넣지 않도록 그림과 함께 투명 배경 이미지 한 장으로 둡니다(2026-11-07 사용자 결정).
@@ -288,7 +288,7 @@ Tailwind 기본 `rounded-sm`·`rounded-md`·`rounded-lg`와 겹치지 않게 역
 
 - `rounded-2xl`(16px) 이상, `rounded-[2rem]`은 쓰지 않습니다. 모든 것을 같은 크게 둥근 모서리로 만들면 계층이 사라집니다.
 - 목록 포스터는 4:5, `rounded-card`, `object-cover` + 위쪽 기준(`object-top`)으로 자릅니다. 세로 포스터는 보통 제목이 위에 있어서입니다.
-- 포스터가 없는 행사는 분야와 상관없이 같은 **속초모아 기본 포스터**(`public/default-event-poster.svg`, `event-image-placeholder.tsx`)를 씁니다.
+- 포스터가 없는 행사는 분야와 상관없이 같은 **속초모아 기본 포스터**(`public/brand/default-event-poster.svg`, `event-image-placeholder.tsx`)를 씁니다.
   분야 아이콘·이름만 두는 방식은 어색해서 바꿨습니다. 원래 포스터가 없는 행사이므로 "준비 중" 같은 문구는 쓰지 않습니다.
 - 로컬 샘플 데이터는 `public/sample-events/`의 샘플 포스터(세로·정사각형·가로)를 씁니다(`supabase/seed.sql`).
 - 아이콘은 **Lucide**(`lucide-react`, ISC 라이선스) 한 종류만 씁니다(2026-11-06 결정). 크기 20px, 선 굵기 1.75는 `components/ui/icon.ts`의 `iconProps`로 맞춥니다.
@@ -316,8 +316,8 @@ Tailwind 기본 `rounded-sm`·`rounded-md`·`rounded-lg`와 겹치지 않게 역
 | **Badge** | 상태 표시. `text-caption`, 굵기 500, `rounded-badge`. 한 항목 최대 2개([행사 상태의 색](#행사-상태의-색)). 관리자 목록의 검수·검토 상태도 같은 `Badge`를 씁니다(2026-11-07) |
 | **StatusToggle**(관리자 상태 버튼) | `components/admin/status-toggle-styles.ts`. 행사 공개·비공개·반려, 제보·의견 검토 완료·철회처럼 상태를 바꾸는 버튼 묶음. 지금 상태의 버튼은 눌린 상태(`aria-pressed`)이고 비활성으로 흐리게 보입니다. 공개·검토 완료 `success`, 반려 `danger-subtle` 바탕, 그 밖 `surface-muted`. 높이 44px, `text-label` 굵기 600(2026-11-07) |
 | **EventCard**(포스터 카드) | `features/events/components/event-card.tsx`. 카드 전체가 링크 하나. 포스터(4:5) 위에 분야(왼쪽 위, 주제 페이지에서는 생략), NEW(오른쪽 위), 날짜와 상태 배지 ≤2(아래)를 흰 바탕 글자 띠로 얹고, 포스터 아래에는 제목(`text-body font-semibold`, 2줄)과 장소(1줄)만 둡니다. 참여 대상(가족·성인·누구나)과 조회수·출처는 카드에 쓰지 않고 상세에 둡니다. 참여 대상은 필터에도 없고 대부분 "누구나"라 판단에 도움이 적습니다. 조회수는 대부분 작은 숫자라 "아무도 안 보는 행사"처럼 보이고, 갈지 말지 정하는 정보가 아니어서입니다(상세에 둠) |
-| **FactList**(핵심 정보) | `features/events/components/event-fact-list.tsx`. 아이콘 + 값 행. 행 사이는 `line` 구분선. 지도·원문 링크는 값 오른쪽 글자 링크 |
-| **BottomActionBar** | `features/events/components/event-action-bar.tsx`. 모바일 상세 전용. 흰 배경 + 위쪽 그림자. 위 여백 12px, 아래 여백 20px + safe-area(12px이면 실제 iPhone의 둥근 화면 모서리에 버튼 끝이 잘렸음, 2026-11-07) |
+| **FactList**(핵심 정보) | `features/events/components/detail/event-fact-list.tsx`. 아이콘 + 값 행. 행 사이는 `line` 구분선. 지도·원문 링크는 값 오른쪽 글자 링크 |
+| **BottomActionBar** | `features/events/components/detail/event-action-bar.tsx`. 모바일 상세 전용. 흰 배경 + 위쪽 그림자. 위 여백 12px, 아래 여백 20px + safe-area(12px이면 실제 iPhone의 둥근 화면 모서리에 버튼 끝이 잘렸음, 2026-11-07) |
 | **FormField** | `components/ui/form-field.tsx`. 라벨(위) + 입력창 + 도움말 + 칸 오류(아래, `role="alert"`, `danger`). 선택 칸만 `(선택)`. 입력창에는 `getFieldControlProps`로 `aria-invalid`·`aria-describedby`를 붙입니다. 관리자 폼과 로그인 폼도 같은 입력 스타일(`form-styles.ts`)을 써서 입력 글자가 16px입니다(예전에는 라벨의 14px·굵게를 물려받았음, 2026-11-07) |
 | **SearchField** | 둥근(`rounded-full`) 입력창, 높이 48px, 글자 16px, 테두리 `line-input`. 왼쪽 돋보기 아이콘이 제출 버튼("검색"). `search` 역할과 이름 "행사 검색"을 유지합니다 |
 | **EmptyState** | 실제 상황을 말하는 한 문장 + 갈 만한 곳 하나(보조 버튼). 사용자가 하지 않은 일을 시키지 않습니다. 검색 결과 없음 → "검색 지우기", 마감 탭이 빔 → "진행 중인 ○○ 보기", 분야에 일정이 없음 → "전체 행사 보기", 예전 주소의 조건 → "조건 지우기". 분야 이름 뒤에는 받침에 따라 바뀌는 조사를 붙이지 않고 "기록이", "일정이" 같은 고정된 말을 씁니다 |
@@ -415,7 +415,7 @@ React Native 앱은 아직 정하지 않았습니다(알림을 통한 재방문�
   폼 스타일(`form-styles.ts`)은 색·모서리·16px 입력만 토큰으로 바꾸고 배치는 5단계에 둡니다. `brand-*` 토큰은 지웠습니다.
 - 배지 선택 규칙: `features/events/model/badges.ts`(`selectEventBadges`, unit test `tests/unit/event-badges.test.ts`).
 - 목록 카드를 목록 행(EventRow)으로 바꿨습니다. 3단계에서 다시 2열 포스터 카드(`EventCard`)로 바꿨습니다.
-- 헤더: 56px 한 줄(로고 + 검색으로 이동). 카테고리 메뉴는 목록 페이지의 가로 스크롤 칩(`features/events/components/category-navigation.tsx`)으로 옮겼고,
+- 헤더: 56px 한 줄(로고 + 검색으로 이동). 카테고리 메뉴는 목록 페이지의 가로 스크롤 칩(`features/events/components/browse/category-navigation.tsx`)으로 옮겼고,
   이름 "주요 메뉴"와 링크 순서는 유지했습니다. 그래서 상세 페이지에는 카테고리 메뉴가 없습니다(경로 링크로 주제 페이지에 갈 수 있음).
 - 상세: 버튼(primary 하나), 배지, 주변 명소 카드, 공유·맨 위로 버튼만 바꿨습니다. 배치는 4단계에서 바꿉니다.
 - 아직 그대로인 것: 홈 히어로(3단계), 상세 배치(4단계), 폼 배치(5단계), 관리자(6단계).

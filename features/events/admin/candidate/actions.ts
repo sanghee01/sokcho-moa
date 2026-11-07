@@ -13,10 +13,10 @@ import {
   isEventCollectionExcludedError,
 } from "@/features/events/admin/collection-exclusion";
 import { createEventSlug } from "@/features/events/admin/event-payload";
-import { importOfficialEventImage } from "@/features/events/admin/image-import";
-import { removeEventImage } from "@/features/events/admin/image-storage";
-import { buildCandidateEventPayload } from "@/features/events/admin/import-payload";
-import { candidateJsonSchema } from "@/features/events/admin/schemas";
+import { importOfficialEventImage } from "@/features/events/admin/image/remote";
+import { removeEventImage } from "@/features/events/admin/image/storage";
+import { buildCandidateEventPayload } from "@/features/events/admin/candidate/payload";
+import { candidateJsonSchema } from "@/features/events/admin/candidate/schema";
 
 /**
  * 수집기가 만든 후보 JSON(EventCandidate)을 검수 대기 행사로 등록한다.

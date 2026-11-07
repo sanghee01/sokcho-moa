@@ -2,8 +2,8 @@ import Link from "next/link";
 import { getButtonClassName } from "@/components/ui/button-styles";
 import { TransitionLink } from "@/components/ui/transition-link";
 import { EventCard, eventCardGridClassName } from "@/features/events/components/event-card";
-import { EventSearch } from "@/features/events/components/event-search";
-import { EventSort } from "@/features/events/components/event-sort";
+import { EventSearch } from "@/features/events/components/browse/event-search";
+import { EventSort } from "@/features/events/components/browse/event-sort";
 import { getPublicEnv } from "@/lib/env";
 import { getAllPublicEvents } from "@/features/events/queries";
 import {

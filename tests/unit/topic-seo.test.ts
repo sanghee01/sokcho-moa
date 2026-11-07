@@ -15,11 +15,11 @@ vi.mock("next/image", () => ({
   default: () => null,
 }));
 
-vi.mock("@/features/events/components/event-search", () => ({
+vi.mock("@/features/events/components/browse/event-search", () => ({
   EventSearch: () => null,
 }));
 
-vi.mock("@/features/events/components/event-sort", () => ({
+vi.mock("@/features/events/components/browse/event-sort", () => ({
   EventSort: () => null,
 }));
 
@@ -34,7 +34,7 @@ import {
   generateMetadata as generateTopicMetadata,
   generateStaticParams,
 } from "@/app/(event-browse)/topics/[topic]/page";
-import { EventBrowsePage } from "@/features/events/components/event-browse-page";
+import { EventBrowsePage } from "@/features/events/components/browse/event-browse-page";
 import { eventCategories } from "@/features/events/model/taxonomy";
 import {
   eventTopics,

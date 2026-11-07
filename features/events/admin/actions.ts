@@ -23,7 +23,7 @@ import {
 } from "@/features/events/admin/collection-exclusion";
 import { buildEventPayload, eventSavedRedirect } from "@/features/events/admin/event-payload";
 import { readEventFormInput } from "@/features/events/admin/form-input";
-import { cleanupUnusedEventImage, readEventImageFile, removeEventImage, uploadEventImage } from "@/features/events/admin/image-storage";
+import { cleanupUnusedEventImage, readEventImageFile, removeEventImage, uploadEventImage } from "@/features/events/admin/image/storage";
 import { eventFormSchema } from "@/features/events/admin/schemas";
 import { eventIndexNowPaths, expirePublicEvents } from "@/features/events/cache";
 import { eventReviewStatuses } from "@/features/events/model/review-status";

@@ -3,7 +3,7 @@ import { AdminShell } from "@/app/admin/_components/admin-shell";
 import { getButtonClassName } from "@/components/ui/button-styles";
 import { formFieldLabelClassName } from "@/components/ui/form-styles";
 import { FormSubmitButton } from "@/components/ui/form-submit-button";
-import { importEventCandidateAction } from "@/features/events/admin/import-actions";
+import { importEventCandidateAction } from "@/features/events/admin/candidate/actions";
 import { requireAdmin } from "@/lib/auth/admin";
 
 const example = JSON.stringify({

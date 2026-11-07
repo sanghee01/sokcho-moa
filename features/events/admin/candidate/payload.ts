@@ -1,4 +1,4 @@
-import type { EventCandidate } from "@/features/events/admin/candidate";
+import type { EventCandidate } from "@/features/events/admin/candidate/schema";
 import { canonicalizeSourceUrl } from "@/features/events/model/source-url";
 
 export function buildCandidateEventPayload(candidate: EventCandidate, slug: string) {

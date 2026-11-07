@@ -1,6 +1,6 @@
 import { Suspense, type ReactNode } from "react";
-import { BannerVisibility } from "@/features/events/components/banner-visibility";
-import { PopularBanner } from "@/features/events/components/popular-banner";
+import { BannerVisibility } from "@/features/events/components/browse/banner-visibility";
+import { PopularBanner } from "@/features/events/components/browse/popular-banner";
 import { selectPopularEvents } from "@/features/events/model/event-list";
 import { getAllPublicEvents } from "@/features/events/queries";
 

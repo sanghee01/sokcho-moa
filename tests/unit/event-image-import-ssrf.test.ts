@@ -21,7 +21,7 @@ vi.mock("node:dns/promises", async (importOriginal) => {
   return { ...original, default: { ...original, lookup }, lookup };
 });
 
-import { importOfficialEventImage, isBlockedAddress } from "@/features/events/admin/image-import";
+import { importOfficialEventImage, isBlockedAddress } from "@/features/events/admin/image/remote";
 
 const client = {} as never;
 

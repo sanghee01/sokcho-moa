@@ -1,5 +1,5 @@
 // 공개 행사 한 건의 타입. 상태 계산은 event-state.ts, 목록 필터·정렬은 event-list.ts,
-// 수집 후보 schema는 features/events/admin/candidate.ts에 있다(2026-11-06 한 파일에서 나눔).
+// 수집 후보 schema는 features/events/admin/candidate/schema.ts에 있다(2026-11-06 한 파일에서 나눔).
 import type { EventReviewStatus } from "@/features/events/model/review-status";
 import type { EventAudience, EventCategory } from "@/features/events/model/taxonomy";
 

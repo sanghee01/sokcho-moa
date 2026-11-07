@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { eventCandidateSchema } from "@/features/events/admin/candidate";
+import { eventCandidateSchema } from "@/features/events/admin/candidate/schema";
 
 const candidate = {
   title: "확인된 행사",

@@ -5,9 +5,9 @@ import {
   readEventImageFile,
   removeEventImage,
   uploadEventImage,
-} from "@/features/events/admin/image-storage";
+} from "@/features/events/admin/image/storage";
 import { formString } from "@/lib/form-data";
-import type { EventImageUploadState } from "@/features/events/admin/image-upload-state";
+import type { EventImageUploadState } from "@/features/events/admin/image/upload-state";
 import { createSessionSupabaseClient } from "@/lib/supabase/server";
 
 function imageUploadFailed(

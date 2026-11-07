@@ -2,7 +2,6 @@ import { z } from "zod";
 import { seoulDateOrDatetimeToIso } from "@/features/events/admin/datetime";
 import { eventScheduleModes } from "@/features/events/model/event";
 import { eventAudiences, eventCategories } from "@/features/events/model/taxonomy";
-import { eventCandidateSchema } from "@/features/events/admin/candidate";
 import { optionalTextField, optionalUrlField } from "@/lib/form-data";
 import { createHttpUrlSchema, isHttpUrl } from "@/lib/url";
 import { slugSchema } from "@/lib/slug";
@@ -100,12 +99,3 @@ export const eventFormSchema = z.object({
 });
 
 export type EventFormValues = z.infer<typeof eventFormSchema>;
-
-export const candidateJsonSchema = z.string().min(2).transform((value, context) => {
-  try {
-    return eventCandidateSchema.parse(JSON.parse(value));
-  } catch (error) {
-    context.addIssue({ code: "custom", message: error instanceof Error ? error.message : "JSON을 확인하세요." });
-    return z.NEVER;
-  }
-});

@@ -5,9 +5,9 @@ import https from "node:https";
 import { BlockList, isIP, type LookupFunction } from "node:net";
 import { Readable } from "node:stream";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { EVENT_IMAGE_MAX_BYTES, isAllowedEventImageType } from "@/features/events/admin/image-rules";
-import { EventImageOptimizationError, optimizeEventImage } from "@/features/events/admin/image-optimize";
-import { uploadEventImageBuffer } from "@/features/events/admin/image-storage";
+import { EVENT_IMAGE_MAX_BYTES, isAllowedEventImageType } from "@/features/events/admin/image/rules";
+import { EventImageOptimizationError, optimizeEventImage } from "@/features/events/admin/image/optimize";
+import { uploadEventImageBuffer } from "@/features/events/admin/image/storage";
 
 const MAX_REMOTE_IMAGE_BYTES = 12 * 1024 * 1024;
 const FETCH_TIMEOUT_MS = 15_000;

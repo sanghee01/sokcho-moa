@@ -20,7 +20,12 @@ features/
   events/            행사 탐색·상세·관리 (model, queries, cache, mappers, seo, components, admin/)
     model/           event.ts(타입), event-state.ts(진행·신청 상태), event-list.ts(필터·정렬·인기 행사),
                      review-status.ts, taxonomy.ts, location.ts(주변 명소), badges.ts, format.ts
-    admin/           관리자 queries·actions·components, candidate.ts(수집 후보 JSON 검증)
+    components/      카드·이미지·상태 배지처럼 목록과 상세가 함께 쓰는 부품
+      browse/        목록 화면(검색·정렬·분야 탭·인기 배너·로딩 자리)
+      detail/        상세 화면(정보 목록·하단 버튼·공유·조회수 기록)
+    admin/           관리자 queries·actions·components·schemas(행사 폼 검증)
+      image/         포스터 업로드·외부 이미지 가져오기·최적화·Storage 저장
+      candidate/     수집 후보 JSON 검증(schema)·가져오기 action·저장 payload
   places/            주변 명소 (model, queries, cache, mappers, components, admin/)
   reports/           방문자 행사 제보 (schemas, actions, components, admin/)
   feedback/          방문자 서비스 의견 (schemas, actions, components, admin/)
@@ -36,6 +41,8 @@ lib/                 도메인을 모르는 인프라
   map.ts             거리 계산, 네이버 지도 링크(행사·명소가 함께 씀)
   seo/, analytics/   사이트 전체 SEO·GA4
 supabase/            migrations, seed.sql, tests/database(pgTAP), rollbacks(migration마다 같은 이름), config.toml
+public/              brand/(헤더 로고 wordmark.webp, 기본 포스터 default-event-poster.svg), icons/(홈 화면 아이콘), sample-events/(시드 이미지).
+                     icon.jpeg(검색엔진 로고)와 검색엔진 소유 확인 html은 URL이 외부에 알려져 있어 루트에 둔다
 tests/               unit/(Vitest), e2e/(Playwright, 로컬 Supabase)
 proxy.ts             없는 토픽 404, 관리자 세션 갱신
 .claude/             Claude Code 설정. hooks/guard-tool-use.mjs가 운영 DB 명령·비밀값 파일·커밋된 migration 수정을 실행 전에 막음
@@ -53,7 +60,7 @@ import합니다. 이 규칙은 `pnpm lint`가 강제합니다(`eslint.config.mjs
 
 | 경로 | 렌더링 | 조립하는 것 |
 | --- | --- | --- |
-| `/` | 동적(`searchParams`) | `features/events/components/event-browse-page` + `getAllPublicEvents` |
+| `/` | 동적(`searchParams`) | `features/events/components/browse/event-browse-page` + `getAllPublicEvents` |
 | `/topics/[topic]` | 동적 | 위와 같음. 카테고리 SEO 페이지 6개. 없는 토픽은 `proxy.ts`가 404 |
 | (공통 틀) `app/(event-browse)/layout.tsx` | - | `/`와 `/topics/[topic]`이 함께 쓰는 배너(많이 보는 행사). 탭을 바꿔도 다시 그리지 않음. 분야 탭은 헤더와 함께 고정되도록 전역 `app/layout.tsx`에 있음 |
 | `/events/[slug]` | ISR 1시간, 공개 행사 전부 미리 생성 | 행사 상세, 관련 행사, 주변 명소(`features/places/queries`) |

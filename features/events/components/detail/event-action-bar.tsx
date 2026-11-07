@@ -1,5 +1,5 @@
 import { getButtonClassName } from "@/components/ui/button-styles";
-import { ShareEventButton } from "@/features/events/components/share-event-button";
+import { ShareEventButton } from "@/features/events/components/detail/share-event-button";
 import type { Event } from "@/features/events/model/event";
 import { analyticsData } from "@/lib/analytics/events";
 

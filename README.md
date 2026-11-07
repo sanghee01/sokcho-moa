@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./public/sokchomoa-wordmark.webp" alt="속초모아" width="280" />
+  <img src="./public/brand/wordmark.webp" alt="속초모아" width="280" />
 </p>
 
 <p align="center">

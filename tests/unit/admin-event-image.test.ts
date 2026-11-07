@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { EVENT_IMAGE_MAX_BYTES, validateEventImage } from "@/features/events/admin/image-rules";
+import { EVENT_IMAGE_MAX_BYTES, validateEventImage } from "@/features/events/admin/image/rules";
 
 describe("행사 대표 이미지 검증", () => {
   it.each(["image/jpeg", "image/png", "image/webp"])("3MB 이하 %s 이미지를 허용한다", (type) => {

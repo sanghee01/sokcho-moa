@@ -23,7 +23,7 @@ vi.mock("next/navigation", () => ({
   }),
 }));
 
-import { importEventCandidateAction } from "@/features/events/admin/import-actions";
+import { importEventCandidateAction } from "@/features/events/admin/candidate/actions";
 import { slugSchema } from "@/lib/slug";
 
 const candidateJson = JSON.stringify({

@@ -7,7 +7,7 @@ import Image from "next/image";
 export function EventImagePlaceholder() {
   return (
     <Image
-      src="/default-event-poster.svg"
+      src="/brand/default-event-poster.svg"
       alt=""
       fill
       unoptimized

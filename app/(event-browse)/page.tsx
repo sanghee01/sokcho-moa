@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { EventBrowsePage } from "@/features/events/components/event-browse-page";
+import { EventBrowsePage } from "@/features/events/components/browse/event-browse-page";
 import { findEventTopicByCategory } from "@/features/events/model/topics";
 import { firstSearchParam } from "@/lib/search-params";
 import {
