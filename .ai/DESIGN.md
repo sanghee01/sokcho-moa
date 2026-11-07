@@ -309,15 +309,16 @@ Tailwind 기본 `rounded-sm`·`rounded-md`·`rounded-lg`와 겹치지 않게 역
 
 | 컴포넌트 | 규칙 |
 | --- | --- |
-| **Button** | 눈에 띄어야 하는 행동은 채운 버튼: `primary`(파랑, 화면마다 하나: 상세 `행사 안내`), `accent`(차콜, primary 옆의 두 번째 행동: 상세 `신청·예매`. 남색·청록은 파랑과 비슷하고 초록은 신청 가능 배지와 겹쳐 차콜로 정함). 나란히 놓인 보조 행동은 바탕색으로 구분: `tonal`(연한 파랑: 지도에서 보기, 목록으로 돌아가기), `neutral`(연한 회색: 자세히 보기). `secondary`(흰 바탕 + 테두리)는 공유하기처럼 부가 기능에만. 높이 44px(`md`). 상세 하단 바도 44px입니다(2026-11-07 사용자 결정으로 유지). **한 화면에 primary는 하나.** 같은 버튼은 상황에 따라 색을 바꾸지 않고, 바탕색 없이 글자만 있는 버튼은 쓰지 않습니다(흰 화면에서 버튼으로 보이지 않음, 2026-11-07 사용자 결정) |
+| **Button** | 눈에 띄어야 하는 행동은 채운 버튼: `primary`(파랑, 화면마다 하나: 상세 `행사 안내`), `accent`(차콜, primary 옆의 두 번째 행동: 상세 `신청·예매`. 남색·청록은 파랑과 비슷하고 초록은 신청 가능 배지와 겹쳐 차콜로 정함). 나란히 놓인 보조 행동은 바탕색으로 구분: `tonal`(연한 파랑: 지도에서 보기, 목록으로 돌아가기), `neutral`(연한 회색: 자세히 보기). `secondary`(흰 바탕 + 테두리)는 공유하기처럼 부가 기능에만. `danger`(빨강)는 되돌릴 수 없는 동작을 확정하는 확인 창 안의 버튼에만 쓰고, 확인 창을 여는 "삭제" 버튼은 `secondary`입니다(2026-11-07). 관리자 화면도 같은 helper(`getButtonClassName`)를 씁니다(2026-11-07). 높이 44px(`md`). 상세 하단 바도 44px입니다(2026-11-07 사용자 결정으로 유지). **한 화면에 primary는 하나.** 같은 버튼은 상황에 따라 색을 바꾸지 않고, 바탕색 없이 글자만 있는 버튼은 쓰지 않습니다(흰 화면에서 버튼으로 보이지 않음, 2026-11-07 사용자 결정) |
 | **Tabs**(분야 탭, 진행중/마감) | 높이 44px, `text-label`(`lg`에서 한 단계 키움). 분야 탭은 알약 탭: 선택 시 `primary`로 채우고 흰 글자. 진행중/마감은 밑줄 탭: 선택 시 2px `primary` 밑줄. 좌우 스크롤 없이 한 줄에 둡니다 |
 | **SegmentedControl**(정렬) | `surface-muted` 바탕 안의 버튼 묶음. 선택된 버튼은 `primary`로 채우고 흰 글자(흰 바탕만으로는 눈에 띄지 않아서). 밑줄 탭과 모양을 달리해 "보는 범위"와 "순서"를 구분합니다 |
-| **BannerCarousel** | `components/ui/banner-carousel.tsx`. 5초 자동 넘김(멈춤 버튼, 마우스·초점·터치 시 잠시 멈춤, 움직임 줄이기 설정 시 끔), 밀어서·`md` 이상 좌우 버튼으로도 넘김, 아래 점 표시. `md` 이상에서는 장의 내용을 좌우 버튼 안쪽(좌우 여백 64px)에만 둬 버튼이 글자를 가리지 않게 합니다. 장마다 `role="group"`, 묶음은 `aria-roledescription="carousel"` |
-| **Badge** | 상태 표시. `text-caption`, 굵기 500, `rounded-badge`. 한 항목 최대 2개([행사 상태의 색](#행사-상태의-색)) |
+| **BannerCarousel** | `components/ui/banner-carousel.tsx`. 5초 자동 넘김(멈춤 버튼, 마우스·초점·터치 시 잠시 멈춤, 움직임 줄이기 설정 시 끔), 밀어서·`md` 이상 좌우 버튼으로도 넘김, 아래 점 표시. `md` 이상에서는 장의 내용을 좌우 버튼 안쪽(좌우 여백 64px)에만 둬 버튼이 글자를 가리지 않게 합니다. 장마다 `role="group"`, 묶음은 `aria-roledescription="carousel"`. 점·멈춤·좌우 버튼은 보이는 모양은 작게 두고 누르는 영역을 44px로, 점 사이는 8px로 둡니다(2026-11-07) |
+| **Badge** | 상태 표시. `text-caption`, 굵기 500, `rounded-badge`. 한 항목 최대 2개([행사 상태의 색](#행사-상태의-색)). 관리자 목록의 검수·검토 상태도 같은 `Badge`를 씁니다(2026-11-07) |
+| **StatusToggle**(관리자 상태 버튼) | `components/admin/status-toggle-styles.ts`. 행사 공개·비공개·반려, 제보·의견 검토 완료·철회처럼 상태를 바꾸는 버튼 묶음. 지금 상태의 버튼은 눌린 상태(`aria-pressed`)이고 비활성으로 흐리게 보입니다. 공개·검토 완료 `success`, 반려 `danger-subtle` 바탕, 그 밖 `surface-muted`. 높이 44px, `text-label` 굵기 600(2026-11-07) |
 | **EventCard**(포스터 카드) | `features/events/components/event-card.tsx`. 카드 전체가 링크 하나. 포스터(4:5) 위에 분야(왼쪽 위, 주제 페이지에서는 생략), NEW(오른쪽 위), 날짜와 상태 배지 ≤2(아래)를 흰 바탕 글자 띠로 얹고, 포스터 아래에는 제목(`text-body font-semibold`, 2줄)과 장소(1줄)만 둡니다. 참여 대상(가족·성인·누구나)과 조회수·출처는 카드에 쓰지 않고 상세에 둡니다. 참여 대상은 필터에도 없고 대부분 "누구나"라 판단에 도움이 적습니다. 조회수는 대부분 작은 숫자라 "아무도 안 보는 행사"처럼 보이고, 갈지 말지 정하는 정보가 아니어서입니다(상세에 둠) |
 | **FactList**(핵심 정보) | `features/events/components/event-fact-list.tsx`. 아이콘 + 값 행. 행 사이는 `line` 구분선. 지도·원문 링크는 값 오른쪽 글자 링크 |
 | **BottomActionBar** | `features/events/components/event-action-bar.tsx`. 모바일 상세 전용. 흰 배경 + 위쪽 그림자. 위 여백 12px, 아래 여백 20px + safe-area(12px이면 실제 iPhone의 둥근 화면 모서리에 버튼 끝이 잘렸음, 2026-11-07) |
-| **FormField** | `components/ui/form-field.tsx`. 라벨(위) + 입력창 + 도움말 + 칸 오류(아래, `role="alert"`, `danger`). 선택 칸만 `(선택)`. 입력창에는 `getFieldControlProps`로 `aria-invalid`·`aria-describedby`를 붙입니다 |
+| **FormField** | `components/ui/form-field.tsx`. 라벨(위) + 입력창 + 도움말 + 칸 오류(아래, `role="alert"`, `danger`). 선택 칸만 `(선택)`. 입력창에는 `getFieldControlProps`로 `aria-invalid`·`aria-describedby`를 붙입니다. 관리자 폼과 로그인 폼도 같은 입력 스타일(`form-styles.ts`)을 써서 입력 글자가 16px입니다(예전에는 라벨의 14px·굵게를 물려받았음, 2026-11-07) |
 | **SearchField** | 둥근(`rounded-full`) 입력창, 높이 48px, 글자 16px, 테두리 `line-input`. 왼쪽 돋보기 아이콘이 제출 버튼("검색"). `search` 역할과 이름 "행사 검색"을 유지합니다 |
 | **EmptyState** | 실제 상황을 말하는 한 문장 + 갈 만한 곳 하나(보조 버튼). 사용자가 하지 않은 일을 시키지 않습니다. 검색 결과 없음 → "검색 지우기", 마감 탭이 빔 → "진행 중인 ○○ 보기", 분야에 일정이 없음 → "전체 행사 보기", 예전 주소의 조건 → "조건 지우기". 분야 이름 뒤에는 받침에 따라 바뀌는 조사를 붙이지 않고 "기록이", "일정이" 같은 고정된 말을 씁니다 |
 | **Skeleton** | 실제 포스터 카드 모양과 같은 자리 표시 |
@@ -407,7 +408,7 @@ React Native 앱은 아직 정하지 않았습니다(알림을 통한 재방문�
 | 3. 목록 | 홈·주제: 2열 포스터 카드, 많이 보는 행사, 분야 탭·검색·정렬 정리, 히어로 제거, 날짜 표기(`11.7 (토)`), 기본 행사일순, 푸터 | **완료**(2026-11-06). test: `event-list-dates.test.ts`, `event-badges.test.ts`, `event-recently-published.test.ts`, `event-popular.test.ts`, E2E 첫 화면 카드 2개 |
 | 4. 상세 | 핵심 정보 블록, 하단 행동 바, 2열 데스크톱 | **완료**(2026-11-06). test: E2E "상세 첫 화면에 제목, 날짜, 장소, 행사 안내 버튼이 보인다", `event-application-period.test.ts` |
 | 5. 폼 | 제보·의견 | **완료**(2026-11-06). test: `public-submission-actions.test.ts` "검증에 실패하면 틀린 칸마다 오류 문장을 돌려준다", E2E `feedback-flow.spec.ts` |
-| 6. 관리자(선택) | 토큰 적용, 768px 넘침 없음 | **토큰·768px 완료**(2026-11-06). test: E2E `admin-responsive.spec.ts`(관리자 9개 화면). 상세 로딩·오류·404 화면의 남은 원색 class도 함께 바꿈 |
+| 6. 관리자(선택) | 토큰 적용, 768px 넘침 없음 | **토큰·768px 완료**(2026-11-06). test: E2E `admin-responsive.spec.ts`(관리자 9개 화면). 상세 로딩·오류·404 화면의 남은 원색 class도 함께 바꿈. 버튼·입력·상태 배지를 공통 helper로 바꾸고 터치 대상을 44px로(2026-11-07) |
 
 **2단계에서 한 것**
 - 공통 부품: `components/ui/button-styles.ts`(primary·secondary·ghost, md·lg), `badge.tsx`, `chip-styles.ts`(3단계에서 분야 탭·글자 링크로 바꾸며 지움).

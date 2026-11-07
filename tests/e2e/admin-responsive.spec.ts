@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { E2E_ADMIN_EVENT, loginAsAdmin } from "@/tests/e2e/fixtures";
+import { E2E_ADMIN_EVENT, E2E_PLACE_ID, loginAsAdmin } from "@/tests/e2e/fixtures";
 
 // .ai/DESIGN.md "관리자": 데스크톱 기준으로 만들어도 되지만 768px에서 가로로 넘치지 않아야 한다(디자인 개편 6단계 완료 조건).
 // 표처럼 넓은 내용은 자기 안에서만 가로로 밀리고, 페이지 전체는 넘치지 않는다.
@@ -12,6 +12,8 @@ const adminPages = [
   "/admin/events/new",
   `/admin/events/${E2E_ADMIN_EVENT.id}`,
   "/admin/places/new",
+  // 수정 화면은 작성 화면에 없는 삭제 구역을 그린다. 이 구역이 서버에서 client 전용 함수를 불러 화면이 열리지 않던 문제를 잡는다(2026-11-07).
+  `/admin/places/${E2E_PLACE_ID}`,
   "/admin/import",
 ];
 

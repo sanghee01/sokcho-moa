@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { AdminActionForm } from "@/components/admin/admin-action-form";
+import { getButtonClassName } from "@/components/ui/button-styles";
 import { FormSubmitButton } from "@/components/ui/form-submit-button";
 import { saveEventAction } from "@/features/events/admin/actions";
 import { EventDeleteControl } from "@/features/events/admin/components/event-delete-control";
@@ -13,6 +14,7 @@ import {
   RequiredMark,
   SectionHeading,
   sectionClassName,
+  textareaClassName,
 } from "@/features/events/admin/components/event-form-fields";
 import { checked, dateValue, listText, text, type EventRow } from "@/features/events/admin/components/event-form-row";
 import { ImageUploadField } from "@/features/events/admin/components/event-image-upload-field";
@@ -37,7 +39,7 @@ export function EventForm({ row }: { row: EventRow }) {
   return (
     <div className="space-y-6">
       <AdminActionForm action={saveEventAction} className="event-form space-y-7 rounded-card bg-surface p-5 ring-1 ring-line sm:p-8">
-        {id && <><input type="hidden" name="id" value={id} /><input type="hidden" name="slug" value={slug} /></>}
+        {Boolean(id) && <><input type="hidden" name="id" value={id} /><input type="hidden" name="slug" value={slug} /></>}
 
         <div className="rounded-card bg-primary-subtle px-4 py-3 text-label leading-6 text-primary-text">
           <p><span aria-hidden="true" className="font-bold text-danger">*</span> 표시는 저장에 필요한 항목입니다.</p>
@@ -84,7 +86,7 @@ export function EventForm({ row }: { row: EventRow }) {
             </fieldset>
             <label className={`${labelClassName} sm:col-span-2`}>
               행사 소개
-              <textarea name="introduction" defaultValue={getEventIntroduction({ summary: text(row, "summary") || null, description: text(row, "description") || null }) ?? ""} rows={6} maxLength={5_000} placeholder="예: 주요 프로그램, 행사 특징, 준비물 등 방문 전에 알아야 할 내용을 적어 주세요." className={inputClassName} />
+              <textarea name="introduction" defaultValue={getEventIntroduction({ summary: text(row, "summary") || null, description: text(row, "description") || null }) ?? ""} rows={6} maxLength={5_000} placeholder="예: 주요 프로그램, 행사 특징, 준비물 등 방문 전에 알아야 할 내용을 적어 주세요." className={textareaClassName} />
               <FieldHelp>행사 목록 검색, 상세 페이지, 공유 미리보기에 같은 내용으로 표시됩니다.</FieldHelp>
             </label>
           </div>
@@ -100,7 +102,7 @@ export function EventForm({ row }: { row: EventRow }) {
             <DateTimeField labelText="신청 종료" name="applicationEndAt" defaultValue={dateValue(row, "application_end_at")} />
             <label className={`${labelClassName} sm:col-span-2`}>
               운영일정
-              <textarea name="operatingHours" defaultValue={text(row, "operating_hours")} rows={4} placeholder={"예:\n매주 수요일 16:00~19:00\n7월 27일은 휴무"} className={inputClassName} />
+              <textarea name="operatingHours" defaultValue={text(row, "operating_hours")} rows={4} placeholder={"예:\n매주 수요일 16:00~19:00\n7월 27일은 휴무"} className={textareaClassName} />
               <FieldHelp>실제 운영일·요일·회차·시간을 일정별로 줄바꿈해 적어 주세요.</FieldHelp>
             </label>
           </div>
@@ -134,12 +136,12 @@ export function EventForm({ row }: { row: EventRow }) {
             </label>
             <label className={labelClassName}>
               출연자
-              <textarea name="performerPeople" defaultValue={listText(row, "performer_people")} rows={3} placeholder={"예:\n홍길동\n김속초"} className={inputClassName} />
+              <textarea name="performerPeople" defaultValue={listText(row, "performer_people")} rows={3} placeholder={"예:\n홍길동\n김속초"} className={textareaClassName} />
               <FieldHelp>실제로 출연하는 사람을 한 줄에 한 명씩 입력하세요.</FieldHelp>
             </label>
             <label className={labelClassName}>
               출연팀
-              <textarea name="performerGroups" defaultValue={listText(row, "performer_groups")} rows={3} placeholder={"예:\n속초시립합창단\n설악 앙상블"} className={inputClassName} />
+              <textarea name="performerGroups" defaultValue={listText(row, "performer_groups")} rows={3} placeholder={"예:\n속초시립합창단\n설악 앙상블"} className={textareaClassName} />
               <FieldHelp>실제로 출연하는 팀을 한 줄에 한 팀씩 입력하세요. 출연자가 없는 행사는 두 항목 모두 비워 두세요.</FieldHelp>
             </label>
             <label className={labelClassName}>
@@ -182,12 +184,12 @@ export function EventForm({ row }: { row: EventRow }) {
         </section>
 
         <div className="flex flex-wrap items-center gap-3">
-          <FormSubmitButton idleLabel={id ? "수정 완료" : "작성 완료"} pendingLabel="저장 중…" className="min-h-12 rounded-card bg-primary px-6 py-3 font-bold text-on-primary hover:bg-primary-hover" />
+          <FormSubmitButton idleLabel={id ? "수정 완료" : "작성 완료"} pendingLabel="저장 중…" className={getButtonClassName({ variant: "primary", size: "lg" })} />
           <p className="text-label text-content-subtle">완료하면 관리자 대시보드로 이동합니다.</p>
         </div>
       </AdminActionForm>
 
-      {id && (
+      {Boolean(id) && (
         <section className="space-y-4 rounded-card bg-danger-subtle p-5 ring-1 ring-danger-subtle sm:p-6">
           <p className="font-bold text-danger">행사 삭제</p>
           <p className="mt-1 text-label leading-6 text-danger">행사와 연결된 출처 기록이 영구 삭제되고, 같은 행사는 재수집 제외 목록에 저장됩니다.</p>

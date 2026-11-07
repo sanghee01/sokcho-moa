@@ -81,7 +81,7 @@ export function EventSearch({
           type="submit"
           disabled={isPending}
           aria-label={isPending ? "검색 중" : "검색"}
-          className="absolute left-1 top-1/2 inline-flex size-10 -translate-y-1/2 items-center justify-center rounded-full text-content-muted hover:bg-surface-subtle hover:text-primary-text disabled:cursor-wait"
+          className="absolute left-0.5 top-1/2 inline-flex size-11 -translate-y-1/2 items-center justify-center rounded-full text-content-muted hover:bg-surface-subtle hover:text-primary-text disabled:cursor-wait"
         >
           {isPending ? <LoadingSpinner className="size-4" /> : <Search {...iconProps} />}
         </button>

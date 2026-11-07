@@ -1,13 +1,14 @@
 "use client";
 
+import { getStatusToggleClassName, type StatusToggleTone } from "@/components/admin/status-toggle-styles";
 import { statusControlStyles } from "@/features/events/admin/components/status-control-styles";
 import { useEventReviewStatus } from "@/features/events/admin/components/use-event-review-status";
 import { eventReviewStatusActionLabels, type EventReviewStatus } from "@/features/events/model/review-status";
 
-const buttonTones: [EventReviewStatus, string][] = [
-  ["published", "bg-success text-on-primary"],
-  ["pending", "bg-surface-muted text-content"],
-  ["rejected", "bg-danger-subtle text-danger"],
+const buttonTones: [EventReviewStatus, StatusToggleTone][] = [
+  ["published", "success"],
+  ["pending", "neutral"],
+  ["rejected", "danger"],
 ];
 
 /** 상태 버튼 묶음. 상태는 부모가 useEventReviewStatus로 들고 있고, 여기서는 그리기만 한다. */
@@ -31,7 +32,7 @@ export function StatusButtons({
           disabled={isPending || status === buttonStatus}
           aria-pressed={status === buttonStatus}
           onClick={() => onChange(buttonStatus)}
-          className={`${statusControlStyles.button} ${tone}`}
+          className={getStatusToggleClassName(tone)}
         >
           <span
             aria-hidden="true"

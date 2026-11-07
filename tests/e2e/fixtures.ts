@@ -10,6 +10,9 @@ export const LOCAL_ADMIN = {
 export const SAMPLE_EVENT_SLUG = "demo-sea-family-festival";
 export const SAMPLE_EVENT_PATH = `/events/${SAMPLE_EVENT_SLUG}`;
 
+/** supabase/seed.sql의 명소 하나. 명소 수정 화면(삭제 구역이 그려지는 화면) E2E가 연다. */
+export const E2E_PLACE_ID = "20000000-0000-4000-8000-000000000073";
+
 /** supabase/seed.sql의 관리자 E2E 전용 행사(검수 대기). 공개 화면에는 보이지 않는다. */
 export const E2E_ADMIN_EVENT = {
   id: "10000000-0000-4000-8000-000000000091",

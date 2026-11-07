@@ -54,7 +54,8 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
             href={adminTabHref(item.id)}
             showPendingIndicator={false}
             aria-current={selectedTab === item.id ? "page" : undefined}
-            className={`rounded-control px-4 py-2.5 text-label font-bold transition-colors ${selectedTab === item.id ? "bg-primary text-on-primary" : "text-content hover:bg-surface-subtle"}`}
+            // 알약 탭(.ai/DESIGN.md Tabs): 높이 44px, 선택된 탭은 primary로 채운다.
+            className={`inline-flex min-h-11 items-center rounded-control px-4 text-label font-semibold ${selectedTab === item.id ? "bg-primary text-on-primary" : "text-content hover:bg-surface-subtle"}`}
           >
             {item.label}
           </TransitionLink>

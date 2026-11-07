@@ -26,7 +26,7 @@ export function EventCollectionExclusionList({
   return (
     <section className="mt-10" aria-labelledby="admin-event-exclusions-title">
       <div className="mb-4">
-        <h2 id="admin-event-exclusions-title" className="text-title-2 font-bold text-content-strong">
+        <h2 id="admin-event-exclusions-title" className="text-title-2 text-content-strong">
           재수집 제외 {exclusions.length}건
         </h2>
         <p className="mt-1 text-label leading-6 text-content-muted">

@@ -11,8 +11,9 @@
 ## 새로 만들기 전에
 
 - 이미 있는 부품과 helper를 먼저 씁니다. 비슷한 부품을 따로 만들지 않습니다.
-  - 버튼: `ui/button-styles.ts`의 `getButtonClassName` (primary·accent·tonal·neutral·secondary, md·lg)
-  - 배지: `ui/badge.tsx`, 폼 입력: `ui/form-styles.ts`, 제출 버튼: `ui/form-submit-button.tsx`
+  - 버튼: `ui/button-styles.ts`의 `getButtonClassName` (primary·accent·tonal·neutral·secondary·danger, md·lg). 관리자 화면도 같이 씁니다
+  - 관리자 상태 버튼(공개·반려, 검토 완료·철회): `admin/status-toggle-styles.ts`
+  - 배지: `ui/badge.tsx`, 폼 입력: `ui/form-styles.ts`(관리자·로그인 폼 포함), 제출 버튼: `ui/form-submit-button.tsx`
   - 아이콘: Lucide(`lucide-react`)만 쓰고 `ui/icon.ts`의 `iconProps`를 펼쳐 씁니다
   - 페이지 이동 표시가 필요한 링크: `ui/transition-link.tsx`, 넘기는 배너: `ui/banner-carousel.tsx`
 - 새 부품의 이름과 variant는 앱(React Native)에서도 쓸 수 있게 짓습니다(`primary`, `md`. `card-hover` 같은 웹 용어 X).

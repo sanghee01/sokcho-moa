@@ -79,13 +79,14 @@ export function BannerCarousel({ label, slides }: { label: string; slides: React
         ))}
       </div>
 
-      {hasMany && (
+      {Boolean(hasMany) && (
         <>
+          {/* 좌우 버튼은 md 이상에서만 보인다. 누르는 영역 44px(.ai/DESIGN.md BannerCarousel, 2026-11-07). */}
           <button
             type="button"
             onClick={() => goTo(current - 1)}
             aria-label="이전 배너"
-            className="absolute left-3 top-1/2 hidden size-10 -translate-y-1/2 items-center justify-center rounded-full bg-surface/90 text-content-strong shadow-floating hover:bg-surface md:inline-flex"
+            className="absolute left-3 top-1/2 hidden size-11 -translate-y-1/2 items-center justify-center rounded-full bg-surface/90 text-content-strong shadow-floating hover:bg-surface md:inline-flex"
           >
             <ChevronLeft {...iconProps} />
           </button>
@@ -93,11 +94,13 @@ export function BannerCarousel({ label, slides }: { label: string; slides: React
             type="button"
             onClick={() => goTo(current + 1)}
             aria-label="다음 배너"
-            className="absolute right-3 top-1/2 hidden size-10 -translate-y-1/2 items-center justify-center rounded-full bg-surface/90 text-content-strong shadow-floating hover:bg-surface md:inline-flex"
+            className="absolute right-3 top-1/2 hidden size-11 -translate-y-1/2 items-center justify-center rounded-full bg-surface/90 text-content-strong shadow-floating hover:bg-surface md:inline-flex"
           >
             <ChevronRight {...iconProps} />
           </button>
-          <div className="absolute inset-x-0 bottom-1 flex items-center justify-center">
+          {/* 점과 멈춤 버튼은 보이는 모양은 작게 두고 누르는 영역을 44px로, 사이를 8px로 둔다. 예전에는 24px이 서로 붙어 있었다(2026-11-07).
+              이 줄이 장의 아래 44px을 차지하므로 장 내용은 banner-styles.ts의 bannerSlideBottomSpaceClassName만큼 아래를 비운다. */}
+          <div className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-2">
             {slides.map((_, index) => (
               <button
                 key={index}
@@ -105,7 +108,7 @@ export function BannerCarousel({ label, slides }: { label: string; slides: React
                 onClick={() => goTo(index)}
                 aria-label={`${index + 1}번째 배너 보기`}
                 aria-current={index === current ? "true" : undefined}
-                className="inline-flex size-6 items-center justify-center"
+                className="inline-flex size-11 items-center justify-center"
               >
                 <span className={`block h-1.5 rounded-full transition-all ${index === current ? "w-4 bg-on-image" : "w-1.5 bg-on-image/50"}`} />
               </button>
@@ -114,7 +117,7 @@ export function BannerCarousel({ label, slides }: { label: string; slides: React
               type="button"
               onClick={() => setPaused((value) => !value)}
               aria-label={paused ? "배너 자동 넘김 다시 켜기" : "배너 자동 넘김 멈추기"}
-              className="ml-1 inline-flex size-6 items-center justify-center text-on-image"
+              className="inline-flex size-11 items-center justify-center text-on-image"
             >
               {paused ? <Play {...iconProps} size={14} /> : <Pause {...iconProps} size={14} />}
             </button>

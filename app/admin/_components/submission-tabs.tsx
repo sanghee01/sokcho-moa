@@ -14,7 +14,7 @@ export async function AdminReportsTab() {
   return (
     <section className="mt-10" aria-labelledby="admin-reports-title">
       <div className="mb-4 flex items-center justify-between gap-3">
-        <h1 id="admin-reports-title" className="text-title-2 font-bold text-content-strong">접수된 제보 {reports.length}건</h1>
+        <h1 id="admin-reports-title" className="text-title-2 text-content-strong">접수된 제보 {reports.length}건</h1>
       </div>
       <div className="space-y-3">
         {reports.map((report) => (
@@ -38,7 +38,7 @@ export async function AdminFeedbackTab() {
   return (
     <section className="mt-10" aria-labelledby="admin-feedback-title">
       <div className="mb-4 flex items-center justify-between gap-3">
-        <h1 id="admin-feedback-title" className="text-title-2 font-bold text-content-strong">접수된 의견 {feedback.length}건</h1>
+        <h1 id="admin-feedback-title" className="text-title-2 text-content-strong">접수된 의견 {feedback.length}건</h1>
       </div>
       <div className="space-y-3">
         {feedback.map((item) => (

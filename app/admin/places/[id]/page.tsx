@@ -15,5 +15,5 @@ export default async function EditPlacePage({ params, searchParams }: PageProps<
     searchParams,
   ]);
   if (!row) notFound();
-  return <AdminShell email={admin.email}><ActionFeedback message={getAdminResultMessage(firstSearchParam(query.result))} /><h1 className="mb-5 text-title-2 font-bold">명소 수정</h1><PlaceForm row={row} /></AdminShell>;
+  return <AdminShell email={admin.email}><ActionFeedback message={getAdminResultMessage(firstSearchParam(query.result))} /><h1 className="mb-5 text-title-2">명소 수정</h1><PlaceForm row={row} /></AdminShell>;
 }

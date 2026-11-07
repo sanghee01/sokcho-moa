@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import { FormSubmitButton } from "@/components/ui/form-submit-button";
 import { getButtonClassName } from "@/components/ui/button-styles";
+import { formErrorMessageClassName, formFieldLabelClassName, getFormControlClassName } from "@/components/ui/form-styles";
 import { signInAction } from "@/features/auth/actions";
 import { initialAdminActionState } from "@/lib/action-state";
 
@@ -12,7 +13,8 @@ export function AdminLoginForm() {
 
   return (
     <form action={formAction} className="mt-8 space-y-5 rounded-card bg-surface p-6 ring-1 ring-line">
-      <label className="block text-label font-bold text-content">
+      {/* 입력창은 방문자 폼과 같은 공통 스타일(입력 글자 16px). 예전에는 라벨의 14px을 물려받아 iOS에서 화면이 확대됐다(2026-11-07). */}
+      <label className={formFieldLabelClassName}>
         이메일
         <input
           required
@@ -21,15 +23,15 @@ export function AdminLoginForm() {
           value={email}
           onChange={(event) => setEmail(event.target.value)}
           autoComplete="email"
-          className="mt-1 w-full rounded-control border border-line-input px-3 py-2.5"
+          className={getFormControlClassName("input")}
         />
       </label>
-      <label className="block text-label font-bold text-content">
+      <label className={formFieldLabelClassName}>
         비밀번호
-        <input required minLength={8} type="password" name="password" autoComplete="current-password" className="mt-1 w-full rounded-control border border-line-input px-3 py-2.5" />
+        <input required minLength={8} type="password" name="password" autoComplete="current-password" className={getFormControlClassName("input")} />
       </label>
-      {state.error && (
-        <p role="alert" className="rounded-control bg-danger-subtle px-3 py-2.5 text-label font-bold text-danger ring-1 ring-danger-subtle">
+      {state.error !== null && (
+        <p role="alert" className={formErrorMessageClassName}>
           {state.error}
         </p>
       )}

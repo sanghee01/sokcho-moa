@@ -1,6 +1,7 @@
 "use client";
 
 import { startTransition, useActionState, useState, type FormEvent, type ReactNode } from "react";
+import { formErrorMessageClassName } from "@/components/ui/form-styles";
 import { FormPendingContext } from "@/components/ui/form-submit-button";
 import { initialAdminActionState, type AdminActionState } from "@/lib/action-state";
 
@@ -46,8 +47,8 @@ export function AdminActionForm({
     <FormPendingContext value={isPending}>
       <form className={className} onChange={dismissCurrentError} onSubmit={submit} aria-busy={isPending}>
         {children}
-        {error && (
-          <p role="alert" className="rounded-control bg-danger-subtle px-3 py-2.5 text-label font-bold text-danger ring-1 ring-danger-subtle">
+        {error !== null && (
+          <p role="alert" className={formErrorMessageClassName}>
             {error}
           </p>
         )}

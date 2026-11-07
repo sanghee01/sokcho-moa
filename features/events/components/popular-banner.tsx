@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { BannerCarousel } from "@/components/ui/banner-carousel";
+import { bannerSlideBottomSpaceClassName } from "@/components/ui/banner-styles";
 import { EventImage } from "@/features/events/components/event-image";
 import { EventImagePlaceholder } from "@/features/events/components/event-image-placeholder";
 import { PosterBackdrop } from "@/features/events/components/poster-backdrop";
@@ -27,8 +28,9 @@ function PopularSlide({ event }: { event: Event }) {
       className={`relative block overflow-hidden bg-content-strong ${bannerHeightClassName}`}
     >
       <PosterBackdrop imageUrl={event.imageUrl} />
-      {/* md 이상에서는 좌우 넘김 버튼(왼쪽·오른쪽 12px + 40px)이 내용을 가리지 않게 안쪽 여백을 64px로 둔다(2026-11-06). */}
-      <div className="relative mx-auto flex h-full max-w-6xl items-center gap-4 px-4 pb-7 pt-5 sm:px-6 md:px-16 lg:gap-10">
+      {/* md 이상에서는 좌우 넘김 버튼(왼쪽·오른쪽 12px + 44px)이 내용을 가리지 않게 안쪽 여백을 64px로 둔다(2026-11-06).
+          아래는 점·멈춤 버튼 줄 자리만큼 비운다(banner-styles.ts의 bannerSlideBottomSpaceClassName, 2026-11-07). */}
+      <div className={`relative mx-auto flex h-full max-w-6xl items-center gap-4 px-4 pt-5 sm:px-6 md:px-16 lg:gap-10 ${bannerSlideBottomSpaceClassName}`}>
         <div className="min-w-0 flex-1 text-on-image">
           {/* 순위 숫자(1, 2, 3)는 붙이지 않는다(2026-11-06 사용자 결정). */}
           <p className="text-caption font-semibold opacity-90">지금 많이 보는 행사</p>

@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { startTransition, useActionState, useEffect, useId, useRef, useState, type ChangeEvent } from "react";
+import { getButtonClassName } from "@/components/ui/button-styles";
 import type { EventImageUploadState } from "@/features/events/admin/image-upload-state";
 import { FieldHelp, labelClassName } from "@/features/events/admin/components/event-form-fields";
 import { uploadEventImageAction } from "@/features/events/admin/image-actions";
@@ -120,10 +121,11 @@ export function ImageUploadField({ initialUrl, onUploaded }: { initialUrl: strin
             className="sr-only"
           />
           <div className="flex flex-wrap gap-2">
-            <button type="button" onClick={() => inputRef.current?.click()} className="inline-flex min-h-11 items-center justify-center rounded-control border border-primary bg-surface px-4 py-2.5 text-label font-bold text-primary-text hover:bg-primary-subtle">
+            {/* 폼 저장 버튼이 이 화면의 primary라 업로드 단계 버튼은 보조 색으로 둔다(.ai/DESIGN.md Button). */}
+            <button type="button" onClick={() => inputRef.current?.click()} className={getButtonClassName({ variant: "secondary" })}>
               파일 선택
             </button>
-            <button type="button" disabled={!fileName || isUploading || isUploaded} onClick={handleUpload} className="inline-flex min-h-11 items-center justify-center rounded-control bg-primary px-4 py-2.5 text-label font-bold text-on-primary hover:bg-primary-hover disabled:cursor-not-allowed disabled:bg-surface-muted disabled:text-content-muted">
+            <button type="button" disabled={!fileName || isUploading || isUploaded} onClick={handleUpload} className={getButtonClassName({ variant: "tonal" })}>
               {isUploading ? "업로드 중…" : isUploaded ? "업로드 완료" : "이미지 업로드"}
             </button>
           </div>

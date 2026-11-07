@@ -1,7 +1,11 @@
 import type { ReactNode } from "react";
+import { getButtonClassName } from "@/components/ui/button-styles";
 import { FormSubmitButton } from "@/components/ui/form-submit-button";
 import { TransitionLink } from "@/components/ui/transition-link";
 import { signOutAction } from "@/features/auth/actions";
+
+// 관리자 메뉴 버튼도 공통 helper를 쓴다. 행사 등록이 이 화면의 primary이고 나머지는 회색 보조 버튼이다(.ai/DESIGN.md Button, 2026-11-07).
+const menuLinkClassName = getButtonClassName({ variant: "neutral" });
 
 export function AdminShell({ email, children }: { email: string; children: ReactNode }) {
   return (
@@ -11,13 +15,13 @@ export function AdminShell({ email, children }: { email: string; children: React
           <p className="text-label font-bold text-primary-text">속초모아 운영자</p>
           <p className="mt-1 text-label font-normal text-content-subtle">{email}</p>
         </div>
-        <nav className="flex flex-wrap gap-2 text-label font-bold" aria-label="관리자 메뉴">
-          <TransitionLink href="/admin" prefetch={false} className="inline-flex min-h-11 items-center rounded-control px-3 text-content hover:bg-surface-muted">대시보드</TransitionLink>
-          <TransitionLink href="/admin/events/new" prefetch={false} className="inline-flex min-h-11 items-center rounded-control bg-primary px-3 text-on-primary hover:bg-primary-hover">행사 등록</TransitionLink>
-          <TransitionLink href="/admin/places/new" prefetch={false} className="inline-flex min-h-11 items-center rounded-control px-3 text-content hover:bg-surface-muted">명소 등록</TransitionLink>
-          <TransitionLink href="/admin/import" prefetch={false} className="inline-flex min-h-11 items-center rounded-control px-3 text-content hover:bg-surface-muted">후보 JSON</TransitionLink>
+        <nav className="flex flex-wrap gap-2" aria-label="관리자 메뉴">
+          <TransitionLink href="/admin" prefetch={false} className={menuLinkClassName}>대시보드</TransitionLink>
+          <TransitionLink href="/admin/events/new" prefetch={false} className={getButtonClassName({ variant: "primary" })}>행사 등록</TransitionLink>
+          <TransitionLink href="/admin/places/new" prefetch={false} className={menuLinkClassName}>명소 등록</TransitionLink>
+          <TransitionLink href="/admin/import" prefetch={false} className={menuLinkClassName}>후보 JSON</TransitionLink>
           <form action={signOutAction}>
-            <FormSubmitButton idleLabel="로그아웃" pendingLabel="로그아웃 중…" className="min-h-11 rounded-control border border-line-strong bg-surface px-3 text-content hover:bg-surface-subtle" />
+            <FormSubmitButton idleLabel="로그아웃" pendingLabel="로그아웃 중…" className={getButtonClassName({ variant: "secondary" })} />
           </form>
         </nav>
       </header>

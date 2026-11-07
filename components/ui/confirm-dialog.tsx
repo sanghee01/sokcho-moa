@@ -2,22 +2,11 @@
 
 import { X } from "lucide-react";
 import { createContext, useContext, useId, useRef, useState, type ReactNode } from "react";
+import { getButtonClassName } from "@/components/ui/button-styles";
 import { iconProps } from "@/components/ui/icon";
 
-type ConfirmTone = "danger" | "primary";
-
-const confirmButtonClassNames: Record<ConfirmTone, string> = {
-  danger: "bg-danger text-on-primary",
-  primary: "bg-primary text-on-primary hover:bg-primary-hover",
-};
-
-/** 대화상자 안의 확인 버튼 모양. 폼 제출 버튼(FormSubmitButton)에도 같은 class를 쓴다. */
-export function getConfirmButtonClassName(tone: ConfirmTone) {
-  return `inline-flex min-h-11 items-center justify-center rounded-control px-4 text-label font-semibold ${confirmButtonClassNames[tone]}`;
-}
-
-const cancelButtonClassName =
-  "inline-flex min-h-11 items-center justify-center rounded-control border border-line-strong bg-surface px-4 text-label font-semibold text-content hover:bg-surface-subtle";
+/** 확인 창 안의 확정 버튼 색. 되돌릴 수 없는 동작은 danger, 그 밖(재수집 허용 등)은 primary다(.ai/DESIGN.md Button). */
+type ConfirmVariant = "danger" | "primary";
 
 /** 열린 확인 창을 닫는 함수. 창 안의 버튼 부품이 클릭할 때만 쓴다. */
 const CloseDialogContext = createContext<() => void>(() => {});
@@ -27,20 +16,20 @@ export function ConfirmDialogActions({ children }: { children: ReactNode }) {
   const close = useContext(CloseDialogContext);
   return (
     <div className="flex flex-wrap justify-end gap-2">
-      <button type="button" onClick={close} className={cancelButtonClassName}>취소</button>
+      <button type="button" onClick={close} className={getButtonClassName({ variant: "secondary" })}>취소</button>
       {children}
     </div>
   );
 }
 
-/** 폼 없이 바로 실행하는 확인 버튼. 창을 닫은 뒤 onConfirm을 부른다. */
-export function ConfirmDialogButton({ tone, onConfirm, children }: { tone: ConfirmTone; onConfirm: () => void; children: ReactNode }) {
+/** 폼 없이 바로 실행하는 확인 버튼. 창을 닫은 뒤 onConfirm을 부른다. 폼을 쓰는 확인 창은 FormSubmitButton에 같은 class를 준다. */
+export function ConfirmDialogButton({ variant, onConfirm, children }: { variant: ConfirmVariant; onConfirm: () => void; children: ReactNode }) {
   const close = useContext(CloseDialogContext);
   function handleClick() {
     close();
     onConfirm();
   }
-  return <button type="button" onClick={handleClick} className={getConfirmButtonClassName(tone)}>{children}</button>;
+  return <button type="button" onClick={handleClick} className={getButtonClassName({ variant })}>{children}</button>;
 }
 
 /**

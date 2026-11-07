@@ -47,7 +47,8 @@ export function TransitionLink({
   }
 
   return (
-    <Link href={href} prefetch={prefetch} onClick={handleClick} aria-busy={isPending} rel={rel} {...analyticsAttributes} className={`relative transition-opacity aria-busy:opacity-70 ${className}`}>
+    // transition(색·투명도 함께)을 쓴다. transition-opacity였을 때 버튼 helper의 transition-colors와 같은 속성을 다퉈 한쪽 효과가 사라졌다(2026-11-07).
+    <Link href={href} prefetch={prefetch} onClick={handleClick} aria-busy={isPending} rel={rel} {...analyticsAttributes} className={`relative transition aria-busy:opacity-70 ${className}`}>
       {children}
       {isPending && (
         <>

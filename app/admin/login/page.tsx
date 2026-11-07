@@ -7,7 +7,7 @@ export default async function AdminLoginPage() {
   return (
     <main id="main-content" className="mx-auto max-w-md px-4 py-20">
       <p className="text-label font-bold text-primary-text">속초모아 운영자</p>
-      <h1 className="mt-2 text-title-1 font-bold text-content-strong">이메일로 로그인</h1>
+      <h1 className="mt-2 text-title-1 text-content-strong">이메일로 로그인</h1>
       <AdminLoginForm />
     </main>
   );

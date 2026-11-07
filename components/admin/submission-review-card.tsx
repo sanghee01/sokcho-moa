@@ -3,11 +3,14 @@
 import Image from "next/image";
 import { useOptimistic, useState, useTransition } from "react";
 import { formatSeoulDateTime } from "@/lib/seoul-time";
+import { getStatusToggleClassName } from "@/components/admin/status-toggle-styles";
 import {
   submissionReviewStatusLabels,
   type SubmissionReviewDecision,
   type SubmissionReviewStatus,
 } from "@/components/admin/submission-review-status";
+import { Badge, type BadgeTone } from "@/components/ui/badge";
+import { getButtonClassName } from "@/components/ui/button-styles";
 import { ConfirmDialog, ConfirmDialogActions, ConfirmDialogButton } from "@/components/ui/confirm-dialog";
 import type { ButtonActionResult } from "@/lib/action-state";
 
@@ -23,10 +26,11 @@ export interface SubmissionReviewCardData {
 
 type SubmissionKind = "event_report" | "site_feedback";
 
-const statusClassNames: Record<SubmissionReviewStatus, string> = {
-  pending: "bg-primary-subtle text-primary-text",
-  reviewed: "bg-success-subtle text-success",
-  rejected: "bg-surface-muted text-content",
+/** 검토 상태 배지의 색(.ai/DESIGN.md Badge). 검토가 필요한 대기는 테두리, 완료는 초록, 철회는 흐리게. */
+const statusBadgeTones: Record<SubmissionReviewStatus, BadgeTone> = {
+  pending: "neutral",
+  reviewed: "success",
+  rejected: "muted",
 };
 
 // 목적어 조사는 받침에 따라 달라서("제보를", "의견을") 계산하지 않고 완성된 말로 둔다.
@@ -60,6 +64,9 @@ export function SubmissionReviewCard({
   const [isDeleted, setIsDeleted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const labels = kindMeta[kind];
+  // 빈 문자열도 첨부·링크가 없는 것으로 본다.
+  const imageUrl = submission.imageUrl || null;
+  const linkUrl = submission.linkUrl || null;
 
   function updateStatus(status: SubmissionReviewDecision) {
     setError(null);
@@ -99,14 +106,14 @@ export function SubmissionReviewCard({
   return (
     <article className="rounded-card bg-surface p-5 ring-1 ring-line" aria-busy={isPending}>
       <div className="flex flex-wrap items-start justify-between gap-2">
-        <h3 className="text-title-3 font-bold text-content-strong">{submission.title}</h3>
-        <span className={`rounded-full px-2.5 py-1 text-caption font-bold ${statusClassNames[optimisticStatus]}`}>{submissionReviewStatusLabels[optimisticStatus]}</span>
+        <h3 className="text-title-3 text-content-strong">{submission.title}</h3>
+        <Badge tone={statusBadgeTones[optimisticStatus]}>{submissionReviewStatusLabels[optimisticStatus]}</Badge>
       </div>
       <p className="mt-3 whitespace-pre-line leading-7 text-content">{submission.body}</p>
-      {submission.imageUrl && (
-        <a href={submission.imageUrl} target="_blank" rel="noreferrer" className="mt-4 block w-fit overflow-hidden rounded-card ring-1 ring-line hover:ring-primary">
+      {imageUrl !== null && (
+        <a href={imageUrl} target="_blank" rel="noreferrer" className="mt-4 block w-fit overflow-hidden rounded-card ring-1 ring-line hover:ring-primary">
           <Image
-            src={submission.imageUrl}
+            src={imageUrl}
             alt={`${submission.title} 첨부 이미지`}
             width={640}
             height={360}
@@ -117,21 +124,38 @@ export function SubmissionReviewCard({
         </a>
       )}
       <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-label">
-        {submission.linkUrl && <a href={submission.linkUrl} target="_blank" rel="noreferrer" className="font-bold text-primary-text underline underline-offset-4">{labels.linkLabel} <span className="sr-only">(새 창)</span></a>}
+        {linkUrl !== null && <a href={linkUrl} target="_blank" rel="noreferrer" className="font-bold text-primary-text underline underline-offset-4">{labels.linkLabel} <span className="sr-only">(새 창)</span></a>}
         <time className="text-content-subtle" dateTime={submission.createdAt}>{formatSeoulDateTime(new Date(submission.createdAt))}</time>
       </div>
       <div className="mt-5 flex flex-wrap gap-2" aria-label={`${labels.noun} 검토 상태 변경`}>
-        <button type="button" disabled={isPending || optimisticStatus === "reviewed"} onClick={() => updateStatus("reviewed")} className="rounded-control bg-success px-3.5 py-2 text-label font-bold text-on-primary disabled:cursor-not-allowed disabled:opacity-40">검토 완료</button>
-        <button type="button" disabled={isPending || optimisticStatus === "rejected"} onClick={() => updateStatus("rejected")} className="rounded-control bg-surface-muted px-3.5 py-2 text-label font-bold text-content disabled:cursor-not-allowed disabled:opacity-40">철회</button>
+        <button
+          type="button"
+          disabled={isPending || optimisticStatus === "reviewed"}
+          aria-pressed={optimisticStatus === "reviewed"}
+          onClick={() => updateStatus("reviewed")}
+          className={getStatusToggleClassName("success")}
+        >
+          검토 완료
+        </button>
+        <button
+          type="button"
+          disabled={isPending || optimisticStatus === "rejected"}
+          aria-pressed={optimisticStatus === "rejected"}
+          onClick={() => updateStatus("rejected")}
+          className={getStatusToggleClassName("neutral")}
+        >
+          철회
+        </button>
+        {/* 삭제 버튼은 확인 창을 열기만 해서 secondary, 확인 창 안의 확정 버튼이 danger다(.ai/DESIGN.md Button). */}
         <ConfirmDialog
           triggerLabel="삭제"
           triggerDisabled={isPending}
-          triggerClassName="rounded-control bg-danger-subtle px-3.5 py-2 text-label font-bold text-danger ring-1 ring-danger-subtle disabled:cursor-not-allowed disabled:opacity-40"
+          triggerClassName={getButtonClassName({ variant: "secondary" })}
           title={`${submission.title} 삭제`}
           description={`이 ${labels.objectNoun} 삭제하면 복구할 수 없습니다.`}
         >
           <ConfirmDialogActions>
-            <ConfirmDialogButton tone="danger" onConfirm={deleteSubmission}>{labels.noun} 삭제</ConfirmDialogButton>
+            <ConfirmDialogButton variant="danger" onConfirm={deleteSubmission}>{labels.noun} 삭제</ConfirmDialogButton>
           </ConfirmDialogActions>
         </ConfirmDialog>
       </div>

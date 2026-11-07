@@ -21,7 +21,7 @@ export default async function EditEventPage({ params, searchParams }: PageProps<
   return (
     <AdminShell email={admin.email}>
       <ActionFeedback message={feedbackMessage} />
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-3"><h1 className="text-title-2 font-bold">행사 수정</h1><StatusControls id={row.id} current={row.review_status} /></div>
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3"><h1 className="text-title-2">행사 수정</h1><StatusControls id={row.id} current={row.review_status} /></div>
       <EventForm row={row} />
     </AdminShell>
   );
