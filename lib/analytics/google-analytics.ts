@@ -1,12 +1,12 @@
-export const googleAnalyticsId = "G-QYZT8W8GZH";
-const excludedAnalyticsPathPrefixes = ["/admin"];
+export const GOOGLE_ANALYTICS_ID = "G-QYZT8W8GZH";
+const EXCLUDED_ANALYTICS_PATH_PREFIXES = ["/admin"];
 
 export function shouldCollectGoogleAnalytics(vercelEnv: string | undefined) {
   return vercelEnv === "production";
 }
 
 export function shouldTrackGoogleAnalyticsPage(pathname: string) {
-  return excludedAnalyticsPathPrefixes.every((prefix) => (
+  return EXCLUDED_ANALYTICS_PATH_PREFIXES.every((prefix) => (
     pathname !== prefix && !pathname.startsWith(`${prefix}/`)
   ));
 }

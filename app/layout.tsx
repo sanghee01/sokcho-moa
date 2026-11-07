@@ -10,7 +10,7 @@ import { CopyrightYear } from "@/components/layout/copyright-year";
 import { ScrollToTopButton } from "@/components/layout/scroll-to-top-button";
 import { iconProps } from "@/components/ui/icon";
 import { CategoryNavigation } from "@/features/events/components/browse/category-navigation";
-import { googleAnalyticsId, shouldCollectGoogleAnalytics } from "@/lib/analytics/google-analytics";
+import { GOOGLE_ANALYTICS_ID, shouldCollectGoogleAnalytics } from "@/lib/analytics/google-analytics";
 import { getPublicEnv, getRuntimeEnv } from "@/lib/env";
 import {
   HOME_TITLE,
@@ -134,11 +134,11 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
             <Script id="google-analytics-config" strategy="beforeInteractive">
               {`
                 gtag('js', new Date());
-                gtag('config', '${googleAnalyticsId}', { send_page_view: false });
+                gtag('config', '${GOOGLE_ANALYTICS_ID}', { send_page_view: false });
               `}
             </Script>
             <Script
-              src={`https://www.googletagmanager.com/gtag/js?id=${googleAnalyticsId}`}
+              src={`https://www.googletagmanager.com/gtag/js?id=${GOOGLE_ANALYTICS_ID}`}
               strategy="afterInteractive"
             />
           </>

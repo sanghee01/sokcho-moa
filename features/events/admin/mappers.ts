@@ -9,6 +9,9 @@ type OccurrenceRow = Pick<Tables<"event_occurrences">, "id" | "starts_at" | "end
  */
 export type AdminEventRow = Tables<"events"> & { event_occurrences?: OccurrenceRow[] | null };
 
+/** 관리자 행사 목록 조회(getAdminEvents)가 가져오는 컬럼 */
+type AdminEventListRow = Pick<Tables<"events">, "id" | "slug" | "title" | "source_name" | "view_count" | "review_status">;
+
 /** 관리자 행사 목록의 한 행 */
 export interface AdminEventListItem {
   id: string;
@@ -19,7 +22,7 @@ export interface AdminEventListItem {
   reviewStatus: EventReviewStatus;
 }
 
-export function toAdminEventListItem(row: Tables<"events">): AdminEventListItem {
+export function toAdminEventListItem(row: AdminEventListRow): AdminEventListItem {
   return {
     id: row.id,
     slug: row.slug,

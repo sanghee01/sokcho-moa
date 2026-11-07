@@ -127,7 +127,7 @@ export function SubmissionReviewCard({
         {linkUrl !== null && <a href={linkUrl} target="_blank" rel="noreferrer" className="font-bold text-primary-text underline underline-offset-4">{labels.linkLabel} <span className="sr-only">(새 창)</span></a>}
         <time className="text-content-subtle" dateTime={submission.createdAt}>{formatSeoulDateTime(new Date(submission.createdAt))}</time>
       </div>
-      <div className="mt-5 flex flex-wrap gap-2" aria-label={`${labels.noun} 검토 상태 변경`}>
+      <div role="group" className="mt-5 flex flex-wrap gap-2" aria-label={`${labels.noun} 검토 상태 변경`}>
         <button
           type="button"
           disabled={isPending || optimisticStatus === "reviewed"}

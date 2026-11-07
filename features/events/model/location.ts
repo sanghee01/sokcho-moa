@@ -2,18 +2,19 @@ import type { Event } from "@/features/events/model/event";
 import type { NearbyPlace, Place } from "@/features/places/model/place";
 import { createMapSearchName, createNaverMapUrl, distanceInKm } from "@/lib/map";
 
-const nearbyRegions = [
+const NEARBY_REGIONS = [
   { label: "속초", marker: "속초시", latitude: 38.207, longitude: 128.591 },
   { label: "고성", marker: "고성군", latitude: 38.38, longitude: 128.467 },
   { label: "양양", marker: "양양군", latitude: 38.075, longitude: 128.619 },
 ] as const;
 
 export function findNearbyPlaces(event: Event, places: Place[], limit = 4): NearbyPlace[] {
-  if (event.latitude != null && event.longitude != null) {
+  const { latitude, longitude } = event;
+  if (latitude != null && longitude != null) {
     return places
       .map((place) => ({
         ...place,
-        distanceKm: distanceInKm(event.latitude!, event.longitude!, place.latitude, place.longitude),
+        distanceKm: distanceInKm(latitude, longitude, place.latitude, place.longitude),
       }))
       .sort((a, b) => (a.distanceKm ?? Number.POSITIVE_INFINITY) - (b.distanceKm ?? Number.POSITIVE_INFINITY))
       .slice(0, limit);
@@ -24,7 +25,7 @@ export function findNearbyPlaces(event: Event, places: Place[], limit = 4): Near
     ? places.filter((place) => place.address?.includes(region.marker))
     : places;
   const candidates = regionalPlaces.length > 0 ? regionalPlaces : places;
-  const center = region ?? nearbyRegions[0];
+  const center = region ?? NEARBY_REGIONS[0];
   const sorted = candidates
     .map((place) => ({
       place,
@@ -49,7 +50,7 @@ export function getNearbyPlacesTitle(event: Event) {
 
 function getEventRegion(event: Pick<Event, "address" | "locationName">) {
   const locationText = [event.address, event.locationName].filter(Boolean).join(" ");
-  return nearbyRegions.find((region) => locationText.includes(region.marker) || locationText.includes(region.label)) ?? null;
+  return NEARBY_REGIONS.find((region) => locationText.includes(region.marker) || locationText.includes(region.label)) ?? null;
 }
 
 function takeCategoryDiversePlaces(places: NearbyPlace[], limit: number) {

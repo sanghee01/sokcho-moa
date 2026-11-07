@@ -241,3 +241,43 @@ on conflict do nothing;
 insert into public.admin_users (user_id, email)
 values ('a0000000-0000-4000-8000-000000000001', 'admin@sokcho-moa.test')
 on conflict (user_id) do nothing;
+
+-- 관리자 제보·의견·재수집 제외 탭이 빈 안내가 아니라 실제 카드·목록을 그리도록 넣는 로컬 확인용 기록(2026-11-07).
+-- E2E(admin-responsive)가 이 탭들을 열어도 데이터가 없으면 빈 안내만 보여, 카드가 서버에서 깨지거나 768px에서 넘쳐도 알 수 없었다.
+-- 일반 사용자·anon에게는 RLS로 보이지 않으므로 pgTAP의 "읽지 못한다" 기대와 부딪히지 않는다.
+insert into public.event_reports (id, title, body, source_url)
+values (
+  '30000000-0000-4000-8000-000000000001',
+  '[샘플] 속초 해변 야간 음악회 제보',
+  '샘플 제보입니다. 관리자 제보 탭의 카드 배치를 확인하려고 넣었습니다.',
+  'https://example.org/sokcho-moa-demo/report'
+)
+on conflict (id) do nothing;
+
+insert into public.site_feedback (id, title, body, link_url)
+values (
+  '30000000-0000-4000-8000-000000000002',
+  '[샘플] 행사 상세 지도 링크 의견',
+  '샘플 의견입니다. 관리자 의견 탭의 카드 배치를 확인하려고 넣었습니다.',
+  'https://example.org/sokcho-moa-demo/feedback'
+)
+on conflict (id) do nothing;
+
+insert into public.event_deletion_tombstones
+  (id, original_event_id, original_title, original_slug, event_snapshot, deleted_by, reason)
+values (
+  '30000000-0000-4000-8000-000000000003',
+  '30000000-0000-4000-8000-000000000004',
+  '[샘플] 삭제한 행사',
+  'demo-deleted-event',
+  '{"slug":"demo-deleted-event","title":"[샘플] 삭제한 행사"}'::jsonb,
+  'a0000000-0000-4000-8000-000000000001',
+  '샘플 재수집 제외 기록'
+)
+on conflict (id) do nothing;
+
+-- 식별 정보는 실제 삭제 RPC와 같은 함수로 만든다(slug·정규화 URL).
+insert into public.event_deletion_identities (tombstone_id, identity_key, kind, source_namespace, identity_value, source_url)
+select '30000000-0000-4000-8000-000000000003', identity_key, kind, source_namespace, identity_value, source_url
+from public.event_deletion_identity_keys('demo-deleted-event', 'https://example.org/sokcho-moa-demo/deleted-event')
+on conflict (tombstone_id, identity_key) do nothing;

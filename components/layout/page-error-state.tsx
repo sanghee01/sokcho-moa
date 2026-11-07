@@ -4,17 +4,6 @@ import Link from "next/link";
 import { useEffect } from "react";
 import { getButtonClassName } from "@/components/ui/button-styles";
 
-interface PageErrorStateProps {
-  error: Error & { digest?: string };
-  /** Next.js error boundary의 retry: 데이터를 다시 가져와 다시 그린다(reset은 다시 가져오지 않음). */
-  retry: () => void;
-  eyebrow: string;
-  title: string;
-  description: string;
-  fallbackHref?: string;
-  fallbackLabel?: string;
-}
-
 export function PageErrorState({
   error,
   retry,
@@ -23,7 +12,16 @@ export function PageErrorState({
   description,
   fallbackHref = "/",
   fallbackLabel = "행사 목록으로",
-}: PageErrorStateProps) {
+}: {
+  error: Error & { digest?: string };
+  /** Next.js error boundary의 retry: 데이터를 다시 가져와 다시 그린다(reset은 다시 가져오지 않음). */
+  retry: () => void;
+  eyebrow: string;
+  title: string;
+  description: string;
+  fallbackHref?: string;
+  fallbackLabel?: string;
+}) {
   useEffect(() => {
     console.error(error);
   }, [error]);

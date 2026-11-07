@@ -14,10 +14,7 @@ export function isHttpUrl(value: string) {
   }
 }
 
-/**
- * Creates an absolute web URL schema while allowing each form to keep its
- * existing user-facing validation messages.
- */
+/** http·https 절대 URL만 받는 schema. 폼마다 기존 오류 문구를 쓰도록 문구를 인자로 받는다. */
 export function createHttpUrlSchema(messages: HttpUrlSchemaMessages = {}) {
   return z.string()
     .url(messages.invalidUrl)

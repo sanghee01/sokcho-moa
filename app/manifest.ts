@@ -12,6 +12,7 @@ export default function manifest(): MetadataRoute.Manifest {
     description: SITE_DESCRIPTION,
     start_url: "/",
     display: "standalone",
+    // manifest는 CSS 변수를 읽지 못해 색을 직접 쓴다. theme_color는 app/globals.css의 --color-sea-600과 같은 값이다.
     background_color: "#ffffff",
     theme_color: "#0b6b88",
     lang: "ko-KR",

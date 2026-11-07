@@ -20,6 +20,9 @@ export interface AdminEventCollectionExclusion {
 }
 
 export const ADMIN_EVENT_PAGE_SIZE = 20;
+// 목록 표가 그리는 컬럼만 가져온다. 소개문처럼 긴 컬럼까지 20행씩 받을 이유가 없다(2026-11-07).
+// 바꾸면 features/events/admin/mappers.ts의 AdminEventListRow도 함께 바꾼다(typecheck가 잡는다).
+const ADMIN_EVENT_LIST_COLUMNS = "id, slug, title, source_name, view_count, review_status";
 
 export async function getAdminEvents({
   status,
@@ -35,7 +38,7 @@ export async function getAdminEvents({
   // 목록 맨 위로 이동한다. 생성 순서와 id를 사용해 상태 변경 전후 순서를 고정한다.
   let query = client
     .from("events")
-    .select("*", { count: "exact" })
+    .select(ADMIN_EVENT_LIST_COLUMNS, { count: "exact" })
     .order("created_at", { ascending: false })
     .order("id", { ascending: true });
   if (isEventReviewStatus(status)) query = query.eq("review_status", status);

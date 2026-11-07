@@ -92,6 +92,7 @@ AI가 읽는 규칙 문서(`AGENTS.md`)에는 규칙과 한 구절짜리 이유�
 | 규칙 | 선택 | 측정과 근거 |
 | --- | --- | --- |
 | JSX `&&` 왼쪽 | `react/jsx-no-leaked-render`로 강제(`validStrategies: coerce, ternary`) | 문장 규칙과 코드가 달랐음(왼쪽이 문자열·객체인 곳). 왼쪽에 숫자가 온 곳은 없어 실제 버그는 없었음. eslint-config-next에 이미 들어 있는 eslint-plugin-react 규칙이라 새 패키지 없음. 이 규칙은 타입을 몰라 boolean 변수도 `Boolean()`이나 비교식으로 써야 함. 켤 때 21곳 수정. 고르지 않은 대안: 문장을 "숫자만 금지"로 좁히기(lint로 강제 못 함), 타입 기반 `strict-boolean-expressions`(typed lint 설정이 필요하고 JSX 밖 조건문까지 바뀜) |
+| `"use client"` 파일의 export | 컴포넌트·hook·타입만. `no-restricted-syntax`로 강제(소문자 이름의 함수·값과 UPPER_SNAKE_CASE 상수의 export·재export 금지, PascalCase·`useX`는 허용) | 운영 명소 수정 화면(`/admin/places/[id]`)이 열리지 않던 원인. 서버 컴포넌트 `place-form.tsx`가 `"use client"` 파일 `confirm-dialog.tsx`의 함수를 불렀고, 서버에서는 그 export가 "부르면 오류를 던지는 client reference"라 `Attempted to call getConfirmButtonClassName() from the server` 오류가 났음(로컬에서 main 코드로 재현). typecheck·lint·E2E 모두 놓쳤음(E2E는 작성 화면만 열었음). 새 패키지 없이 ESLint 기본 규칙의 선택자로 막음. 켤 때 걸린 곳 0곳 |
 | 버튼 `danger` | 확인 창 안의 확정 버튼에만, 확인 창을 여는 "삭제"는 `secondary` | 확인 창이 따로 버튼 class를 가지고 있었음. 관리자 화면도 공통 helper·입력 스타일을 쓰게 바꿈(입력 글자 14px → 16px, 버튼 36~40px → 44px). 원본은 [.ai/DESIGN.md](../../.ai/DESIGN.md) Components |
 
 ### 아직 규칙에 맞추지 않은 코드

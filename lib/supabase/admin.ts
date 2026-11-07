@@ -11,10 +11,10 @@ import { getSupabaseSecretKey } from "@/lib/env.server";
  */
 export function createAdminSupabaseClient() {
   const env = getPublicEnv();
-  const SUPABASE_SECRET_KEY = getSupabaseSecretKey();
-  if (!SUPABASE_SECRET_KEY) return null;
+  const secretKey = getSupabaseSecretKey();
+  if (!secretKey) return null;
 
-  return createClient<Database>(env.NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SECRET_KEY, {
+  return createClient<Database>(env.NEXT_PUBLIC_SUPABASE_URL, secretKey, {
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
   });
 }

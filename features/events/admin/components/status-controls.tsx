@@ -24,7 +24,7 @@ export function StatusButtons({
   onChange: (status: EventReviewStatus) => void;
 }) {
   return (
-    <div className={statusControlStyles.controls} aria-label="공개 상태 변경" aria-busy={isPending}>
+    <div role="group" className={statusControlStyles.controls} aria-label="공개 상태 변경" aria-busy={isPending}>
       {buttonTones.map(([buttonStatus, tone]) => (
         <button
           key={buttonStatus}
