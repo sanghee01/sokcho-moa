@@ -85,12 +85,13 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
         <header className="sticky top-0 z-30 border-b border-line bg-surface">
           <div className="mx-auto max-w-6xl lg:flex lg:h-18 lg:items-center lg:gap-8 lg:px-6">
             <div className="flex h-16 items-center px-4 sm:px-6 lg:h-auto lg:px-0">
+              {/* placeholder="blur"를 쓰지 않는다. 로고는 바탕이 투명해 흐린 미리보기가 회색 덩어리로 보이고,
+                  hydration이 끝날 때까지 글자 뒤에 비쳤다(2026-11-15). */}
               <Link href="/" className="block shrink-0 rounded-control">
                 <Image
                   src={headerLogo}
                   alt="속초모아"
                   priority
-                  placeholder="blur"
                   sizes="(min-width: 1024px) 192px, 160px"
                   className="h-9 w-auto object-contain lg:h-11"
                 />
