@@ -292,6 +292,9 @@ test("GA page_view는 주소에 담긴 검색어를 가려서 보낸다", async 
   // 검색 결과 → 상세 → 뒤로 가기에서 검색어가 page_location·page_referrer로 실려 갈 수 있다.
   await page.getByRole("link", { name: /바다빛 가족 문화축제/ }).click();
   await expect(page).toHaveURL(new RegExp(`${SAMPLE_EVENT_PATH}$`));
+  // 주소는 화면을 그리는 순간 바뀌고 page_view는 그린 뒤(useEffect)에 남는다. 부하가 크면 그 사이에 뒤로 가서
+  // 상세·되돌아온 목록의 page_view가 모두 빠졌다. 사람처럼 상세가 기록된 뒤에 뒤로 간다(2026-11-15).
+  await expect.poll(() => analyticsEventParams(page, "page_view")).toHaveLength(2);
   await page.goBack();
   await expect(page).toHaveURL(/q=/);
   await expect.poll(() => analyticsEventParams(page, "page_view")).toHaveLength(3);
