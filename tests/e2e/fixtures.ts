@@ -10,6 +10,16 @@ export const LOCAL_ADMIN = {
 export const SAMPLE_EVENT_SLUG = "demo-sea-family-festival";
 export const SAMPLE_EVENT_PATH = `/events/${SAMPLE_EVENT_SLUG}`;
 
+/**
+ * 서울 기준 이번 달 월별 행사 페이지의 주소와 링크 이름. seed 행사는 now() 기준이라 이번 달 페이지에 늘 보인다.
+ * 링크 이름은 features/events/components/month/event-month-links.tsx와 같다.
+ */
+export function currentSeoulMonth(now = new Date()) {
+  const key = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Seoul", year: "numeric", month: "2-digit" }).format(now);
+  const [year, month] = key.split("-");
+  return { path: `/months/${key}`, label: `${year}년 ${Number(month)}월` };
+}
+
 /** supabase/seed.sql의 명소 하나. 명소 수정 화면(삭제 구역이 그려지는 화면) E2E가 연다. */
 export const E2E_PLACE_ID = "20000000-0000-4000-8000-000000000073";
 

@@ -9,6 +9,7 @@ import { AnalyticsRuntime } from "@/components/analytics/analytics-runtime";
 import { CopyrightYear } from "@/components/layout/copyright-year";
 import { ScrollToTopButton } from "@/components/layout/scroll-to-top-button";
 import { iconProps } from "@/components/ui/icon";
+import { textLinkClassName } from "@/components/ui/link-styles";
 import { CategoryNavigation } from "@/features/events/components/browse/category-navigation";
 import { GOOGLE_ANALYTICS_ID, shouldCollectGoogleAnalytics } from "@/lib/analytics/google-analytics";
 import { INTERNAL_TRAFFIC_STORAGE_KEY, INTERNAL_TRAFFIC_TYPE } from "@/lib/analytics/internal-traffic";
@@ -38,9 +39,6 @@ const pretendard = localFont({
 
 const siteUrl = getPublicEnv().NEXT_PUBLIC_SITE_URL;
 const collectGoogleAnalytics = shouldCollectGoogleAnalytics(getRuntimeEnv().vercelEnv);
-
-const footerLinkClassName =
-  "inline-flex min-h-11 items-center gap-1 text-label font-medium text-primary-text underline decoration-line-strong underline-offset-4 hover:decoration-primary";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -111,12 +109,12 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
               <p className="mt-3 text-caption text-content-subtle">각 기관의 공고를 옮긴 정보라 실제와 다를 수 있어요. 방문하거나 신청하기 전에 원문을 꼭 확인해 주세요.</p>
             </div>
             <nav aria-label="사이트 이용" className="flex flex-wrap gap-x-5">
-              <Link href="/report" className={footerLinkClassName}>행사 제보하기</Link>
-              <Link href="/feedback" className={footerLinkClassName}>의견 보내기</Link>
-              <a className={footerLinkClassName} href={SITE_INQUIRY_URL} target="_blank" rel="noreferrer">
+              <Link href="/report" className={textLinkClassName}>행사 제보하기</Link>
+              <Link href="/feedback" className={textLinkClassName}>의견 보내기</Link>
+              <a className={textLinkClassName} href={SITE_INQUIRY_URL} target="_blank" rel="noreferrer">
                 카카오톡 문의 <ExternalLink {...iconProps} size={14} /><span className="sr-only">(새 창)</span>
               </a>
-              <Link href="/privacy" className={footerLinkClassName}>개인정보 처리방침</Link>
+              <Link href="/privacy" className={textLinkClassName}>개인정보 처리방침</Link>
             </nav>
           </div>
           {/* 저작권 줄은 구분선으로 위 내용과 나누고, 흔히 쓰는 "All rights reserved."를 붙인다. */}

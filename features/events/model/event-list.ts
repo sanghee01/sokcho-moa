@@ -64,12 +64,7 @@ export function filterEvents(events: Event[], filters: EventFilters, now = new D
       const isAvailable = state === "not_applicable" || state === "open" || state === "closing_today";
       if (!isAvailable || deriveEventState(event, now) === "ended") return false;
     }
-    if (range) {
-      const overlapsActualSchedule = eventScheduleRanges(event).some(({ start, end }) => (
-        end >= range.start && start < range.end
-      ));
-      if (!overlapsActualSchedule) return false;
-    }
+    if (range && !overlapsEventSchedule(event, range)) return false;
     if (query) {
       const haystack = [event.title, getEventIntroduction(event), event.locationName, event.sourceName]
         .filter(Boolean)
@@ -207,6 +202,14 @@ function effectiveEndTimestamp(event: Event) {
 function dateTimestamp(value: string | null) {
   const timestamp = value ? new Date(value).getTime() : 0;
   return Number.isNaN(timestamp) ? 0 : timestamp;
+}
+
+/**
+ * 실제로 열리는 날이 [start, end) 구간에 하루라도 걸치는지. 회차형 행사는 전체 기간이 아니라 회차만 본다.
+ * 목록의 기간 필터와 월별 행사 페이지가 같은 기준을 쓴다.
+ */
+export function overlapsEventSchedule(event: Event, range: { start: Date; end: Date }) {
+  return eventScheduleRanges(event).some(({ start, end }) => end >= range.start && start < range.end);
 }
 
 function eventScheduleRanges(event: Event) {

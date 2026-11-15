@@ -1,5 +1,5 @@
 import { devices, expect, test, type Page } from "@playwright/test";
-import { SAMPLE_EVENT_PATH } from "@/tests/e2e/fixtures";
+import { currentSeoulMonth, SAMPLE_EVENT_PATH } from "@/tests/e2e/fixtures";
 
 // 화면 폭 기준은 .ai/DESIGN.md의 "반응형 검증"이 원본이다.
 // 412px(Pixel 7)와 데스크톱은 playwright 프로젝트로 public-event-flow.spec.ts가 확인하므로,
@@ -24,7 +24,7 @@ const viewports = [
 ];
 
 // 개편으로 제목 문구가 바뀌어도 깨지지 않게, 화면이 다 그려졌는지는 h1이 보이는지로만 확인한다.
-const publicPages = ["/", "/topics/festival", SAMPLE_EVENT_PATH, "/report", "/feedback", "/privacy"];
+const publicPages = ["/", "/topics/festival", currentSeoulMonth().path, SAMPLE_EVENT_PATH, "/report", "/feedback", "/privacy"];
 
 async function horizontalOverflow(page: Page) {
   return page.evaluate(() => ({

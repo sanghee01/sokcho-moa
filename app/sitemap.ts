@@ -5,6 +5,11 @@ import { isHttpUrl } from "@/lib/url";
 import { getAllPublicEvents } from "@/features/events/queries";
 import type { Event } from "@/features/events/model/event";
 import { eventTopics } from "@/features/events/model/topics";
+import {
+  eventMonthPath,
+  getListedEventMonths,
+  selectMonthEvents,
+} from "@/features/events/model/event-month";
 
 export const revalidate = 3600;
 
@@ -24,6 +29,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       const lastModified = latestModifiedAt(events.filter((event) => event.category === topic.category));
       return {
         url: `${baseUrl}${topic.path}`,
+        ...(lastModified ? { lastModified } : {}),
+        changeFrequency: "daily" as const,
+        priority: 0.8,
+      };
+    }),
+    // 월별 행사 페이지는 이번 달과 다음 달만 넣는다. 지난 달 주소는 열려 있지만 새로 알리지 않는다(2026-11-15 사용자 결정).
+    ...getListedEventMonths().map((month) => {
+      const lastModified = latestModifiedAt(selectMonthEvents(events, month));
+      return {
+        url: `${baseUrl}${eventMonthPath(month)}`,
         ...(lastModified ? { lastModified } : {}),
         changeFrequency: "daily" as const,
         priority: 0.8,
