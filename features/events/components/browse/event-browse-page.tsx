@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { AnalyticsMountTracking } from "@/components/analytics/analytics-mount-tracking";
 import { getButtonClassName } from "@/components/ui/button-styles";
 import { TransitionLink } from "@/components/ui/transition-link";
@@ -98,7 +97,7 @@ function EmptyResult({ content }: { content: EmptyResultContent }) {
       <p className="text-title-3 text-content-strong">{content.title}</p>
       {content.description !== undefined && <p className="mt-2 text-body text-content-muted">{content.description}</p>}
       {content.action !== undefined && (
-        <Link href={content.action.href} className={`${getButtonClassName({ variant: "secondary" })} mt-6`}>{content.action.label}</Link>
+        <TransitionLink href={content.action.href} pendingLabel="행사 목록 불러오는 중" showPendingIndicator={false} className={`${getButtonClassName({ variant: "secondary" })} mt-6`}>{content.action.label}</TransitionLink>
       )}
     </div>
   );

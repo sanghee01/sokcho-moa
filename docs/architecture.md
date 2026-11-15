@@ -21,7 +21,7 @@ features/
     model/           event.ts(타입), event-state.ts(진행·신청 상태), event-list.ts(필터·정렬·인기 행사),
                      review-status.ts, taxonomy.ts, location.ts(주변 명소), venue.ts(장소 사전으로 빈 주소 채우기), badges.ts, format.ts
     components/      카드·이미지·상태 배지처럼 목록과 상세가 함께 쓰는 부품
-      browse/        목록 화면(검색·정렬·분야 탭·인기 배너·로딩 자리)
+      browse/        목록 화면(검색·정렬·분야 탭·인기 배너)
       detail/        상세 화면(정보 목록·하단 버튼·공유·조회수 기록)
     admin/           관리자 queries·actions·components·schemas(행사 폼 검증)
       image/         포스터 업로드·외부 이미지 가져오기·최적화·Storage 저장

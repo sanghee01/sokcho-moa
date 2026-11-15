@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { getButtonClassName } from "@/components/ui/button-styles";
+import { TransitionLink } from "@/components/ui/transition-link";
 
 export default function NotFound() {
   return (
@@ -7,7 +7,7 @@ export default function NotFound() {
       <p className="text-label font-bold text-primary-text">404</p>
       <h1 className="mt-2 text-title-1 text-content-strong">페이지를 찾을 수 없어요.</h1>
       <p className="mt-4 leading-7 text-content-muted">주소가 잘못 입력됐거나 페이지가 이동되었을 수 있습니다.</p>
-      <Link href="/" className={`${getButtonClassName({ variant: "primary", width: "content" })} mt-8`}>행사 목록으로</Link>
+      <TransitionLink href="/" pendingLabel="행사 목록 불러오는 중" showPendingIndicator={false} className={`${getButtonClassName({ variant: "primary", width: "content" })} mt-8`}>행사 목록으로</TransitionLink>
     </main>
   );
 }

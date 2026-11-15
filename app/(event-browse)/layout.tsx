@@ -9,6 +9,8 @@ import { getAllPublicEvents } from "@/features/events/queries";
  * 배너는 그대로 남게 한다. 예전에는 페이지 안에 있어서 탭을 바꿀 때마다 로딩 화면이 통째로 덮어
  * 페이지 전체가 새로고침되는 것처럼 보였다(2026-11-06).
  * 분야 탭은 헤더와 함께 고정하려고 전역 헤더(app/layout.tsx)로 옮겼다(2026-11-07).
+ * 이 묶음에는 loading.tsx를 두지 않는다. 있으면 제목(h1)과 행사 목록이 HTML의 푸터 뒤 숨김 영역으로 가서
+ * JS를 실행하지 않는 크롤러가 못 읽을 수 있다. 탭을 바꾸는 동안에는 이전 목록이 남고, 누른 분야 탭이 먼저 선택된다(2026-11-15).
  */
 export default async function EventBrowseLayout({ children }: { children: ReactNode }) {
   const popularEvents = selectPopularEvents(await getAllPublicEvents(), new Date());

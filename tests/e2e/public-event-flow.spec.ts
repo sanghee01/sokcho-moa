@@ -59,6 +59,23 @@ test("행사 상세 HTML은 JS를 실행하지 않아도 본문이 푸터보다 
   expect(headingIndex).toBeLessThan(html.indexOf("<footer"));
 });
 
+// 홈과 분야 목록도 같은 이유로 지킨다. 목록에 로딩 화면이 있으면 제목과 카드 목록이 푸터 뒤 숨김 영역으로 갔다(2026-11-15).
+test("홈과 분야 목록 HTML은 JS를 실행하지 않아도 제목과 행사 목록이 푸터보다 먼저 온다", async ({ request }) => {
+  for (const path of ["/", "/topics/festival"]) {
+    const response = await request.get(path);
+    expect(response.status(), path).toBe(200);
+    const html = await response.text();
+    const footerIndex = html.indexOf("<footer");
+    const headingIndex = html.indexOf("<h1");
+    const resultsIndex = html.indexOf('aria-labelledby="event-results-title"');
+
+    expect(headingIndex, path).toBeGreaterThan(-1);
+    expect(headingIndex, path).toBeLessThan(footerIndex);
+    expect(resultsIndex, path).toBeGreaterThan(-1);
+    expect(resultsIndex, path).toBeLessThan(footerIndex);
+  }
+});
+
 // 네이버 서치어드바이저에 제출하는 새 행사 RSS. 홈의 link 태그로도 주소를 알린다(2026-11-15).
 test("RSS는 공개 행사 상세 주소를 담고, 홈이 RSS 주소를 알린다", async ({ page, request }) => {
   const response = await request.get("/rss.xml");

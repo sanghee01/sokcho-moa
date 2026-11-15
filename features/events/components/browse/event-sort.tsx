@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { TransitionLink } from "@/components/ui/transition-link";
 import { analyticsData } from "@/lib/analytics/events";
 import { DEFAULT_EVENT_SORT, type EventFilters } from "@/features/events/model/event-list";
 import { buildEventBrowseHref, type EventSearchParams } from "@/features/events/model/browse-url";
@@ -24,11 +24,14 @@ export function EventSort({ params, activeSort }: { params: EventSearchParams; a
   return (
     // 기존 운영 화면처럼 정렬은 묶음 버튼(segmented control)으로, 진행중/마감은 밑줄 탭으로 두어 둘을 구분한다(2026-11-06).
     // 선택된 정렬은 흰 바탕만으로는 눈에 띄지 않아 바다색으로 채운다.
+    // 진행중/마감 탭처럼 TransitionLink로 응답을 기다리는 동안 누른 정렬을 흐리게 한다. 버튼이 작아 스피너는 쓰지 않는다(2026-11-15).
     <nav aria-label="행사 정렬" className="inline-flex rounded-control bg-surface-muted p-0.5">
       {sortOptions.map((option) => (
-        <Link
+        <TransitionLink
           key={option.value}
           href={sortHref(params, option.value)}
+          pendingLabel="정렬 바꾸는 중"
+          showPendingIndicator={false}
           rel="nofollow"
           scroll={false}
           title={option.title}
@@ -39,7 +42,7 @@ export function EventSort({ params, activeSort }: { params: EventSearchParams; a
             : "text-content-subtle hover:text-content"}`}
         >
           {option.label}
-        </Link>
+        </TransitionLink>
       ))}
     </nav>
   );

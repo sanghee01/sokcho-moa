@@ -10,6 +10,7 @@ import { CopyrightYear } from "@/components/layout/copyright-year";
 import { ScrollToTopButton } from "@/components/layout/scroll-to-top-button";
 import { iconProps } from "@/components/ui/icon";
 import { textLinkClassName } from "@/components/ui/link-styles";
+import { TransitionLink } from "@/components/ui/transition-link";
 import { CategoryNavigation } from "@/features/events/components/browse/category-navigation";
 import { GOOGLE_ANALYTICS_ID, shouldCollectGoogleAnalytics } from "@/lib/analytics/google-analytics";
 import { INTERNAL_TRAFFIC_STORAGE_KEY, INTERNAL_TRAFFIC_TYPE } from "@/lib/analytics/internal-traffic";
@@ -85,7 +86,9 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
             <div className="flex h-16 items-center px-4 sm:px-6 lg:h-auto lg:px-0">
               {/* placeholder="blur"를 쓰지 않는다. 로고는 바탕이 투명해 흐린 미리보기가 회색 덩어리로 보이고,
                   hydration이 끝날 때까지 글자 뒤에 비쳤다(2026-11-15). */}
-              <Link href="/" className="block shrink-0 rounded-control">
+              {/* 홈은 동적 페이지라 미리 받지 않으므로, 응답을 기다리는 동안 로고를 흐리게 해 눌렸음을 알린다.
+                  로고 위 스피너는 글자를 가려서 쓰지 않는다(2026-11-15). */}
+              <TransitionLink href="/" pendingLabel="행사 목록 불러오는 중" showPendingIndicator={false} className="block shrink-0 rounded-control">
                 <Image
                   src={headerLogo}
                   alt="속초모아"
@@ -93,7 +96,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
                   sizes="(min-width: 1024px) 192px, 160px"
                   className="h-9 w-auto object-contain lg:h-11"
                 />
-              </Link>
+              </TransitionLink>
             </div>
             <CategoryNavigation />
           </div>

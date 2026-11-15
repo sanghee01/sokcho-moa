@@ -12,8 +12,9 @@ function notFoundResponse(request: NextRequest) {
  * 렌더링 전에 처리해야 하는 일만 둔다. 관리자 권한은 여기서 판단하지 않고 각 페이지·action이 확인한다
  * (proxy matcher가 바뀌면 보호가 조용히 빠질 수 있기 때문).
  *
- * 1. 없는 토픽은 진짜 HTTP 404로 응답한다. 토픽 페이지는 loading.tsx로 스트리밍되어,
- *    페이지 안의 notFound()로는 이미 보낸 200 상태 코드를 바꿀 수 없다.
+ * 1. 없는 토픽은 진짜 HTTP 404로 응답한다. 넣을 때의 이유는 토픽 페이지가 loading.tsx로 스트리밍되어
+ *    페이지 안의 notFound()로는 이미 보낸 200 상태 코드를 바꿀 수 없다는 것이었다.
+ *    목록의 loading.tsx는 2026-11-15에 지워서 이 이유는 지금 맞지 않는다. 검사를 지울지는 따로 정한다.
  * 2. 관리자 화면(/admin) 요청에서만 Supabase 로그인 세션을 갱신한다. 공개 페이지는 세션이 필요 없다.
  */
 export async function proxy(request: NextRequest) {

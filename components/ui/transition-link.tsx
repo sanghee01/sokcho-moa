@@ -19,6 +19,8 @@ export function TransitionLink({
   prefetch,
   scroll,
   rel,
+  title,
+  onNavigate,
   ...analyticsAttributes
 }: {
   href: string;
@@ -29,6 +31,9 @@ export function TransitionLink({
   prefetch?: boolean;
   scroll?: boolean;
   rel?: string;
+  title?: string;
+  /** 이동을 시작하는 transition 안에서 부른다. 부모가 useOptimistic으로 누른 상태를 먼저 보여 줄 때 쓴다. */
+  onNavigate?: () => void;
 } & Partial<AnalyticsDataAttributes> & {
   "aria-current"?: "page";
   "aria-label"?: string;
@@ -42,13 +47,14 @@ export function TransitionLink({
     if (isPending) return;
 
     startTransition(() => {
+      onNavigate?.();
       router.push(href, { scroll });
     });
   }
 
   return (
     // transition(색·투명도 함께)을 쓴다. transition-opacity였을 때 버튼 helper의 transition-colors와 같은 속성을 다퉈 한쪽 효과가 사라졌다(2026-11-07).
-    <Link href={href} prefetch={prefetch} onClick={handleClick} aria-busy={isPending} rel={rel} {...analyticsAttributes} className={`relative transition aria-busy:opacity-70 ${className}`}>
+    <Link href={href} prefetch={prefetch} onClick={handleClick} aria-busy={isPending} rel={rel} title={title} {...analyticsAttributes} className={`relative transition aria-busy:opacity-70 ${className}`}>
       {children}
       {Boolean(isPending) && (
         <>

@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { getButtonClassName } from "@/components/ui/button-styles";
+import { TransitionLink } from "@/components/ui/transition-link";
 import { EventCard, eventCardGridClassName } from "@/features/events/components/event-card";
 import { EventMonthLinks } from "@/features/events/components/month/event-month-links";
 import type { Event } from "@/features/events/model/event";
@@ -44,7 +44,7 @@ export function EventMonthView({
         <div className="mt-6 rounded-card bg-surface-subtle px-6 py-12 text-center">
           <p className="text-title-3 text-content-strong">아직 올라온 일정이 없어요</p>
           <p className="mt-2 text-body text-content-muted">새 일정이 올라오면 여기에 보여 드릴게요.</p>
-          <Link href="/" className={`${getButtonClassName({ variant: "secondary" })} mt-6`}>진행 중인 행사 보기</Link>
+          <TransitionLink href="/" pendingLabel="행사 목록 불러오는 중" showPendingIndicator={false} className={`${getButtonClassName({ variant: "secondary" })} mt-6`}>진행 중인 행사 보기</TransitionLink>
         </div>
       ) : (
         <p className="mt-3 max-w-160 text-body text-content-muted">{summary}</p>

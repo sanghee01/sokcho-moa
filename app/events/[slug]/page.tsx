@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AnalyticsViewTracking } from "@/components/analytics/analytics-view-tracking";
 import { getButtonClassName } from "@/components/ui/button-styles";
+import { TransitionLink } from "@/components/ui/transition-link";
 import { JsonLd } from "@/components/seo/json-ld";
 import { EventActionBar } from "@/features/events/components/detail/event-action-bar";
 import { EventCard, eventCardGridClassName } from "@/features/events/components/event-card";
@@ -104,9 +104,9 @@ export default async function EventDetailPage({ params }: PageProps<"/events/[sl
       <JsonLd data={breadcrumbJsonLd} />
       {/* 경로는 모바일 첫 화면을 쓰지 않도록 화면 읽기 프로그램용으로만 두고, 넓은 화면에서 보여 준다(.ai/DESIGN.md 행사 상세 7). */}
       <nav aria-label="현재 위치" className="sr-only text-label font-normal text-content-subtle lg:not-sr-only lg:mb-6 lg:block">
-        <Link href="/" className="text-primary-text hover:underline">{SITE_NAME}</Link>{" "}
+        <TransitionLink href="/" pendingLabel="행사 목록 불러오는 중" showPendingIndicator={false} className="text-primary-text hover:underline">{SITE_NAME}</TransitionLink>{" "}
         <span aria-hidden="true">/</span>{" "}
-        <Link href={eventTopicPath(event.category)} className="text-primary-text hover:underline">속초 {categoryLabels[event.category]}</Link>{" "}
+        <TransitionLink href={eventTopicPath(event.category)} pendingLabel={`속초 ${categoryLabels[event.category]} 목록 불러오는 중`} showPendingIndicator={false} className="text-primary-text hover:underline">속초 {categoryLabels[event.category]}</TransitionLink>{" "}
         <span aria-hidden="true">/</span> {event.title}
       </nav>
 
@@ -168,9 +168,11 @@ export default async function EventDetailPage({ params }: PageProps<"/events/[sl
 
       <div className={`${lowerSectionClassName} flex justify-center`}>
         {/* 모바일은 폭 전체, sm부터는 글자 폭만 하면 작아 보여 320px로 둔다(2026-11-07 사용자 결정). */}
-        <Link href="/" className={`${getButtonClassName({ variant: "tonal", width: "full" })} sm:w-80`}>
+        {/* 목록은 동적 페이지라 미리 받지 않아, 응답을 기다리는 동안 버튼을 흐리게 한다(2026-11-15).
+            버튼 모양 링크의 모서리 스피너는 글자 옆 "["처럼 보여 쓰지 않는다(2026-11-07 관리자 버튼과 같은 결정). */}
+        <TransitionLink href="/" pendingLabel="행사 목록 불러오는 중" showPendingIndicator={false} className={`${getButtonClassName({ variant: "tonal", width: "full" })} sm:w-80`}>
           목록으로 돌아가기
-        </Link>
+        </TransitionLink>
       </div>
     </main>
   );

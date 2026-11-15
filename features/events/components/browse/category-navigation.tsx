@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { useOptimistic } from "react";
 import { TransitionLink } from "@/components/ui/transition-link";
 import { categoryLabels, eventCategories } from "@/features/events/model/taxonomy";
 
@@ -27,6 +28,9 @@ function isEventListPath(pathname: string) {
  */
 export function CategoryNavigation() {
   const pathname = usePathname();
+  // 목록에는 로딩 화면이 없어 응답이 올 때까지 이전 목록이 남는다. 누른 탭을 먼저 선택 상태로 바꿔 눌렸음을 바로 알린다.
+  // 이동이 끝나면 실제 주소로 돌아가고, 불러오는 동안에는 TransitionLink가 흐리게(aria-busy) 표시한다(2026-11-15).
+  const [selectedHref, setSelectedHref] = useOptimistic(pathname);
   if (!isEventListPath(pathname)) return null;
 
   return (
@@ -35,13 +39,14 @@ export function CategoryNavigation() {
     <nav aria-label="주요 메뉴" data-category-navigation className="border-t border-line lg:ml-auto lg:border-t-0">
       <div className="grid grid-cols-7 px-1 py-1 sm:flex sm:justify-center sm:gap-1 sm:px-4 lg:px-0 lg:py-0">
         {categoryLinks.map((item) => {
-          const active = pathname === item.href;
+          const active = selectedHref === item.href;
           return (
             <TransitionLink
               key={item.href}
               href={item.href}
               pendingLabel={`${item.label} 불러오는 중`}
               showPendingIndicator={false}
+              onNavigate={() => setSelectedHref(item.href)}
               aria-current={active ? "page" : undefined}
               // 누르는 영역은 칸 전체(높이 44px 이상)이고, 보이는 모양은 안쪽 알약이다. 알약끼리는 떨어져 보인다.
               className="group inline-flex min-h-11 items-center justify-center whitespace-nowrap lg:min-h-13"
