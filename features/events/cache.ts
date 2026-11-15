@@ -1,13 +1,14 @@
 import { revalidatePath, updateTag } from "next/cache";
 import { isEventCategory } from "@/features/events/model/taxonomy";
 import { eventTopicPath, eventTopics } from "@/features/events/model/topics";
+import { EVENT_RSS_PATH } from "@/features/events/rss";
 
 /** 공개 행사 목록 캐시의 tag. 조회(queries.ts)와 무효화(이 파일)가 같은 이름을 쓴다. */
 export const PUBLIC_EVENTS_CACHE_TAG = "public-events";
 
 /** 행사가 바뀌면 다시 만들어야 하는 공개 경로. 무효화 경로의 원본은 이 함수 하나다. */
 function publicEventPaths(slug?: string | null) {
-  const paths = ["/", "/sitemap.xml", ...eventTopics.map((topic) => topic.path)];
+  const paths = ["/", "/sitemap.xml", EVENT_RSS_PATH, ...eventTopics.map((topic) => topic.path)];
   if (slug) paths.push(`/events/${slug}`);
   return paths;
 }

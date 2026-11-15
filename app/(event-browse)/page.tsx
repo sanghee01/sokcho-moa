@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { EventBrowsePage } from "@/features/events/components/browse/event-browse-page";
 import { findEventTopicByCategory } from "@/features/events/model/topics";
+import { EVENT_RSS_PATH } from "@/features/events/rss";
 import { firstSearchParam } from "@/lib/search-params";
 import {
   HOME_TITLE,
@@ -41,7 +42,8 @@ export async function generateMetadata({ searchParams }: PageProps<"/">): Promis
   return {
     title: { absolute: HOME_TITLE },
     description: SITE_DESCRIPTION,
-    alternates: { canonical: "/" },
+    // 새 행사 RSS 주소를 홈에서 알린다. 페이지마다 alternates를 새로 정하므로 루트 layout에 두면 사라진다(2026-11-15).
+    alternates: { canonical: "/", types: { "application/rss+xml": EVENT_RSS_PATH } },
     robots: INDEXABLE_ROBOTS,
     openGraph: {
       type: "website",

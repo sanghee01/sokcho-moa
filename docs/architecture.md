@@ -70,6 +70,7 @@ import합니다. 이 규칙은 `pnpm lint`가 강제합니다(`eslint.config.mjs
 | `/admin/**` | 동적(쿠키) | 모든 페이지가 `requireAdmin()`으로 시작 |
 | `POST /api/events/[slug]/view` | 동적 | 요청 제한(IP·행사별 10분 10회) 뒤 service_role로 조회수 +1 RPC |
 | `/sitemap.xml` | ISR 5분(`revalidate = 3600`이지만 안에서 쓰는 데이터 캐시 5분을 따름) | 검색엔진용 |
+| `/rss.xml` | sitemap과 같음 | 최근 공개 행사 50개 RSS 2.0(`features/events/rss.ts`). 네이버 서치어드바이저 제출용, 홈 `<link rel="alternate">`로도 알림 |
 | `/robots.txt`, `/indexnow-key.txt`, `/manifest.webmanifest` | 정적 | 검색엔진·PWA용 |
 
 ---

@@ -59,6 +59,17 @@ test("행사 상세 HTML은 JS를 실행하지 않아도 본문이 푸터보다 
   expect(headingIndex).toBeLessThan(html.indexOf("<footer"));
 });
 
+// 네이버 서치어드바이저에 제출하는 새 행사 RSS. 홈의 link 태그로도 주소를 알린다(2026-11-15).
+test("RSS는 공개 행사 상세 주소를 담고, 홈이 RSS 주소를 알린다", async ({ page, request }) => {
+  const response = await request.get("/rss.xml");
+  expect(response.status()).toBe(200);
+  expect(response.headers()["content-type"]).toBe("application/rss+xml; charset=utf-8");
+  expect(await response.text()).toContain(`${SAMPLE_EVENT_PATH}</link>`);
+
+  await page.goto("/");
+  await expect(page.locator('link[rel="alternate"][type="application/rss+xml"]')).toHaveAttribute("href", /\/rss\.xml$/);
+});
+
 test("행사 상세의 날짜는 기계가 읽는 서울 날짜를 함께 담는다", async ({ page }) => {
   await page.goto(SAMPLE_EVENT_PATH);
   const eventDate = page.getByRole("region", { name: "핵심 정보" }).locator("time").first();
