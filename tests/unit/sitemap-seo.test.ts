@@ -52,7 +52,7 @@ describe("SEO sitemap", () => {
     });
   });
 
-  it("이번 달과 다음 달 월별 행사 페이지만 넣고, 그 달 행사의 최신 수정일을 쓴다", async () => {
+  it("이번 달과 다음 달 월별 행사 페이지와 행사가 있는 달·분야 페이지만 넣고, 그 행사들의 최신 수정일을 쓴다", async () => {
     vi.useFakeTimers({ toFake: ["Date"] });
     vi.setSystemTime(new Date("2026-08-10T12:00:00+09:00"));
     try {
@@ -60,10 +60,13 @@ describe("SEO sitemap", () => {
 
       expect(monthEntries.map((entry) => entry.url)).toEqual([
         "https://sokcho-moa.vercel.app/months/2026-08",
+        "https://sokcho-moa.vercel.app/months/2026-08/performance",
+        "https://sokcho-moa.vercel.app/months/2026-08/festival",
         "https://sokcho-moa.vercel.app/months/2026-09",
       ]);
       expect(monthEntries[0]).toMatchObject({ lastModified: new Date("2026-08-03T12:00:00+09:00") });
-      expect(monthEntries[1]).not.toHaveProperty("lastModified");
+      expect(monthEntries[1]).toMatchObject({ lastModified: new Date("2026-08-02T12:00:00+09:00") });
+      expect(monthEntries[3]).not.toHaveProperty("lastModified");
     } finally {
       vi.useRealTimers();
     }

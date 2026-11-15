@@ -4,8 +4,6 @@ import { TransitionLink } from "@/components/ui/transition-link";
 import { EventCard, eventCardGridClassName } from "@/features/events/components/event-card";
 import { EventSearch } from "@/features/events/components/browse/event-search";
 import { EventSort } from "@/features/events/components/browse/event-sort";
-import { EventMonthLinks } from "@/features/events/components/month/event-month-links";
-import { getListedEventMonths } from "@/features/events/model/event-month";
 import { analyticsData } from "@/lib/analytics/events";
 import { getPublicEnv } from "@/lib/env";
 import { getAllPublicEvents } from "@/features/events/queries";
@@ -203,8 +201,6 @@ export async function EventBrowsePage({
             <EventCardGrid events={events} showCategory={!topic} />
           )}
         </section>
-
-        <EventMonthLinks months={getListedEventMonths(now)} label="월별 행사" className="mt-10" />
 
       </div>
     </main>

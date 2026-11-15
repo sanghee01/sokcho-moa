@@ -1,9 +1,9 @@
-// 월별 행사 페이지(/months/YYYY-MM)의 월 계산, 행사 고르기, 요약 문장.
-// "11월 속초 행사"처럼 기간으로 찾는 검색과 AI 개요에 바로 답하는 페이지를 만들려고 추가했다(2026-11-15 사용자 결정).
+// 월별 행사 페이지(/months/YYYY-MM, 분야를 고르면 /months/YYYY-MM/<분야>)의 월 계산, 행사 고르기, 검색 설명.
+// "11월 속초 행사", "속초 11월 교육"처럼 기간(과 분야)으로 찾는 검색에 답하는 페이지다(2026-11-15 사용자 결정).
 import type { Event } from "@/features/events/model/event";
 import { overlapsEventSchedule } from "@/features/events/model/event-list";
 import { deriveEventState } from "@/features/events/model/event-state";
-import { categoryLabels, eventCategories } from "@/features/events/model/taxonomy";
+import { categoryLabels, eventCategories, type EventCategory } from "@/features/events/model/taxonomy";
 import { getSeoulDateParts, getSeoulMidnight } from "@/lib/seoul-time";
 
 export interface EventMonth {
@@ -23,8 +23,10 @@ export function formatEventMonthKey({ year, month }: EventMonth) {
   return `${year}-${String(month).padStart(2, "0")}`;
 }
 
-export function eventMonthPath(month: EventMonth) {
-  return `/months/${formatEventMonthKey(month)}`;
+/** 월 페이지 주소. 분야를 고르면 그 달 안에서 그 분야만 보는 주소다(예: /months/2026-11/education). */
+export function eventMonthPath(month: EventMonth, category?: EventCategory) {
+  const path = `/months/${formatEventMonthKey(month)}`;
+  return category ? `${path}/${category}` : path;
 }
 
 /** 화면·제목의 월 이름(예: "2026년 11월") */
@@ -50,17 +52,18 @@ function eventMonthRange({ year, month }: EventMonth) {
   return { start: getSeoulMidnight(year, month, 1), end: getSeoulMidnight(year, month + 1, 1) };
 }
 
-/** 목록 아래 링크와 sitemap에 넣는 달: 이번 달과 다음 달(2026-11-15 사용자 결정). */
+/** 미리 만들고 sitemap에 넣는 달: 이번 달과 다음 달(2026-11-15 사용자 결정). */
 export function getListedEventMonths(now = new Date()): EventMonth[] {
   const current = getCurrentEventMonth(now);
   return [current, shiftEventMonth(current, 1)];
 }
 
-/** 그 달(KST)에 하루라도 열리는 공개 행사. 시작일순이고, 같으면 제목순이다. */
-export function selectMonthEvents(events: Event[], month: EventMonth): Event[] {
+/** 그 달(KST)에 하루라도 열리는 공개 행사. 분야를 주면 그 분야만 고른다. 시작일순이고, 같으면 제목순이다. */
+export function selectMonthEvents(events: Event[], month: EventMonth, category?: EventCategory): Event[] {
   const range = eventMonthRange(month);
   return events
     .filter((event) => event.reviewStatus === "published" && overlapsEventSchedule(event, range))
+    .filter((event) => !category || event.category === category)
     .sort((a, b) => a.eventStartAt.localeCompare(b.eventStartAt) || a.title.localeCompare(b.title, "ko-KR"));
 }
 
@@ -87,26 +90,23 @@ export function partitionMonthEvents(events: Event[], now = new Date()) {
 }
 
 /**
- * 월 페이지 맨 위 요약 문장. 화면, 검색 결과 설명, AI 개요가 함께 읽는다.
- * 행사 수와 분야별 수를 쓰고, 이미 끝난 행사가 있으면 오늘(KST) 기준 남은 수를 덧붙인다. events는 selectMonthEvents의 결과다.
+ * 월 페이지의 검색 결과 설명(meta description)과 구조화 데이터 설명. 행사 수와 분야별 수만 쓴다.
+ * events는 같은 month·category로 고른 selectMonthEvents의 결과다.
+ * 화면에는 쓰지 않는다. 방문자는 카드로 행사를 바로 보므로 개수·"오늘 기준" 문장은 필요 없다(2026-11-15 사용자 결정).
  */
-export function buildEventMonthSummary(month: EventMonth, events: Event[], now = new Date()) {
+export function buildEventMonthDescription(month: EventMonth, events: Event[], category?: EventCategory) {
   const label = formatEventMonthLabel(month);
+  if (category) {
+    const categoryLabel = categoryLabels[category];
+    return events.length === 0
+      ? `${label} 속초 ${categoryLabel} 일정은 아직 올라오지 않았어요.`
+      : `${label} 속초 ${categoryLabel} 행사는 모두 ${events.length}개예요.`;
+  }
   if (events.length === 0) return `${label} 속초 행사 일정은 아직 올라오지 않았어요.`;
 
   const categoryCounts = eventCategories
     .map((category) => ({ category, count: events.filter((event) => event.category === category).length }))
     .filter(({ count }) => count > 0)
     .map(({ category, count }) => `${categoryLabels[category]} ${count}개`);
-  const sentences = [`${label} 속초에서 열리는 행사는 모두 ${events.length}개예요(${categoryCounts.join(", ")}).`];
-
-  const { current } = partitionMonthEvents(events, now);
-  if (current.length < events.length) {
-    const today = getSeoulDateParts(now);
-    const basis = `${today.month}월 ${today.day}일 기준으로`;
-    sentences.push(current.length === 0
-      ? `${basis} 모두 끝났어요.`
-      : `${basis} 진행 중이거나 예정된 행사는 ${current.length}개예요.`);
-  }
-  return sentences.join(" ");
+  return `${label} 속초에서 열리는 행사는 모두 ${events.length}개예요(${categoryCounts.join(", ")}).`;
 }

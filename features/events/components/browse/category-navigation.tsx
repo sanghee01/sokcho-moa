@@ -5,7 +5,7 @@ import { useOptimistic } from "react";
 import { TransitionLink } from "@/components/ui/transition-link";
 import { categoryLabels, eventCategories } from "@/features/events/model/taxonomy";
 
-const categoryLinks = [
+const topicLinks = [
   { href: "/", label: "전체" },
   ...eventCategories.map((category) => ({
     href: `/topics/${category}`,
@@ -13,13 +13,26 @@ const categoryLinks = [
   })),
 ];
 
-/** 분야 탭을 보여 주는 목록 주소: 홈(전체)과 분야별 목록. 상세·제보·관리자에는 두지 않는다. */
-function isEventListPath(pathname: string) {
-  return pathname === "/" || pathname.startsWith("/topics/");
+// 월별 행사 페이지 주소(/months/2026-11, /months/2026-11/education)에서 달 부분.
+const MONTH_PATH_PATTERN = /^\/months\/(\d{4}-(?:0[1-9]|1[0-2]))(?:\/[^/]+)?$/;
+
+/**
+ * 주소에 맞는 분야 탭 링크. 홈·분야 목록에서는 분야 목록(/topics/*)으로 가고, 월별 페이지에서는 같은 달 안에서 분야만 거른다
+ * (2026-11-15 사용자 결정: 월별 페이지도 홈과 같은 헤더를 쓰고 탭을 누르면 그 달의 그 분야를 본다). 상세·제보·관리자에는 탭이 없다.
+ */
+function getCategoryLinks(pathname: string) {
+  const monthKey = MONTH_PATH_PATTERN.exec(pathname)?.[1];
+  if (monthKey !== undefined) {
+    return [
+      { href: `/months/${monthKey}`, label: "전체" },
+      ...eventCategories.map((category) => ({ href: `/months/${monthKey}/${category}`, label: categoryLabels[category] })),
+    ];
+  }
+  return pathname === "/" || pathname.startsWith("/topics/") ? topicLinks : null;
 }
 
 /**
- * 행사 분야 탭(.ai/DESIGN.md Components > Tabs). 전역 헤더 안에 있고 목록 주소에서만 보인다.
+ * 행사 분야 탭(.ai/DESIGN.md Components > Tabs). 전역 헤더 안에 있고 목록·월별 주소에서만 보인다.
  * 헤더와 함께 화면 위에 고정되어, 목록을 내려 보다가도 바로 분야를 바꿀 수 있다(2026-11-07 사용자 결정).
  * lg는 로고 오른쪽 한 줄, 그보다 좁으면 로고 아래 줄이다. 7개가 한 줄에 다 들어가게 모바일은 같은 폭으로 나누고,
  * 좌우 스크롤은 쓰지 않는다(2026-11-06).
@@ -31,7 +44,8 @@ export function CategoryNavigation() {
   // 목록에는 로딩 화면이 없어 응답이 올 때까지 이전 목록이 남는다. 누른 탭을 먼저 선택 상태로 바꿔 눌렸음을 바로 알린다.
   // 이동이 끝나면 실제 주소로 돌아가고, 불러오는 동안에는 TransitionLink가 흐리게(aria-busy) 표시한다(2026-11-15).
   const [selectedHref, setSelectedHref] = useOptimistic(pathname);
-  if (!isEventListPath(pathname)) return null;
+  const categoryLinks = getCategoryLinks(pathname);
+  if (categoryLinks === null) return null;
 
   return (
     // data-category-navigation: 탭이 헤더 높이를 늘리므로 globals.css가 # 이동 여백(--site-header-height)을 맞춘다.

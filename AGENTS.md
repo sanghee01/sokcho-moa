@@ -135,6 +135,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - className에 원색 팔레트 class(`teal-700`)와 임의 값(`text-[#07377a]`, `rounded-[2rem]`)을 쓰지 않고 역할 토큰(`bg-surface`, `text-content-muted`, `rounded-control`, `text-title-2`)을 씁니다. 굵기는 `font-normal`·`font-medium`·`font-semibold`·`font-bold`만 씁니다.
 - 접두사 없는 class는 360px 화면용이고, 넓은 화면에서 바뀌는 값만 `sm:`·`md:`·`lg:`·`xl:`로 덧붙입니다. `max-*:`로 모바일 값을 덮어쓰지 않습니다.
 - 누를 수 있는 요소는 44×44px 이상이고, 붙어 있는 터치 요소 사이는 8px 이상입니다.
+- 화면 문구는 방문자 입장에서 필요한 것만 씁니다. 개수·"○일 기준" 상태 설명·되풀이 요약처럼 할 일에 도움이 안 되는 문장은 넣지 않고, 검색용 문장은 meta description에 둡니다.
 
 **주석**
 - 주석은 한국어로 "왜"를 씁니다. 사용자 결정이나 바뀐 이유가 있으면 날짜를 붙입니다(`(2026-11-06)`).

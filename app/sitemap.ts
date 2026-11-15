@@ -5,6 +5,7 @@ import { isHttpUrl } from "@/lib/url";
 import { getAllPublicEvents } from "@/features/events/queries";
 import type { Event } from "@/features/events/model/event";
 import { eventTopics } from "@/features/events/model/topics";
+import { eventCategories } from "@/features/events/model/taxonomy";
 import {
   eventMonthPath,
   getListedEventMonths,
@@ -34,16 +35,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         priority: 0.8,
       };
     }),
-    // 월별 행사 페이지는 이번 달과 다음 달만 넣는다. 지난 달 주소는 열려 있지만 새로 알리지 않는다(2026-11-15 사용자 결정).
-    ...getListedEventMonths().map((month) => {
-      const lastModified = latestModifiedAt(selectMonthEvents(events, month));
-      return {
-        url: `${baseUrl}${eventMonthPath(month)}`,
-        ...(lastModified ? { lastModified } : {}),
-        changeFrequency: "daily" as const,
-        priority: 0.8,
-      };
-    }),
+    // 월별 행사 페이지는 이번 달과 다음 달만 넣는다. 지난 달 주소는 열려 있지만 새로 알리지 않는다.
+    // 달·분야 페이지는 행사가 있는 것만 넣는다. 빈 페이지는 noindex라 알리지 않는다(2026-11-15 사용자 결정).
+    ...getListedEventMonths().flatMap((month) => [
+      { month, category: undefined, monthEvents: selectMonthEvents(events, month) },
+      ...eventCategories.map((category) => ({ month, category, monthEvents: selectMonthEvents(events, month, category) })),
+    ])
+      .filter(({ category, monthEvents }) => !category || monthEvents.length > 0)
+      .map(({ month, category, monthEvents }) => {
+        const lastModified = latestModifiedAt(monthEvents);
+        return {
+          url: `${baseUrl}${eventMonthPath(month, category)}`,
+          ...(lastModified ? { lastModified } : {}),
+          changeFrequency: "daily" as const,
+          priority: 0.8,
+        };
+      }),
     ...events.map((event) => {
       const imageUrl = sameOriginHttpUrl(event.imageUrl, baseUrl);
       const lastModified = eventModifiedAt(event);

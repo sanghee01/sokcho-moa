@@ -65,7 +65,9 @@ import합니다. 이 규칙은 `pnpm lint`가 강제합니다(`eslint.config.mjs
 | `/topics/[topic]` | 동적 | 위와 같음. 카테고리 SEO 페이지 6개. 없는 토픽은 `proxy.ts`가 404 |
 | (공통 틀) `app/(event-browse)/layout.tsx` | - | `/`와 `/topics/[topic]`이 함께 쓰는 배너(많이 보는 행사). 탭을 바꿔도 다시 그리지 않음. 분야 탭은 헤더와 함께 고정되도록 전역 `app/layout.tsx`에 있음 |
 | `/events/[slug]` | ISR 1시간, 공개 행사 전부 미리 생성 | 행사 상세, 관련 행사, 주변 명소(`features/places/queries`) |
+| `/months` | 동적 | 헤더 "월별 일정" 버튼의 목적지. 요청한 때의 이번 달 `/months/YYYY-MM`으로 307 redirect |
 | `/months/[month]` | ISR 5분(`revalidate = 3600`이지만 행사 데이터 캐시 5분을 따름), 이번 달·다음 달 미리 생성 | 월별 행사(`features/events/components/month`, `features/events/model/event-month.ts`). 지난 달은 행사가 있을 때만 열고 다다음 달부터 404 |
+| `/months/[month]/[category]` | 위와 같음, 이번 달·다음 달 × 6분야 미리 생성 | 그 달의 한 분야(헤더 분야 탭). 행사가 없으면 `noindex`. 조회는 `features/events/month-page.ts`를 두 route가 함께 씀 |
 | `/calendar` | 동적 | 목록으로 redirect만(캘린더는 삭제, 옛 북마크 보호) |
 | `/report`, `/feedback` | 정적 | 방문자 제보·의견 폼 |
 | `/privacy` | 정적 | 개인정보 처리방침(GA 사용, 쿠키 거부 방법, 보호책임자) |

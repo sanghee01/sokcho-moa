@@ -12,6 +12,7 @@ import { iconProps } from "@/components/ui/icon";
 import { textLinkClassName } from "@/components/ui/link-styles";
 import { TransitionLink } from "@/components/ui/transition-link";
 import { CategoryNavigation } from "@/features/events/components/browse/category-navigation";
+import { MonthEntryLink } from "@/features/events/components/month/month-entry-link";
 import { GOOGLE_ANALYTICS_ID, shouldCollectGoogleAnalytics } from "@/lib/analytics/google-analytics";
 import { INTERNAL_TRAFFIC_STORAGE_KEY, INTERNAL_TRAFFIC_TYPE } from "@/lib/analytics/internal-traffic";
 import { getPublicEnv, getRuntimeEnv } from "@/lib/env";
@@ -83,7 +84,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
             목록(홈·분야)에서는 분야 탭도 헤더 안에 있다: lg는 로고 오른쪽 한 줄, 그보다 좁으면 로고 아래 줄(2026-11-07 사용자 결정). */}
         <header className="sticky top-0 z-30 border-b border-line bg-surface">
           <div className="mx-auto max-w-6xl lg:flex lg:h-18 lg:items-center lg:gap-8 lg:px-6">
-            <div className="flex h-16 items-center px-4 sm:px-6 lg:h-auto lg:px-0">
+            <div className="flex h-16 items-center justify-between gap-3 px-4 sm:px-6 lg:h-auto lg:px-0">
               {/* placeholder="blur"를 쓰지 않는다. 로고는 바탕이 투명해 흐린 미리보기가 회색 덩어리로 보이고,
                   hydration이 끝날 때까지 글자 뒤에 비쳤다(2026-11-15). */}
               {/* 홈은 동적 페이지라 미리 받지 않으므로, 응답을 기다리는 동안 로고를 흐리게 해 눌렸음을 알린다.
@@ -97,8 +98,14 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
                   className="h-9 w-auto object-contain lg:h-11"
                 />
               </TransitionLink>
+              {/* 월별 일정 버튼: lg 미만은 로고 줄 오른쪽, lg는 분야 탭 뒤 오른쪽 끝이다. 탭이 없는 페이지(상세 등)에서도
+                  오른쪽 끝에 오도록 탭과 버튼을 한 묶음으로 두고, 폭에 따라 둘 중 한 자리만 보인다(2026-11-15 사용자 결정). */}
+              <span className="lg:hidden"><MonthEntryLink /></span>
             </div>
-            <CategoryNavigation />
+            <div className="lg:ml-auto lg:flex lg:items-center lg:gap-6">
+              <CategoryNavigation />
+              <span className="hidden lg:block"><MonthEntryLink /></span>
+            </div>
           </div>
         </header>
         <AnalyticsRuntime />

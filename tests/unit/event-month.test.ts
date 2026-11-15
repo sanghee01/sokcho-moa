@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  buildEventMonthSummary,
+  buildEventMonthDescription,
   eventMonthPath,
   getListedEventMonths,
   isEventMonthPublic,
@@ -23,8 +23,9 @@ describe("월 주소 해석", () => {
     }
   });
 
-  it("월을 주소로 바꾼다", () => {
+  it("월을 주소로 바꾸고, 분야를 고르면 그 아래 주소다", () => {
     expect(eventMonthPath({ year: 2027, month: 1 })).toBe("/months/2027-01");
+    expect(eventMonthPath(NOVEMBER, "education")).toBe("/months/2026-11/education");
   });
 });
 
@@ -46,6 +47,13 @@ describe("월별 행사 고르기", () => {
     ];
 
     expect(selectMonthEvents(events, NOVEMBER).map((event) => event.slug)).toEqual(["long", "kst-first", "late", "kst-last"]);
+  });
+
+  it("분야를 고르면 그 분야 행사만 고른다", () => {
+    const concert = makeEvent({ category: "performance", eventStartAt: "2026-11-10T01:00:00.000Z", eventEndAt: null });
+    const lecture = makeEvent({ category: "education", eventStartAt: "2026-11-11T01:00:00.000Z", eventEndAt: null });
+
+    expect(selectMonthEvents([concert, lecture], NOVEMBER, "education")).toEqual([lecture]);
   });
 
   it("회차형 행사는 기간이 걸쳐도 그 달에 회차가 있을 때만 고른다", () => {
@@ -107,38 +115,29 @@ describe("열어 둘 월", () => {
   });
 });
 
-describe("월 요약 문장", () => {
-  it("행사 수와 분야별 수를 쓰고, 이미 끝난 행사가 있으면 오늘 기준 남은 수를 덧붙인다", () => {
+// 검색 결과 설명(meta description)과 구조화 데이터에만 쓴다. 화면에는 쓰지 않는다(2026-11-15 사용자 결정: 방문자에게 필요 없는 문장).
+describe("월 검색 설명", () => {
+  it("행사 수와 분야별 수만 쓰고, 오늘 기준 남은 수나 끝났다는 말은 쓰지 않는다", () => {
     const events = [
       makeEvent({ category: "festival", eventStartAt: "2026-11-06T00:00:00.000Z", eventEndAt: "2026-11-14T14:00:00.000Z" }),
       makeEvent({ category: "performance", eventStartAt: "2026-11-19T04:30:00.000Z", eventEndAt: null }),
       makeEvent({ category: "performance", eventStartAt: "2026-11-20T04:30:00.000Z", eventEndAt: null }),
     ];
 
-    expect(buildEventMonthSummary(NOVEMBER, events, NOV_15)).toBe(
-      "2026년 11월 속초에서 열리는 행사는 모두 3개예요(공연 2개, 축제 1개). 11월 15일 기준으로 진행 중이거나 예정된 행사는 2개예요.",
-    );
-  });
-
-  it("아직 끝난 행사가 없으면 남은 수를 덧붙이지 않는다", () => {
-    const events = [makeEvent({ category: "exhibition", eventStartAt: "2026-12-02T01:00:00.000Z", eventEndAt: null })];
-
-    expect(buildEventMonthSummary({ year: 2026, month: 12 }, events, NOV_15)).toBe(
-      "2026년 12월 속초에서 열리는 행사는 모두 1개예요(전시 1개).",
-    );
-  });
-
-  it("모두 끝났으면 끝났다고 쓴다", () => {
-    const events = [makeEvent({ eventStartAt: "2026-10-03T01:00:00.000Z", eventEndAt: null })];
-
-    expect(buildEventMonthSummary({ year: 2026, month: 10 }, events, NOV_15)).toBe(
-      "2026년 10월 속초에서 열리는 행사는 모두 1개예요(축제 1개). 11월 15일 기준으로 모두 끝났어요.",
-    );
+    expect(buildEventMonthDescription(NOVEMBER, events)).toBe("2026년 11월 속초에서 열리는 행사는 모두 3개예요(공연 2개, 축제 1개).");
   });
 
   it("행사가 없으면 아직 올라오지 않았다고 쓴다", () => {
-    expect(buildEventMonthSummary({ year: 2026, month: 12 }, [], NOV_15)).toBe(
-      "2026년 12월 속초 행사 일정은 아직 올라오지 않았어요.",
-    );
+    expect(buildEventMonthDescription({ year: 2026, month: 12 }, [])).toBe("2026년 12월 속초 행사 일정은 아직 올라오지 않았어요.");
+  });
+
+  it("분야를 고르면 그 분야 이름으로 쓴다", () => {
+    const lectures = [
+      makeEvent({ category: "education", eventStartAt: "2026-11-11T01:00:00.000Z", eventEndAt: null }),
+      makeEvent({ category: "education", eventStartAt: "2026-11-12T01:00:00.000Z", eventEndAt: null }),
+    ];
+
+    expect(buildEventMonthDescription(NOVEMBER, lectures, "education")).toBe("2026년 11월 속초 교육 행사는 모두 2개예요.");
+    expect(buildEventMonthDescription(NOVEMBER, [], "education")).toBe("2026년 11월 속초 교육 일정은 아직 올라오지 않았어요.");
   });
 });

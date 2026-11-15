@@ -11,6 +11,9 @@ export const SITE_OPEN_GRAPH_IMAGE_PATH = "/opengraph-image";
 // 방문자 문의 창구. 푸터와 개인정보 처리방침의 연락처가 함께 쓴다(2026-11-07).
 export const SITE_INQUIRY_URL = "https://open.kakao.com/o/s7kFbUEi";
 
+// 화면은 열되 검색 결과에는 올리지 않는 페이지(예: 행사가 없는 달·분야 페이지). 안의 링크는 따라가게 둔다.
+export const NOINDEX_FOLLOW_ROBOTS: Metadata["robots"] = { index: false, follow: true };
+
 export const INDEXABLE_ROBOTS: Metadata["robots"] = {
   index: true,
   follow: true,
