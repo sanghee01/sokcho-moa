@@ -222,6 +222,59 @@ describe("event structured data", () => {
     });
   });
 
+  // DB는 시각을 UTC(+00:00)로 돌려준다. 그대로 쓰면 서울 자정 시작 행사가 글자상 전날로 읽힌다(2026-11-15).
+  it("행사 시각을 서울 시간대(+09:00)로 쓴다", () => {
+    const result = buildEventStructuredData({
+      ...event,
+      eventStartAt: "2026-08-01T10:00:00+00:00",
+      eventEndAt: "2026-08-01T12:30:00+00:00",
+      applicationStartAt: "2026-07-01T00:00:00+00:00",
+    }, "https://sokcho-moa.vercel.app", new Date("2026-07-28T00:00:00+09:00"));
+
+    expect(result).toMatchObject({
+      startDate: "2026-08-01T19:00:00+09:00",
+      endDate: "2026-08-01T21:30:00+09:00",
+      offers: { validFrom: "2026-07-01T09:00:00+09:00" },
+    });
+  });
+
+  // 시각 없는 행사는 서울 00:00 시작·23:59 종료로 저장된다. Google은 시각을 모르면 날짜만 쓰라고 한다(2026-11-15).
+  it("서울 00:00 시작과 23:59 종료는 시각 없이 날짜만 쓴다", () => {
+    const result = buildEventStructuredData({
+      ...event,
+      eventStartAt: "2026-11-05T15:00:00+00:00",
+      eventEndAt: "2026-11-15T14:59:59.999+00:00",
+    }, "https://sokcho-moa.vercel.app");
+
+    expect(result).toMatchObject({ startDate: "2026-11-06", endDate: "2026-11-15" });
+  });
+
+  it("날짜만 쓸 때도 월말·연말을 넘는 서울 날짜를 그대로 쓴다", () => {
+    const monthEnd = buildEventStructuredData({
+      ...event,
+      eventStartAt: "2026-10-31T15:00:00+00:00",
+      eventEndAt: "2026-12-31T14:59:00+00:00",
+    }, "https://sokcho-moa.vercel.app");
+    const yearEnd = buildEventStructuredData({
+      ...event,
+      eventStartAt: "2026-12-31T15:00:00+00:00",
+      eventEndAt: "2027-01-01T14:59:00+00:00",
+    }, "https://sokcho-moa.vercel.app");
+
+    expect(monthEnd).toMatchObject({ startDate: "2026-11-01", endDate: "2026-12-31" });
+    expect(yearEnd).toMatchObject({ startDate: "2027-01-01", endDate: "2027-01-01" });
+  });
+
+  it("시작은 날짜만이고 종료 시각이 정해진 행사는 종료 시각을 남긴다", () => {
+    const result = buildEventStructuredData({
+      ...event,
+      eventStartAt: "2026-10-15T15:00:00+00:00",
+      eventEndAt: "2026-10-18T12:00:00+00:00",
+    }, "https://sokcho-moa.vercel.app");
+
+    expect(result).toMatchObject({ startDate: "2026-10-16", endDate: "2026-10-18T21:00:00+09:00" });
+  });
+
   it("행사 상세 경로를 브랜드와 주제 계층에 연결한다", () => {
     const result = buildEventBreadcrumbStructuredData(event, "https://sokcho-moa.vercel.app");
 

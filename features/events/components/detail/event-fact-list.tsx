@@ -8,7 +8,8 @@ import {
   formatApplicationPeriod,
   formatOperatingSchedule,
   formatPrice,
-  formatShortDateRange,
+  getShortDateRangeLabels,
+  SHORT_DATE_UNKNOWN_LABEL,
 } from "@/features/events/model/format";
 import { createEventMapLinks } from "@/features/events/model/location";
 import { pickEventStatusFields } from "@/features/events/model/status-fields";
@@ -22,6 +23,21 @@ function Fact({ icon, label, children }: { icon: ReactNode; label: string; child
       <dt className="sr-only">{label}</dt>
       <dd className="min-w-0 flex-1 text-body text-content-strong">{children}</dd>
     </div>
+  );
+}
+
+/**
+ * 행사 날짜. 화면 글자는 목록과 같은 짧은 표기이고, 날짜마다 time 요소로 서울 날짜를 붙인다.
+ * 올해 행사는 연도가 화면에 없어서, 본문만 읽는 크롤러도 연도를 알 수 있게 한다(2026-11-15).
+ */
+function EventDateRange({ start, end }: { start: string; end: string | null }) {
+  const labels = getShortDateRangeLabels(start, end);
+  if (labels === null) return SHORT_DATE_UNKNOWN_LABEL;
+  return (
+    <>
+      <time dateTime={labels.start.dateTime}>{labels.start.label}</time>
+      {labels.end !== null && <>{" – "}<time dateTime={labels.end.dateTime}>{labels.end.label}</time></>}
+    </>
   );
 }
 
@@ -43,7 +59,7 @@ export function EventFactList({ event, renderedAt }: { event: Event; renderedAt:
       <h2 id="facts-title" className="sr-only">핵심 정보</h2>
       <dl>
         <Fact icon={<CalendarDays {...iconProps} />} label="날짜">
-          <span className="tabular-nums">{formatShortDateRange(event.eventStartAt, event.eventEndAt)}</span>
+          <span className="tabular-nums"><EventDateRange start={event.eventStartAt} end={event.eventEndAt} /></span>
         </Fact>
         {Boolean(event.operatingHours?.trim()) && (
           <Fact icon={<Clock {...iconProps} />} label="운영 시간">

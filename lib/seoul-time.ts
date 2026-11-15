@@ -74,6 +74,16 @@ export function toSeoulWallClock(instant: Date): SeoulDateTimeParts {
   };
 }
 
+/** 실제 시각을 서울 시간대 ISO 표기로(예: "2026-11-06T18:30:00+09:00"). 구조화 데이터처럼 기계가 읽는 시각에 쓴다. */
+export function formatSeoulIsoDateTime(instant: Date) {
+  return `${new Date(instant.getTime() + SEOUL_OFFSET_MS).toISOString().slice(0, 19)}+09:00`;
+}
+
+/** 실제 시각의 서울 날짜 ISO 표기(예: "2026-11-06") */
+export function formatSeoulIsoDate(instant: Date) {
+  return new Date(instant.getTime() + SEOUL_OFFSET_MS).toISOString().slice(0, 10);
+}
+
 /** 관리자 화면의 기록 시각 표기(예: "2026. 11. 6. 오후 6:30") */
 export function formatSeoulDateTime(date: Date) {
   return seoulDateTimeFormatter.format(date);

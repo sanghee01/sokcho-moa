@@ -38,27 +38,48 @@ export function formatDateRange(start: string | null, end: string | null) {
 
 const koreanWeekdays = ["일", "월", "화", "수", "목", "금", "토"];
 
+export const SHORT_DATE_UNKNOWN_LABEL = "날짜 확인 필요";
+
+export interface ShortDateLabel {
+  /** 화면에 보이는 짧은 표기(예: "10.3", 하루 행사는 "7.25 (토)") */
+  label: string;
+  /** 기계가 읽는 서울 날짜(예: "2026-10-03"). HTML time 요소의 dateTime에 쓴다. */
+  dateTime: string;
+}
+
 /**
  * 목록용 짧은 날짜 표기(.ai/DESIGN.md Typography > 날짜·시간 표기). 하루 행사는 "7.25 (토)",
  * 여러 날 행사는 "10.3 – 11.21". 올해(KST)가 아닌 날짜가 섞이면 연도를 붙인다.
  */
 export function formatShortDateRange(start: string | null, end: string | null, now = new Date()) {
+  const labels = getShortDateRangeLabels(start, end, now);
+  if (!labels) return SHORT_DATE_UNKNOWN_LABEL;
+  return labels.end ? `${labels.start.label} – ${labels.end.label}` : labels.start.label;
+}
+
+/**
+ * formatShortDateRange를 날짜별로 나눈 값. 화면 글자는 같고, 날짜마다 서울 날짜를 붙인다.
+ * 올해 행사는 화면에 연도가 없어서, 본문만 읽는 크롤러도 연도를 알 수 있게 상세 핵심 정보가 time 요소로 쓴다(2026-11-15).
+ * 하루 행사는 end가 null이다.
+ */
+export function getShortDateRangeLabels(start: string | null, end: string | null, now = new Date()) {
   const startParts = start ? getDateParts(start) : null;
-  if (!startParts) return "날짜 확인 필요";
+  if (!startParts) return null;
   const endParts = end ? getDateParts(end) : null;
   const currentYear = getDateParts(now.toISOString())?.year;
-  const isSameDay = !endParts
-    || (endParts.year === startParts.year && endParts.month === startParts.month && endParts.day === startParts.day);
   const withYear = startParts.year !== currentYear || Boolean(endParts && endParts.year !== currentYear);
-  function short(parts: NonNullable<typeof startParts>) {
-    return `${withYear ? `${parts.year}.` : ""}${Number(parts.month)}.${Number(parts.day)}`;
+  function toLabel(parts: NonNullable<typeof startParts>, suffix = ""): ShortDateLabel {
+    return {
+      label: `${withYear ? `${parts.year}.` : ""}${Number(parts.month)}.${Number(parts.day)}${suffix}`,
+      dateTime: `${parts.year}-${parts.month}-${parts.day}`,
+    };
   }
 
-  if (isSameDay) {
+  if (!endParts || (endParts.year === startParts.year && endParts.month === startParts.month && endParts.day === startParts.day)) {
     const weekday = koreanWeekdays[new Date(Date.UTC(Number(startParts.year), Number(startParts.month) - 1, Number(startParts.day))).getUTCDay()];
-    return `${short(startParts)} (${weekday})`;
+    return { start: toLabel(startParts, ` (${weekday})`), end: null };
   }
-  return `${short(startParts)} – ${short(endParts)}`;
+  return { start: toLabel(startParts), end: toLabel(endParts) };
 }
 
 /**

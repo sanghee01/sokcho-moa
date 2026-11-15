@@ -37,10 +37,12 @@ describe("event page metadata", () => {
     });
   });
 
-  it("공백 이미지 URL을 홈페이지나 깨진 썸네일로 해석하지 않는다", async () => {
+  // 포스터가 없을 때 공유 미리보기가 비지 않도록 사이트 기본 공유 이미지를 쓴다(2026-11-15 사용자 결정).
+  // 공백 URL을 홈페이지 주소나 깨진 썸네일로 해석하지 않는 것은 그대로 지킨다.
+  it("공백 이미지 URL이면 사이트 기본 공유 이미지를 쓴다", async () => {
     const metadata = await generateMetadata({ params: Promise.resolve({ slug: "no-image" }), searchParams: Promise.resolve({}) });
 
-    expect(metadata.openGraph).not.toHaveProperty("images");
-    expect(metadata.twitter).not.toHaveProperty("images");
+    expect(metadata.openGraph).toMatchObject({ images: [{ url: "/opengraph-image", width: 1200, height: 630 }] });
+    expect(metadata.twitter).toMatchObject({ images: [{ url: "/opengraph-image" }] });
   });
 });

@@ -47,6 +47,25 @@ test("없는 페이지와 없는 행사를 각각 이해하기 쉬운 화면으�
   await expect(page.getByText(/비공개로 전환됐거나 주소가 바뀌었을 수 있습니다/)).toBeVisible();
 });
 
+// GPTBot·ClaudeBot·PerplexityBot처럼 JS를 실행하지 않는 크롤러는 받은 HTML만 읽는다. 로딩 화면을 먼저 보내고
+// 본문을 푸터 뒤 숨김 영역에 붙이면 본문을 못 찾을 수 있어, 첫 HTML에서 본문이 제자리에 있는지 지킨다(2026-11-15).
+test("행사 상세 HTML은 JS를 실행하지 않아도 본문이 푸터보다 먼저 온다", async ({ request }) => {
+  const response = await request.get(SAMPLE_EVENT_PATH);
+  expect(response.status()).toBe(200);
+  const html = await response.text();
+  const headingIndex = html.indexOf("<h1");
+
+  expect(headingIndex).toBeGreaterThan(-1);
+  expect(headingIndex).toBeLessThan(html.indexOf("<footer"));
+});
+
+test("행사 상세의 날짜는 기계가 읽는 서울 날짜를 함께 담는다", async ({ page }) => {
+  await page.goto(SAMPLE_EVENT_PATH);
+  const eventDate = page.getByRole("region", { name: "핵심 정보" }).locator("time").first();
+
+  await expect(eventDate).toHaveAttribute("datetime", /^\d{4}-\d{2}-\d{2}$/);
+});
+
 test("행사 상세는 지도 SDK나 인라인 미리보기 없이 장소·주소·외부 링크를 제공한다", async ({ page }) => {
   const mapSdkRequests: string[] = [];
   page.on("request", (request) => {

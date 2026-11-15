@@ -29,7 +29,7 @@ import {
   buildEventStructuredData,
 } from "@/features/events/seo";
 import { getPublicEnv } from "@/lib/env";
-import { INDEXABLE_ROBOTS, SITE_NAME } from "@/lib/seo/site-identity";
+import { INDEXABLE_ROBOTS, SITE_NAME, SITE_OPEN_GRAPH_IMAGE_PATH } from "@/lib/seo/site-identity";
 
 export const revalidate = 3600;
 
@@ -45,7 +45,11 @@ export async function generateMetadata({ params }: PageProps<"/events/[slug]">):
   const description = buildEventSeoDescription(event);
   const canonicalPath = `/events/${event.slug}`;
   const imageUrl = event.imageUrl?.trim() || null;
-  const images = imageUrl ? [{ url: imageUrl, alt: `${event.title} 행사 대표 이미지` }] : undefined;
+  // 포스터가 없으면 사이트 기본 공유 이미지를 쓴다. 페이지가 openGraph를 새로 정하면 루트의 기본 이미지를 물려받지 못해
+  // 공유 미리보기 그림이 비었다(운영 HTML에서 확인, 2026-11-15 사용자 결정).
+  const images = imageUrl
+    ? [{ url: imageUrl, alt: `${event.title} 행사 대표 이미지` }]
+    : [{ url: SITE_OPEN_GRAPH_IMAGE_PATH, width: 1200, height: 630, alt: `${SITE_NAME} 로고` }];
   return {
     title: `${event.title} 일정·장소·신청 안내`,
     description,
@@ -58,13 +62,13 @@ export async function generateMetadata({ params }: PageProps<"/events/[slug]">):
       siteName: SITE_NAME,
       title: event.title,
       description,
-      ...(images ? { images } : {}),
+      images,
     },
     twitter: {
       card: "summary_large_image",
       title: event.title,
       description,
-      ...(images ? { images } : {}),
+      images,
     },
   };
 }

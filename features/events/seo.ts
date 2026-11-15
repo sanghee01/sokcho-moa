@@ -4,6 +4,7 @@ import { formatDateRange } from "@/features/events/model/format";
 import { categoryLabels } from "@/features/events/model/taxonomy";
 import { eventTopicPath } from "@/features/events/model/topics";
 import { SITE_NAME } from "@/lib/seo/site-identity";
+import { formatSeoulIsoDate, formatSeoulIsoDateTime, toSeoulWallClock } from "@/lib/seoul-time";
 import { isHttpUrl } from "@/lib/url";
 
 type EventStructuredData = Record<string, unknown>;
@@ -33,8 +34,8 @@ export function buildEventStructuredData(
     "@id": eventId,
     name: event.title,
     description: getEventIntroduction(event) ?? `${event.title}의 일정, 장소와 참여 정보를 확인하세요.`,
-    startDate: event.eventStartAt,
-    endDate: event.eventEndAt ?? undefined,
+    startDate: structuredDataDate(event.eventStartAt, "start"),
+    endDate: event.eventEndAt ? structuredDataDate(event.eventEndAt, "end") : undefined,
     eventStatus: "https://schema.org/EventScheduled",
     eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
     inLanguage: "ko-KR",
@@ -141,8 +142,26 @@ function buildEventOffer(event: Event, applicationUrl: string, now: Date) {
     url: applicationUrl,
     price,
     priceCurrency: "KRW",
-    validFrom: event.applicationStartAt ?? undefined,
+    validFrom: event.applicationStartAt ? structuredDataDateTime(event.applicationStartAt) : undefined,
   });
+}
+
+/**
+ * 구조화 데이터의 행사 날짜. DB는 UTC(+00:00)로 돌려줘서 그대로 쓰면 서울 자정 시작 행사가 글자상 전날로 읽힌다.
+ * 운영 데이터에서 시각 없는 행사는 서울 00:00 시작·23:59 종료로 저장돼 있어(2026-11-14 확인),
+ * 그 경계면 Google 권장대로 시각 없이 날짜만 쓴다(2026-11-15).
+ */
+function structuredDataDate(value: string, boundary: "start" | "end") {
+  const instant = new Date(value);
+  if (Number.isNaN(instant.getTime())) return value;
+  const { hour, minute } = toSeoulWallClock(instant);
+  const isDateOnly = boundary === "start" ? hour === 0 && minute === 0 : hour === 23 && minute === 59;
+  return isDateOnly ? formatSeoulIsoDate(instant) : formatSeoulIsoDateTime(instant);
+}
+
+function structuredDataDateTime(value: string) {
+  const instant = new Date(value);
+  return Number.isNaN(instant.getTime()) ? value : formatSeoulIsoDateTime(instant);
 }
 
 export function buildEventSeoDescription(event: Event) {
