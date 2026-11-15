@@ -19,7 +19,7 @@ app/                 URL과 1:1. 데이터 함수 호출 + feature 컴포넌트 
 features/
   events/            행사 탐색·상세·관리 (model, queries, cache, mappers, seo, components, admin/)
     model/           event.ts(타입), event-state.ts(진행·신청 상태), event-list.ts(필터·정렬·인기 행사),
-                     review-status.ts, taxonomy.ts, location.ts(주변 명소), badges.ts, format.ts
+                     review-status.ts, taxonomy.ts, location.ts(주변 명소), venue.ts(장소 사전으로 빈 주소 채우기), badges.ts, format.ts
     components/      카드·이미지·상태 배지처럼 목록과 상세가 함께 쓰는 부품
       browse/        목록 화면(검색·정렬·분야 탭·인기 배너·로딩 자리)
       detail/        상세 화면(정보 목록·하단 버튼·공유·조회수 기록)
@@ -40,6 +40,7 @@ lib/                 도메인을 모르는 인프라
   seoul-time.ts      Asia/Seoul 날짜 계산의 원본(날짜 경계, 관리자 입력 시각 변환)
   map.ts             거리 계산, 네이버 지도 링크(행사·명소가 함께 씀)
   seo/, analytics/   사이트 전체 SEO·GA4
+data/                코드와 함께 관리하는 확인된 원본 데이터: attractions.json(명소 수집·검증 결과), venues.json(시설 이름→공식 주소 장소 사전)
 supabase/            migrations, seed.sql, tests/database(pgTAP), rollbacks(migration마다 같은 이름), config.toml
 public/              brand/(헤더 로고 wordmark.webp, 기본 포스터 default-event-poster.svg), icons/(홈 화면 아이콘), sample-events/(시드 이미지).
                      icon.jpeg(검색엔진 로고)와 검색엔진 소유 확인 html은 URL이 외부에 알려져 있어 루트에 둔다

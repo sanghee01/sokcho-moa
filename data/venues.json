@@ -1,0 +1,60 @@
+{
+  "verifiedAt": "2026-11-15",
+  "description": "행사 공고에 장소 이름만 있을 때 주소를 채우는 장소 사전(features/events/model/venue.ts). 공식 출처에서 확인한 도로명주소만 넣는다. 속초교육문화관(2027-06까지 개축 휴관), 소극장 초속(공식 출처 없음), 아트플랫폼 갯배(지번만 공개), 속초시근로자종합복지관(출처 불일치)은 확인되지 않아 뺐다.",
+  "venues": [
+    {
+      "name": "속초문화예술회관",
+      "aliases": [],
+      "address": "강원특별자치도 속초시 번영로 155",
+      "sourceUrl": "https://www.sokcho.go.kr/ct/culture/artcenter/location"
+    },
+    {
+      "name": "속초시립도서관",
+      "aliases": [],
+      "address": "강원특별자치도 속초시 조양로 89",
+      "sourceUrl": "https://library.sokcho.go.kr/"
+    },
+    {
+      "name": "속초시립박물관",
+      "aliases": [],
+      "address": "강원특별자치도 속초시 신흥2길 16",
+      "sourceUrl": "https://www.sokcho.go.kr/ct/museum/intro/guide"
+    },
+    {
+      "name": "속초해양산업단지지원센터",
+      "aliases": [],
+      "address": "강원특별자치도 속초시 농공단지1길 4",
+      "sourceUrl": "https://www.sokcho.go.kr/sc/fields/economy/job/recruit/public?articleSeq=812907"
+    },
+    {
+      "name": "카시아속초호텔앤리조트",
+      "aliases": ["카시아 속초"],
+      "address": "강원특별자치도 속초시 대포항희망길 120",
+      "sourceUrl": "https://english.visitkorea.or.kr/svc/contents/infoHtmlView.do?vcontsId=201025"
+    },
+    {
+      "name": "속초농협 하나로마트 엑스포점",
+      "aliases": [],
+      "address": "강원특별자치도 속초시 동해대로 4202",
+      "sourceUrl": "https://state.gwd.go.kr/portal/partinfo/livestock/livestockIndustry/brandshop"
+    },
+    {
+      "name": "청초생활체육관",
+      "aliases": [],
+      "address": "강원특별자치도 속초시 동해대로 4229",
+      "sourceUrl": "https://www.sokcho.go.kr/sc/fields/culture/sports/public"
+    },
+    {
+      "name": "속초시청소년수련관",
+      "aliases": [],
+      "address": "강원특별자치도 속초시 관광로363번길 14",
+      "sourceUrl": "https://www.sokcho.go.kr/sc/fields/welfare/child_youth/youth_welfare/facility"
+    },
+    {
+      "name": "속초시농업기술센터",
+      "aliases": [],
+      "address": "강원특별자치도 속초시 동해대로 4243",
+      "sourceUrl": "https://www.sokcho.go.kr/bo/agriculture/intro/location"
+    }
+  ]
+}

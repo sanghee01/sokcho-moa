@@ -1,6 +1,7 @@
 import { type Event, getEventIntroduction } from "@/features/events/model/event";
 import { formatDateRange, formatPrice } from "@/features/events/model/format";
 import { categoryLabels } from "@/features/events/model/taxonomy";
+import { resolveEventAddress } from "@/features/events/model/venue";
 import { buildRssXml, type RssItem } from "@/lib/seo/rss";
 import { HOME_TITLE, SITE_DESCRIPTION } from "@/lib/seo/site-identity";
 
@@ -35,7 +36,7 @@ export function buildEventsRssXml(events: readonly Event[], siteUrl: string) {
 }
 
 function buildEventRssDescription(event: Event) {
-  const location = [event.locationName, event.address].filter((part): part is string => Boolean(part?.trim())).join(", ");
+  const location = [event.locationName, resolveEventAddress(event)].filter((part): part is string => Boolean(part?.trim())).join(", ");
   return [
     `일정 ${formatDateRange(event.eventStartAt, event.eventEndAt)}`,
     location ? `장소 ${location}` : null,

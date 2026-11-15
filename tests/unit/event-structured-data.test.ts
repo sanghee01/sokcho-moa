@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Event } from "@/features/events/model/event";
+import { venues } from "@/features/events/model/venue";
 import {
   buildEventBreadcrumbStructuredData,
   buildEventSeoDescription,
@@ -99,8 +100,10 @@ describe("event structured data", () => {
   });
 
   it("Google 필수 장소 정보가 없으면 Event 리치 결과 데이터를 만들지 않는다", () => {
+    // 장소 사전에 있는 시설이면 주소가 채워지므로(2026-11-15), 사전에 없는 장소 이름으로 "주소 없음"을 확인한다.
     const result = buildEventStructuredData({
       ...event,
+      locationName: "설악동 C지구 소공원",
       address: null,
       latitude: null,
       longitude: null,
@@ -113,6 +116,20 @@ describe("event structured data", () => {
     }, "https://sokcho-moa.vercel.app");
 
     expect(result).toBeNull();
+  });
+
+  it("저장된 주소가 없어도 장소 사전에 있는 시설이면 그 주소로 Event를 만든다", () => {
+    const [venue] = venues;
+    const result = buildEventStructuredData({
+      ...event,
+      address: null,
+      locationName: `${venue.name} 2층`,
+    }, "https://sokcho-moa.vercel.app");
+
+    expect(result?.location).toMatchObject({
+      name: `${venue.name} 2층`,
+      address: { "@type": "PostalAddress", streetAddress: venue.address, addressCountry: "KR" },
+    });
   });
 
   it("상세 주소가 있으면 확인되지 않은 장소명을 꾸며내지 않는다", () => {

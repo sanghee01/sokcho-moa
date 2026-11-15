@@ -3,6 +3,7 @@ import { deriveApplicationState, deriveEventState } from "@/features/events/mode
 import { formatDateRange } from "@/features/events/model/format";
 import { categoryLabels } from "@/features/events/model/taxonomy";
 import { eventTopicPath } from "@/features/events/model/topics";
+import { resolveEventAddress } from "@/features/events/model/venue";
 import { SITE_NAME } from "@/lib/seo/site-identity";
 import { formatSeoulIsoDate, formatSeoulIsoDateTime, toSeoulWallClock } from "@/lib/seoul-time";
 import { isHttpUrl } from "@/lib/url";
@@ -14,7 +15,7 @@ export function buildEventStructuredData(
   siteUrl: string,
   now = new Date(),
 ): EventStructuredData | null {
-  const locationAddress = event.address?.trim();
+  const locationAddress = resolveEventAddress(event);
   if (!locationAddress) return null;
 
   const eventUrl = absoluteUrl(`/events/${encodeURIComponent(event.slug)}`, siteUrl);

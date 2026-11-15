@@ -13,6 +13,7 @@ import {
 } from "@/features/events/model/format";
 import { createEventMapLinks } from "@/features/events/model/location";
 import { pickEventStatusFields } from "@/features/events/model/status-fields";
+import { resolveEventAddress } from "@/features/events/model/venue";
 import { analyticsData } from "@/lib/analytics/events";
 
 /** 핵심 정보 한 행. 라벨은 화면 읽기 프로그램용으로 남기고, 화면에는 아이콘과 값만 보인다(.ai/DESIGN.md Components > FactList). */
@@ -46,9 +47,11 @@ function EventDateRange({ start, end }: { start: string; end: string | null }) {
  * 신청 상태는 시간이 지나면 바뀌므로 브라우저의 현재 시각으로 다시 계산한다. renderedAt은 서버가 그린 시각이다.
  */
 export function EventFactList({ event, renderedAt }: { event: Event; renderedAt: string }) {
+  // 저장된 주소가 없으면 장소 사전의 시설 주소를 보여 준다. 구조화 데이터와 같은 주소를 쓴다(2026-11-15).
+  const address = resolveEventAddress(event);
   const mapLinks = createEventMapLinks(
     event.locationName ?? event.title,
-    event.address,
+    address,
     event.latitude,
     event.longitude,
   );
@@ -68,7 +71,7 @@ export function EventFactList({ event, renderedAt }: { event: Event; renderedAt:
         )}
         <Fact icon={<MapPin {...iconProps} />} label="장소">
           <span className="block">{event.locationName ?? "장소는 원문에서 확인해 주세요"}</span>
-          {Boolean(event.address) && <span className="mt-0.5 block text-label font-normal text-content-muted">{event.address}</span>}
+          {address !== null && <span className="mt-0.5 block text-label font-normal text-content-muted">{address}</span>}
           {mapLinks !== null && (
             <a
               href={mapLinks.naver}
