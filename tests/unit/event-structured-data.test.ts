@@ -96,7 +96,8 @@ describe("event structured data", () => {
       name: "속초문화관광재단",
       url: "https://example.org",
     });
-    expect(buildEventSeoDescription(event)).toContain("속초 여름 음악회 일정 2026.08.01");
+    // 검색 설명은 요약 문장으로 시작한다(2026-11-15 사용자 결정, 예전 "○○ 일정 2026.08.01 · 장소 ○○" 형식을 바꿈).
+    expect(buildEventSeoDescription(event)).toContain("속초 여름 음악회는 2026년 8월 1일(토)에 속초문화예술회관에서 열리는 공연입니다.");
   });
 
   it("Google 필수 장소 정보가 없으면 Event 리치 결과 데이터를 만들지 않는다", () => {

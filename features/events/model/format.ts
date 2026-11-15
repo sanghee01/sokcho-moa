@@ -68,18 +68,42 @@ export function getShortDateRangeLabels(start: string | null, end: string | null
   const endParts = end ? getDateParts(end) : null;
   const currentYear = getDateParts(now.toISOString())?.year;
   const withYear = startParts.year !== currentYear || Boolean(endParts && endParts.year !== currentYear);
-  function toLabel(parts: NonNullable<typeof startParts>, suffix = ""): ShortDateLabel {
+  function toLabel(parts: DateParts, suffix = ""): ShortDateLabel {
     return {
       label: `${withYear ? `${parts.year}.` : ""}${Number(parts.month)}.${Number(parts.day)}${suffix}`,
       dateTime: `${parts.year}-${parts.month}-${parts.day}`,
     };
   }
 
-  if (!endParts || (endParts.year === startParts.year && endParts.month === startParts.month && endParts.day === startParts.day)) {
-    const weekday = koreanWeekdays[new Date(Date.UTC(Number(startParts.year), Number(startParts.month) - 1, Number(startParts.day))).getUTCDay()];
-    return { start: toLabel(startParts, ` (${weekday})`), end: null };
+  if (!endParts || isSameDateParts(startParts, endParts)) {
+    return { start: toLabel(startParts, ` (${weekdayOf(startParts)})`), end: null };
   }
   return { start: toLabel(startParts), end: toLabel(endParts) };
+}
+
+/**
+ * 문장 속 날짜 표기(검색·공유 설명의 요약 문장). 첫 날짜는 연도를 붙이고, 끝 날짜는 해가 바뀔 때만 붙인다.
+ * 여러 날이면 "2026년 11월 6일(금)부터 11월 15일(일)까지", 하루면 "2026년 11월 14일(토)"(2026-11-15).
+ */
+export function formatSentenceDateRange(start: string | null, end: string | null) {
+  const startParts = start ? getDateParts(start) : null;
+  if (!startParts) return null;
+  const endParts = end ? getDateParts(end) : null;
+  const startText = formatSentenceDate(startParts, true);
+  if (!endParts || isSameDateParts(startParts, endParts)) return { text: startText, isSingleDay: true };
+  return { text: `${startText}부터 ${formatSentenceDate(endParts, endParts.year !== startParts.year)}까지`, isSingleDay: false };
+}
+
+function formatSentenceDate(parts: DateParts, withYear: boolean) {
+  return `${withYear ? `${parts.year}년 ` : ""}${Number(parts.month)}월 ${Number(parts.day)}일(${weekdayOf(parts)})`;
+}
+
+function isSameDateParts(a: DateParts, b: DateParts) {
+  return a.year === b.year && a.month === b.month && a.day === b.day;
+}
+
+function weekdayOf(parts: DateParts) {
+  return koreanWeekdays[new Date(Date.UTC(Number(parts.year), Number(parts.month) - 1, Number(parts.day))).getUTCDay()];
 }
 
 /**
@@ -118,7 +142,14 @@ export function formatPrice(event: Pick<Event, "priceText" | "isFree">) {
 }
 
 /** 서울 기준 연·월·일을 0을 채운 문자열로("2026", "07", "05"). 날짜가 아니면 null. */
-function getDateParts(value: string) {
+/** 0을 채운 서울 기준 연·월·일 문자열 조각 */
+interface DateParts {
+  year: string;
+  month: string;
+  day: string;
+}
+
+function getDateParts(value: string): DateParts | null {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return null;
   const parts = datePartsFormatter.formatToParts(date);

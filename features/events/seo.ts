@@ -1,7 +1,7 @@
 import { type Event, getEventIntroduction } from "@/features/events/model/event";
 import { deriveApplicationState, deriveEventState } from "@/features/events/model/event-state";
-import { formatDateRange } from "@/features/events/model/format";
-import { categoryLabels } from "@/features/events/model/taxonomy";
+import { formatSentenceDateRange } from "@/features/events/model/format";
+import { categoryLabels, type EventCategory } from "@/features/events/model/taxonomy";
 import { eventTopicPath } from "@/features/events/model/topics";
 import { resolveEventAddress } from "@/features/events/model/venue";
 import { SITE_NAME } from "@/lib/seo/site-identity";
@@ -165,14 +165,78 @@ function structuredDataDateTime(value: string) {
   return Number.isNaN(instant.getTime()) ? value : formatSeoulIsoDateTime(instant);
 }
 
+/** 검색 결과·공유 미리보기 설명. 요약 문장으로 "언제·어디서·얼마"를 먼저 답하고 소개를 잇는다(2026-11-15). */
 export function buildEventSeoDescription(event: Event) {
-  const parts = [
-    `${event.title} 일정 ${formatDateRange(event.eventStartAt, event.eventEndAt)}`,
-    event.locationName ? `장소 ${event.locationName}` : null,
-    getEventIntroduction(event)?.trim() || null,
-  ].filter((part): part is string => Boolean(part));
-  const description = parts.join(" · ");
+  const description = [buildEventSummary(event), getEventIntroduction(event)?.trim() || null]
+    .filter((part): part is string => Boolean(part))
+    .join(" ");
   return description.length <= 160 ? description : `${description.slice(0, 159).trimEnd()}…`;
+}
+
+// 요약 문장에서 분야를 부르는 이름. "기타"는 문장에 맞지 않아 "행사"로 쓴다.
+const summaryCategoryNouns: Record<EventCategory, string> = {
+  performance: "공연",
+  festival: "축제",
+  experience: "체험 프로그램",
+  education: "교육 프로그램",
+  exhibition: "전시",
+  other: "행사",
+};
+
+/**
+ * 검색 결과·공유 미리보기·RSS 설명의 요약 문장. 날짜·장소·요금·신청을 데이터로 조립하므로 원문과 어긋나지 않는다.
+ * 화면에는 같은 내용이 핵심 정보 목록에 있어서 쓰지 않는다(2026-11-15 사용자 결정).
+ */
+export function buildEventSummary(event: Event) {
+  const dates = formatSentenceDateRange(event.eventStartAt, event.eventEndAt);
+  const when = dates ? `${dates.text}${dates.isSingleDay ? "에" : ""} ` : "";
+  const sentences = [
+    `${event.title}${topicParticle(event.title)} ${when}${summaryLocationPhrase(event.locationName)}열리는 ${summaryCategoryNouns[event.category]}입니다.`,
+  ];
+
+  // 요금은 무료이거나 금액을 읽을 수 있을 때만 쓴다. "요금 안내 없음" 같은 문구를 문장에 넣지 않는다.
+  const price = eventOfferPrice(event);
+  if (price === 0) sentences.push("요금은 무료입니다.");
+  else if (price !== null && event.priceText) sentences.push(`요금은 ${event.priceText.trim()}입니다.`);
+
+  const application = summaryApplicationSentence(event.applicationStartAt, event.applicationEndAt);
+  if (application !== null) sentences.push(application);
+  return sentences.join(" ");
+}
+
+// 문장에 넣기 어려운 장소 문구(수집 중 다른 내용이 섞인 긴 문구)는 뺀다. 화면은 원문 그대로 보여 준다.
+const SUMMARY_LOCATION_MAX_CHARS = 40;
+
+function summaryLocationPhrase(locationName: string | null) {
+  const name = locationName?.trim();
+  if (!name || name.includes(":") || name.length > SUMMARY_LOCATION_MAX_CHARS) return "";
+  if (name.startsWith("온라인")) return "온라인으로 ";
+  return `${name}에서 `;
+}
+
+function summaryApplicationSentence(start: string | null, end: string | null) {
+  if (start && end) {
+    const period = formatSentenceDateRange(start, end);
+    if (!period) return null;
+    return period.isSingleDay ? `신청은 ${period.text}에 받습니다.` : `신청 기간은 ${period.text}입니다.`;
+  }
+  const date = formatSentenceDateRange(end ?? start, null);
+  if (!date) return null;
+  return end ? `신청은 ${date.text}까지입니다.` : `신청은 ${date.text}부터입니다.`;
+}
+
+// 받침이 있으면 "은", 없으면 "는". 끝의 닫는 괄호·따옴표는 건너뛰고, 숫자는 한국어로 읽은 소리로 고른다.
+// 영문처럼 받침을 정할 수 없는 글자는 "은(는)"으로 쓴다.
+const TRAILING_CLOSERS_PATTERN = /[\s」』"'”’)\]}>》〉]+$/;
+const DIGITS_WITH_FINAL_CONSONANT = "0136789";
+
+function topicParticle(word: string) {
+  const last = word.replace(TRAILING_CLOSERS_PATTERN, "").at(-1);
+  if (!last) return "은(는)";
+  const code = last.charCodeAt(0);
+  if (code >= 0xac00 && code <= 0xd7a3) return (code - 0xac00) % 28 === 0 ? "는" : "은";
+  if (/\d/.test(last)) return DIGITS_WITH_FINAL_CONSONANT.includes(last) ? "은" : "는";
+  return "은(는)";
 }
 
 function absoluteUrl(value: string, siteUrl: string) {

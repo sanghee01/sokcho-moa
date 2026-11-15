@@ -1,7 +1,7 @@
 import { type Event, getEventIntroduction } from "@/features/events/model/event";
-import { formatDateRange, formatPrice } from "@/features/events/model/format";
 import { categoryLabels } from "@/features/events/model/taxonomy";
 import { resolveEventAddress } from "@/features/events/model/venue";
+import { buildEventSummary } from "@/features/events/seo";
 import { buildRssXml, type RssItem } from "@/lib/seo/rss";
 import { HOME_TITLE, SITE_DESCRIPTION } from "@/lib/seo/site-identity";
 
@@ -35,14 +35,14 @@ export function buildEventsRssXml(events: readonly Event[], siteUrl: string) {
   });
 }
 
+// 검색 설명과 같은 요약 문장에 주소와 소개를 더한다. RSS는 길이 제한이 없어 자르지 않는다(2026-11-15).
 function buildEventRssDescription(event: Event) {
-  const location = [event.locationName, resolveEventAddress(event)].filter((part): part is string => Boolean(part?.trim())).join(", ");
+  const address = resolveEventAddress(event);
   return [
-    `일정 ${formatDateRange(event.eventStartAt, event.eventEndAt)}`,
-    location ? `장소 ${location}` : null,
-    `요금 ${formatPrice(event)}`,
+    buildEventSummary(event),
+    address ? `주소는 ${address}입니다.` : null,
     getEventIntroduction(event)?.trim() || null,
-  ].filter((part): part is string => Boolean(part)).join(" · ");
+  ].filter((part): part is string => Boolean(part)).join(" ");
 }
 
 function parseDate(value: string | null) {

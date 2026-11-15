@@ -51,18 +51,20 @@ describe("행사 RSS", () => {
     expect(channel).toContain("<lastBuildDate>Tue, 10 Nov 2026 03:00:00 GMT</lastBuildDate>");
   });
 
-  it("설명에 일정·장소·요금·소개를 담는다", () => {
+  // 설명은 검색 설명과 같은 요약 문장(2026-11-15)에 주소와 소개를 잇는다.
+  it("설명에 요약 문장·주소·소개를 담는다", () => {
     const [item] = items(buildEventsRssXml([
       makeEvent({
         eventStartAt: "2026-11-05T15:00:00.000Z",
         eventEndAt: "2026-11-15T14:59:00.000Z",
         locationName: "속초항 항만부지",
+        address: "강원특별자치도 속초시 설악금강대교로 1",
         priceText: "무료",
         summary: "도루묵과 양미리를 맛보는 겨울 축제입니다.",
       }),
     ], SITE_URL));
 
-    expect(item).toMatch(/<description>.*2026\.11\.06 ~ 2026\.11\.15.*속초항 항만부지.*무료.*도루묵과 양미리를 맛보는 겨울 축제입니다\..*<\/description>/);
+    expect(item).toMatch(/<description>.*2026년 11월 6일\(금\)부터 11월 15일\(일\)까지 속초항 항만부지에서.*요금은 무료입니다\..*주소는 강원특별자치도 속초시 설악금강대교로 1입니다\..*도루묵과 양미리를 맛보는 겨울 축제입니다\.<\/description>/);
   });
 
   it("XML 특수문자는 escape하고, XML에 쓸 수 없는 제어 문자는 뺀다", () => {
