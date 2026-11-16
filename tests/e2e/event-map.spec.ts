@@ -200,7 +200,7 @@ for (const { name, options } of viewports) {
   test.describe(name, () => {
     test.use(options);
 
-    // 360px에서 로고·지도·월별 일정 버튼이 한 줄에 들어가지 않으면 버튼 글자가 두 줄로 꺾이거나 화면이 넘친다(2026-11-16).
+    // 360px에서 로고·행사 지도·월별 일정 버튼이 한 줄에 들어가지 않으면 버튼 글자가 두 줄로 꺾이거나 화면이 넘친다(2026-11-16).
     test("지도 탭이 가로로 넘치지 않고 헤더 버튼이 한 줄로 보인다", async ({ page }, testInfo) => {
       test.skip(testInfo.project.name !== "desktop-chromium", "화면 폭을 직접 지정하므로 프로젝트마다 반복하지 않는다");
 

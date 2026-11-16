@@ -9,7 +9,7 @@ import { TransitionLink } from "@/components/ui/transition-link";
  * /months는 요청할 때 이번 달로 보내는 동적 주소라 미리 받지 않아, 응답을 기다리는 동안 흐리게 표시한다.
  */
 /**
- * 헤더 버튼(지도·월별 일정)의 아이콘. 360px에서 로고 + 버튼 두 개(아이콘 포함 약 380px)가 한 줄에 들어가지 않아
+ * 헤더 버튼(행사 지도·월별 일정)의 아이콘. 360px에서 로고 + 버튼 두 개(아이콘 포함 약 380px)가 한 줄에 들어가지 않아
  * 글자만 남기고 sm부터 아이콘을 보인다. 아이콘을 두면 "월별 일정"이 두 줄로 꺾였다(2026-11-16).
  */
 export const headerEntryIconClassName = "hidden sm:block";
