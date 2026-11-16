@@ -3,8 +3,12 @@ import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { isAllowedEventImageType, validateEventImage } from "@/features/events/admin/image/rules";
 import { EventImageOptimizationError, optimizeEventImage } from "@/features/events/admin/image/optimize";
-
-const EVENT_IMAGE_BUCKET = "event-images";
+import { createEventImageThumbnail } from "@/features/events/admin/image/thumbnail";
+import {
+  EVENT_IMAGE_BUCKET,
+  EVENT_IMAGE_PUBLIC_URL_MARKER,
+  getEventImageThumbnailPath,
+} from "@/features/events/model/event-image-thumbnail";
 
 export function readEventImageFile(formData: FormData) {
   const file = formData.get("image");
@@ -42,25 +46,48 @@ export async function uploadEventImageBuffer(client: SupabaseClient, image: Arra
     });
   if (error) return { image: null, error: "이미지를 업로드하지 못했습니다. 잠시 후 다시 시도해 주세요." };
 
+  await uploadEventImageThumbnail(client, path, image);
+
   const { data } = client.storage.from(EVENT_IMAGE_BUCKET).getPublicUrl(path);
   return { image: { path, publicUrl: data.publicUrl }, error: null };
 }
 
+/**
+ * 지도 핀용 썸네일을 원본 옆(이름 규칙)에 저장한다. 썸네일은 보조 파일이라 실패해도 원본 업로드는 성공으로 둔다.
+ * 썸네일이 없으면 지도 핀이 원본으로 대신 보인다.
+ */
+async function uploadEventImageThumbnail(client: SupabaseClient, path: string, image: ArrayBuffer | Uint8Array) {
+  const thumbnailPath = getEventImageThumbnailPath(path);
+  if (!thumbnailPath) return;
+  try {
+    const { error } = await client.storage
+      .from(EVENT_IMAGE_BUCKET)
+      .upload(thumbnailPath, await createEventImageThumbnail(image), {
+        contentType: "image/webp",
+        upsert: false,
+      });
+    if (error) console.error("Event image thumbnail upload failed", thumbnailPath, error.message);
+  } catch (error) {
+    console.error("Event image thumbnail creation failed", thumbnailPath, error);
+  }
+}
+
 export async function removeEventImage(client: SupabaseClient, path: string | null) {
   if (path?.startsWith("events/")) {
-    const { error } = await client.storage.from(EVENT_IMAGE_BUCKET).remove([path]);
+    // 공개 bucket이라 썸네일을 남기면 지운 포스터가 작은 크기로 계속 공개된다. 없는 파일을 지우라고 해도 오류가 아니다.
+    const thumbnailPath = getEventImageThumbnailPath(path);
+    const paths = thumbnailPath ? [path, thumbnailPath] : [path];
+    const { error } = await client.storage.from(EVENT_IMAGE_BUCKET).remove(paths);
     if (error) console.error("Event image removal failed", path, error.message);
   }
 }
 
-const PUBLIC_URL_MARKER = `/storage/v1/object/public/${EVENT_IMAGE_BUCKET}/`;
-
 /** 우리 Storage의 행사 이미지 공개 URL이면 bucket 안 경로(events/...)를, 외부 이미지면 null을 돌려준다. */
 export function eventImagePathFromPublicUrl(url: string | null) {
   if (!url) return null;
-  const index = url.indexOf(PUBLIC_URL_MARKER);
+  const index = url.indexOf(EVENT_IMAGE_PUBLIC_URL_MARKER);
   if (index < 0) return null;
-  const path = decodeURIComponent(url.slice(index + PUBLIC_URL_MARKER.length).split(/[?#]/)[0]);
+  const path = decodeURIComponent(url.slice(index + EVENT_IMAGE_PUBLIC_URL_MARKER.length).split(/[?#]/)[0]);
   return path.startsWith("events/") && !path.includes("..") ? path : null;
 }
 

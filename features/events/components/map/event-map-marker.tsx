@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { DEFAULT_EVENT_POSTER_PATH } from "@/features/events/components/event-image-placeholder";
 import { getPinLabel, MARKER_FRAME_PX, type MarkerSize } from "@/features/events/components/map/map-marker-icon";
+import { getEventImageThumbnailUrl } from "@/features/events/model/event-image-thumbnail";
 import type { EventMapPin } from "@/features/events/model/event-map";
 
 /**
@@ -25,8 +26,12 @@ export function EventMapMarker({
   isSelected: boolean;
   onSelect: (pinId: string) => void;
 }) {
-  const posterSrc = pin.events[0]?.imageUrl?.trim() || DEFAULT_EVENT_POSTER_PATH;
-  const [failedSrc, setFailedSrc] = useState<string | null>(null);
+  const originalSrc = pin.events[0]?.imageUrl?.trim() || DEFAULT_EVENT_POSTER_PATH;
+  // 썸네일(업로드 때 만든 240px) → 원본 → 기본 포스터 순으로, 불러오지 못한 주소를 건너뛴다.
+  // 썸네일이 생기기 전에 올린 포스터와 외부 주소 포스터는 썸네일이 없어 원본으로 대신 보인다(2026-11-16).
+  const posterSources = [getEventImageThumbnailUrl(originalSrc), originalSrc, DEFAULT_EVENT_POSTER_PATH];
+  const [failedSrcs, setFailedSrcs] = useState<string[]>([]);
+  const posterSrc = posterSources.find((source) => source !== null && !failedSrcs.includes(source)) ?? DEFAULT_EVENT_POSTER_PATH;
   const isLabelShown = pin.name !== null && (size === "large" || isSelected);
 
   return (
@@ -46,16 +51,16 @@ export function EventMapMarker({
         className="pointer-events-auto relative z-10 block shrink-0 rounded-control bg-surface p-0.5 shadow-floating group-aria-pressed:bg-primary"
       >
         <span className="relative block size-full overflow-hidden rounded-badge bg-surface-muted">
-          {/* 목록 카드(EventImage)처럼 원본 주소를 그대로 쓴다. 불러오지 못하면 기본 포스터로 바꾼다.
+          {/* 핀은 48~72px이라 원본(최대 1600px) 대신 썸네일을 쓴다. 썸네일은 이미 작아 Next 이미지 최적화를 거치지 않는다.
               지도 SDK가 옮겨 다니는 상자 안에서는 지연 로딩이 늦게 걸려 빈 액자로 보였다. 핀은 수십 개라 바로 불러온다. */}
           <Image
-            src={failedSrc === posterSrc ? DEFAULT_EVENT_POSTER_PATH : posterSrc}
+            src={posterSrc}
             alt=""
             fill
             unoptimized
             loading="eager"
             sizes={`${MARKER_FRAME_PX.large.width}px`}
-            onError={() => setFailedSrc(posterSrc)}
+            onError={() => setFailedSrcs((current) => [...current, posterSrc])}
             className="object-cover object-top"
           />
         </span>

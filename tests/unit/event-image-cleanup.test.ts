@@ -39,7 +39,10 @@ describe("행사 이미지 정리", () => {
   it("이미지를 바꾸거나 지우면, 더 이상 아무 행사도 쓰지 않는 이전 파일을 지운다", async () => {
     await cleanupUnusedEventImage(fakeClient(), `${BASE}/events/old.webp`, `${BASE}/events/new.webp`);
     await cleanupUnusedEventImage(fakeClient(), `${BASE}/events/cleared.webp`, null);
-    expect(state.removed).toEqual(["events/old.webp", "events/cleared.webp"]);
+    // 지도 핀용 썸네일(-thumb.webp)도 공개 bucket에 남지 않게 같이 지운다(2026-11-16).
+    expect(state.removed).toEqual([
+      "events/old.webp", "events/old-thumb.webp", "events/cleared.webp", "events/cleared-thumb.webp",
+    ]);
   });
 
   it("같은 이미지를 유지하거나, 다른 행사가 아직 쓰거나, 외부 URL이면 지우지 않는다", async () => {

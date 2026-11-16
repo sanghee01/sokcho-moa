@@ -155,6 +155,7 @@ Supabase는 table 권한(grant)을 기본으로 넓게 줍니다. migration `202
 막힌 경우 오류 대신 "0행"이 됩니다. 그래서 관리자 action은 바뀐 행이 있는지 확인합니다.
 관리자 정책은 작업(select·insert·update·delete)별로 나뉘어 있고, grant가 있는 작업에만 있습니다(migration `20261106132943`).
 `event-images` bucket은 공개 URL로 누구나 볼 수 있지만, 목록 조회(list)는 관리자만 할 수 있습니다.
+관리자가 포스터를 올리면 원본(`events/<id>.webp`, 최대 1600px) 옆에 지도 핀용 썸네일(`events/<id>-thumb.webp`, 폭 240px)도 저장합니다. 이름 규칙은 `features/events/model/event-image-thumbnail.ts`에 있습니다.
 
 ---
 
