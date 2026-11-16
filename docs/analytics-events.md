@@ -20,12 +20,15 @@ GA4 주요 이벤트(Key event)는 `application_link_clicked`(2026-10-25 지정)
 | 이벤트 | 발생 시점 | 주요 파라미터 | 역할 |
 | --- | --- | --- | --- |
 | `event_detail_viewed` | 행사 상세가 처음 표시될 때 | `event_slug`, `event_category`, `event_audiences`, `application_available` | 상세 도달 |
-| `select_content` | 목록·관련 행사·많이 보는 행사에서 행사를 선택할 때 | `content_type`, `content_id`, `content_source`(`event_list`, `related_events`, `popular_events`), `event_category` | 상세 진입 출처, 상세에서 다른 행사로 이어 가는지 |
+| `select_content` | 목록·관련 행사·많이 보는 행사·지도 장소 카드에서 행사를 선택할 때 | `content_type`, `content_id`, `content_source`(`event_list`, `related_events`, `popular_events`, `event_map`), `event_category` | 상세 진입 출처, 상세에서 다른 행사로 이어 가는지 |
 | `search_submitted` | 키워드 검색을 제출할 때 | `query_length`, `has_query`, `active_filter_count` | 검색 사용성. 검색어 원문은 전송하지 않음 |
 | `sort_changed` | 정렬 칩으로 정렬 기준을 실제로 변경할 때 | `sort_method`(`latest` 행사일순·기본, `views` 조회순) | 정렬 선호도. 2026-11-06 기본을 `published`에서 `latest`로 바꾸고 `published`·`deadline` 칩을 뺐으므로 그 전후 값을 따로 본다. |
 | `application_link_clicked` | 신청·예매 링크를 선택할 때 | `event_slug`, `event_category`, `link_position` | 주요 이벤트. 참여 의도 |
 | `source_link_clicked` | 공식 원문·안내 링크를 선택할 때 | `event_slug`, `event_category`, `link_position`, `source_type` | 주요 이벤트. 정보 검증·참여 의도 |
 | `map_link_clicked` | 행사 또는 주변 명소 지도를 선택할 때 | `event_slug` 또는 `place_name`, `link_position`, `map_method` | 방문 의도 |
+| `map_place_selected` | 지도 탭(`/map`)에서 장소 핀을 눌러 그 장소의 행사 카드를 열 때(2026-11-16) | `map_category`(고른 분야, 없으면 `all`), `event_count`(그 장소에 보이는 행사 수) | 지도를 실제로 쓰는지. 지도 페이지 `page_view` 대비 비율과, 이어진 `select_content`(`event_map`)를 함께 본다 |
+| `map_category_changed` | 지도 탭의 분야 칩으로 분야를 실제로 바꿀 때. 이미 고른 칩은 세지 않는다(2026-11-16) | `map_category`(바꾼 분야, "전체"는 `all`) | 지도에서 분야 칩을 남길지 |
+| `map_unavailable` | 지도 대신 "지금은 지도를 볼 수 없어요"가 보일 때 화면마다 한 번(2026-11-16) | `reason`(`missing_key` 키 없음, `auth_failed` 키·등록 주소 오류, `script_error` 지도 SDK를 불러오지 못함) | 운영에서 지도가 죽어 있는지. 0이 아니면 Vercel 환경 변수와 네이버 콘솔의 Web 서비스 URL을 확인한다 |
 | `nearby_place_clicked` | 주변 명소 공식 페이지를 선택할 때 | `place_name`, `place_category`, `link_position` | 주변 콘텐츠 활용 |
 | `share` | 네이티브 공유 또는 링크 복사가 성공했을 때 | `method`, `content_type`, `item_id` | 추천·확산 |
 | `search_results_viewed` | 검색어가 있는 목록이 그려질 때. 같은 분야·탭·검색어에서 정렬만 바꾼 것은 다시 세지 않는다 | `result_count`, `query_length`, `status_tab` | 결과 0건 검색 비율. 검색 개선·행사 보강이 필요한지 |
@@ -65,6 +68,7 @@ GA4 주요 이벤트(Key event)는 `application_link_clicked`(2026-10-25 지정)
 | 제보·의견 폼을 줄일지 | `/report`의 `page_view` → 같은 경로의 `form_start` → `event_report_submitted`(의견은 `/feedback`, `feedback_submitted`) | 검색창도 `<form>`이라 `form_start`가 생기므로 반드시 페이지 경로로 거른다 |
 | 검색을 고칠지 | `search_results_viewed` 중 `result_count` = 0 비율 | 높게 나오면 검색어 수집 여부를 다시 정한다 |
 | 마감 탭을 둘지 | 목록 `page_view` 사용자 중 `status_tab_changed`(`closed`) 사용자 비율 | 몇 달 쌓인 뒤 본다 |
+| 지도 탭을 둘지 | `/map`의 `page_view` 사용자 중 `map_place_selected` 사용자 비율, 그중 `select_content`(`content_source` = `event_map`) 사용자 비율. 분야 칩은 `map_category_changed` 사용자 비율 | 기준값은 아직 정하지 않았다. 지도 방문 사용자가 몇백 명 쌓인 뒤 사용자가 정한다(2026-11-16). `map_unavailable`이 있는 기간은 빼고 본다 |
 
 비율이 1~5%인 지표는 노출 1,000명에서도 95% 범위가 ±1%p 안팎이다. 클릭이 10건 안팎일 때는 판단을 미룬다.
 행사 수가 계절마다 달라, 축제가 몰린 달 하나로 판단하지 않고 같은 길이의 기간끼리 비교한다.
@@ -127,6 +131,7 @@ GA4 주요 이벤트(Key event)는 `application_link_clicked`(2026-10-25 지정)
 - `application_available`
 - `status_tab`
 - `result_count`
+- `map_category`, `event_count`, `reason`(지도 탭, 2026-11-16 등록)
 
 `event_slug`, `place_name`, 날짜처럼 값 종류가 계속 늘어나는 항목은 등록하지 않는다. 행사 상세에서 일어난 이벤트는 모든 이벤트에 자동으로 붙는 페이지 경로로 행사를 구분한다.
 불필요한 맞춤 측정기준 등록은 `(other)` 행 증가와 할당량 낭비를 만든다.

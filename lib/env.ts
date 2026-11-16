@@ -41,6 +41,14 @@ export function getRuntimeEnv(): RuntimeEnv {
   };
 }
 
+/**
+ * 지도 탭이 쓰는 네이버 지도 Client ID. 없어도 사이트 나머지는 동작해야 하므로 getPublicEnv에 넣지 않고 따로 읽는다.
+ * 로컬·E2E·CI에서 값이 없으면 지도 대신 안내 문구를 보여 준다(2026-11-16).
+ */
+export function getNaverMapClientId() {
+  return process.env.NEXT_PUBLIC_NAVER_MAP_CLIENT_ID?.trim() || null;
+}
+
 export function getPublicEnv(): PublicEnv {
   const parsed = publicEnvSchema.safeParse({
     NEXT_PUBLIC_SITE_URL: resolveSiteUrl(),

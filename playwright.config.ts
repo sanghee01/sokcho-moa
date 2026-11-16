@@ -39,6 +39,9 @@ export default defineConfig({
       ...readLocalSupabaseEnv(),
       NEXT_PUBLIC_SITE_URL: baseURL,
       SUBMISSION_RATE_LIMIT_HMAC_SECRET: "e2e-rate-limit-secret-for-local-tests-only",
+      // 지도 탭이 지도 스크립트를 넣도록 가짜 Client ID로 빌드한다. 네이버로 가는 요청은 E2E가 가짜 SDK로 바꿔 끼운다
+      // (tests/e2e/naver-maps-stub.ts). .env.local의 실제 키보다 이 값이 먼저다(2026-11-16 사용자 결정).
+      NEXT_PUBLIC_NAVER_MAP_CLIENT_ID: "e2e-fake-client-id",
     },
   },
 });

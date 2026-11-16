@@ -1,24 +1,61 @@
 {
-  "verifiedAt": "2026-11-15",
-  "description": "행사 공고에 장소 이름만 있을 때 주소를 채우는 장소 사전(features/events/model/venue.ts). 공식 출처에서 확인한 도로명주소만 넣는다. 속초교육문화관(2027-06까지 개축 휴관), 소극장 초속(공식 출처 없음), 아트플랫폼 갯배(지번만 공개), 속초시근로자종합복지관(출처 불일치)은 확인되지 않아 뺐다.",
+  "verifiedAt": "2026-11-16",
+  "description": "행사 공고에 장소 이름만 있을 때 주소와 지도 좌표를 채우는 장소 사전(features/events/model/venue.ts). 공식 출처에서 확인한 도로명주소만 넣는다. 속초교육문화관(2027-06까지 개축 휴관), 소극장 초속(공식 출처 없음), 아트플랫폼 갯배(지번만 공개), 속초시근로자종합복지관(출처 불일치)은 확인되지 않아 뺐다. 좌표(coordinates)는 명소와 같은 방식으로 OpenStreetMap의 시설 요소를 공식 주소(도로명·번지 또는 우편번호)와 맞춰 본 뒤 넣었다(2026-11-16). OpenStreetMap에 시설이 없는 속초해양산업단지지원센터, 청초생활체육관, 속초시농업기술센터는 좌표를 비워 두었다.",
   "venues": [
     {
       "name": "속초문화예술회관",
       "aliases": [],
       "address": "강원특별자치도 속초시 번영로 155",
-      "sourceUrl": "https://www.sokcho.go.kr/ct/culture/artcenter/location"
+      "sourceUrl": "https://www.sokcho.go.kr/ct/culture/artcenter/location",
+      "coordinates": {
+        "latitude": 38.2127122,
+        "longitude": 128.5887821,
+        "sourceUrl": "https://www.openstreetmap.org/way/1477839052"
+      }
     },
     {
       "name": "속초시립도서관",
       "aliases": [],
       "address": "강원특별자치도 속초시 조양로 89",
-      "sourceUrl": "https://library.sokcho.go.kr/"
+      "sourceUrl": "https://library.sokcho.go.kr/",
+      "coordinates": {
+        "latitude": 38.1867317,
+        "longitude": 128.590642,
+        "sourceUrl": "https://www.openstreetmap.org/node/13532362340"
+      }
+    },
+    {
+      "name": "속초어린이영어도서관",
+      "aliases": [],
+      "address": "강원특별자치도 속초시 엑스포로 132",
+      "sourceUrl": "https://library.sokcho.go.kr/eng/main",
+      "coordinates": {
+        "latitude": 38.1959375,
+        "longitude": 128.5820796,
+        "sourceUrl": "https://www.openstreetmap.org/way/1474107315"
+      }
     },
     {
       "name": "속초시립박물관",
       "aliases": [],
       "address": "강원특별자치도 속초시 신흥2길 16",
-      "sourceUrl": "https://www.sokcho.go.kr/ct/museum/intro/guide"
+      "sourceUrl": "https://www.sokcho.go.kr/ct/museum/intro/guide",
+      "coordinates": {
+        "latitude": 38.2005401,
+        "longitude": 128.5395363,
+        "sourceUrl": "https://www.openstreetmap.org/way/1198853443"
+      }
+    },
+    {
+      "name": "국립산악박물관",
+      "aliases": [],
+      "address": "강원특별자치도 속초시 미시령로 3054",
+      "sourceUrl": "https://www.komount.or.kr/nmm",
+      "coordinates": {
+        "latitude": 38.2027955,
+        "longitude": 128.5404999,
+        "sourceUrl": "https://www.openstreetmap.org/way/923680035"
+      }
     },
     {
       "name": "속초해양산업단지지원센터",
@@ -30,13 +67,23 @@
       "name": "카시아속초호텔앤리조트",
       "aliases": ["카시아 속초"],
       "address": "강원특별자치도 속초시 대포항희망길 120",
-      "sourceUrl": "https://english.visitkorea.or.kr/svc/contents/infoHtmlView.do?vcontsId=201025"
+      "sourceUrl": "https://english.visitkorea.or.kr/svc/contents/infoHtmlView.do?vcontsId=201025",
+      "coordinates": {
+        "latitude": 38.1760908,
+        "longitude": 128.6101056,
+        "sourceUrl": "https://www.openstreetmap.org/node/13004596365"
+      }
     },
     {
       "name": "속초농협 하나로마트 엑스포점",
-      "aliases": [],
+      "aliases": ["속초농협 엑스포점"],
       "address": "강원특별자치도 속초시 동해대로 4202",
-      "sourceUrl": "https://state.gwd.go.kr/portal/partinfo/livestock/livestockIndustry/brandshop"
+      "sourceUrl": "https://state.gwd.go.kr/portal/partinfo/livestock/livestockIndustry/brandshop",
+      "coordinates": {
+        "latitude": 38.1945881,
+        "longitude": 128.5789947,
+        "sourceUrl": "https://www.openstreetmap.org/way/472291970"
+      }
     },
     {
       "name": "청초생활체육관",
@@ -48,7 +95,12 @@
       "name": "속초시청소년수련관",
       "aliases": [],
       "address": "강원특별자치도 속초시 관광로363번길 14",
-      "sourceUrl": "https://www.sokcho.go.kr/sc/fields/welfare/child_youth/youth_welfare/facility"
+      "sourceUrl": "https://www.sokcho.go.kr/sc/fields/welfare/child_youth/youth_welfare/facility",
+      "coordinates": {
+        "latitude": 38.192745,
+        "longitude": 128.5380208,
+        "sourceUrl": "https://www.openstreetmap.org/way/516303964"
+      }
     },
     {
       "name": "속초시농업기술센터",

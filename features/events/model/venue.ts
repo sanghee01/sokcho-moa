@@ -12,6 +12,16 @@ const venueSchema = z.object({
   address: z.string().startsWith("강원특별자치도 "),
   /** 주소를 확인한 공식 출처 */
   sourceUrl: z.string().url(),
+  /**
+   * 지도 탭의 핀 위치(2026-11-16). 명소와 같은 방식으로 OpenStreetMap의 시설 좌표를 공식 주소와 맞춰 보고 넣는다.
+   * 확인하지 못한 시설은 비워 두고, 그 시설의 행사는 행사에 좌표가 있을 때만 지도에 오른다.
+   */
+  coordinates: z.object({
+    latitude: z.number().min(-90).max(90),
+    longitude: z.number().min(-180).max(180),
+    /** 좌표를 가져온 OpenStreetMap 요소 */
+    sourceUrl: z.string().url(),
+  }).optional(),
 });
 
 export type Venue = z.infer<typeof venueSchema>;
@@ -22,8 +32,45 @@ export const venues: Venue[] = z.object({ venues: z.array(venueSchema) }).parse(
 // "등대해수욕장"처럼 이름 안의 "등"은 걸리지 않게 앞뒤 공백이 있을 때만 본다.
 const MULTI_PLACE_OR_AREA_PATTERN = /및|\/|·|,|일원|(?:^|\s)등(?:\s|$)/;
 
+export interface Coordinates {
+  latitude: number;
+  longitude: number;
+}
+
 /** 장소 이름에 맞는 사전 시설의 주소. 시설 이름 뒤의 방·층 이름은 무시하고, 더 긴(구체적인) 시설 이름을 먼저 고른다. */
 export function findVenueAddress(locationName: string | null, venueList: readonly Venue[] = venues) {
+  return findVenue(locationName, venueList)?.address ?? null;
+}
+
+/** 장소 이름에 맞는 사전 시설의 좌표. 시설을 찾는 규칙은 주소와 같고, 좌표를 확인하지 못한 시설이면 null이다. */
+export function findVenueCoordinates(locationName: string | null, venueList: readonly Venue[] = venues): Coordinates | null {
+  const coordinates = findVenue(locationName, venueList)?.coordinates;
+  return coordinates === undefined ? null : { latitude: coordinates.latitude, longitude: coordinates.longitude };
+}
+
+/** 장소 이름에 맞는 사전 시설의 공식 이름. 지도 탭의 장소 카드 제목에 쓴다("국립산악박물관 기획전시실" → "국립산악박물관"). */
+export function findVenueName(locationName: string | null, venueList: readonly Venue[] = venues) {
+  return findVenue(locationName, venueList)?.name ?? null;
+}
+
+/** 화면·구조화 데이터·RSS가 쓰는 행사 주소. 저장된 주소가 우선이고, 없으면 장소 사전에서 찾는다. */
+export function resolveEventAddress(event: Pick<Event, "address" | "locationName">, venueList: readonly Venue[] = venues) {
+  return event.address?.trim() || findVenueAddress(event.locationName, venueList);
+}
+
+/**
+ * 지도 탭이 핀을 찍는 행사 좌표. 행사에 저장된 좌표가 우선이고, 없으면 장소 사전에서 찾는다.
+ * 지금은 지도 탭만 쓴다. 구조화 데이터·주변 명소 거리는 저장된 좌표만 쓴다(2026-11-16, 범위를 지도로 좁힘).
+ */
+export function resolveEventCoordinates(
+  event: Pick<Event, "latitude" | "longitude" | "locationName">,
+  venueList: readonly Venue[] = venues,
+): Coordinates | null {
+  if (event.latitude !== null && event.longitude !== null) return { latitude: event.latitude, longitude: event.longitude };
+  return findVenueCoordinates(event.locationName, venueList);
+}
+
+function findVenue(locationName: string | null, venueList: readonly Venue[]) {
   const name = locationName?.trim();
   if (!name || MULTI_PLACE_OR_AREA_PATTERN.test(name)) return null;
 
@@ -32,12 +79,7 @@ export function findVenueAddress(locationName: string | null, venueList: readonl
     .flatMap((venue) => [venue.name, ...venue.aliases].map((key) => ({ key: compactName(key), venue })))
     .filter(({ key }) => compactLocation.startsWith(key))
     .sort((a, b) => b.key.length - a.key.length)[0];
-  return match?.venue.address ?? null;
-}
-
-/** 화면·구조화 데이터·RSS가 쓰는 행사 주소. 저장된 주소가 우선이고, 없으면 장소 사전에서 찾는다. */
-export function resolveEventAddress(event: Pick<Event, "address" | "locationName">, venueList: readonly Venue[] = venues) {
-  return event.address?.trim() || findVenueAddress(event.locationName, venueList);
+  return match?.venue ?? null;
 }
 
 function compactName(value: string) {

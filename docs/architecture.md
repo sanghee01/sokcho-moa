@@ -19,10 +19,12 @@ app/                 URL과 1:1. 데이터 함수 호출 + feature 컴포넌트 
 features/
   events/            행사 탐색·상세·관리 (model, queries, cache, mappers, seo, components, admin/)
     model/           event.ts(타입), event-state.ts(진행·신청 상태), event-list.ts(필터·정렬·인기 행사),
-                     review-status.ts, taxonomy.ts, location.ts(주변 명소), venue.ts(장소 사전으로 빈 주소 채우기), badges.ts, format.ts
+                     review-status.ts, taxonomy.ts, location.ts(주변 명소), venue.ts(장소 사전으로 빈 주소 채우기), badges.ts, format.ts,
+                     event-map.ts(지도 탭의 장소별 묶기)
     components/      카드·이미지·상태 배지처럼 목록과 상세가 함께 쓰는 부품
       browse/        목록 화면(검색·정렬·분야 탭·인기 배너)
       detail/        상세 화면(정보 목록·하단 버튼·공유·조회수 기록)
+      map/           지도 탭(네이버 지도 SDK 타입·핀·장소 카드, 헤더 "지도" 버튼)
     admin/           관리자 queries·actions·components·schemas(행사 폼 검증)
       image/         포스터 업로드·외부 이미지 가져오기·최적화·Storage 저장
       candidate/     수집 후보 JSON 검증(schema)·가져오기 action·저장 payload
@@ -40,7 +42,7 @@ lib/                 도메인을 모르는 인프라
   seoul-time.ts      Asia/Seoul 날짜 계산의 원본(날짜 경계, 관리자 입력 시각 변환)
   map.ts             거리 계산, 네이버 지도 링크(행사·명소가 함께 씀)
   seo/, analytics/   사이트 전체 SEO·GA4
-data/                코드와 함께 관리하는 확인된 원본 데이터: attractions.json(명소 수집·검증 결과), venues.json(시설 이름→공식 주소 장소 사전)
+data/                코드와 함께 관리하는 확인된 원본 데이터: attractions.json(명소 수집·검증 결과), venues.json(시설 이름→공식 주소·지도 좌표 장소 사전)
 supabase/            migrations, seed.sql, tests/database(pgTAP), rollbacks(migration마다 같은 이름), config.toml
 public/              brand/(헤더 로고 wordmark.webp, 기본 포스터 default-event-poster.svg), icons/(홈 화면 아이콘), sample-events/(시드 이미지).
                      icon.jpeg(검색엔진 로고)와 검색엔진 소유 확인 html은 URL이 외부에 알려져 있어 루트에 둔다
@@ -68,6 +70,7 @@ import합니다. 이 규칙은 `pnpm lint`가 강제합니다(`eslint.config.mjs
 | `/months` | 동적 | 헤더 "월별 일정" 버튼의 목적지. 요청한 때의 이번 달 `/months/YYYY-MM`으로 307 redirect |
 | `/months/[month]` | ISR 5분(`revalidate = 3600`이지만 행사 데이터 캐시 5분을 따름), 이번 달·다음 달 미리 생성 | 월별 행사(`features/events/components/month`, `features/events/model/event-month.ts`). 지난 달은 행사가 있을 때만 열고 다다음 달부터 404 |
 | `/months/[month]/[category]` | 위와 같음, 이번 달·다음 달 × 6분야 미리 생성 | 그 달의 한 분야(헤더 분야 탭). 행사가 없으면 `noindex`. 조회는 `features/events/month-page.ts`를 두 route가 함께 씀 |
+| `/map` | ISR 5분(월별 페이지와 같은 방식) | 지도 탭(`features/events/components/map`, `features/events/model/event-map.ts`). 서버가 장소별로 묶고 행사 카드를 그려 넘기고, 브라우저가 네이버 지도 SDK를 불러 핀·분야 칩을 그린다. 분야·장소는 주소의 `?category=`·`?place=` |
 | `/calendar` | 동적 | 목록으로 redirect만(캘린더는 삭제, 옛 북마크 보호) |
 | `/report`, `/feedback` | 정적 | 방문자 제보·의견 폼 |
 | `/privacy` | 정적 | 개인정보 처리방침(GA 사용, 쿠키 거부 방법, 보호책임자) |

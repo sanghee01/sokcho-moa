@@ -12,6 +12,7 @@ import { iconProps } from "@/components/ui/icon";
 import { textLinkClassName } from "@/components/ui/link-styles";
 import { TransitionLink } from "@/components/ui/transition-link";
 import { CategoryNavigation } from "@/features/events/components/browse/category-navigation";
+import { MapEntryLink } from "@/features/events/components/map/map-entry-link";
 import { MonthEntryLink } from "@/features/events/components/month/month-entry-link";
 import { GOOGLE_ANALYTICS_ID, shouldCollectGoogleAnalytics } from "@/lib/analytics/google-analytics";
 import { INTERNAL_TRAFFIC_STORAGE_KEY, INTERNAL_TRAFFIC_TYPE } from "@/lib/analytics/internal-traffic";
@@ -100,11 +101,12 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
               </TransitionLink>
               {/* 월별 일정 버튼: lg 미만은 로고 줄 오른쪽, lg는 분야 탭 뒤 오른쪽 끝이다. 탭이 없는 페이지(상세 등)에서도
                   오른쪽 끝에 오도록 탭과 버튼을 한 묶음으로 두고, 폭에 따라 둘 중 한 자리만 보인다(2026-11-15 사용자 결정). */}
-              <span className="lg:hidden"><MonthEntryLink /></span>
+              {/* 지도 버튼은 하단 탭을 넣기 전의 지도 탭 입구다(2026-11-16). 월별 일정과 같은 자리 규칙을 따른다. */}
+              <span className="flex gap-2 lg:hidden"><MapEntryLink /><MonthEntryLink /></span>
             </div>
             <div className="lg:ml-auto lg:flex lg:items-center lg:gap-6">
               <CategoryNavigation />
-              <span className="hidden lg:block"><MonthEntryLink /></span>
+              <span className="hidden gap-2 lg:flex"><MapEntryLink /><MonthEntryLink /></span>
             </div>
           </div>
         </header>

@@ -17,7 +17,7 @@ export interface AnalyticsEventParams {
   select_content: {
     content_type: "event";
     content_id: string;
-    content_source: "event_list" | "related_events" | "popular_events";
+    content_source: "event_list" | "related_events" | "popular_events" | "event_map";
     event_category: string;
   };
   search_submitted: {
@@ -66,6 +66,19 @@ export interface AnalyticsEventParams {
   related_events_viewed: {
     event_category: string;
   };
+  // 지도 탭(/map)에서 장소 핀을 눌러 그 장소의 행사를 열었을 때(2026-11-16). 지도에서 카드를 누른 것은 select_content(event_map)로 센다.
+  map_place_selected: {
+    map_category: string;
+    event_count: number;
+  };
+  // 지도 분야 칩으로 분야를 실제로 바꿨을 때. 칩을 남길지 정하는 근거다(2026-11-16). "전체"로 돌아가면 all.
+  map_category_changed: {
+    map_category: string;
+  };
+  // 지도 대신 "지금은 지도를 볼 수 없어요"를 보여 줄 때 한 번. 운영에서 키를 빠뜨리거나 주소 등록이 틀리면 조용히 죽어 있어서 센다(2026-11-16).
+  map_unavailable: {
+    reason: "missing_key" | "auth_failed" | "script_error";
+  };
   nearby_place_clicked: {
     place_name: string;
     place_category: string;
@@ -97,6 +110,9 @@ const analyticsEventNames = {
   map_link_clicked: true,
   nearby_places_viewed: true,
   related_events_viewed: true,
+  map_place_selected: true,
+  map_category_changed: true,
+  map_unavailable: true,
   nearby_place_clicked: true,
   share: true,
   event_report_submitted: true,
