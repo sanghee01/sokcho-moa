@@ -106,6 +106,7 @@ GA4 주요 이벤트(Key event)는 `application_link_clicked`(2026-10-25 지정)
 - RSS(`app/rss.xml`) 링크에는 꼬리표를 붙이지 않는다. 네이버 서치어드바이저가 RSS로 수집하므로, 검색 결과에 꼬리표 주소가 퍼질 수 있다.
 - 운영자가 SNS·블로그에 직접 올리는 링크는 `?utm_source=instagram&utm_medium=social`처럼 붙이면 된다. 들어오면 주소창에서 지워진다.
 - `share / social`·`homescreen / app`은 2026-11-17 배포 뒤부터 쌓인다. 그 전 기간은 모두 Direct에 들어 있다.
+- 구글 검색어는 GA에 리퍼러로 오지 않는다. Search Console(`sokchomoa.com` 도메인 속성)을 2026-11-07에 연결해 보고서 → Search Console → 쿼리에서 본다. 네이버 검색어는 네이버 서치어드바이저에서 본다.
 
 ## GA4 관리자 설정
 
@@ -153,7 +154,7 @@ GA4 주요 이벤트(Key event)는 `application_link_clicked`(2026-10-25 지정)
 - `status_tab`
 - `result_count`
 - `map_category`, `event_count`, `reason`(지도 탭, 2026-11-16 등록)
-- `in_app_browser`(유입 경로, 2026-11-17 추가. GA 관리자에서 사용자가 등록해야 보인다)
+- `in_app_browser`(유입 경로, 2026-11-17 등록)
 
 `event_slug`, `place_name`, 날짜처럼 값 종류가 계속 늘어나는 항목은 등록하지 않는다. 행사 상세에서 일어난 이벤트는 모든 이벤트에 자동으로 붙는 페이지 경로로 행사를 구분한다.
 불필요한 맞춤 측정기준 등록은 `(other)` 행 증가와 할당량 낭비를 만든다.
