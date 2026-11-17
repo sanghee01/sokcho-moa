@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { HOME_SCREEN_START_URL } from "@/lib/analytics/acquisition";
 import {
   SITE_DESCRIPTION,
   SITE_LOGO_PATH,
@@ -10,7 +11,8 @@ export default function manifest(): MetadataRoute.Manifest {
     name: SITE_NAME,
     short_name: SITE_NAME,
     description: SITE_DESCRIPTION,
-    start_url: "/",
+    // 홈 화면 앱으로 연 방문을 Direct(북마크·주소 입력)와 구분하려고 꼬리표를 붙인다. 들어오면 주소창에서는 지운다(2026-11-17).
+    start_url: HOME_SCREEN_START_URL,
     display: "standalone",
     // manifest는 CSS 변수를 읽지 못해 색을 직접 쓴다. theme_color는 app/globals.css의 --color-sea-600과 같은 값이다.
     background_color: "#ffffff",

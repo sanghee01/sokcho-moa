@@ -11,6 +11,12 @@ import {
   shouldCollectGoogleAnalytics,
   shouldTrackGoogleAnalyticsPage,
 } from "@/lib/analytics/google-analytics";
+import {
+  detectInAppBrowser,
+  markInAppBrowser,
+  removeCampaignParams,
+  toShareUrl,
+} from "@/lib/analytics/acquisition";
 import { INTERNAL_TRAFFIC_STORAGE_KEY, markInternalTraffic } from "@/lib/analytics/internal-traffic";
 
 describe("analytics event contract", () => {
@@ -165,5 +171,55 @@ describe("Google Analytics collection environment", () => {
     expect(shouldTrackGoogleAnalyticsPage("/admin")).toBe(false);
     expect(shouldTrackGoogleAnalyticsPage("/admin/events/123")).toBe(false);
     expect(shouldTrackGoogleAnalyticsPage("/administrator")).toBe(true);
+  });
+});
+
+describe("acquisition tagging", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("공유 주소는 다른 쿼리와 해시 없이 공유 꼬리표만 붙인다", () => {
+    expect(toShareUrl("/events/demo-festival", "https://sokchomoa.com"))
+      .toBe("https://sokchomoa.com/events/demo-festival?utm_source=share&utm_medium=social");
+  });
+
+  it("들어온 주소에서 utm 꼬리표만 지우고 나머지 쿼리와 해시는 남긴다", () => {
+    expect(removeCampaignParams("https://sokchomoa.com/?utm_source=share&utm_medium=social&sort=views#list"))
+      .toBe("https://sokchomoa.com/?sort=views#list");
+    expect(removeCampaignParams("https://sokchomoa.com/events/demo?utm_source=homescreen"))
+      .toBe("https://sokchomoa.com/events/demo");
+  });
+
+  it("지울 꼬리표가 없거나 주소가 아니면 바꾸지 않는다", () => {
+    expect(removeCampaignParams("https://sokchomoa.com/?sort=views")).toBeNull();
+    expect(removeCampaignParams("not a url")).toBeNull();
+  });
+
+  it("메신저·SNS 앱 안 브라우저를 사용자 에이전트로 알아본다", () => {
+    expect(detectInAppBrowser("Mozilla/5.0 (Linux; Android 14; SM-S921N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36;KAKAOTALK 2410520")).toBe("kakaotalk");
+    expect(detectInAppBrowser("Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 NAVER(inapp; search; 2000; 12.10.3; 15PRO)")).toBe("naver");
+    expect(detectInAppBrowser("Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 Instagram 355.0.0.20.108 (iPhone15,3; iOS 18_1; ko_KR)")).toBe("instagram");
+    expect(detectInAppBrowser("Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 [FBAN/FBIOS;FBAV/490.0.0.38.109;FBBV/1]")).toBe("facebook");
+    expect(detectInAppBrowser("Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 DaumApps/7.9.0")).toBe("daum");
+    expect(detectInAppBrowser("Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36 BAND/16.1.2")).toBe("band");
+    expect(detectInAppBrowser("Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 Safari Line/14.18.0")).toBe("line");
+  });
+
+  it("일반 브라우저는 앱 안 브라우저로 보지 않는다", () => {
+    expect(detectInAppBrowser("Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Mobile/15E148 Safari/604.1")).toBeNull();
+    expect(detectInAppBrowser("Mozilla/5.0 (Linux; Android 14; SM-S921N) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/26.0 Chrome/122.0.0.0 Mobile Safari/537.36")).toBeNull();
+    expect(detectInAppBrowser("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Whale/4.29.282.14 Safari/537.36")).toBeNull();
+  });
+
+  it("앱 안 브라우저면 그 뒤 모든 GA 이벤트에 앱 이름을 붙이고, 아니면 아무것도 붙이지 않는다", () => {
+    const gtag = vi.fn();
+    vi.stubGlobal("window", { gtag });
+
+    markInAppBrowser("Mozilla/5.0 (Linux; Android 14) Chrome/130.0.0.0 Mobile Safari/537.36;KAKAOTALK 2410520");
+    markInAppBrowser("Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/130.0.0.0 Safari/537.36");
+
+    expect(gtag).toHaveBeenCalledOnce();
+    expect(gtag).toHaveBeenCalledWith("set", { in_app_browser: "kakaotalk" });
   });
 });

@@ -4,6 +4,7 @@ import { Share2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getButtonClassName } from "@/components/ui/button-styles";
 import { iconProps } from "@/components/ui/icon";
+import { toShareUrl } from "@/lib/analytics/acquisition";
 import { trackAnalyticsEvent } from "@/lib/analytics/events";
 
 type ShareStatus = "idle" | "copied" | "error";
@@ -14,10 +15,7 @@ const feedbackByStatus: Record<Exclude<ShareStatus, "idle">, { message: string; 
 };
 
 function eventShareUrl(slug: string) {
-  const url = new URL(`/events/${encodeURIComponent(slug)}`, window.location.origin);
-  url.search = "";
-  url.hash = "";
-  return url.toString();
+  return toShareUrl(`/events/${encodeURIComponent(slug)}`, window.location.origin);
 }
 
 function fallbackCopy(text: string) {

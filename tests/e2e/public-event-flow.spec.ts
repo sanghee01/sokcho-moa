@@ -167,7 +167,8 @@ test("공유하기는 기기에 맞는 방식으로 행사 주소를 공유하�
   await expect(shareButton).toBeVisible();
   await shareButton.click();
 
-  const expectedUrl = `http://127.0.0.1:3100${SAMPLE_EVENT_PATH}`;
+  // 받은 사람이 들어오면 GA가 공유 유입으로 세도록 공유 꼬리표를 붙인다(2026-11-17). 원래 주소의 쿼리·해시는 버린다.
+  const expectedUrl = `http://127.0.0.1:3100${SAMPLE_EVENT_PATH}?utm_source=share&utm_medium=social`;
   if (isMobile) {
     await expect.poll(() => page.evaluate(() => (window as Window & { __sharedEventUrl?: string }).__sharedEventUrl)).toBe(expectedUrl);
     await expect(shareButton).toBeVisible();

@@ -87,6 +87,26 @@ GA4 주요 이벤트(Key event)는 `application_link_clicked`(2026-10-25 지정)
 
 과거 데이터로 탐색 분석을 만들 때는 페이지 경로가 `/admin`으로 시작하는 행을 뺀다. 이런 변경은 GA 주석(관리 → 데이터 표시 → 주석)에도 남겼다.
 
+## 유입 경로
+
+출처(referrer)가 넘어오지 않는 방문은 GA가 모두 Direct로 묶는다. 주소 입력·북마크·메신저 링크·홈 화면 앱이 한데 섞여,
+2026-11-16 기준 신규 사용자의 약 30%가 어디서 왔는지 알 수 없었다. 그래서 2026-11-17에 아래를 더했다(`lib/analytics/acquisition.ts`).
+
+| 방문 | 표시 | GA에서 보이는 곳 |
+| --- | --- | --- |
+| 공유 버튼으로 받은 링크 | 주소에 `utm_source=share&utm_medium=social` | 소스/매체 `share / social`, 채널 Organic Social |
+| 홈 화면에 추가한 앱으로 열기 | manifest `start_url`에 `utm_source=homescreen&utm_medium=app` | 소스/매체 `homescreen / app`, 채널 Unassigned |
+| 카카오톡·네이버 앱 등 앱 안 브라우저 | 모든 이벤트에 `in_app_browser`(`kakaotalk`, `naver`, `daum`, `instagram`, `facebook`, `line`, `band`). 일반 브라우저는 보내지 않는다 | 맞춤 측정기준 `in_app_browser`. 일반 브라우저는 `(not set)` |
+
+- 주소의 `utm_` 꼬리표는 첫 `page_view`의 `page_location`에 담아 보낸 뒤 주소창에서 지운다(`components/analytics/analytics-runtime.tsx`).
+  남겨 두면 방문자가 주소를 복사해 다시 퍼뜨릴 때 꼬리표가 따라간다. 다른 쿼리와 해시는 그대로 둔다.
+- 북마크와 주소 입력은 여전히 구분할 수 없다. 둘 다 출처도 꼬리표도 없다.
+- 공유 버튼은 어느 앱으로 보냈는지 알 수 없어 `share` 하나로 센다. 공유 방식(공유 시트·링크 복사)은 `share` 이벤트의 `method`로 본다.
+- 홈 화면 표시는 manifest를 다시 받은 뒤부터 붙는다. 이미 설치한 기기는 브라우저가 manifest를 갱신할 때까지 Direct로 남을 수 있다.
+- RSS(`app/rss.xml`) 링크에는 꼬리표를 붙이지 않는다. 네이버 서치어드바이저가 RSS로 수집하므로, 검색 결과에 꼬리표 주소가 퍼질 수 있다.
+- 운영자가 SNS·블로그에 직접 올리는 링크는 `?utm_source=instagram&utm_medium=social`처럼 붙이면 된다. 들어오면 주소창에서 지워진다.
+- `share / social`·`homescreen / app`은 2026-11-17 배포 뒤부터 쌓인다. 그 전 기간은 모두 Direct에 들어 있다.
+
 ## GA4 관리자 설정
 
 ### page_view와 향상된 측정
@@ -133,6 +153,7 @@ GA4 주요 이벤트(Key event)는 `application_link_clicked`(2026-10-25 지정)
 - `status_tab`
 - `result_count`
 - `map_category`, `event_count`, `reason`(지도 탭, 2026-11-16 등록)
+- `in_app_browser`(유입 경로, 2026-11-17 추가. GA 관리자에서 사용자가 등록해야 보인다)
 
 `event_slug`, `place_name`, 날짜처럼 값 종류가 계속 늘어나는 항목은 등록하지 않는다. 행사 상세에서 일어난 이벤트는 모든 이벤트에 자동으로 붙는 페이지 경로로 행사를 구분한다.
 불필요한 맞춤 측정기준 등록은 `(other)` 행 증가와 할당량 낭비를 만든다.

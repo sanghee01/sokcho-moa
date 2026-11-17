@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
+import { markInAppBrowser, removeCampaignParams } from "@/lib/analytics/acquisition";
 import {
   isAnalyticsEvent,
   parseAnalyticsProperties,
@@ -18,16 +19,28 @@ export function AnalyticsRuntime() {
     const pageLocation = window.location.href;
     if (lastObservedLocation.current === pageLocation) return;
 
+    const isFirstPage = lastObservedLocation.current === null;
     const pageReferrer = lastObservedLocation.current || document.referrer || undefined;
     lastObservedLocation.current = pageLocation;
 
-    if (!shouldTrackGoogleAnalyticsPage(pathname)) return;
+    // 앱 안 브라우저 표시는 방문 첫 page_view보다 먼저 붙인다(lib/analytics/acquisition.ts).
+    if (isFirstPage) markInAppBrowser(navigator.userAgent);
 
-    trackPageView({
-      page_title: document.title,
-      page_location: pageLocation,
-      page_referrer: pageReferrer,
-    });
+    if (shouldTrackGoogleAnalyticsPage(pathname)) {
+      trackPageView({
+        page_title: document.title,
+        page_location: pageLocation,
+        page_referrer: pageReferrer,
+      });
+    }
+
+    // GA는 page_view의 page_location에서 utm 꼬리표를 읽으므로, 보낸 뒤에는 주소창에서 지운다.
+    // 남겨 두면 방문자가 주소를 복사해 다시 퍼뜨릴 때 꼬리표가 따라가 엉뚱한 유입으로 잡힌다(2026-11-17).
+    const cleanLocation = removeCampaignParams(pageLocation);
+    if (cleanLocation !== null) {
+      window.history.replaceState(null, "", cleanLocation);
+      lastObservedLocation.current = cleanLocation;
+    }
   }, [pathname]);
 
   useEffect(() => {
