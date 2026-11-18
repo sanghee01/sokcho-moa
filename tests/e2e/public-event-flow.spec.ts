@@ -483,3 +483,51 @@ test("캐시된 상세 페이지도 신청 상태는 방문자의 현재 시각�
   await expect(facts.getByText("신청 마감", { exact: true })).toBeVisible();
   await expect(page.getByLabel("행사 상태").first().getByText("신청이 마감된 행사예요", { exact: true })).toBeVisible();
 });
+
+// 모바일 상세 포스터는 높이 240px 안에 줄어 있어 포스터 속 글자를 읽기 어렵다. 눌러서 화면 가득 크게 본다(2026-11-18 사용자 결정).
+test("행사 상세 포스터를 누르면 크게 보고, 닫기·Esc·뒤로가기로 닫으면 상세 페이지에 머문다", async ({ page }) => {
+  await page.goto("/");
+  await page.goto(SAMPLE_EVENT_PATH);
+  const openButton = page.getByRole("button", { name: "포스터 크게 보기" });
+  const viewer = page.getByRole("dialog", { name: /포스터$/ });
+
+  await openButton.click();
+  await expect(viewer).toBeVisible();
+  await expect(viewer.getByRole("img")).toBeVisible();
+  // 크게 보기를 실제로 쓰는지 세어 여러 장 갤러리를 할지 판단한다(2026-11-18 사용자 결정).
+  await expect.poll(() => analyticsEventParams(page, "poster_viewed")).toEqual([{ event_slug: SAMPLE_EVENT_SLUG, event_category: "festival" }]);
+  const closeButton = viewer.getByRole("button", { name: "닫기" });
+  await expect(closeButton).toBeInViewport();
+  // 열린 채 스크롤해도 뒤 페이지가 움직이지 않아, 닫으면 보던 자리 그대로다.
+  const scrollBefore = await page.evaluate(() => window.scrollY);
+  await page.mouse.wheel(0, 800);
+  // 스크롤이 일어났다면 반영될 시간을 준 뒤 비교한다(바로 비교하면 스크롤 전 값과 같아 통과해 버림).
+  await page.waitForTimeout(300);
+  expect(await page.evaluate(() => window.scrollY)).toBe(scrollBefore);
+  await closeButton.click();
+  await expect(viewer).toBeHidden();
+  await expect(openButton).toBeFocused();
+
+  await openButton.click();
+  await expect(viewer).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(viewer).toBeHidden();
+
+  // 안드로이드 뒤로가기로 닫아도 상세 페이지를 떠나지 않는다.
+  await openButton.click();
+  await expect(viewer).toBeVisible();
+  await page.goBack();
+  await expect(viewer).toBeHidden();
+  await expect(page).toHaveURL(new RegExp(`${SAMPLE_EVENT_PATH}$`));
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+
+  // 여러 번 열고 닫아도 크게 보기 기록이 남지 않아, 뒤로가기 한 번이면 들어오기 전 페이지로 간다.
+  await page.goBack();
+  await expect(page).toHaveURL(/\/$/);
+});
+
+test("포스터가 없는 행사는 크게 보기 버튼을 두지 않는다", async ({ page }) => {
+  await page.goto("/events/demo-children-craft");
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  await expect(page.getByRole("button", { name: "포스터 크게 보기" })).toHaveCount(0);
+});

@@ -11,6 +11,7 @@ import { EventFactList } from "@/features/events/components/detail/event-fact-li
 import { EventImage } from "@/features/events/components/event-image";
 import { EventImagePlaceholder } from "@/features/events/components/event-image-placeholder";
 import { EventInfoList } from "@/features/events/components/detail/event-info-list";
+import { EventPosterViewer } from "@/features/events/components/detail/event-poster-viewer";
 import { EventViewCount } from "@/features/events/components/detail/event-view-count";
 import { PosterBackdrop } from "@/features/events/components/poster-backdrop";
 import { StatusBadges } from "@/features/events/components/status-badges";
@@ -90,6 +91,7 @@ export default async function EventDetailPage({ params }: PageProps<"/events/[sl
   const relatedEvents = getRelatedEvents(event, allEvents);
   const introduction = getEventIntroduction(event);
   const renderedAt = new Date().toISOString();
+  const posterUrl = event.imageUrl?.trim() || null;
 
   return (
     // 하단 행동 바만큼의 여백은 페이지 맨 끝(body)에 둔다(globals.css). 여기에 두면 목록으로 버튼 아래가 너무 비었다(2026-11-07).
@@ -118,6 +120,8 @@ export default async function EventDetailPage({ params }: PageProps<"/events/[sl
           <div className="absolute inset-4 lg:inset-6">
             <EventImage src={event.imageUrl} alt={event.title} priority fit="contain" sizes="(min-width: 1024px) 640px, 100vw" fallback={<EventImagePlaceholder />} />
           </div>
+          {/* 기본 포스터는 크게 볼 내용이 없어 실제 포스터가 있을 때만 크게 보기를 둔다(2026-11-18 사용자 결정). */}
+          {posterUrl !== null && <EventPosterViewer imageUrl={posterUrl} title={event.title} slug={event.slug} category={event.category} />}
         </div>
 
         <div className="px-4 pt-5 lg:sticky lg:top-[calc(var(--site-header-height)+1.5rem)] lg:col-start-2 lg:row-span-3 lg:row-start-1 lg:px-0 lg:pt-0">

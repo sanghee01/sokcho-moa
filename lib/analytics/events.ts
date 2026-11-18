@@ -84,6 +84,11 @@ export interface AnalyticsEventParams {
     place_category: string;
     link_position: "nearby_place_card";
   };
+  // 상세 포스터 크게 보기를 열었을 때(2026-11-18). 여러 장 갤러리를 만들지 정하는 근거다.
+  poster_viewed: {
+    event_slug: string;
+    event_category: string;
+  };
   share: {
     method: "native_share_sheet" | "link_copy";
     content_type: "event";
@@ -114,6 +119,7 @@ const analyticsEventNames = {
   map_category_changed: true,
   map_unavailable: true,
   nearby_place_clicked: true,
+  poster_viewed: true,
   share: true,
   event_report_submitted: true,
   feedback_submitted: true,

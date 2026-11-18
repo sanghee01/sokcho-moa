@@ -41,6 +41,8 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - 사용자 요청이 목표와 범위를 정합니다. 요청한 결과에 직접 필요한 supporting file은 함께 고칠 수 있습니다.
 - code와 configuration으로 확인할 수 있는 사실은 먼저 확인합니다. 제품 동작, 데이터 계약(table·RPC·server action의 입력과 반환),
   인증·권한, 작업 범위를 바꾸는 판단이 필요하면 멈추고 사용자에게 묻습니다.
+- 방문자 행동(누르기·열기·제출)을 추가하거나 바꾸면 GA4 이벤트가 필요한지 판단합니다. 그 수치로 정할 일(유지·확장·삭제)이 있으면
+  [analytics-events.md](docs/analytics-events.md) 표, `lib/analytics/events.ts`, E2E 확인을 함께 추가하고, 없으면 만들지 않습니다. 판단 결과는 완료 보고에 적습니다.
 
 ## 작업 범위 파악
 

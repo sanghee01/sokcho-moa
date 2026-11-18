@@ -30,6 +30,7 @@ GA4 주요 이벤트(Key event)는 `application_link_clicked`(2026-10-25 지정)
 | `map_category_changed` | 지도 탭의 분야 칩으로 분야를 실제로 바꿀 때. 이미 고른 칩은 세지 않는다(2026-11-16) | `map_category`(바꾼 분야, "전체"는 `all`) | 지도에서 분야 칩을 남길지 |
 | `map_unavailable` | 지도 대신 "지금은 지도를 볼 수 없어요"가 보일 때 화면마다 한 번(2026-11-16) | `reason`(`missing_key` 키 없음, `auth_failed` 키·등록 주소 오류, `script_error` 지도 SDK를 불러오지 못함) | 운영에서 지도가 죽어 있는지. 0이 아니면 Vercel 환경 변수와 네이버 콘솔의 Web 서비스 URL을 확인한다 |
 | `nearby_place_clicked` | 주변 명소 공식 페이지를 선택할 때 | `place_name`, `place_category`, `link_position` | 주변 콘텐츠 활용 |
+| `poster_viewed` | 행사 상세에서 포스터 크게 보기를 열 때. 열 때마다 센다(2026-11-18) | `event_slug`, `event_category` | 크게 보기를 쓰는지. `event_detail_viewed` 대비 비율이 높으면 포스터 여러 장 수집·갤러리를 검토한다 |
 | `share` | 네이티브 공유 또는 링크 복사가 성공했을 때 | `method`, `content_type`, `item_id` | 추천·확산 |
 | `search_results_viewed` | 검색어가 있는 목록이 그려질 때. 같은 분야·탭·검색어에서 정렬만 바꾼 것은 다시 세지 않는다 | `result_count`, `query_length`, `status_tab` | 결과 0건 검색 비율. 검색 개선·행사 보강이 필요한지 |
 | `status_tab_changed` | 목록의 진행중·마감 탭을 눌러 실제로 바꿀 때. 이미 선택된 탭은 세지 않는다 | `status_tab`(`active` 진행중, `closed` 마감) | 마감 행사를 찾는 수요. 마감 탭을 계속 둘지 |
