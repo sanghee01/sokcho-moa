@@ -1,6 +1,6 @@
 {
-  "verifiedAt": "2026-11-16",
-  "description": "행사 공고에 장소 이름만 있을 때 주소와 지도 좌표를 채우는 장소 사전(features/events/model/venue.ts). 공식 출처에서 확인한 도로명주소만 넣는다. 속초교육문화관(2027-06까지 개축 휴관), 소극장 초속(공식 출처 없음), 아트플랫폼 갯배(지번만 공개), 속초시근로자종합복지관(출처 불일치)은 확인되지 않아 뺐다. 좌표(coordinates)는 명소와 같은 방식으로 OpenStreetMap의 시설 요소를 공식 주소(도로명·번지 또는 우편번호)와 맞춰 본 뒤 넣었다(2026-11-16). OpenStreetMap에 시설이 없는 속초해양산업단지지원센터, 청초생활체육관, 속초시농업기술센터는 좌표를 비워 두었다.",
+  "verifiedAt": "2026-11-21",
+  "description": "행사 공고에 장소 이름만 있을 때 주소와 지도 좌표를 채우는 장소 사전(features/events/model/venue.ts). 주소는 공식 출처에서 확인한 도로명주소를 넣고, 공식 누리집에 주소가 없는 거리(설악로데오거리)는 네이버 지도 장소의 지번을 쓴다. 속초교육문화관(2027-06까지 개축 휴관), 소극장 초속(공식 출처 없음), 아트플랫폼 갯배(지번만 공개), 속초시근로자종합복지관(출처 불일치)은 확인되지 않아 뺐다. 좌표(coordinates)는 OpenStreetMap 시설 요소나 네이버 지도 장소에서 가져오고, 그 장소의 주소가 공식 주소(도로명·번지 또는 우편번호)와 같은지 맞춰 본다. OpenStreetMap에 없던 속초해양산업단지지원센터(네이버에는 같은 주소의 속초해양산업단지협의회), 청초생활체육관, 속초시농업기술센터는 2026-11-21에 네이버 지도 좌표로 채웠다(사용자 결정). 거리는 그 거리 위 한 점을 핀으로 쓴다.",
   "venues": [
     {
       "name": "속초문화예술회관",
@@ -61,7 +61,12 @@
       "name": "속초해양산업단지지원센터",
       "aliases": [],
       "address": "강원특별자치도 속초시 농공단지1길 4",
-      "sourceUrl": "https://www.sokcho.go.kr/sc/fields/economy/job/recruit/public?articleSeq=812907"
+      "sourceUrl": "https://www.sokcho.go.kr/sc/fields/economy/job/recruit/public?articleSeq=812907",
+      "coordinates": {
+        "latitude": 38.1759037,
+        "longitude": 128.5964486,
+        "sourceUrl": "https://map.naver.com/p/entry/place/2005417854"
+      }
     },
     {
       "name": "카시아속초호텔앤리조트",
@@ -89,7 +94,12 @@
       "name": "청초생활체육관",
       "aliases": [],
       "address": "강원특별자치도 속초시 동해대로 4229",
-      "sourceUrl": "https://www.sokcho.go.kr/sc/fields/culture/sports/public"
+      "sourceUrl": "https://www.sokcho.go.kr/sc/fields/culture/sports/public",
+      "coordinates": {
+        "latitude": 38.196601,
+        "longitude": 128.5771,
+        "sourceUrl": "https://map.naver.com/p/entry/place/15092880"
+      }
     },
     {
       "name": "속초시청소년수련관",
@@ -106,7 +116,56 @@
       "name": "속초시농업기술센터",
       "aliases": [],
       "address": "강원특별자치도 속초시 동해대로 4243",
-      "sourceUrl": "https://www.sokcho.go.kr/bo/agriculture/intro/location"
+      "sourceUrl": "https://www.sokcho.go.kr/bo/agriculture/intro/location",
+      "coordinates": {
+        "latitude": 38.1969741,
+        "longitude": 128.5766139,
+        "sourceUrl": "https://map.naver.com/p/entry/place/1986959264"
+      }
+    },
+    {
+      "name": "피노디아",
+      "aliases": [],
+      "address": "강원특별자치도 속초시 엑스포로 75",
+      "sourceUrl": "https://www.pinodia.com/",
+      "coordinates": {
+        "latitude": 38.1908356,
+        "longitude": 128.582565,
+        "sourceUrl": "https://www.openstreetmap.org/way/696916015"
+      }
+    },
+    {
+      "name": "속초교육도서관",
+      "aliases": [],
+      "address": "강원특별자치도 속초시 번영로 15",
+      "sourceUrl": "https://lib.gwe.go.kr/sclib/main",
+      "coordinates": {
+        "latitude": 38.202667,
+        "longitude": 128.580543,
+        "sourceUrl": "https://www.openstreetmap.org/node/368655930"
+      }
+    },
+    {
+      "name": "공동육아나눔터 1호점",
+      "aliases": ["속초시 공동육아나눔터 1호점"],
+      "address": "강원특별자치도 속초시 미시령로 3307",
+      "sourceUrl": "https://sokcho.familynet.or.kr/center/lay1/program/S295T322C451/recruitReceipt/view.do?seq=288472",
+      "coordinates": {
+        "latitude": 38.2055338,
+        "longitude": 128.5691891,
+        "sourceUrl": "https://www.openstreetmap.org/way/894080476"
+      }
+    },
+    {
+      "name": "설악로데오거리",
+      "aliases": [],
+      "address": "강원특별자치도 속초시 중앙동 479-39",
+      "sourceUrl": "https://map.naver.com/p/entry/place/1009383456",
+      "coordinates": {
+        "latitude": 38.2030933,
+        "longitude": 128.5908275,
+        "sourceUrl": "https://map.naver.com/p/entry/place/1009383456"
+      }
     }
   ]
 }

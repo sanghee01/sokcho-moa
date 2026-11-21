@@ -10,16 +10,17 @@ const venueSchema = z.object({
   /** 공식 표기와 띄어쓰기 외에 다르게 쓰는 이름 */
   aliases: z.array(z.string().trim().min(1)),
   address: z.string().startsWith("강원특별자치도 "),
-  /** 주소를 확인한 공식 출처 */
+  /** 주소를 확인한 공식 출처. 공식 누리집에 주소가 없는 거리는 네이버 지도 장소(2026-11-21) */
   sourceUrl: z.string().url(),
   /**
-   * 지도 탭의 핀 위치(2026-11-16). 명소와 같은 방식으로 OpenStreetMap의 시설 좌표를 공식 주소와 맞춰 보고 넣는다.
-   * 확인하지 못한 시설은 비워 두고, 그 시설의 행사는 행사에 좌표가 있을 때만 지도에 오른다.
+   * 지도 탭의 핀 위치(2026-11-16). OpenStreetMap 시설 요소나 네이버 지도 장소의 좌표를, 그 장소 주소가 공식 주소와 같은지 맞춰 보고 넣는다.
+   * OpenStreetMap에 없는 시설이 많아 네이버 지도 장소도 쓰고, 거리는 그 거리 위 한 점을 쓴다(2026-11-21 사용자 결정).
+   * 좌표가 없는 시설의 행사는 행사에 좌표가 있을 때만 지도에 오른다.
    */
   coordinates: z.object({
     latitude: z.number().min(-90).max(90),
     longitude: z.number().min(-180).max(180),
-    /** 좌표를 가져온 OpenStreetMap 요소 */
+    /** 좌표를 가져온 OpenStreetMap 요소나 네이버 지도 장소 */
     sourceUrl: z.string().url(),
   }).optional(),
 });
