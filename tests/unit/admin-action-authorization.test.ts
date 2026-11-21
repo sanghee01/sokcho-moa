@@ -32,6 +32,7 @@ import * as eventActions from "@/features/events/admin/actions";
 import * as eventImageActions from "@/features/events/admin/image/actions";
 import * as eventImportActions from "@/features/events/admin/candidate/actions";
 import * as feedbackActions from "@/features/feedback/admin/actions";
+import * as noticeActions from "@/features/notices/admin/actions";
 import * as placeActions from "@/features/places/admin/actions";
 import * as reportActions from "@/features/reports/admin/actions";
 
@@ -113,6 +114,13 @@ const cases: Array<[string, string, () => Promise<unknown>]> = [
     isPublished: "on",
   }))],
   ["places/admin/actions", "deletePlaceAction", () => placeActions.deletePlaceAction(adminState, form({ id: ID, confirmation: "delete" }))],
+  ["notices/admin/actions", "saveNoticeAction", () => noticeActions.saveNoticeAction(adminState, form({
+    kind: "notice",
+    title: "공지",
+    body: "본문",
+    isPublished: "on",
+  }))],
+  ["notices/admin/actions", "deleteNoticeAction", () => noticeActions.deleteNoticeAction(adminState, form({ id: ID, confirmation: "delete" }))],
   ["reports/admin/actions", "setEventReportReviewStatusAction", () => reportActions.setEventReportReviewStatusAction({
     id: ID,
     status: "reviewed",
@@ -130,6 +138,7 @@ const modules = {
   "events/admin/candidate/actions": eventImportActions,
   "events/admin/image/actions": eventImageActions,
   "places/admin/actions": placeActions,
+  "notices/admin/actions": noticeActions,
   "reports/admin/actions": reportActions,
   "feedback/admin/actions": feedbackActions,
 };

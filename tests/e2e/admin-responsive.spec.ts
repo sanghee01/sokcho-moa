@@ -9,6 +9,8 @@ const adminPages = [
   "/admin?tab=reports",
   "/admin?tab=feedback",
   "/admin?tab=places",
+  "/admin?tab=notices",
+  "/admin/notices/new",
   "/admin/events/new",
   `/admin/events/${E2E_ADMIN_EVENT.id}`,
   "/admin/places/new",

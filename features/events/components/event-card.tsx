@@ -29,7 +29,7 @@ export function EventCard({
   showCategory = true,
 }: {
   event: Event;
-  contentSource?: "event_list" | "related_events" | "event_map";
+  contentSource?: "event_list" | "related_events" | "event_map" | "place_detail";
   headingLevel?: 3 | 4;
   showCategory?: boolean;
 }) {

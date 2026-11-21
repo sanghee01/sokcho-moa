@@ -15,13 +15,10 @@ import { EventPosterViewer } from "@/features/events/components/detail/event-pos
 import { EventViewCount } from "@/features/events/components/detail/event-view-count";
 import { PosterBackdrop } from "@/features/events/components/poster-backdrop";
 import { StatusBadges } from "@/features/events/components/status-badges";
-import { PlaceCard } from "@/features/places/components/place-card";
 import { getAllPublicEvents, getPublicEventBySlug } from "@/features/events/queries";
-import { getPublicPlaces } from "@/features/places/queries";
 import { getEventIntroduction } from "@/features/events/model/event";
 import { getRelatedEvents } from "@/features/events/model/event-list";
 import { formatAudiences } from "@/features/events/model/format";
-import { findNearbyPlaces, getNearbyPlacesTitle } from "@/features/events/model/location";
 import { categoryLabels } from "@/features/events/model/taxonomy";
 import { eventTopicPath } from "@/features/events/model/topics";
 import {
@@ -75,19 +72,18 @@ export async function generateMetadata({ params }: PageProps<"/events/[slug]">):
 }
 
 const sectionTitleClassName = "text-title-2 text-content-strong";
-// 본문 아래 구역(주변 명소, 비슷한 행사, 목록으로)은 구분선 없이 여백으로만 나눈다(구분선은 번잡해 보였음, 2026-11-07 사용자 결정).
+// 본문 아래 구역(비슷한 행사, 목록으로)은 구분선 없이 여백으로만 나눈다(구분선은 번잡해 보였음, 2026-11-07 사용자 결정).
 const lowerSectionClassName = "mt-14 px-4 lg:px-0";
 
 // 페이지는 데이터를 불러와 부품을 조립한다. 핵심 정보·행사 정보·행동 바·포스터 배경은 features/events/components에 있다(2026-11-07 나눔).
 export default async function EventDetailPage({ params }: PageProps<"/events/[slug]">) {
-  const [{ slug }, allEvents, places] = await Promise.all([params, getAllPublicEvents(), getPublicPlaces()]);
+  const [{ slug }, allEvents] = await Promise.all([params, getAllPublicEvents()]);
   const event = allEvents.find((item) => item.slug === slug) ?? null;
   if (!event) notFound();
 
   const siteUrl = getPublicEnv().NEXT_PUBLIC_SITE_URL;
   const eventJsonLd = buildEventStructuredData(event, siteUrl);
   const breadcrumbJsonLd = buildEventBreadcrumbStructuredData(event, siteUrl);
-  const nearbyPlaces = findNearbyPlaces(event, places);
   const relatedEvents = getRelatedEvents(event, allEvents);
   const introduction = getEventIntroduction(event);
   const renderedAt = new Date().toISOString();
@@ -148,18 +144,7 @@ export default async function EventDetailPage({ params }: PageProps<"/events/[sl
         <EventInfoList event={event} />
       </article>
 
-      {nearbyPlaces.length > 0 && (
-        <section aria-labelledby="nearby-title" className={lowerSectionClassName}>
-          <h2 id="nearby-title" className={sectionTitleClassName}>{getNearbyPlacesTitle(event)}</h2>
-          {/* 명소를 남길지 정하려고, 카드를 본 사람 대비 클릭률의 분모로 노출을 센다(2026-11-07). */}
-          <AnalyticsViewTracking name="nearby_places_viewed" properties={{ event_category: event.category }}>
-            <div className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-4">
-              {nearbyPlaces.map((place) => <PlaceCard key={place.id} place={place} />)}
-            </div>
-          </AnalyticsViewTracking>
-        </section>
-      )}
-
+      {/* 예전의 "주변 명소" 구역은 뺐다. 행사 상세에는 행사에 필요한 정보만 두고, 장소는 "가볼만한 곳" 탭과 지도에서 찾는다(2026-11-21 사용자 결정). */}
       {relatedEvents.length > 0 && (
         <section aria-labelledby="related-title" className={lowerSectionClassName}>
           <h2 id="related-title" className={sectionTitleClassName}>이 행사도 살펴보세요</h2>

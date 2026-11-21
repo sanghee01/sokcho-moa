@@ -8,6 +8,8 @@ const adminResultMessages = {
   "exclusion-released": "행사의 재수집 제외를 해제했습니다.",
   "place-saved": "명소 정보를 저장했습니다.",
   "place-deleted": "명소를 삭제했습니다.",
+  "notice-saved": "공지를 저장했습니다.",
+  "notice-deleted": "공지를 삭제했습니다.",
 } as const;
 
 export type AdminResult = keyof typeof adminResultMessages;

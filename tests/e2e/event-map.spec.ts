@@ -13,10 +13,15 @@ test.beforeEach(async ({ page }) => {
   await routeFakeNaverMaps(page);
 });
 
-/** 홈에서 헤더의 지도 버튼으로 들어온다. 뒤로 가기가 지도 탭 앞 페이지(홈)로 가는지 보려고 쓴다. */
+/** 주요 메뉴의 "지도"(모바일은 하단 탭, md 이상은 헤더 가로 메뉴, 2026-11-21). */
+function getMapMenuLink(page: Page) {
+  return page.getByRole("navigation", { name: "주요 메뉴" }).getByRole("link", { name: "지도", exact: true });
+}
+
+/** 홈에서 주요 메뉴의 지도로 들어온다. 뒤로 가기가 지도 탭 앞 페이지(홈)로 가는지 보려고 쓴다. */
 async function openMapFromHome(page: Page) {
   await page.goto("/");
-  await page.getByRole("banner").getByRole("link", { name: "지도" }).click();
+  await getMapMenuLink(page).click();
   await expect(page).toHaveURL(/\/map$/);
 }
 
@@ -125,9 +130,9 @@ test.describe("장소 카드", () => {
   });
 });
 
-test("헤더의 지도 버튼으로 지도 탭에 들어가 분야를 고를 수 있다", async ({ page }) => {
+test("주요 메뉴의 지도로 지도 탭에 들어가 분야를 고를 수 있다", async ({ page }) => {
   await page.goto("/");
-  await page.getByRole("banner").getByRole("link", { name: "지도" }).click();
+  await getMapMenuLink(page).click();
   await expect(page).toHaveURL(/\/map$/);
 
   const categories = page.getByRole("group", { name: "지도 분야" });
@@ -196,7 +201,7 @@ test("지도 인증에 실패하면 다른 페이지에 다녀와도 안내를 �
 
   await page.getByRole("banner").getByRole("link", { name: "속초모아" }).click();
   await expect(page).toHaveURL(/:\d+\/$/);
-  await page.getByRole("banner").getByRole("link", { name: "지도" }).click();
+  await getMapMenuLink(page).click();
 
   await expect(page.getByText("지금은 지도를 볼 수 없어요.")).toBeVisible();
   await expect.poll(() => analyticsEventParams(page, "map_unavailable")).toEqual([{ reason: "auth_failed" }, { reason: "auth_failed" }]);
@@ -222,8 +227,8 @@ for (const { name, options } of viewports) {
   test.describe(name, () => {
     test.use(options);
 
-    // 360px에서 로고·행사 지도·월별 일정 버튼이 한 줄에 들어가지 않으면 버튼 글자가 두 줄로 꺾이거나 화면이 넘친다(2026-11-16).
-    test("지도 탭이 가로로 넘치지 않고 헤더 버튼이 한 줄로 보인다", async ({ page }, testInfo) => {
+    // 헤더는 한 줄(로고 | 검색·공지·문의, md 이상은 메뉴·검색창)이어야 지도 높이 계산(--site-header-height)이 맞는다(2026-11-21).
+    test("지도 탭이 가로로 넘치지 않고 헤더가 한 줄로 보인다", async ({ page }, testInfo) => {
       test.skip(testInfo.project.name !== "desktop-chromium", "화면 폭을 직접 지정하므로 프로젝트마다 반복하지 않는다");
 
       await page.goto("/map");
@@ -231,12 +236,8 @@ for (const { name, options } of viewports) {
 
       const widths = await page.evaluate(() => ({ viewport: window.innerWidth, document: document.documentElement.scrollWidth }));
       expect(widths.document).toBeLessThanOrEqual(widths.viewport + 1);
-
-      for (const label of ["지도", "월별 일정"]) {
-        const box = await page.getByRole("banner").getByRole("link", { name: label }).boundingBox();
-        // 버튼 높이 44px. 글자가 두 줄로 꺾이면 이보다 커진다.
-        expect(box?.height).toBeLessThanOrEqual(48);
-      }
+      const header = await page.getByRole("banner").boundingBox();
+      expect(header?.height).toBeLessThanOrEqual(74);
     });
 
     // 지도가 헤더 아래를 꽉 채우는 앱 화면이라 푸터를 두지 않는다. 있으면 칩·헤더를 끌 때 페이지가 스크롤돼 지도가 밀렸다(2026-11-16 사용자 결정).

@@ -20,7 +20,7 @@ GA4 주요 이벤트(Key event)는 `application_link_clicked`(2026-10-25 지정)
 | 이벤트 | 발생 시점 | 주요 파라미터 | 역할 |
 | --- | --- | --- | --- |
 | `event_detail_viewed` | 행사 상세가 처음 표시될 때 | `event_slug`, `event_category`, `event_audiences`, `application_available` | 상세 도달 |
-| `select_content` | 목록·관련 행사·많이 보는 행사·지도 장소 카드에서 행사를 선택할 때 | `content_type`, `content_id`, `content_source`(`event_list`, `related_events`, `popular_events`, `event_map`), `event_category` | 상세 진입 출처, 상세에서 다른 행사로 이어 가는지 |
+| `select_content` | 목록·관련 행사·많이 보는 행사·지도 장소 카드에서 행사를 선택할 때 | `content_type`, `content_id`, `content_source`(`event_list`, `related_events`, `popular_events`, `event_map`, `place_detail`), `event_category` | 상세 진입 출처, 상세에서 다른 행사로 이어 가는지 |
 | `search_submitted` | 키워드 검색을 제출할 때 | `query_length`, `has_query`, `active_filter_count` | 검색 사용성. 검색어 원문은 전송하지 않음 |
 | `sort_changed` | 정렬 칩으로 정렬 기준을 실제로 변경할 때 | `sort_method`(`latest` 행사일순·기본, `views` 조회순) | 정렬 선호도. 2026-11-06 기본을 `published`에서 `latest`로 바꾸고 `published`·`deadline` 칩을 뺐으므로 그 전후 값을 따로 본다. |
 | `application_link_clicked` | 신청·예매 링크를 선택할 때 | `event_slug`, `event_category`, `link_position` | 주요 이벤트. 참여 의도 |
@@ -30,6 +30,9 @@ GA4 주요 이벤트(Key event)는 `application_link_clicked`(2026-10-25 지정)
 | `map_category_changed` | 지도 탭의 분야 칩으로 분야를 실제로 바꿀 때. 이미 고른 칩은 세지 않는다(2026-11-16) | `map_category`(바꾼 분야, "전체"는 `all`) | 지도에서 분야 칩을 남길지 |
 | `map_unavailable` | 지도 대신 "지금은 지도를 볼 수 없어요"가 보일 때 화면마다 한 번(2026-11-16) | `reason`(`missing_key` 키 없음, `auth_failed` 키·등록 주소 오류, `script_error` 지도 SDK를 불러오지 못함) | 운영에서 지도가 죽어 있는지. 0이 아니면 Vercel 환경 변수와 네이버 콘솔의 Web 서비스 URL을 확인한다 |
 | `nearby_place_clicked` | 주변 명소 공식 페이지를 선택할 때 | `place_name`, `place_category`, `link_position` | 주변 콘텐츠 활용 |
+| `site_search_viewed` | 통합 검색(`/search`) 결과가 그려질 때. 같은 검색어·범위는 한 번만 센다(2026-11-21) | `query_length`, `event_count`, `place_count` | 헤더 검색을 쓰는지, 결과가 0건인 검색이 얼마나 되는지. 검색어 원문은 보내지 않음 |
+| `place_detail_viewed` | 즐길거리 상세(`/places/[slug]`)가 처음 표시될 때(2026-11-21) | `place_slug`, `place_category`(즐길거리 분류: `water`·`exhibition` 등) | 즐길거리 상세 도달. 메뉴를 넓힐지 줄일지의 기준 |
+| `place_link_clicked` | 즐길거리 상세에서 공식 홈페이지·예매·지도 버튼을 선택할 때(2026-11-21) | `place_slug`, `place_category`, `link_type`(`official`, `booking`, `map`) | 방문 의도. `place_detail_viewed` 대비 비율이 행사의 `source_link_clicked` 비율보다 크게 낮으면 상세 구성을 다시 본다 |
 | `poster_viewed` | 행사 상세에서 포스터 크게 보기를 열 때. 열 때마다 센다(2026-11-18) | `event_slug`, `event_category` | 크게 보기를 쓰는지. `event_detail_viewed` 대비 비율이 높으면 포스터 여러 장 수집·갤러리를 검토한다 |
 | `share` | 네이티브 공유 또는 링크 복사가 성공했을 때 | `method`, `content_type`, `item_id` | 추천·확산 |
 | `search_results_viewed` | 검색어가 있는 목록이 그려질 때. 같은 분야·탭·검색어에서 정렬만 바꾼 것은 다시 세지 않는다 | `result_count`, `query_length`, `status_tab` | 결과 0건 검색 비율. 검색 개선·행사 보강이 필요한지 |

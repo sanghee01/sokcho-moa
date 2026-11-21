@@ -17,7 +17,8 @@ export interface AnalyticsEventParams {
   select_content: {
     content_type: "event";
     content_id: string;
-    content_source: "event_list" | "related_events" | "popular_events" | "event_map";
+    // place_detail: 즐길거리 상세의 "근처에서 열리는 행사"(2026-11-21)
+    content_source: "event_list" | "related_events" | "popular_events" | "event_map" | "place_detail";
     event_category: string;
   };
   search_submitted: {
@@ -84,6 +85,23 @@ export interface AnalyticsEventParams {
     place_category: string;
     link_position: "nearby_place_card";
   };
+  // 통합 검색(/search) 결과가 그려질 때(2026-11-21). 검색어 원문은 보내지 않는다. 결과 0건 비율로 데이터가 모자란 곳을 찾는다.
+  site_search_viewed: {
+    query_length: number;
+    event_count: number;
+    place_count: number;
+  };
+  // 즐길거리 상세(/places/[slug])가 처음 표시될 때(2026-11-21). 즐길거리 메뉴를 넓힐지 줄일지의 기준이다.
+  place_detail_viewed: {
+    place_slug: string;
+    place_category: string;
+  };
+  // 즐길거리 상세에서 공식 홈페이지·예매·지도로 나갈 때. place_detail_viewed 대비 비율로 상세가 쓸모 있는지 본다.
+  place_link_clicked: {
+    place_slug: string;
+    place_category: string;
+    link_type: "official" | "booking" | "map";
+  };
   // 상세 포스터 크게 보기를 열었을 때(2026-11-18). 여러 장 갤러리를 만들지 정하는 근거다.
   poster_viewed: {
     event_slug: string;
@@ -119,6 +137,9 @@ const analyticsEventNames = {
   map_category_changed: true,
   map_unavailable: true,
   nearby_place_clicked: true,
+  place_detail_viewed: true,
+  site_search_viewed: true,
+  place_link_clicked: true,
   poster_viewed: true,
   share: true,
   event_report_submitted: true,

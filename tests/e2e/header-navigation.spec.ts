@@ -1,21 +1,26 @@
 import { expect, test } from "@playwright/test";
 import { SAMPLE_EVENT_PATH } from "@/tests/e2e/fixtures";
 
-test("일반 방문자 헤더는 대표 행사 주제를 주요 메뉴로 표시한다", async ({ page }) => {
+// 2026-11-21 사용자 결정: 주요 메뉴는 행사 · 가볼만한 곳 · 지도 세 곳이다. 모바일은 하단 탭, md 이상은 헤더 가로 메뉴다.
+// 행사 분야 탭은 헤더에서 행사 목록 안으로 옮겼다("행사 분야").
+test("주요 메뉴는 행사·가볼만한 곳·지도이고, 행사 목록에는 분야 탭이 있다", async ({ page }) => {
   await page.goto("/");
 
-  const navigation = page.getByRole("navigation", { name: "주요 메뉴" });
-  await expect(navigation.getByRole("link", { name: "운영자", exact: true })).toHaveCount(0);
-  await expect(navigation.getByRole("link")).toHaveText(["전체", "공연", "축제", "체험", "교육", "전시", "기타"]);
-  await expect(navigation.getByRole("link", { name: "축제", exact: true })).toHaveAttribute("href", "/topics/festival");
+  const mainNavigation = page.getByRole("navigation", { name: "주요 메뉴" });
+  await expect(mainNavigation.getByRole("link")).toHaveText(["행사", "가볼만한 곳", "지도"]);
+  await expect(mainNavigation.locator('a[aria-current="page"]')).toHaveText("행사");
+
+  const categories = page.getByRole("navigation", { name: "행사 분야" });
+  await expect(categories.getByRole("link")).toHaveText(["전체", "공연", "축제", "체험", "교육", "전시", "기타"]);
+  await expect(categories.getByRole("link", { name: "축제", exact: true })).toHaveAttribute("href", "/topics/festival");
 });
 
-test("현재 주제만 주요 메뉴의 활성 링크로 표시한다", async ({ page }) => {
+test("현재 주제만 분야 탭의 활성 링크로 표시한다", async ({ page }) => {
   await page.goto("/topics/festival");
 
-  const navigation = page.getByRole("navigation", { name: "주요 메뉴" });
+  const navigation = page.getByRole("navigation", { name: "행사 분야" });
   await expect(navigation.locator('a[aria-current="page"]')).toHaveText("축제");
-  await expect(navigation.getByRole("link", { name: "운영자", exact: true })).toHaveCount(0);
+  await expect(page.getByRole("navigation", { name: "주요 메뉴" }).locator('a[aria-current="page"]')).toHaveText("행사");
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
 });
 
@@ -33,7 +38,7 @@ test("분야 탭은 응답이 늦어도 누른 탭을 바로 선택하고 이전
   });
 
   await page.goto("/topics/festival");
-  const navigation = page.getByRole("navigation", { name: "주요 메뉴" });
+  const navigation = page.getByRole("navigation", { name: "행사 분야" });
   // 불러오는 동안에는 링크 이름에 "불러오는 중"이 붙어서 주소로 찾는다.
   const performanceTab = navigation.locator('a[href="/topics/performance"]');
   const festivalEvent = page.getByRole("region", { name: "행사 목록" }).getByRole("link", { name: /바다빛 가족 문화축제/ });
@@ -102,22 +107,25 @@ test("정렬을 바꾸면 응답이 늦어도 누른 정렬이 불러오는 중�
   await expect(viewsSort).toHaveAttribute("aria-current", "page");
 });
 
-// 2026-11-07 사용자 결정: 목록(홈·분야)에서는 분야 탭이 헤더와 함께 화면 위에 고정된다.
-// PC는 로고 옆 한 줄, 모바일은 로고 아래 줄이다. 상세처럼 목록이 아닌 페이지에는 탭을 두지 않는다.
-test("목록에서 아래로 내려도 분야 탭이 화면 위에 남는다", async ({ page }) => {
+// 하단 탭은 스크롤해도 숨기지 않는다(Apple HIG Tab bars). 하단 행동 바가 있는 행사 상세에서는 탭 대신 바가 보인다(2026-11-21).
+test("모바일 하단 탭은 내려도 화면에 남고, 상세에서는 행동 바가 대신 보인다", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "mobile-chromium", "하단 탭은 md 미만에서만 보인다");
   await page.goto("/topics/festival");
   await page.evaluate(() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "instant" }));
+  const bottomNavigation = page.locator("[data-bottom-nav]");
+  await expect(bottomNavigation.getByRole("link", { name: "가볼만한 곳" })).toBeInViewport();
 
-  const navigation = page.getByRole("navigation", { name: "주요 메뉴" });
-  await expect(navigation.getByRole("link", { name: "전체", exact: true })).toBeInViewport();
-  await expect(navigation.getByRole("link", { name: "기타", exact: true })).toBeInViewport();
+  await page.goto(SAMPLE_EVENT_PATH);
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  await expect(bottomNavigation).toBeHidden();
+  await expect(page.locator("[data-bottom-action-bar]").getByRole("link", { name: /행사 안내/ })).toBeInViewport();
 });
 
 test("행사 상세에는 분야 탭을 두지 않는다", async ({ page }) => {
   await page.goto(SAMPLE_EVENT_PATH);
 
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
-  await expect(page.getByRole("navigation", { name: "주요 메뉴" })).toHaveCount(0);
+  await expect(page.getByRole("navigation", { name: "행사 분야" })).toHaveCount(0);
 });
 
 test("푸터에서 개인정보 처리방침을 열면 GA 사용을 안내한다", async ({ page }) => {

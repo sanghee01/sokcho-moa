@@ -39,16 +39,21 @@ export function MapPlacePanel({
     >
       <div className="flex shrink-0 items-center justify-between gap-2 border-b border-line py-1 pl-4 pr-1">
         <h2 id="map-place-title" ref={titleRef} tabIndex={-1} className="min-w-0 truncate text-title-3 text-content-strong focus:outline-none">
-          {pin.name ?? "이 장소의 행사"}
+          {pin.kind === "place" ? "가볼만한 곳" : pin.name ?? "이 장소의 행사"}
         </h2>
         <button type="button" onClick={onClose} aria-label="닫기" className="inline-flex size-11 shrink-0 items-center justify-center rounded-control text-content-muted hover:bg-surface-muted">
           <X {...iconProps} />
         </button>
       </div>
       {/* key: 다른 장소를 고르면 목록을 새로 그려, 앞 장소에서 내려 둔 스크롤 위치가 남지 않게 한다. */}
-      <div key={pin.id} className="grid min-h-0 grid-cols-2 gap-x-3 gap-y-5 overflow-y-auto overscroll-contain p-4">
-        {pin.events.map((event) => <div key={event.slug}>{cards[event.slug]}</div>)}
-      </div>
+      {pin.kind === "place" ? (
+        // "가볼만한 곳"은 장소 하나라 서버가 그린 장소 카드 하나를 보인다.
+        <div key={pin.id} className="min-h-0 overflow-y-auto overscroll-contain p-4">{cards[pin.id]}</div>
+      ) : (
+        <div key={pin.id} className="grid min-h-0 grid-cols-2 gap-x-3 gap-y-5 overflow-y-auto overscroll-contain p-4">
+          {pin.events.map((event) => <div key={event.slug}>{cards[event.slug]}</div>)}
+        </div>
+      )}
     </section>
   );
 }

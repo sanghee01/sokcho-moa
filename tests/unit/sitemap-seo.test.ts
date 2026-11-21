@@ -4,6 +4,11 @@ vi.mock("@/lib/env", () => ({
   getPublicEnv: () => ({ NEXT_PUBLIC_SITE_URL: "https://sokcho-moa.vercel.app" }),
 }));
 
+// sitemap은 즐길거리 장소도 함께 읽는다(2026-11-21). 이 test는 행사 쪽만 보므로 장소는 없는 것으로 둔다.
+vi.mock("@/features/places/queries", () => ({
+  getPublicPlaces: vi.fn(async () => []),
+}));
+
 vi.mock("@/features/events/queries", () => ({
   getAllPublicEvents: vi.fn(async () => [
     {

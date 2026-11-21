@@ -7,16 +7,17 @@ vi.mock("@/lib/env", () => ({
   }),
 }));
 
+// sitemap은 즐길거리 장소도 함께 읽는다(2026-11-21). 이 test는 행사 쪽만 보므로 장소는 없는 것으로 둔다.
+vi.mock("@/features/places/queries", () => ({
+  getPublicPlaces: vi.fn(async () => []),
+}));
+
 vi.mock("@/features/events/queries", () => ({
   getAllPublicEvents: vi.fn(async () => []),
 }));
 
 vi.mock("next/image", () => ({
   default: () => null,
-}));
-
-vi.mock("@/features/events/components/browse/event-search", () => ({
-  EventSearch: () => null,
 }));
 
 vi.mock("@/features/events/components/browse/event-sort", () => ({

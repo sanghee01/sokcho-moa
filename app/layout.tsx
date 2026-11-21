@@ -11,9 +11,9 @@ import { ScrollToTopButton } from "@/components/layout/scroll-to-top-button";
 import { iconProps } from "@/components/ui/icon";
 import { textLinkClassName } from "@/components/ui/link-styles";
 import { TransitionLink } from "@/components/ui/transition-link";
-import { CategoryNavigation } from "@/features/events/components/browse/category-navigation";
-import { MapEntryLink } from "@/features/events/components/map/map-entry-link";
-import { MonthEntryLink } from "@/features/events/components/month/month-entry-link";
+import { DesktopHeaderActions, MobileHeaderActions } from "@/components/layout/site-header-actions";
+import { BottomNavigation, HeaderNavigation } from "@/components/layout/site-navigation";
+import { NoticeBanner } from "@/features/notices/components/notice-banner";
 import { GOOGLE_ANALYTICS_ID, shouldCollectGoogleAnalytics } from "@/lib/analytics/google-analytics";
 import { INTERNAL_TRAFFIC_STORAGE_KEY, INTERNAL_TRAFFIC_TYPE } from "@/lib/analytics/internal-traffic";
 import { getPublicEnv, getRuntimeEnv } from "@/lib/env";
@@ -82,34 +82,30 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
           본문으로 건너뛰기
         </a>
         {/* 어느 페이지든 내려도 헤더가 화면 위에 붙어 있다(2026-11-07 사용자 결정). 높이는 globals.css의 --site-header-height와 맞춘다.
-            목록(홈·분야)에서는 분야 탭도 헤더 안에 있다: lg는 로고 오른쪽 한 줄, 그보다 좁으면 로고 아래 줄(2026-11-07 사용자 결정). */}
+            모바일: 로고 | 검색·공지·문의 아이콘, 주요 메뉴는 하단 탭. md 이상: 로고 | 주요 메뉴 | 검색창·공지·문의(2026-11-21 사용자 결정).
+            행사 분야 탭은 헤더에서 행사 목록 안으로 옮겼다. 하단 탭까지 생기면 위아래 고정 영역이 너무 커진다. */}
         <header className="sticky top-0 z-30 border-b border-line bg-surface">
-          <div className="mx-auto max-w-6xl lg:flex lg:h-18 lg:items-center lg:gap-8 lg:px-6">
-            <div className="flex h-16 items-center justify-between gap-3 px-4 sm:px-6 lg:h-auto lg:px-0">
-              {/* placeholder="blur"를 쓰지 않는다. 로고는 바탕이 투명해 흐린 미리보기가 회색 덩어리로 보이고,
-                  hydration이 끝날 때까지 글자 뒤에 비쳤다(2026-11-15). */}
-              {/* 홈은 동적 페이지라 미리 받지 않으므로, 응답을 기다리는 동안 로고를 흐리게 해 눌렸음을 알린다.
-                  로고 위 스피너는 글자를 가려서 쓰지 않는다(2026-11-15). */}
-              <TransitionLink href="/" pendingLabel="행사 목록 불러오는 중" showPendingIndicator={false} className="block shrink-0 rounded-control">
-                <Image
-                  src={headerLogo}
-                  alt="속초모아"
-                  priority
-                  sizes="(min-width: 1024px) 192px, 160px"
-                  className="h-9 w-auto object-contain lg:h-11"
-                />
-              </TransitionLink>
-              {/* 월별 일정 버튼: lg 미만은 로고 줄 오른쪽, lg는 분야 탭 뒤 오른쪽 끝이다. 탭이 없는 페이지(상세 등)에서도
-                  오른쪽 끝에 오도록 탭과 버튼을 한 묶음으로 두고, 폭에 따라 둘 중 한 자리만 보인다(2026-11-15 사용자 결정). */}
-              {/* 지도 버튼은 하단 탭을 넣기 전의 지도 탭 입구다(2026-11-16). 월별 일정과 같은 자리 규칙을 따른다. */}
-              <span className="flex gap-2 lg:hidden"><MapEntryLink /><MonthEntryLink /></span>
-            </div>
-            <div className="lg:ml-auto lg:flex lg:items-center lg:gap-6">
-              <CategoryNavigation />
-              <span className="hidden gap-2 lg:flex"><MapEntryLink /><MonthEntryLink /></span>
-            </div>
+          <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4 sm:px-6 lg:h-18 lg:gap-6">
+            {/* placeholder="blur"를 쓰지 않는다. 로고는 바탕이 투명해 흐린 미리보기가 회색 덩어리로 보이고,
+                hydration이 끝날 때까지 글자 뒤에 비쳤다(2026-11-15). */}
+            {/* 홈은 동적 페이지라 미리 받지 않으므로, 응답을 기다리는 동안 로고를 흐리게 해 눌렸음을 알린다.
+                로고 위 스피너는 글자를 가려서 쓰지 않는다(2026-11-15). */}
+            <TransitionLink href="/" pendingLabel="행사 목록 불러오는 중" showPendingIndicator={false} className="mr-auto block shrink-0 rounded-control md:mr-0">
+              <Image
+                src={headerLogo}
+                alt="속초모아"
+                priority
+                sizes="(min-width: 1024px) 192px, 160px"
+                className="h-9 w-auto object-contain lg:h-11"
+              />
+            </TransitionLink>
+            <HeaderNavigation />
+            <MobileHeaderActions />
+            <DesktopHeaderActions />
           </div>
         </header>
+        {/* 새 공지가 있으면 헤더 아래 한 줄로 알린다. 헤더와 달리 화면에 고정하지 않아 내리면 사라진다(2026-11-21 사용자 결정). */}
+        <NoticeBanner />
         <AnalyticsRuntime />
         <div className="flex-1">{children}</div>
         {/* 회색 바탕 푸터. 로고 이미지는 바탕이 투명해 그대로 얹는다(2026-11-07). 묶음 제목 없이 링크만 한 줄로 둔다(2026-11-06). */}
@@ -121,8 +117,10 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
               <p className="mt-3 text-caption text-content-subtle">각 기관의 공고를 옮긴 정보라 실제와 다를 수 있어요. 방문하거나 신청하기 전에 원문을 꼭 확인해 주세요.</p>
             </div>
             <nav aria-label="사이트 이용" className="flex flex-wrap gap-x-5">
+              <Link href="/places" className={textLinkClassName}>가볼만한 곳</Link>
               <Link href="/report" className={textLinkClassName}>행사 제보하기</Link>
               <Link href="/feedback" className={textLinkClassName}>의견 보내기</Link>
+              <Link href="/notices" className={textLinkClassName}>공지사항</Link>
               <a className={textLinkClassName} href={SITE_INQUIRY_URL} target="_blank" rel="noreferrer">
                 카카오톡 문의 <ExternalLink {...iconProps} size={14} /><span className="sr-only">(새 창)</span>
               </a>
@@ -136,6 +134,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
             </p>
           </div>
         </footer>
+        <BottomNavigation />
         <ScrollToTopButton />
         {/* 관리자 화면에 들어간 기기(운영자)는 첫 page_view보다 먼저 내부 트래픽 표시를 붙인다(lib/analytics/internal-traffic.ts, 2026-11-07).
             gtag('set')은 그 뒤 모든 이벤트에 적용된다. 저장소를 막은 브라우저에서는 건너뛴다. */}

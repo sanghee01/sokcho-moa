@@ -7,7 +7,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { getButtonClassName } from "@/components/ui/button-styles";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
-import { EventMapClusterMarker, EventMapMarker } from "@/features/events/components/map/event-map-marker";
+import { EventMapClusterMarker, EventMapMarker, PlaceMapMarker } from "@/features/events/components/map/event-map-marker";
 import { MapCategoryChips } from "@/features/events/components/map/map-category-chips";
 import { closeMapPlace, openMapPlace, replaceMapQuery } from "@/features/events/components/map/map-history";
 import { createMarkerContainer, createMarkerIcon, FIT_PINS_PADDING_PX, getPinLabel } from "@/features/events/components/map/map-marker-icon";
@@ -22,9 +22,17 @@ import {
   type NaverMapsApi,
   type NaverMarker,
 } from "@/features/events/components/map/naver-maps";
-import { filterEventMapPlaces, MAP_DEFAULT_CENTER, MAP_REGION_BOUNDS, type EventMapPin } from "@/features/events/model/event-map";
+import {
+  filterEventMapPlaces,
+  filterPlaceMapPins,
+  MAP_DEFAULT_CENTER,
+  MAP_REGION_BOUNDS,
+  type EventMapPin,
+  type MapLayer,
+} from "@/features/events/model/event-map";
 import { clusterMapMarkers, MAP_MARKER_BODY_PX, selectMapLabelIds } from "@/features/events/model/map-label-layout";
-import { categoryLabels, isEventCategory, type EventCategory } from "@/features/events/model/taxonomy";
+import { categoryLabels, isEventCategory } from "@/features/events/model/taxonomy";
+import { activityCategoryLabels, isActivityCategory } from "@/features/places/model/activity";
 import { trackAnalyticsEvent, type AnalyticsEventParams } from "@/lib/analytics/events";
 
 type MapUnavailableReason = AnalyticsEventParams["map_unavailable"]["reason"];
@@ -74,19 +82,30 @@ const EMPTY_MARKER_LAYOUT: MarkerLayout = { clusterMemberIds: new Map(), hiddenI
  */
 export function EventMap({
   pins,
+  placePins,
   cards,
   clientId,
 }: {
   pins: EventMapPin[];
-  /** 행사 slug → 서버가 그린 행사 카드 */
+  /** "가볼만한 곳" 장소 핀. 레이어(?layer=places)를 고르면 행사 핀 대신 보인다(2026-11-21). */
+  placePins: EventMapPin[];
+  /** 행사 slug 또는 장소 핀 id → 서버가 그린 카드 */
   cards: Record<string, ReactNode>;
   clientId: string | null;
 }) {
   const searchParams = useSearchParams();
+  const layer: MapLayer = searchParams.get("layer") === "places" ? "places" : "events";
   const categoryParam = searchParams.get("category") ?? undefined;
-  const category = isEventCategory(categoryParam) ? categoryParam : null;
+  const eventCategory = layer === "events" && isEventCategory(categoryParam) ? categoryParam : null;
+  const placeCategory = layer === "places" && isActivityCategory(categoryParam) ? categoryParam : null;
+  const category: string | null = eventCategory ?? placeCategory;
+  const filter = useMemo(() => ({ layer, category }), [layer, category]);
   const placeId = searchParams.get("place");
-  const visiblePins = useMemo(() => filterEventMapPlaces(pins, category), [pins, category]);
+  const allPins = useMemo(() => [...pins, ...placePins], [pins, placePins]);
+  const visiblePins = useMemo(
+    () => (layer === "places" ? filterPlaceMapPins(placePins, placeCategory) : filterEventMapPlaces(pins, eventCategory)),
+    [layer, pins, placePins, eventCategory, placeCategory],
+  );
   const selectedPin = visiblePins.find((pin) => pin.id === placeId) ?? null;
 
   const [isSdkLoaded, setIsSdkLoaded] = useState(false);
@@ -121,8 +140,8 @@ export function EventMap({
     const pin = visiblePins.find((candidate) => candidate.id === pinId);
     if (!pin) return;
     shouldFocusPanelRef.current = true;
-    openMapPlace({ category, placeId: pinId }, selectedPin !== null);
-    trackAnalyticsEvent("map_place_selected", { map_category: category ?? "all", event_count: pin.events.length });
+    openMapPlace({ ...filter, placeId: pinId }, selectedPin !== null);
+    trackAnalyticsEvent("map_place_selected", { map_category: getMapCategoryValue(filter), event_count: pin.events.length });
   }
 
   // 묶음을 누르면 묶인 장소가 다 보이게 확대한다. 확대가 끝나면(idle) 마커 배치를 다시 계산해 묶음이 풀린다.
@@ -136,16 +155,27 @@ export function EventMap({
 
   function handleClosePanel() {
     const closedPinId = selectedPin?.id;
-    closeMapPlace(category);
+    closeMapPlace(filter);
     // 닫으면 연 핀으로 초점을 돌려준다(키보드 사용자가 지도에서 길을 잃지 않게).
     markerSlots.find((slot) => slot.pin.id === closedPinId)?.container.querySelector("button")?.focus({ preventScroll: true });
   }
 
-  function handleSelectCategory(nextCategory: EventCategory | null) {
+  function handleSelectCategory(nextCategory: string | null) {
     if (nextCategory === category) return;
-    const isPlaceStillVisible = selectedPin !== null && filterEventMapPlaces([selectedPin], nextCategory).length > 0;
-    replaceMapQuery({ category: nextCategory, placeId: isPlaceStillVisible ? selectedPin.id : null });
-    trackAnalyticsEvent("map_category_changed", { map_category: nextCategory ?? "all" });
+    const isPlaceStillVisible = selectedPin !== null && (layer === "places"
+      ? nextCategory === null || selectedPin.placeCategory === nextCategory
+      : filterEventMapPlaces([selectedPin], toEventCategory(nextCategory)).length > 0);
+    const nextFilter = { layer, category: nextCategory };
+    replaceMapQuery({ ...nextFilter, placeId: isPlaceStillVisible ? selectedPin.id : null });
+    trackAnalyticsEvent("map_category_changed", { map_category: getMapCategoryValue(nextFilter) });
+  }
+
+  // 레이어(행사 | 가볼만한 곳)를 바꾸면 분야와 고른 장소를 비운다. 두 레이어의 분야 값이 다르다.
+  function handleSelectLayer(nextLayer: MapLayer) {
+    if (nextLayer === layer) return;
+    const nextFilter = { layer: nextLayer, category: null };
+    replaceMapQuery({ ...nextFilter, placeId: null });
+    trackAnalyticsEvent("map_category_changed", { map_category: getMapCategoryValue(nextFilter) });
   }
 
   // 지도를 볼 수 없게 되면 이유를 한 화면에 한 번만 보낸다. 운영에서 키·주소 등록이 빠지면 안내 문구만 보여 조용히 죽어 있기 때문이다.
@@ -157,8 +187,8 @@ export function EventMap({
 
   // 지도에 없는 장소(행사가 끝나 핀이 사라졌거나 고른 분야에 없는 장소)는 주소에서 뺀다. 남겨 두면 카드 없이 주소만 남았다(2026-11-16 리뷰).
   useEffect(() => {
-    if (placeId !== null && selectedPin === null) replaceMapQuery({ category, placeId: null });
-  }, [placeId, selectedPin, category]);
+    if (placeId !== null && selectedPin === null) replaceMapQuery({ ...filter, placeId: null });
+  }, [placeId, selectedPin, filter]);
 
   // 등록하지 않은 주소에서 열었거나 키가 틀리면 지도 SDK가 알린다. 빈 지도 대신 안내를 보여 준다.
   useEffect(() => listenNaverMapsAuthFailure(() => setStatus("auth_failed")), []);
@@ -172,7 +202,7 @@ export function EventMap({
     const map = mapRef.current;
     if (naverMaps === null || map === null || status !== "ready") return;
 
-    const slots = pins.map((pin) => {
+    const slots = allPins.map((pin) => {
       const container = createMarkerContainer();
       const marker = new naverMaps.Marker({
         map,
@@ -189,7 +219,7 @@ export function EventMap({
       for (const { marker } of slots) marker.setMap(null);
       setMarkerSlots([]);
     };
-  }, [status, pins]);
+  }, [status, allPins]);
 
   // 고른 분야에 행사가 있고 묶음에 들어가지 않은 장소만 보인다. 숨긴 마커는 아래 portal도 그리지 않아 키보드 초점도 가지 않는다.
   // 마우스를 올리면 보이는 이름(title)의 행사 수도 고른 분야 기준으로 맞춘다.
@@ -263,7 +293,7 @@ export function EventMap({
       const selectedId = selectedPin?.id ?? null;
       const points = visiblePins.map((pin) => {
         const offset = projection.fromCoordToOffset(new naverMaps.LatLng(pin.latitude, pin.longitude));
-        return { id: pin.id, anchor: { x: offset.x, y: offset.y }, priority: pin.events.length };
+        return { id: pin.id, anchor: { x: offset.x, y: offset.y }, priority: pin.kind === "place" ? 1 : pin.events.length };
       });
       const clusters = map.getZoom() <= CLUSTER_MAX_ZOOM
         ? clusterMapMarkers(points, selectedId)
@@ -363,12 +393,13 @@ export function EventMap({
       if (target instanceof Element && target.closest("[data-map-marker]") !== null) return;
       const focused = document.activeElement;
       if (focused instanceof HTMLElement && focused.closest("[data-map-marker]") !== null) focused.blur();
-      closeMapPlace(category);
+      closeMapPlace(filter);
     });
     return () => naverMaps.Event.removeListener(listener);
-  }, [status, selectedPinId, category]);
+  }, [status, selectedPinId, filter]);
 
-  const selectedCategoryLabel = category === null ? null : categoryLabels[category];
+  const selectedCategoryLabel = eventCategory !== null ? categoryLabels[eventCategory] : placeCategory !== null ? activityCategoryLabels[placeCategory] : null;
+  const layerNoun = layer === "places" ? "가볼만한 곳" : "행사";
   const visiblePinById = new Map(visiblePins.map((pin) => [pin.id, pin]));
 
   return (
@@ -382,7 +413,7 @@ export function EventMap({
         />
       )}
 
-      <MapCategoryChips category={category} onSelect={handleSelectCategory} />
+      <MapCategoryChips layer={layer} category={category} onSelectLayer={handleSelectLayer} onSelectCategory={handleSelectCategory} />
 
       <div className="relative min-h-0 flex-1 bg-surface-muted">
         {/* 지도 SDK가 지도 상자에 position: relative를 덮어써서, 자리는 바깥 상자가 잡고 지도는 그 안을 채운다. */}
@@ -401,8 +432,20 @@ export function EventMap({
             return createPortal(
               <EventMapClusterMarker
                 placeCount={clusterMemberIds.length}
-                eventCount={eventCount}
+                eventCount={layer === "places" ? null : eventCount}
                 onExpand={() => handleExpandCluster(clusterMemberIds)}
+              />,
+              container,
+              pin.id,
+            );
+          }
+          if (visiblePin.kind === "place") {
+            return createPortal(
+              <PlaceMapMarker
+                pin={visiblePin}
+                isLabelShown={markerLayout.labeledIds.has(visiblePin.id)}
+                isSelected={visiblePin.id === selectedPin?.id}
+                onSelect={handleSelectPin}
               />,
               container,
               pin.id,
@@ -433,7 +476,7 @@ export function EventMap({
             <Link href="/" className={getButtonClassName({ variant: "tonal" })}>행사 목록 보기</Link>
           </MapNotice>
         ) : status === "ready" && visiblePins.length === 0 ? (
-          <MapNotice message={selectedCategoryLabel === null ? "지도에 표시할 행사가 없어요." : `지도에 표시할 ${selectedCategoryLabel} 일정이 없어요.`}>
+          <MapNotice message={selectedCategoryLabel === null ? `지도에 표시할 ${layerNoun}이 없어요.` : `지도에 표시할 ${selectedCategoryLabel} ${layer === "places" ? "장소가" : "일정이"} 없어요.`}>
             {selectedCategoryLabel === null ? (
               <Link href="/" className={getButtonClassName({ variant: "tonal" })}>행사 목록 보기</Link>
             ) : (
@@ -448,6 +491,16 @@ export function EventMap({
       </div>
     </div>
   );
+}
+
+function toEventCategory(value: string | null) {
+  return value !== null && isEventCategory(value) ? value : null;
+}
+
+/** GA map_category 값: 행사 분야는 그대로(전체는 all), 가볼만한 곳은 places 또는 places:분류. 예전 값과 섞이지 않게 앞에 붙인다. */
+function getMapCategoryValue({ layer, category }: { layer: MapLayer; category: string | null }) {
+  if (layer === "places") return category === null ? "places" : `places:${category}`;
+  return category ?? "all";
 }
 
 function MapNotice({ message, children }: { message: string; children: ReactNode }) {

@@ -1,5 +1,7 @@
 "use client";
 
+import { MapPin } from "lucide-react";
+import { iconProps } from "@/components/ui/icon";
 import { getPinLabel } from "@/features/events/components/map/map-marker-icon";
 import type { EventMapPin } from "@/features/events/model/event-map";
 
@@ -66,11 +68,12 @@ export function EventMapMarker({
  * 몸통이 겹치는 장소 여러 곳을 묶은 마커(.ai/DESIGN.md 지도). 묶인 장소들의 행사 수 합계를 보이고, 누르면 그 장소들이 다 보이게 확대해 풀린다.
  * 한 장소 마커(흰 몸통 + 개수 동그라미)와 구별되게 채운 동그라미 + 옅은 테두리이고, 여러 곳이라 위치 점과 꼬리는 두지 않는다.
  */
-export function EventMapClusterMarker({ placeCount, eventCount, onExpand }: { placeCount: number; eventCount: number; onExpand: () => void }) {
+export function EventMapClusterMarker({ placeCount, eventCount, onExpand }: { placeCount: number; eventCount: number | null; onExpand: () => void }) {
+  // "가볼만한 곳" 레이어에서는 행사 수가 없어(null) 장소 수를 보인다.
   return (
     <button
       type="button"
-      aria-label={`장소 ${placeCount}곳, 행사 ${eventCount}개, 눌러서 확대`}
+      aria-label={eventCount === null ? `장소 ${placeCount}곳, 눌러서 확대` : `장소 ${placeCount}곳, 행사 ${eventCount}개, 눌러서 확대`}
       data-map-marker
       onClick={onExpand}
       className="pointer-events-none flex w-max shrink-0 flex-col items-center rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
@@ -79,8 +82,51 @@ export function EventMapClusterMarker({ placeCount, eventCount, onExpand }: { pl
         aria-hidden="true"
         className="pointer-events-auto flex size-11 shrink-0 items-center justify-center rounded-full bg-primary text-body font-bold tabular-nums text-on-primary shadow-floating ring-4 ring-primary/25"
       >
-        {eventCount}
+        {eventCount ?? placeCount}
       </span>
+    </button>
+  );
+}
+
+/**
+ * "가볼만한 곳" 장소 마커(.ai/DESIGN.md 지도). 행사 마커와 같은 몸통·꼬리·위치 점 구조이고, 개수 동그라미 대신 핀 아이콘을 둔다.
+ * 한 번에 한 레이어만 보이므로 모양만 달리하고 범례는 두지 않는다(2026-11-21).
+ */
+export function PlaceMapMarker({
+  pin,
+  isLabelShown,
+  isSelected,
+  onSelect,
+}: {
+  pin: EventMapPin;
+  isLabelShown: boolean;
+  isSelected: boolean;
+  onSelect: (pinId: string) => void;
+}) {
+  const shouldShowName = pin.name !== null && (isLabelShown || isSelected);
+  return (
+    <button
+      type="button"
+      aria-label={getPinLabel(pin)}
+      aria-pressed={isSelected}
+      data-map-marker
+      onClick={() => onSelect(pin.id)}
+      className="group pointer-events-none flex w-max shrink-0 flex-col items-center rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+    >
+      <span
+        className={`pointer-events-auto relative z-10 flex h-11 shrink-0 items-center gap-1.5 rounded-full bg-surface p-1 shadow-floating ring-1 ring-line group-aria-pressed:bg-accent group-aria-pressed:ring-accent ${shouldShowName ? "pr-3" : ""}`}
+      >
+        <span aria-hidden="true" className="flex size-9 shrink-0 items-center justify-center rounded-full bg-accent text-on-primary group-aria-pressed:bg-surface group-aria-pressed:text-content-strong">
+          <MapPin {...iconProps} size={18} />
+        </span>
+        {Boolean(shouldShowName) && (
+          <span aria-hidden="true" className="max-w-36 truncate text-caption font-semibold text-content-strong group-aria-pressed:text-on-primary">
+            {pin.name}
+          </span>
+        )}
+      </span>
+      <span aria-hidden="true" className="-mt-2 size-3 shrink-0 rotate-45 bg-surface shadow-floating group-aria-pressed:bg-accent" />
+      <span aria-hidden="true" className="relative z-10 -mt-1 size-2.5 shrink-0 rounded-full bg-accent ring-2 ring-surface" />
     </button>
   );
 }

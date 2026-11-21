@@ -1,6 +1,6 @@
 // 지도 탭의 주소(?category=, ?place=)와 브라우저 기록. 분야와 장소를 주소에 남겨 상세에서 뒤로 오면 같은 화면으로 돌아오고,
 // 브라우저 뒤로 가기로 장소 카드를 닫는다(.ai/DESIGN.md 지도). 주소를 바꾸면 Next.js가 useSearchParams에 반영한다.
-import type { EventCategory } from "@/features/events/model/taxonomy";
+import type { MapLayer } from "@/features/events/model/event-map";
 
 /**
  * 장소 카드를 열면서 쌓은 기록 칸의 표시. 닫기 버튼은 이 표시가 있으면 뒤로 가기로 그 칸을 지워 기록이 남지 않게 한다.
@@ -9,8 +9,13 @@ import type { EventCategory } from "@/features/events/model/taxonomy";
  */
 const PLACE_PUSHED_STATE_KEY = "sokchoMoaMapPlacePushed";
 
-interface MapQuery {
-  category: EventCategory | null;
+/** 지도 주소의 값. category는 레이어에 따라 행사 분야이거나 "가볼만한 곳" 분류다. */
+export interface MapFilter {
+  layer: MapLayer;
+  category: string | null;
+}
+
+interface MapQuery extends MapFilter {
   placeId: string | null;
 }
 
@@ -24,9 +29,9 @@ export function openMapPlace(query: MapQuery & { placeId: string }, isPlaceOpen:
 }
 
 /** 장소 카드를 닫는다. 연 칸이면 뒤로 가기, 주소로 바로 연 카드면 주소에서 장소만 뺀다. */
-export function closeMapPlace(category: EventCategory | null) {
+export function closeMapPlace(filter: MapFilter) {
   if (isPlacePushedEntry()) window.history.back();
-  else replaceMapQuery({ category, placeId: null });
+  else replaceMapQuery({ ...filter, placeId: null });
 }
 
 /**
@@ -42,8 +47,10 @@ function isPlacePushedEntry() {
   return typeof state === "object" && state !== null && PLACE_PUSHED_STATE_KEY in state && state[PLACE_PUSHED_STATE_KEY] === true;
 }
 
-function createMapUrl({ category, placeId }: MapQuery) {
+function createMapUrl({ layer, category, placeId }: MapQuery) {
   const params = new URLSearchParams();
+  // 기본 레이어(행사)는 주소에 적지 않는다. 예전 주소(?category=festival)가 그대로 행사 지도로 열린다.
+  if (layer !== "events") params.set("layer", layer);
   if (category !== null) params.set("category", category);
   if (placeId !== null) params.set("place", placeId);
   const query = params.toString();

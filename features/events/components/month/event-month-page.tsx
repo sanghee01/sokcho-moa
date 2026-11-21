@@ -1,4 +1,5 @@
 import { JsonLd } from "@/components/seo/json-ld";
+import { EventSectionNavigation } from "@/features/events/components/browse/event-section-navigation";
 import { EventMonthView } from "@/features/events/components/month/event-month-view";
 import type { EventMonthPageData } from "@/features/events/month-page";
 import { buildMonthStructuredData } from "@/features/events/month-seo";
@@ -10,8 +11,11 @@ export function EventMonthPage({ data }: { data: EventMonthPageData }) {
   return (
     <main id="main-content">
       <JsonLd data={buildMonthStructuredData(month, events, description, getPublicEnv().NEXT_PUBLIC_SITE_URL, category)} />
-      <div className="mx-auto max-w-6xl px-4 pb-8 pt-6 sm:px-6 lg:pt-10">
-        <EventMonthView month={month} category={category} events={events} previousMonth={previousMonth} nextMonth={nextMonth} now={now} />
+      <div className="mx-auto max-w-6xl px-4 pb-8 pt-4 sm:px-6 lg:pt-6">
+        <EventSectionNavigation />
+        <div className="mt-6">
+          <EventMonthView month={month} category={category} events={events} previousMonth={previousMonth} nextMonth={nextMonth} now={now} />
+        </div>
       </div>
     </main>
   );

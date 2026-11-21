@@ -2,7 +2,6 @@ import { AnalyticsMountTracking } from "@/components/analytics/analytics-mount-t
 import { getButtonClassName } from "@/components/ui/button-styles";
 import { TransitionLink } from "@/components/ui/transition-link";
 import { EventCard, eventCardGridClassName } from "@/features/events/components/event-card";
-import { EventSearch } from "@/features/events/components/browse/event-search";
 import { EventSort } from "@/features/events/components/browse/event-sort";
 import { analyticsData } from "@/lib/analytics/events";
 import { getPublicEnv } from "@/lib/env";
@@ -138,12 +137,8 @@ export async function EventBrowsePage({
         {!topic && <h1 id="home-hero-title" className="sr-only">요즘 속초에서 뭐하지?</h1>}
         {!topic && <p className="sr-only">공연·체험·교육·전시를 포함한 속초의 최신 행사 정보를 확인하세요.</p>}
 
-        {/* 넓은 화면에서는 가운데 정렬한 분야 탭과 맞춰 검색창도 가운데에 둔다. */}
-        <div className="lg:mx-auto lg:max-w-xl">
-          <EventSearch params={navigationParams} query={filters.query} />
-        </div>
-
-        <section aria-labelledby="event-results-title" data-event-view={statusTab} className="mt-6 lg:mt-10">
+        {/* 검색창은 헤더의 통합 검색(/search)으로 옮겼다(2026-11-21 사용자 결정). 예전 주소의 ?q=는 계속 목록을 거른다. */}
+        <section aria-labelledby="event-results-title" data-event-view={statusTab} className="mt-2 lg:mt-6">
           {/* 행사 개수는 보여 주지 않는다(2026-11-06). 구역 제목은 화면 읽기 프로그램용으로 남긴다. */}
           <h2 id="event-results-title" className="sr-only">{closedView ? "마감 행사" : "행사 목록"}</h2>
           {/* 검색어가 있는 목록이 그려지면 결과 수를 GA에 남긴다. 검색어 원문은 보내지 않고,

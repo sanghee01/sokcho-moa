@@ -4,6 +4,7 @@ import {
   capturedAnalyticsEvents,
   SAMPLE_EVENT_PATH,
   SAMPLE_EVENT_SLUG,
+  searchFromHeader,
 } from "@/tests/e2e/fixtures";
 
 interface ElementBox {
@@ -198,16 +199,11 @@ test("GA 이벤트는 탐색부터 상세 도달까지 구조화된 파라미터
     return dataLayer.some((entry) => Array.from(entry)[0] === "config");
   })).toBe(false);
 
-  await page.getByLabel("행사명, 장소, 기관 검색").fill("바다빛");
-  await page.getByRole("button", { name: "검색", exact: true }).click();
-  await expect(page).toHaveURL(/q=/);
-  await expect.poll(async () => (await capturedAnalyticsEvents(page)).find((event) => event.name === "search_submitted")?.params).toMatchObject({
-    query_length: 3,
-    has_query: true,
-    active_filter_count: 0,
-  });
-  const searchEvent = (await capturedAnalyticsEvents(page)).find((event) => event.name === "search_submitted");
-  expect(searchEvent?.params).not.toHaveProperty("search_term");
+  // 검색은 헤더의 통합 검색(/search)으로 옮겼다(2026-11-21). 검색어 원문은 보내지 않는다.
+  await searchFromHeader(page, "바다빛");
+  await expect.poll(() => analyticsEventParams(page, "site_search_viewed")).toEqual([
+    { query_length: 3, event_count: 1, place_count: 0 },
+  ]);
 
   await page.getByRole("link", { name: /바다빛 가족 문화축제/ }).click();
   await expect(page).toHaveURL(new RegExp(`${SAMPLE_EVENT_PATH}$`));
@@ -240,54 +236,16 @@ test("GA 이벤트는 목록의 진행중·마감 탭 전환과 검색 결과 �
     { status_tab: "active" },
   ]);
 
-  const search = page.getByRole("search", { name: "행사 검색" });
-  await search.getByRole("searchbox").fill("바다빛");
-  await search.getByRole("button", { name: "검색", exact: true }).click();
-  await expect(page).toHaveURL(/q=/);
+  // 홈의 검색창은 헤더 통합 검색으로 옮겼지만, 예전 주소의 ?q=는 계속 목록을 거르고 결과 수를 남긴다(2026-11-21).
+  await page.goto("/?q=%EB%B0%94%EB%8B%A4%EB%B9%9B");
   await expect.poll(() => analyticsEventParams(page, "search_results_viewed")).toEqual([
     { result_count: 1, query_length: 3, status_tab: "active" },
-  ]);
-
-  // 같은 검색어에서 정렬만 바꾼 것은 새 검색 결과로 세지 않는다. 다음 검색까지 기록이 하나여야 한다.
-  const sort = page.getByRole("navigation", { name: "행사 정렬" });
-  await sort.getByRole("link", { name: "조회순" }).click();
-  await expect(sort.getByRole("link", { name: "조회순" })).toHaveAttribute("aria-current", "page");
-
-  await search.getByRole("searchbox").fill("없는행사이름");
-  await search.getByRole("button", { name: "검색", exact: true }).click();
-  await expect.poll(() => analyticsEventParams(page, "search_results_viewed")).toEqual([
-    { result_count: 1, query_length: 3, status_tab: "active" },
-    { result_count: 0, query_length: 6, status_tab: "active" },
   ]);
   // 검색어 원문은 보내지 않는다.
   expect(JSON.stringify(await analyticsEventParams(page, "search_results_viewed"))).not.toContain("바다빛");
 });
 
-test("GA 이벤트는 주변 명소가 화면에 들어왔을 때 상세 화면마다 한 번만 노출로 기록한다", async ({ page }) => {
-  await page.goto(SAMPLE_EVENT_PATH);
-  await expect.poll(() => analyticsEventParams(page, "event_detail_viewed")).toHaveLength(1);
-  const nearby = page.getByRole("region", { name: "주변 명소 둘러보기" });
-
-  // 상세 위쪽만 본 사람은 명소를 본 것으로 세지 않는다.
-  await expect(nearby).not.toBeInViewport();
-  expect(await analyticsEventParams(page, "nearby_places_viewed")).toEqual([]);
-
-  await nearby.evaluate((element) => element.scrollIntoView({ block: "start" }));
-  await expect.poll(() => analyticsEventParams(page, "nearby_places_viewed")).toEqual([
-    { event_category: "festival" },
-  ]);
-
-  // 다시 올라갔다 내려와도 같은 상세 화면에서는 한 번만 센다.
-  await page.evaluate(() => window.scrollTo(0, 0));
-  await expect(nearby).not.toBeInViewport();
-  await nearby.evaluate((element) => element.scrollIntoView({ block: "start" }));
-  await expect(nearby.getByRole("article").first()).toBeInViewport();
-  expect(await analyticsEventParams(page, "nearby_places_viewed")).toEqual([
-    { event_category: "festival" },
-  ]);
-});
-
-// 명소 클릭률과 비교할 기준. 같은 상세 아래쪽에 있는 관련 행사 목록도 같은 방식으로 노출을 센다(2026-11-07).
+// 같은 상세 아래쪽에 있는 관련 행사 목록의 노출을 센다(2026-11-07). 주변 명소 구역은 2026-11-21에 뺐다.
 test("GA 이벤트는 관련 행사 목록이 화면에 들어왔을 때 상세 화면마다 한 번만 노출로 기록한다", async ({ page }) => {
   await page.goto(SAMPLE_EVENT_PATH);
   await expect.poll(() => analyticsEventParams(page, "event_detail_viewed")).toHaveLength(1);
@@ -335,7 +293,7 @@ test("목록과 상세는 데스크톱·모바일에서 가로로 넘치지 않�
   await expectNoHorizontalOverflow(page, [
     page.getByRole("banner"),
     page.getByRole("main").filter({ has: listHeading }),
-    page.getByRole("search", { name: "행사 검색" }),
+    page.getByRole("navigation", { name: "행사 분야" }),
     page.getByRole("article").first(),
   ]);
 
@@ -361,7 +319,7 @@ test("행사 카드는 전체 목록에서 포스터 위에 분야를 라벨 없
   await expect(topicCard.getByLabel("행사 분야")).toHaveCount(0);
 });
 
-test("목록에서 검색하고 상세·원문·외부 지도 링크·주변 명소를 확인한다", async ({ context, page }) => {
+test("헤더에서 검색하고 상세·원문·외부 지도 링크를 확인한다", async ({ context, page }) => {
   await context.route("https://www.sokcho.go.kr/**", (route) => route.abort());
 
   await page.goto("/");
@@ -369,10 +327,8 @@ test("목록에서 검색하고 상세·원문·외부 지도 링크·주변 명
   // 2026-11-06 사용자 결정으로 화면의 행사 개수 표시를 뺐다. 목록 구역 안의 카드 수로 확인한다.
   const results = page.getByRole("region", { name: "행사 목록" });
   await expect(results.getByRole("article")).toHaveCount(7);
-  await page.getByLabel("행사명, 장소, 기관 검색").fill("바다빛");
-  await page.getByRole("button", { name: "검색", exact: true }).click();
-  await expect(page).toHaveURL(/q=/);
-  await expect(results.getByRole("article")).toHaveCount(1);
+  await searchFromHeader(page, "바다빛");
+  await expect(page.getByRole("region", { name: "행사" }).getByRole("article")).toHaveCount(1);
 
   await page.getByRole("link", { name: /바다빛 가족 문화축제/ }).click();
   await expect(page).toHaveURL(new RegExp(`${SAMPLE_EVENT_PATH}$`));
@@ -389,34 +345,8 @@ test("목록에서 검색하고 상세·원문·외부 지도 링크·주변 명
   await popup.close();
 
   await expect(page.getByRole("link", { name: /네이버 지도/ })).toBeVisible();
-  const nearby = page.getByRole("region", { name: "주변 명소 둘러보기" });
-  await expect(nearby.getByRole("article")).toHaveCount(4);
-  await expect(nearby.getByRole("link", { name: /지도에서 보기/ }).first()).toBeVisible();
-});
-
-test("검색 응답이 늦어도 제출 즉시 진행 상태를 알린다", async ({ page }) => {
-  let releaseRequest: () => void = () => {};
-  const delayedResponse = new Promise<void>((resolve) => {
-    releaseRequest = resolve;
-  });
-
-  await page.route("**/*q=%EB%B0%94%EB%8B%A4%EB%B9%9B*", async (route) => {
-    if (route.request().headers().rsc) await delayedResponse;
-    await route.continue();
-  });
-
-  await page.goto("/");
-  const search = page.getByRole("search", { name: "행사 검색" });
-  await search.getByRole("searchbox").fill("바다빛");
-  const submitPromise = search.getByRole("button", { name: "검색", exact: true }).click();
-
-  await expect(search).toHaveAttribute("aria-busy", "true");
-  await expect(search.getByRole("button")).toBeDisabled();
-
-  releaseRequest();
-  await submitPromise;
-  await expect(page).toHaveURL(/q=/);
-  await expect(page.getByRole("region", { name: "행사 목록" }).getByRole("article")).toHaveCount(1);
+  // 행사 상세에는 행사에 필요한 정보만 둔다. 주변 명소 구역은 뺐다(2026-11-21 사용자 결정).
+  await expect(page.getByRole("region", { name: /주변 명소/ })).toHaveCount(0);
 });
 
 test("진행중과 마감 탭으로 참여 가능한 행사와 지난 기록을 분리한다", async ({ page }) => {
@@ -460,18 +390,6 @@ test("행사 목록은 행사일순이 기본이고 조회순으로 바꿀 수 �
   await sort.getByRole("link", { name: "행사일순" }).click();
   await expect(page).not.toHaveURL(/sort=/);
   await expect(sort.getByRole("link", { name: "행사일순" })).toHaveAttribute("aria-current", "page");
-});
-
-test("뒤로 가서 검색 전 목록으로 돌아오면 검색창도 비워진다", async ({ page }) => {
-  await page.goto("/");
-  const searchbox = page.getByRole("search", { name: "행사 검색" }).getByRole("searchbox");
-  await searchbox.fill("바다빛");
-  await page.getByRole("button", { name: "검색", exact: true }).click();
-  await expect(page).toHaveURL(/q=/);
-
-  await page.goBack();
-  await expect(page).not.toHaveURL(/q=/);
-  await expect(searchbox).toHaveValue("");
 });
 
 test("캐시된 상세 페이지도 신청 상태는 방문자의 현재 시각으로 보여 준다", async ({ page }) => {

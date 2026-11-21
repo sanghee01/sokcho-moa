@@ -121,16 +121,30 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
-                },"places": {
+                },"notices": {
                   Row: {
-                    "address": string | null,"category": string,"created_at": string,"id": string,"image_url": string | null,"is_published": boolean,"latitude": number,"longitude": number,"map_url": string | null,"name": string,"official_url": string | null,"slug": string,"summary": string | null,"updated_at": string
+                    "body": string,"created_at": string,"id": string,"is_published": boolean,"kind": string,"published_at": string | null,"title": string,"updated_at": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "address"?: string | null,"category": string,"created_at"?: string,"id"?: string,"image_url"?: string | null,"is_published"?: boolean,"latitude": number,"longitude": number,"map_url"?: string | null,"name": string,"official_url"?: string | null,"slug": string,"summary"?: string | null,"updated_at"?: string
+                    "body": string,"created_at"?: string,"id"?: string,"is_published"?: boolean,"kind"?: string,"published_at"?: string | null,"title": string,"updated_at"?: string
                   }
                   Update: {
-                    "address"?: string | null,"category"?: string,"created_at"?: string,"id"?: string,"image_url"?: string | null,"is_published"?: boolean,"latitude"?: number,"longitude"?: number,"map_url"?: string | null,"name"?: string,"official_url"?: string | null,"slug"?: string,"summary"?: string | null,"updated_at"?: string
+                    "body"?: string,"created_at"?: string,"id"?: string,"is_published"?: boolean,"kind"?: string,"published_at"?: string | null,"title"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"places": {
+                  Row: {
+                    "activity_category": string | null,"address": string | null,"booking_url": string | null,"category": string,"cautions": string | null,"closed_summary": string | null,"created_at": string,"description": string | null,"hours_summary": string | null,"id": string,"image_alt": string | null,"image_credit": string | null,"image_source_url": string | null,"image_url": string | null,"is_published": boolean,"latitude": number,"longitude": number,"map_url": string | null,"name": string,"official_url": string | null,"operation_status": string,"parking_summary": string | null,"phone": string | null,"price_summary": string | null,"slug": string,"status_note": string | null,"summary": string | null,"tags": (string)[],"updated_at": string,"verified_on": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "activity_category"?: string | null,"address"?: string | null,"booking_url"?: string | null,"category": string,"cautions"?: string | null,"closed_summary"?: string | null,"created_at"?: string,"description"?: string | null,"hours_summary"?: string | null,"id"?: string,"image_alt"?: string | null,"image_credit"?: string | null,"image_source_url"?: string | null,"image_url"?: string | null,"is_published"?: boolean,"latitude": number,"longitude": number,"map_url"?: string | null,"name": string,"official_url"?: string | null,"operation_status"?: string,"parking_summary"?: string | null,"phone"?: string | null,"price_summary"?: string | null,"slug": string,"status_note"?: string | null,"summary"?: string | null,"tags"?: (string)[],"updated_at"?: string,"verified_on"?: string | null
+                  }
+                  Update: {
+                    "activity_category"?: string | null,"address"?: string | null,"booking_url"?: string | null,"category"?: string,"cautions"?: string | null,"closed_summary"?: string | null,"created_at"?: string,"description"?: string | null,"hours_summary"?: string | null,"id"?: string,"image_alt"?: string | null,"image_credit"?: string | null,"image_source_url"?: string | null,"image_url"?: string | null,"is_published"?: boolean,"latitude"?: number,"longitude"?: number,"map_url"?: string | null,"name"?: string,"official_url"?: string | null,"operation_status"?: string,"parking_summary"?: string | null,"phone"?: string | null,"price_summary"?: string | null,"slug"?: string,"status_note"?: string | null,"summary"?: string | null,"tags"?: (string)[],"updated_at"?: string,"verified_on"?: string | null
                   }
                   Relationships: [
                     

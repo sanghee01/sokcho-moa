@@ -15,7 +15,7 @@ DB의 RLS·RPC가 다시 권한을 검사합니다.
 
 ```text
 app/                 URL과 1:1. 데이터 함수 호출 + feature 컴포넌트 조립. 전역 헤더·푸터는 layout.tsx
-  admin/_components/ 관리자 shell, 대시보드 탭(행사·재수집 제외·제보·의견·명소)마다 자기 데이터를 조회하는 서버 컴포넌트
+  admin/_components/ 관리자 shell, 대시보드 탭(행사·재수집 제외·제보·의견·명소·공지)마다 자기 데이터를 조회하는 서버 컴포넌트
 features/
   events/            행사 탐색·상세·관리 (model, queries, cache, mappers, seo, components, admin/)
     model/           event.ts(타입), event-state.ts(진행·신청 상태), event-list.ts(필터·정렬·인기 행사),
@@ -28,7 +28,10 @@ features/
     admin/           관리자 queries·actions·components·schemas(행사 폼 검증)
       image/         포스터 업로드·외부 이미지 가져오기·최적화·Storage 저장
       candidate/     수집 후보 JSON 검증(schema)·가져오기 action·저장 payload
-  places/            주변 명소 (model, queries, cache, mappers, components, admin/)
+  places/            장소: "가볼만한 곳"(명소 + 즐길거리) 목록·상세·지도 카드 (model, queries, cache, mappers, seo, components, admin/)
+    model/           place.ts(타입), activity.ts(즐길거리 분류·조건 태그·운영 상태, 목록 선택·정렬, 확인일 표기),
+                     place-photo.ts(사진 고르기: 출처 문구가 없는 사진은 싣지 않음, 썸네일 이름 규칙)
+  notices/           공지·업데이트와 상단 공지 띠 (model, queries, cache, mappers, components, admin/)
   reports/           방문자 행사 제보 (schemas, actions, components, admin/)
   feedback/          방문자 서비스 의견 (schemas, actions, components, admin/)
   auth/              관리자 로그인·로그아웃
@@ -42,9 +45,11 @@ lib/                 도메인을 모르는 인프라
   seoul-time.ts      Asia/Seoul 날짜 계산의 원본(날짜 경계, 관리자 입력 시각 변환)
   map.ts             거리 계산, 네이버 지도 링크(행사·명소가 함께 씀)
   seo/, analytics/   사이트 전체 SEO·GA4
-data/                코드와 함께 관리하는 확인된 원본 데이터: attractions.json(명소 수집·검증 결과), venues.json(시설 이름→공식 주소·지도 좌표 장소 사전)
+data/                코드와 함께 관리하는 확인된 원본 데이터: attractions.json(명소 수집·검증 결과), activity-places.json(즐길거리 값과 즐길거리로 새로 넣은 장소),
+                     venues.json(시설 이름→공식 주소·지도 좌표 장소 사전). 두 장소 파일은 scripts/generate-place-assets.mjs가 합쳐 로컬 seed를 만든다
 supabase/            migrations, seed.sql, tests/database(pgTAP), rollbacks(migration마다 같은 이름), config.toml
-public/              brand/(헤더 로고 wordmark.webp, 기본 포스터 default-event-poster.svg), icons/(홈 화면 아이콘), sample-events/(시드 이미지).
+public/              brand/(헤더 로고 wordmark.webp, 기본 포스터 default-event-poster.svg), icons/(홈 화면 아이콘), sample-events/(시드 이미지),
+                     places/(즐길거리 장소 사진 <slug>.webp와 목록 썸네일 <slug>-thumb.webp. 공개 라이선스 사진과 공식 누리집 사진이고, 출처·원본 주소는 data/activity-places.json의 imageProvenance에 남긴다).
                      icon.jpeg(검색엔진 로고)와 검색엔진 소유 확인 html은 URL이 외부에 알려져 있어 루트에 둔다
 tests/               unit/(Vitest), e2e/(Playwright, 로컬 Supabase)
 proxy.ts             없는 토픽 404, 관리자 세션 갱신
@@ -65,12 +70,19 @@ import합니다. 이 규칙은 `pnpm lint`가 강제합니다(`eslint.config.mjs
 | --- | --- | --- |
 | `/` | 동적(`searchParams`) | `features/events/components/browse/event-browse-page` + `getAllPublicEvents` |
 | `/topics/[topic]` | 동적 | 위와 같음. 카테고리 SEO 페이지 6개. 없는 토픽은 `proxy.ts`가 404 |
-| (공통 틀) `app/(event-browse)/layout.tsx` | - | `/`와 `/topics/[topic]`이 함께 쓰는 배너(많이 보는 행사). 탭을 바꿔도 다시 그리지 않음. 분야 탭은 헤더와 함께 고정되도록 전역 `app/layout.tsx`에 있음 |
-| `/events/[slug]` | ISR 1시간, 공개 행사 전부 미리 생성 | 행사 상세, 관련 행사, 주변 명소(`features/places/queries`) |
+| (공통 틀) `app/(event-browse)/layout.tsx` | - | `/`와 `/topics/[topic]`이 함께 쓰는 보기 전환·분야 탭·배너(많이 보는 행사). 탭을 바꿔도 다시 그리지 않음 |
+| `/events/[slug]` | ISR 1시간, 공개 행사 전부 미리 생성 | 행사 상세, 관련 행사. 주변 명소 구역은 2026-11-21에 뺐다 |
 | `/months` | 동적 | 헤더 "월별 일정" 버튼의 목적지. 요청한 때의 이번 달 `/months/YYYY-MM`으로 307 redirect |
 | `/months/[month]` | ISR 5분(`revalidate = 3600`이지만 행사 데이터 캐시 5분을 따름), 이번 달·다음 달 미리 생성 | 월별 행사(`features/events/components/month`, `features/events/model/event-month.ts`). 지난 달은 행사가 있을 때만 열고 다다음 달부터 404 |
 | `/months/[month]/[category]` | 위와 같음, 이번 달·다음 달 × 6분야 미리 생성 | 그 달의 한 분야(헤더 분야 탭). 행사가 없으면 `noindex`. 조회는 `features/events/month-page.ts`를 두 route가 함께 씀 |
-| `/map` | ISR 5분(월별 페이지와 같은 방식) | 지도 탭(`features/events/components/map`, `features/events/model/event-map.ts`). 서버가 장소별로 묶고 행사 카드를 그려 넘기고, 브라우저가 네이버 지도 SDK를 불러 핀·분야 칩을 그린다. 분야·장소는 주소의 `?category=`·`?place=` |
+| `/places` | ISR 5분(`revalidate = 3600`이지만 장소 데이터 캐시 5분을 따름) | 즐길거리 목록(`features/places/components/activity-list-page`, `features/places/model/activity.ts`). `places` 가운데 즐길거리 분류(`activity_category`)가 있고 운영을 끝내지 않은 곳만, 분류별로 묶어 보인다. 장소가 없으면 `noindex` |
+| `/places/category/[category]` | 위와 같음, 장소가 있는 분류만 미리 생성 | 한 분류의 목록. 모르는 분류와 장소가 없는 분류는 404 |
+| `/places/[slug]` | 위와 같음, 즐길거리 장소 전부 미리 생성 | 즐길거리 상세: 핵심 정보, 공식 홈페이지·예매·길찾기 버튼, 확인일, 근처에서 열리는 행사(`features/events/model/location.ts`의 `selectEventsNearPlace`, 300m 안), 같은 분류의 다른 곳. 분류가 없는 장소는 404 |
+| `/notices`, `/notices/[id]` | ISR 5분, 공개한 공지 전부 미리 생성 | 공지·업데이트 목록과 글 페이지(`features/notices`). 공개하지 않은 글과 uuid가 아닌 주소는 404 |
+| (공통 틀) 공지 띠 | - | `app/layout.tsx`의 `NoticeBanner`가 공개한 지 14일이 지나지 않은 가장 최근 공지 하나를 헤더 아래에 보인다. 공통 틀이 공지 캐시(5분)를 읽으므로 `/report`·`/feedback`·`/privacy`도 정적에서 ISR 5분으로 바뀌었다. 닫은 글은 브라우저(localStorage)에 적고 inline script가 첫 그리기 전에 숨긴다 |
+| `/map` | ISR 5분(월별 페이지와 같은 방식) | 지도 탭(`features/events/components/map`, `features/events/model/event-map.ts`). 서버가 행사를 장소별로 묶고 행사 카드를 그려 넘기고, 브라우저가 네이버 지도 SDK를 불러 핀·칩을 그린다. "가볼만한 곳" 레이어의 핀과 카드는 `app/map/page.tsx`가 `features/places`에서 만들어 넘긴다(feature끼리는 model만 import). 레이어·분야·장소는 주소의 `?layer=places`·`?category=`·`?place=` |
+| `/search` | 동적(`searchParams`) | 통합 검색. 행사(`filterEvents`의 검색어)와 가볼만한 곳(`searchActivityPlaces`)을 함께 찾고 `?type=events|places`로 좁힌다. `noindex` |
+| (공통 틀) 주요 메뉴 | - | `components/layout/site-navigation.tsx`: 모바일 하단 탭과 md 이상 헤더 가로 메뉴(행사 · 가볼만한 곳 · 지도). 헤더 검색·공지·문의는 `site-header-actions.tsx`. 행사 분야 탭과 "목록 | 월별 일정" 전환은 `features/events/components/browse/event-section-navigation.tsx`로 행사 목록·월별 페이지 위쪽에 있다 |
 | `/calendar` | 동적 | 목록으로 redirect만(캘린더는 삭제, 옛 북마크 보호) |
 | `/report`, `/feedback` | 정적 | 방문자 제보·의견 폼 |
 | `/privacy` | 정적 | 개인정보 처리방침(GA 사용, 쿠키 거부 방법, 보호책임자) |
@@ -145,6 +157,7 @@ pgTAP(`supabase/tests/database/`)으로 실제 권한을 확인했습니다. 정
 | --- | --- | --- | --- |
 | `events` | 공개 행만 읽기. 쓰기는 권한 오류(42501) | 읽기·추가·수정. **직접 delete 불가**(RPC만) | `01_public_access`, `03_event_admin_rpc`, `08_admin_policies_per_command` |
 | `event_sources`, `event_occurrences`, `places` | 공개 행사·공개 명소에 딸린 행만 읽기 | 읽기·추가·수정·삭제 | `01_public_access`, `08_admin_policies_per_command` |
+| `notices` | 공개한 글만 읽기. 쓰기는 권한 오류(42501) | 읽기·추가·수정·삭제 | `09_notices_and_place_activity` |
 | `event_reports`, `site_feedback` | 직접 쓰기 불가(권한 오류), 조회는 0행 | 읽기·상태 변경·삭제 | `01_public_access`, `07_api_role_grants`, `08_admin_policies_per_command` |
 | `admin_users` | 접근 불가 | 접근 불가(`is_admin()` RPC로만 확인) | `07_api_role_grants` |
 | `public_submission_rate_limits`(private) | 함수 실행 불가 | 함수 실행 불가(서버만) | `02_rate_limit` |

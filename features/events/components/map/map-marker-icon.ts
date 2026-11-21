@@ -8,7 +8,8 @@ import type { EventMapPin } from "@/features/events/model/event-map";
 export const FIT_PINS_PADDING_PX = { top: 72, right: 72, bottom: 48, left: 72 } as const;
 
 /** 핀 버튼의 접근성 이름. 지도 SDK 마커의 title(마우스를 올리면 보이는 이름)에도 같은 값을 쓴다. */
-export function getPinLabel(pin: Pick<EventMapPin, "name" | "events">) {
+export function getPinLabel(pin: Pick<EventMapPin, "name" | "events" | "kind">) {
+  if (pin.kind === "place") return `${pin.name ?? "장소 이름 없음"}, 가볼만한 곳`;
   return `${pin.name ?? "장소 이름 없음"}, 행사 ${pin.events.length}개`;
 }
 

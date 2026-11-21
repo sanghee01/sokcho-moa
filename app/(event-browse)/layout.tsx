@@ -1,5 +1,6 @@
 import { Suspense, type ReactNode } from "react";
 import { BannerVisibility } from "@/features/events/components/browse/banner-visibility";
+import { EventSectionNavigation } from "@/features/events/components/browse/event-section-navigation";
 import { PopularBanner } from "@/features/events/components/browse/popular-banner";
 import { selectPopularEvents } from "@/features/events/model/event-list";
 import { getAllPublicEvents } from "@/features/events/queries";
@@ -18,6 +19,10 @@ export default async function EventBrowseLayout({ children }: { children: ReactN
 
   return (
     <>
+      {/* 보기 전환(목록 | 월별 일정)과 분야 탭. 탭을 바꿔도 다시 그리지 않도록 공통 틀에 둔다(2026-11-21). */}
+      <div className="mx-auto max-w-6xl px-4 pb-4 pt-4 sm:px-6 lg:pt-6">
+        <EventSectionNavigation />
+      </div>
       {/* 주소의 검색 조건을 읽는 동안에는 배너를 그대로 보여 준다. */}
       <Suspense fallback={banner}>
         <BannerVisibility>{banner}</BannerVisibility>

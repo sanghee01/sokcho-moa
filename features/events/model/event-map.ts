@@ -3,6 +3,7 @@
 import type { Event } from "@/features/events/model/event";
 import { filterEvents, sortEvents } from "@/features/events/model/event-list";
 import type { EventCategory } from "@/features/events/model/taxonomy";
+import type { ActivityCategory } from "@/features/places/model/activity";
 import { findVenueName, resolveEventCoordinates, venues, type Coordinates, type Venue } from "@/features/events/model/venue";
 import { createMapSearchName, distanceInKm } from "@/lib/map";
 
@@ -84,13 +85,54 @@ function createPlaceId({ latitude, longitude }: Coordinates) {
   return `${latitude.toFixed(5)},${longitude.toFixed(5)}`;
 }
 
-/** 지도 화면(브라우저)에 넘기는 장소. 핀과 접근성 이름, 분야 거르기에 필요한 필드만 둔다. 행사 카드는 서버가 따로 그려 넘긴다. */
+/**
+ * 지도 화면(브라우저)에 넘기는 핀. 핀과 접근성 이름, 분야 거르기에 필요한 필드만 둔다. 카드는 서버가 따로 그려 넘긴다.
+ * 행사 핀은 장소별로 묶은 행사(events)를 갖고, "가볼만한 곳" 핀(kind: "place")은 장소 하나라 events가 비어 있다(2026-11-21).
+ */
 export interface EventMapPin {
   id: string;
   name: string | null;
   latitude: number;
   longitude: number;
   events: Pick<Event, "slug" | "category">[];
+  kind?: "place";
+  placeCategory?: ActivityCategory;
+}
+
+/** 지도 레이어. 한 번에 한 종류만 보여 범례 없이도 핀이 무엇인지 알 수 있게 한다(2026-11-21). */
+export const mapLayers = ["events", "places"] as const;
+export type MapLayer = (typeof mapLayers)[number];
+
+export function isMapLayer(value: string | null | undefined): value is MapLayer {
+  return mapLayers.some((layer) => layer === value);
+}
+
+/** "가볼만한 곳" 장소 핀의 id. 행사 장소 id(좌표)와 겹치지 않게 앞에 place:를 붙인다. 주소(?place=)에 남는다. */
+export function placeMapPinId(slug: string) {
+  return `place:${slug}`;
+}
+
+/** "가볼만한 곳"을 지도 핀으로 바꾼다. 지도 범위 밖 좌표는 뺀다. 화면 순서(북쪽에서 남쪽)로 놓는다. */
+export function toPlaceMapPins(
+  places: readonly { slug: string; name: string; latitude: number; longitude: number; activityCategory: ActivityCategory }[],
+): EventMapPin[] {
+  return places
+    .filter((place) => isInMapRegion(place.latitude, place.longitude))
+    .map((place) => ({
+      id: placeMapPinId(place.slug),
+      name: place.name,
+      latitude: place.latitude,
+      longitude: place.longitude,
+      events: [],
+      kind: "place" as const,
+      placeCategory: place.activityCategory,
+    }))
+    .sort(compareNorthWest);
+}
+
+/** 고른 분야의 "가볼만한 곳" 핀만 남긴다. category가 없으면 그대로 돌려준다. */
+export function filterPlaceMapPins(pins: readonly EventMapPin[], category: ActivityCategory | null): EventMapPin[] {
+  return category === null ? [...pins] : pins.filter((pin) => pin.placeCategory === category);
 }
 
 export function toEventMapPins(places: readonly EventMapPlace[]): EventMapPin[] {

@@ -3,6 +3,7 @@ import { TransitionLink } from "@/components/ui/transition-link";
 import { AdminShell } from "@/app/admin/_components/admin-shell";
 import { AdminEventsTab } from "@/app/admin/_components/events-tab";
 import { AdminExclusionsTab } from "@/app/admin/_components/exclusions-tab";
+import { AdminNoticesTab } from "@/app/admin/_components/notices-tab";
 import { AdminPlacesTab } from "@/app/admin/_components/places-tab";
 import { AdminFeedbackTab, AdminReportsTab } from "@/app/admin/_components/submission-tabs";
 import { getAdminResultMessage } from "@/components/admin/admin-result";
@@ -17,6 +18,7 @@ const adminTabs = [
   { id: "reports", label: "접수된 제보" },
   { id: "feedback", label: "접수된 의견" },
   { id: "places", label: "주변 명소" },
+  { id: "notices", label: "공지" },
 ] as const;
 
 type AdminTab = (typeof adminTabs)[number]["id"];
@@ -69,6 +71,7 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
       {selectedTab === "reports" && <AdminReportsTab />}
       {selectedTab === "feedback" && <AdminFeedbackTab />}
       {selectedTab === "places" && <AdminPlacesTab />}
+      {selectedTab === "notices" && <AdminNoticesTab />}
     </AdminShell>
   );
 }
