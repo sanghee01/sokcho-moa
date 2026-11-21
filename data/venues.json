@@ -1,6 +1,6 @@
 {
   "verifiedAt": "2026-11-21",
-  "description": "행사 공고에 장소 이름만 있을 때 주소와 지도 좌표를 채우는 장소 사전(features/events/model/venue.ts). 주소는 공식 출처에서 확인한 도로명주소를 넣고, 공식 누리집에 주소가 없는 거리(설악로데오거리)는 네이버 지도 장소의 지번을 쓴다. 속초교육문화관(2027-06까지 개축 휴관), 소극장 초속(공식 출처 없음), 아트플랫폼 갯배(지번만 공개), 속초시근로자종합복지관(출처 불일치)은 확인되지 않아 뺐다. 좌표(coordinates)는 OpenStreetMap 시설 요소나 네이버 지도 장소에서 가져오고, 그 장소의 주소가 공식 주소(도로명·번지 또는 우편번호)와 같은지 맞춰 본다. OpenStreetMap에 없던 속초해양산업단지지원센터(네이버에는 같은 주소의 속초해양산업단지협의회), 청초생활체육관, 속초시농업기술센터는 2026-11-21에 네이버 지도 좌표로 채웠다(사용자 결정). 거리는 그 거리 위 한 점을 핀으로 쓴다.",
+  "description": "행사 공고에 장소 이름만 있을 때 주소와 지도 좌표를 채우는 장소 사전(features/events/model/venue.ts). 주소는 공식 출처에서 확인한 도로명주소를 넣고, 공식 누리집에 주소가 없는 거리·광장·해변·전시장은 네이버 지도 장소의 주소를 쓴다. 속초교육문화관은 2027-06까지 개축 휴관이라 뺐다. 좌표(coordinates)는 OpenStreetMap 시설 요소나 네이버 지도 장소에서 가져오고, 그 장소의 주소가 공식 주소(도로명·번지 또는 우편번호)와 같은지 맞춰 본다. OpenStreetMap에 없는 시설은 2026-11-21부터 네이버 지도 좌표로 채운다(사용자 결정). 거리·광장·해변은 그 위 한 점을 핀으로 쓴다. 같은 건물 안 시설(풀이음친구랑은 속초시청소년수련관, 속초시가족센터는 속초시근로자종합복지관 3층)은 지도에서 핀 하나로 묶이도록 같은 좌표를 쓰거나 별칭으로 둔다.",
   "venues": [
     {
       "name": "속초문화예술회관",
@@ -103,7 +103,7 @@
     },
     {
       "name": "속초시청소년수련관",
-      "aliases": [],
+      "aliases": ["풀이음친구랑", "청소년전용공간 풀이음친구랑"],
       "address": "강원특별자치도 속초시 관광로363번길 14",
       "sourceUrl": "https://www.sokcho.go.kr/sc/fields/welfare/child_youth/youth_welfare/facility",
       "coordinates": {
@@ -165,6 +165,105 @@
         "latitude": 38.2030933,
         "longitude": 128.5908275,
         "sourceUrl": "https://map.naver.com/p/entry/place/1009383456"
+      }
+    },
+    {
+      "name": "속초시근로자종합복지관",
+      "aliases": [],
+      "address": "강원특별자치도 속초시 청초호반로 201",
+      "sourceUrl": "https://sokcho.familynet.or.kr/center/lay1/bbs/S295T311C312/A/6/view.do?article_seq=265600",
+      "coordinates": {
+        "latitude": 38.1976069,
+        "longitude": 128.5804151,
+        "sourceUrl": "https://map.naver.com/p/entry/place/15091384"
+      }
+    },
+    {
+      "name": "속초시가족센터",
+      "aliases": [],
+      "address": "강원특별자치도 속초시 청초호반로 201",
+      "sourceUrl": "https://sokcho.familynet.or.kr/center/lay1/bbs/S295T311C312/A/6/view.do?article_seq=265600",
+      "coordinates": {
+        "latitude": 38.1976069,
+        "longitude": 128.5804151,
+        "sourceUrl": "https://map.naver.com/p/entry/place/15091384"
+      }
+    },
+    {
+      "name": "소극장&음악창작소 초속",
+      "aliases": ["속초 소극장&음악창작소 초속"],
+      "address": "강원특별자치도 속초시 동해대로 4327",
+      "sourceUrl": "https://map.naver.com/p/entry/place/37341707",
+      "coordinates": {
+        "latitude": 38.2015565,
+        "longitude": 128.5689728,
+        "sourceUrl": "https://map.naver.com/p/entry/place/37341707"
+      }
+    },
+    {
+      "name": "아트플랫폼 갯배",
+      "aliases": [],
+      "address": "강원특별자치도 속초시 청호동 793-32",
+      "sourceUrl": "https://map.naver.com/p/entry/place/911924370",
+      "coordinates": {
+        "latitude": 38.2006451,
+        "longitude": 128.5939509,
+        "sourceUrl": "https://map.naver.com/p/entry/place/911924370"
+      }
+    },
+    {
+      "name": "엑스포잔디광장",
+      "aliases": ["속초 엑스포 잔디광장", "속초시 엑스포 잔디광장"],
+      "address": "강원특별자치도 속초시 조양동 1546-1",
+      "sourceUrl": "https://map.naver.com/p/entry/place/1449621099",
+      "coordinates": {
+        "latitude": 38.1907079,
+        "longitude": 128.58455,
+        "sourceUrl": "https://map.naver.com/p/entry/place/1449621099"
+      }
+    },
+    {
+      "name": "속초해수욕장",
+      "aliases": [],
+      "address": "강원특별자치도 속초시 조양동 1450-158",
+      "sourceUrl": "https://map.naver.com/p/entry/place/11491735",
+      "coordinates": {
+        "latitude": 38.1907984,
+        "longitude": 128.603467,
+        "sourceUrl": "https://map.naver.com/p/entry/place/11491735"
+      }
+    },
+    {
+      "name": "속초시청",
+      "aliases": [],
+      "address": "강원특별자치도 속초시 중앙로 183",
+      "sourceUrl": "https://www.sokcho.go.kr/sc/portal",
+      "coordinates": {
+        "latitude": 38.207169,
+        "longitude": 128.59184,
+        "sourceUrl": "https://map.naver.com/p/entry/place/11627767"
+      }
+    },
+    {
+      "name": "청초호유원지",
+      "aliases": [],
+      "address": "강원특별자치도 속초시 철새길 76",
+      "sourceUrl": "https://map.naver.com/p/entry/place/1155849818",
+      "coordinates": {
+        "latitude": 38.1917031,
+        "longitude": 128.5854786,
+        "sourceUrl": "https://map.naver.com/p/entry/place/1155849818"
+      }
+    },
+    {
+      "name": "봉수대해변",
+      "aliases": ["봉수대해수욕장"],
+      "address": "강원특별자치도 고성군 죽왕면 오호리",
+      "sourceUrl": "https://map.naver.com/p/entry/place/13491251",
+      "coordinates": {
+        "latitude": 38.324387,
+        "longitude": 128.5273887,
+        "sourceUrl": "https://map.naver.com/p/entry/place/13491251"
       }
     }
   ]
