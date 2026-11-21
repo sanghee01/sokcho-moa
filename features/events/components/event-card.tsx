@@ -76,7 +76,9 @@ export function EventCard({
             <StatusBadges event={event} />
           </div>
         </div>
-        <Heading className={`mt-2.5 line-clamp-2 text-body font-semibold lg:mt-3 lg:text-title-3 ${isUnavailable ? "text-content-muted" : "text-content-strong group-hover:text-primary-text"}`}>
+        {/* wrap-anywhere: 한 줄보다 긴 단어("공연장예술단체육성지원사업")를 줄 끝에서 끊는다. 끊지 않는 브라우저에서는 2줄 자르기의 "…"가
+            들어갈 자리가 없어 단어가 통째로 사라지고 "2026 / …"만 보였다(2026-11-21 사용자 결정, .ai/DESIGN.md 한글 줄바꿈). */}
+        <Heading className={`mt-2.5 line-clamp-2 text-body font-semibold wrap-anywhere lg:mt-3 lg:text-title-3 ${isUnavailable ? "text-content-muted" : "text-content-strong group-hover:text-primary-text"}`}>
           {event.title}
         </Heading>
         <p className="mt-0.5 truncate text-caption text-content-subtle lg:mt-1 lg:text-label lg:font-normal">{event.locationName ?? "장소 원문 확인"}</p>
