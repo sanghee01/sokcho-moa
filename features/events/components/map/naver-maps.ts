@@ -43,16 +43,19 @@ export interface NaverFitBoundsOptions {
   maxZoom: number;
 }
 
-/** 지도 위를 덮는 판(장소 카드)만큼 비워 두는 안쪽 여백. 이 안쪽을 기준으로 가운데를 맞춘다. */
-export interface NaverPadding {
-  top: number;
-  right: number;
-  bottom: number;
-  left: number;
+/** 지도 좌표 ↔ 화면 위치 변환. 마커끼리 화면에서 겹치는지 따질 때 쓴다(숨긴 마커도 위치를 알 수 있다). */
+export interface NaverProjection {
+  /** 지도 좌표를 화면 위치(px)로 바꾼다. 같은 확대 수준에서 두 위치의 차이만 쓴다. */
+  fromCoordToOffset(coord: NaverLatLng): NaverPoint;
+  /** 화면 위치(px)를 지도 좌표로 바꾼다. */
+  fromOffsetToCoord(offset: NaverPoint): NaverLatLng;
 }
 
 export interface NaverMap {
-  setOptions(key: "padding", value: NaverPadding): void;
+  getProjection(): NaverProjection;
+  getCenter(): NaverLatLng;
+  /** 애니메이션 없이 중심을 옮긴다(동작 줄이기 설정일 때). */
+  setCenter(center: NaverLatLng): void;
   fitBounds(bounds: NaverLatLngBounds, options?: NaverFitBoundsOptions): void;
   morph(center: NaverLatLng, zoom?: number): void;
   panTo(center: NaverLatLng): void;
@@ -84,9 +87,19 @@ export interface NaverMarker {
   setTitle(title: string): void;
 }
 
-/** 지도 이벤트. 확대 수준이 바뀔 때 장소 이름을 보일지 정하는 데만 쓴다. addListener가 돌려준 값을 removeListener에 넘긴다. */
+/** 지도를 누른 이벤트. 원래 브라우저 이벤트로 마커를 누른 것인지 가린다(문서는 pointerEvent, 버전에 따라 domEvent). */
+export interface NaverPointerEvent {
+  pointerEvent?: Event;
+  domEvent?: Event;
+}
+
+/**
+ * 지도 이벤트. 움직임이 끝날 때(idle) 마커 배치를 다시 계산하고, 빈 곳을 누르면(click) 고른 장소를 푼다.
+ * addListener가 돌려준 값을 removeListener에 넘긴다.
+ */
 export interface NaverMapsEvent {
-  addListener(target: NaverMap, eventName: "zoom_changed", listener: (zoom: number) => void): object;
+  addListener(target: NaverMap, eventName: "idle", listener: () => void): object;
+  addListener(target: NaverMap, eventName: "click", listener: (event: NaverPointerEvent) => void): object;
   removeListener(listener: object): void;
 }
 

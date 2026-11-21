@@ -7,28 +7,23 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { getButtonClassName } from "@/components/ui/button-styles";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
-import { EventMapMarker } from "@/features/events/components/map/event-map-marker";
+import { EventMapClusterMarker, EventMapMarker } from "@/features/events/components/map/event-map-marker";
 import { MapCategoryChips } from "@/features/events/components/map/map-category-chips";
 import { closeMapPlace, openMapPlace, replaceMapQuery } from "@/features/events/components/map/map-history";
-import {
-  createMarkerContainer,
-  createMarkerIcon,
-  FIT_PINS_PADDING_PX,
-  getMarkerSize,
-  getPinLabel,
-  type MarkerSize,
-} from "@/features/events/components/map/map-marker-icon";
+import { createMarkerContainer, createMarkerIcon, FIT_PINS_PADDING_PX, getPinLabel } from "@/features/events/components/map/map-marker-icon";
 import { MapPlacePanel } from "@/features/events/components/map/map-place-panel";
 import {
   getNaverMaps,
   hasNaverMapsAuthFailed,
   listenNaverMapsAuthFailure,
   NAVER_MAPS_SCRIPT_URL,
+  type NaverLatLng,
   type NaverMap,
   type NaverMapsApi,
   type NaverMarker,
 } from "@/features/events/components/map/naver-maps";
 import { filterEventMapPlaces, MAP_DEFAULT_CENTER, MAP_REGION_BOUNDS, type EventMapPin } from "@/features/events/model/event-map";
+import { clusterMapMarkers, MAP_MARKER_BODY_PX, selectMapLabelIds } from "@/features/events/model/map-label-layout";
 import { categoryLabels, isEventCategory, type EventCategory } from "@/features/events/model/taxonomy";
 import { trackAnalyticsEvent, type AnalyticsEventParams } from "@/lib/analytics/events";
 
@@ -50,6 +45,26 @@ const MIN_ZOOM = 10;
 const PLACE_ZOOM = 15;
 /** 장소 카드가 지도 아래 시트가 아니라 왼쪽 판으로 열리는 폭(Tailwind md) */
 const SIDE_PANEL_MEDIA_QUERY = "(width >= 48rem)";
+/** 장소 이름 알약에서 이름 글자 말고 더해지는 폭: 안쪽 여백 4 + 개수 동그라미 36 + 간격 6 + 오른쪽 여백 12(event-map-marker.tsx의 p-1·size-9·gap-1.5·pr-3) */
+const MAP_LABEL_EXTRA_PX = 58;
+/** 장소 이름 글자의 최대 폭(event-map-marker.tsx의 max-w-36). 넘치면 말줄임한다. */
+const MAP_LABEL_TEXT_MAX_PX = 144;
+/**
+ * 이 확대 수준까지만 겹치는 마커를 묶는다. 더 확대하면(17부터, 화면 44px이 약 40m) 장소가 모두 따로 보인다.
+ * 묶음을 눌렀을 때 장소끼리 가까워(100m 안팎) 확대해도 계속 묶여 있으면 풀 방법이 없어서 상한을 둔다.
+ */
+const CLUSTER_MAX_ZOOM = 16;
+/** 묶음을 누르면 묶인 장소가 다 보이게 확대하되, 이보다 더 들어가지 않는다. 묶기가 풀리는 확대 수준이다. */
+const CLUSTER_EXPAND_MAX_ZOOM = CLUSTER_MAX_ZOOM + 1;
+
+/** 마커 배치 결과. 묶음(대표 → 묶인 장소들, 2곳 이상만), 묶여서 숨긴 마커, 장소 이름을 붙일 마커 */
+interface MarkerLayout {
+  clusterMemberIds: ReadonlyMap<string, readonly string[]>;
+  hiddenIds: ReadonlySet<string>;
+  labeledIds: ReadonlySet<string>;
+}
+
+const EMPTY_MARKER_LAYOUT: MarkerLayout = { clusterMemberIds: new Map(), hiddenIds: new Set(), labeledIds: new Set() };
 
 /**
  * 지도 탭(.ai/DESIGN.md 지도). 장소 핀을 누르면 지도 아래(md 이상은 왼쪽)에 그 장소의 행사 카드가 열리고, 카드를 누르면 상세로 간다.
@@ -84,8 +99,10 @@ export function EventMap({
   // 지도 SDK의 지도. 지도가 있는지는 status("ready")로 알리고, effect는 status가 바뀔 때 이 값을 읽는다.
   const mapRef = useRef<NaverMap | null>(null);
   const [markerSlots, setMarkerSlots] = useState<MarkerSlot[]>([]);
-  // 확대 수준 자체가 아니라 마커 크기만 상태로 둔다. 확대할 때마다 지도 전체를 다시 그리지 않고 크기 경계를 넘을 때만 다시 그린다.
-  const [markerSize, setMarkerSize] = useState<MarkerSize>(getMarkerSize(DEFAULT_ZOOM));
+  // 겹치는 마커 묶기와 장소 이름 배치(model/map-label-layout.ts). 지도 움직임이 끝날 때마다 다시 계산한다.
+  const [markerLayout, setMarkerLayout] = useState<MarkerLayout>(EMPTY_MARKER_LAYOUT);
+  // 지도 움직임(확대·축소, 이동)이 끝날 때마다 늘려 이름 배치를 다시 계산하게 한다. 마커끼리의 거리는 확대 수준이 바뀔 때만 달라진다.
+  const [mapIdleCount, setMapIdleCount] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLElement>(null);
   const panelTitleRef = useRef<HTMLHeadingElement>(null);
@@ -106,6 +123,15 @@ export function EventMap({
     shouldFocusPanelRef.current = true;
     openMapPlace({ category, placeId: pinId }, selectedPin !== null);
     trackAnalyticsEvent("map_place_selected", { map_category: category ?? "all", event_count: pin.events.length });
+  }
+
+  // 묶음을 누르면 묶인 장소가 다 보이게 확대한다. 확대가 끝나면(idle) 마커 배치를 다시 계산해 묶음이 풀린다.
+  function handleExpandCluster(memberIds: readonly string[]) {
+    const naverMaps = getNaverMaps();
+    const map = mapRef.current;
+    if (naverMaps === null || map === null) return;
+    const members = visiblePins.filter((pin) => memberIds.includes(pin.id));
+    fitPins(naverMaps, map, members, CLUSTER_EXPAND_MAX_ZOOM);
   }
 
   function handleClosePanel() {
@@ -146,13 +172,12 @@ export function EventMap({
     const map = mapRef.current;
     if (naverMaps === null || map === null || status !== "ready") return;
 
-    const size = getMarkerSize(map.getZoom());
     const slots = pins.map((pin) => {
       const container = createMarkerContainer();
       const marker = new naverMaps.Marker({
         map,
         position: new naverMaps.LatLng(pin.latitude, pin.longitude),
-        icon: createMarkerIcon(naverMaps, container, size),
+        icon: createMarkerIcon(naverMaps, container),
         title: getPinLabel(pin),
         zIndex: 1,
       });
@@ -166,16 +191,16 @@ export function EventMap({
     };
   }, [status, pins]);
 
-  // 고른 분야에 행사가 있는 장소만 보인다. 숨긴 마커는 아래 portal도 그리지 않아 키보드 초점도 가지 않는다.
+  // 고른 분야에 행사가 있고 묶음에 들어가지 않은 장소만 보인다. 숨긴 마커는 아래 portal도 그리지 않아 키보드 초점도 가지 않는다.
   // 마우스를 올리면 보이는 이름(title)의 행사 수도 고른 분야 기준으로 맞춘다.
   useEffect(() => {
     const visiblePinById = new Map(visiblePins.map((pin) => [pin.id, pin]));
     for (const { pin, marker } of markerSlots) {
       const visiblePin = visiblePinById.get(pin.id);
-      marker.setVisible(visiblePin !== undefined);
+      marker.setVisible(visiblePin !== undefined && !markerLayout.hiddenIds.has(pin.id));
       if (visiblePin !== undefined) marker.setTitle(getPinLabel(visiblePin));
     }
-  }, [visiblePins, markerSlots]);
+  }, [visiblePins, markerSlots, markerLayout]);
 
   // 지도 만들기. SDK를 불러온 뒤 한 번만 만들고, 화면을 떠나면 지운다.
   useEffect(() => {
@@ -206,11 +231,18 @@ export function EventMap({
     function handleResize() {
       newMap.autoResize();
     }
+    // 지도 상자는 넘침을 숨기지만(SDK가 overflow: hidden을 넣음) 브라우저는 초점 이동·scrollIntoView 때 숨긴 영역도 스크롤한다.
+    // 화면 가장자리에 걸친 장소 이름 알약 때문에 상자 안쪽이 넓어져, Tab으로 가장자리 핀에 초점이 가면 SDK 모르게 지도 전체가 밀렸다(2026-11-21).
+    function handleContainerScroll() {
+      if (container !== null && (container.scrollLeft !== 0 || container.scrollTop !== 0)) container.scrollTo(0, 0);
+    }
     window.addEventListener("resize", handleResize);
-    const zoomListener = naverMaps.Event.addListener(newMap, "zoom_changed", (zoom) => setMarkerSize(getMarkerSize(zoom)));
+    container.addEventListener("scroll", handleContainerScroll);
+    const idleListener = naverMaps.Event.addListener(newMap, "idle", () => setMapIdleCount((count) => count + 1));
     return () => {
       window.removeEventListener("resize", handleResize);
-      naverMaps.Event.removeListener(zoomListener);
+      container.removeEventListener("scroll", handleContainerScroll);
+      naverMaps.Event.removeListener(idleListener);
       newMap.destroy();
       mapRef.current = null;
       fittedPinsKeyRef.current = null;
@@ -219,12 +251,47 @@ export function EventMap({
     };
   }, [isSdkLoaded]);
 
-  // 확대 수준이 마커 크기 경계를 넘으면 이미 그린 마커의 상자 크기와 기준점을 바꾼다(마커를 다시 만들지 않는다).
+  // 마커 배치. 시내 전체를 볼 때 몸통이 겹치는 마커는 하나로 묶고, 남은 마커 중 다른 마커와 겹치지 않는 것만 장소 이름을 붙인다.
+  // 포스터 핀이 시내에 몰려 서로 가렸던 문제를 지도 서비스의 마커 묶기·겹침 관리 방식으로 푼다(2026-11-21 사용자 피드백).
+  // 화면 위치는 지도 SDK의 좌표 변환으로 구한다. 묶여서 숨긴 마커도 위치를 알아야 확대했을 때 다시 풀 수 있어서다.
   useEffect(() => {
     const naverMaps = getNaverMaps();
-    if (naverMaps === null) return;
-    for (const { marker, container } of markerSlots) marker.setIcon(createMarkerIcon(naverMaps, container, markerSize));
-  }, [markerSize, markerSlots]);
+    const map = mapRef.current;
+    if (naverMaps === null || map === null || status !== "ready") return;
+    const frame = requestAnimationFrame(() => {
+      const projection = map.getProjection();
+      const selectedId = selectedPin?.id ?? null;
+      const points = visiblePins.map((pin) => {
+        const offset = projection.fromCoordToOffset(new naverMaps.LatLng(pin.latitude, pin.longitude));
+        return { id: pin.id, anchor: { x: offset.x, y: offset.y }, priority: pin.events.length };
+      });
+      const clusters = map.getZoom() <= CLUSTER_MAX_ZOOM
+        ? clusterMapMarkers(points, selectedId)
+        : points.map((point) => ({ representativeId: point.id, memberIds: [point.id] }));
+
+      const pinById = new Map(visiblePins.map((pin) => [pin.id, pin]));
+      const pointById = new Map(points.map((point) => [point.id, point]));
+      const measureLabelText = createLabelTextMeasurer(containerRef.current);
+      // 묶음 대표도 이름 배치의 장애물로 넣되(이름이 묶음을 덮지 않게) 이름은 붙이지 않는다.
+      const candidates = clusters.flatMap(({ representativeId, memberIds }) => {
+        const point = pointById.get(representativeId);
+        const name = pinById.get(representativeId)?.name ?? null;
+        if (point === undefined) return [];
+        const labelWidth = memberIds.length > 1 || name === null
+          ? MAP_MARKER_BODY_PX
+          : Math.min(measureLabelText(name), MAP_LABEL_TEXT_MAX_PX) + MAP_LABEL_EXTRA_PX;
+        return [{ ...point, labelWidth }];
+      });
+      const clusterMemberIds = new Map(clusters
+        .filter(({ memberIds }) => memberIds.length > 1)
+        .map(({ representativeId, memberIds }) => [representativeId, memberIds]));
+      const labeledIds = new Set([...selectMapLabelIds(candidates, selectedId)].filter((id) => !clusterMemberIds.has(id)));
+      const hiddenIds = new Set(clusters.flatMap(({ memberIds }) => memberIds.slice(1)));
+      const nextLayout: MarkerLayout = { clusterMemberIds, hiddenIds, labeledIds };
+      setMarkerLayout((current) => (isSameMarkerLayout(current, nextLayout) ? current : nextLayout));
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [status, markerSlots, visiblePins, selectedPin, mapIdleCount]);
 
   // 보이는 범위. 처음 열 때와 분야를 바꿀 때만 핀이 다 보이게 맞춘다. 주소에 장소가 있으면 처음에는 맞추지 않고
   // 아래 장소 effect가 그 장소로 확대해 간다(같은 때 두 번 옮기면 뒤의 이동이 앞의 확대를 끊을 수 있다).
@@ -252,8 +319,10 @@ export function EventMap({
     });
   }, [selectedPin, markerSlots]);
 
-  // 고른 장소. 핀을 눌러 열었으면 카드 제목으로 초점을 옮기고, 고른 장소를 카드에 가리지 않는 곳의 가운데로 옮긴다.
-  // 지도의 안쪽 여백(padding)을 카드 크기만큼 두면 지도 SDK가 그 나머지를 기준으로 가운데를 맞춘다.
+  // 고른 장소. 핀을 눌러 열었으면 카드 제목으로 초점을 옮기고, 핀이 카드나 화면 가장자리에 가리면 카드에 가리지 않는 곳의 가운데로 옮긴다.
+  // 예전에는 고를 때마다 지도 안쪽 여백(padding)을 카드 크기로 바꾸고 핀을 가운데로 끌어왔다. 여백을 바꾸는 순간 지도가 한 번 밀린 뒤
+  // 다시 움직여 덜컹거렸고(닫을 때도 여백을 되돌리며 밀림), 잘 보이는 핀도 매번 움직였다(2026-11-21 사용자 피드백: 어지러움).
+  // 이제 여백은 두지 않고, 가릴 때만 옮길 자리를 계산해 한 번에 옮긴다. 동작 줄이기 설정이면 애니메이션 없이 옮긴다.
   const selectedPinId = selectedPin?.id ?? null;
   const selectedLatitude = selectedPin?.latitude ?? null;
   const selectedLongitude = selectedPin?.longitude ?? null;
@@ -261,28 +330,43 @@ export function EventMap({
     const naverMaps = getNaverMaps();
     const map = mapRef.current;
     const panel = panelRef.current;
-    if (selectedPinId === null || selectedLatitude === null || selectedLongitude === null || panel === null) {
-      map?.setOptions("padding", { top: 0, right: 0, bottom: 0, left: 0 });
-      return;
-    }
+    const container = containerRef.current;
+    if (selectedPinId === null || selectedLatitude === null || selectedLongitude === null || panel === null) return;
     if (shouldFocusPanelRef.current) {
       shouldFocusPanelRef.current = false;
       panelTitleRef.current?.focus({ preventScroll: true });
     }
-    if (naverMaps === null || map === null || status !== "ready") return;
+    if (naverMaps === null || map === null || container === null || status !== "ready") return;
 
-    const isSidePanel = window.matchMedia(SIDE_PANEL_MEDIA_QUERY).matches;
-    map.setOptions("padding", isSidePanel
-      ? { top: 0, right: 0, bottom: 0, left: panel.offsetLeft + panel.offsetWidth }
-      : { top: 0, right: 0, bottom: panel.offsetHeight, left: 0 });
-    const center = new naverMaps.LatLng(selectedLatitude, selectedLongitude);
+    const visibleArea = getUncoveredMapArea(container, panel, window.matchMedia(SIDE_PANEL_MEDIA_QUERY).matches);
+    const pin = new naverMaps.LatLng(selectedLatitude, selectedLongitude);
     if (shouldZoomToSelectedRef.current) {
+      // 주소(?place=)로 바로 연 장소: 그 장소로 확대해 가되, 도착했을 때 카드에 가리지 않는 곳의 가운데에 오게 한다.
       shouldZoomToSelectedRef.current = false;
-      map.morph(center, PLACE_ZOOM);
-    } else {
-      map.panTo(center);
+      map.morph(getCenterShowingPin(naverMaps, map, pin, visibleArea, PLACE_ZOOM), PLACE_ZOOM);
+      return;
     }
+    if (isPinInArea(map, pin, visibleArea)) return;
+    const nextCenter = getCenterShowingPin(naverMaps, map, pin, visibleArea, map.getZoom());
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) map.setCenter(nextCenter);
+    else map.panTo(nextCenter);
   }, [selectedPinId, selectedLatitude, selectedLongitude, status]);
+
+  // 장소를 고른 채 지도의 빈 곳을 누르면 카드를 닫고 고른 표시와 마커 초점을 없앤다(2026-11-21 사용자 요청).
+  // 마우스로 닫은 것이라 닫기 버튼과 달리 핀으로 초점을 돌려주지 않는다. 마커를 누른 것이면(지도 SDK가 함께 알릴 수 있음) 무시한다.
+  useEffect(() => {
+    const naverMaps = getNaverMaps();
+    const map = mapRef.current;
+    if (naverMaps === null || map === null || status !== "ready" || selectedPinId === null) return;
+    const listener = naverMaps.Event.addListener(map, "click", (event) => {
+      const target = (event.pointerEvent ?? event.domEvent)?.target;
+      if (target instanceof Element && target.closest("[data-map-marker]") !== null) return;
+      const focused = document.activeElement;
+      if (focused instanceof HTMLElement && focused.closest("[data-map-marker]") !== null) focused.blur();
+      closeMapPlace(category);
+    });
+    return () => naverMaps.Event.removeListener(listener);
+  }, [status, selectedPinId, category]);
 
   const selectedCategoryLabel = category === null ? null : categoryLabels[category];
   const visiblePinById = new Map(visiblePins.map((pin) => [pin.id, pin]));
@@ -308,8 +392,29 @@ export function EventMap({
         </div>
         {markerSlots.map(({ pin, container }) => {
           const visiblePin = visiblePinById.get(pin.id);
-          return visiblePin === undefined ? null : createPortal(
-            <EventMapMarker pin={visiblePin} size={markerSize} isSelected={visiblePin.id === selectedPin?.id} onSelect={handleSelectPin} />,
+          if (visiblePin === undefined || markerLayout.hiddenIds.has(pin.id)) return null;
+          const clusterMemberIds = markerLayout.clusterMemberIds.get(pin.id);
+          if (clusterMemberIds !== undefined) {
+            const eventCount = visiblePins
+              .filter((candidate) => clusterMemberIds.includes(candidate.id))
+              .reduce((sum, candidate) => sum + candidate.events.length, 0);
+            return createPortal(
+              <EventMapClusterMarker
+                placeCount={clusterMemberIds.length}
+                eventCount={eventCount}
+                onExpand={() => handleExpandCluster(clusterMemberIds)}
+              />,
+              container,
+              pin.id,
+            );
+          }
+          return createPortal(
+            <EventMapMarker
+              pin={visiblePin}
+              isLabelShown={markerLayout.labeledIds.has(visiblePin.id)}
+              isSelected={visiblePin.id === selectedPin?.id}
+              onSelect={handleSelectPin}
+            />,
             container,
             pin.id,
           );
@@ -354,18 +459,89 @@ function MapNotice({ message, children }: { message: string; children: ReactNode
   );
 }
 
-function fitPins(naverMaps: NaverMapsApi, map: NaverMap, pins: readonly EventMapPin[]) {
+/** 지도 상자 안에서 장소 카드에 가리지 않는 영역(px, 지도 상자 기준). 모바일은 아래 시트 위, md 이상은 왼쪽 판 오른쪽이다. */
+interface MapArea {
+  width: number;
+  height: number;
+  left: number;
+  right: number;
+  top: number;
+  bottom: number;
+}
+
+/** 마커가 위치 점 위로 그려지는 높이(몸통 44 + 꼬리 5)와 가장자리 여유. 핀이 이 안쪽에 있어야 마커 전체가 보인다. */
+const PIN_VISIBLE_MARGIN_PX = { top: MAP_MARKER_BODY_PX + 24, side: 32, bottom: 24 } as const;
+
+function getUncoveredMapArea(container: HTMLElement, panel: HTMLElement, isSidePanel: boolean): MapArea {
+  const width = container.clientWidth;
+  const height = container.clientHeight;
+  return isSidePanel
+    ? { width, height, left: panel.offsetLeft + panel.offsetWidth, right: width, top: 0, bottom: height }
+    : { width, height, left: 0, right: width, top: 0, bottom: height - panel.offsetHeight };
+}
+
+/** 지금 화면에서 핀(위치 점)이 가리지 않는 영역 안에 마커 전체가 보이게 있는지 */
+function isPinInArea(map: NaverMap, pin: NaverLatLng, area: MapArea) {
+  const projection = map.getProjection();
+  const pinOffset = projection.fromCoordToOffset(pin);
+  const centerOffset = projection.fromCoordToOffset(map.getCenter());
+  const x = area.width / 2 + pinOffset.x - centerOffset.x;
+  const y = area.height / 2 + pinOffset.y - centerOffset.y;
+  return x >= area.left + PIN_VISIBLE_MARGIN_PX.side
+    && x <= area.right - PIN_VISIBLE_MARGIN_PX.side
+    && y >= area.top + PIN_VISIBLE_MARGIN_PX.top
+    && y <= area.bottom - PIN_VISIBLE_MARGIN_PX.bottom;
+}
+
+/**
+ * 확대 수준 zoom에서 핀이 가리지 않는 영역의 가운데에 오게 하는 지도 중심. 영역 가운데가 지도 가운데에서 떨어진 만큼(px)
+ * 핀에서 반대로 옮긴 곳이 중심이다. 확대 수준이 다르면 같은 거리가 2배씩 달라져(웹 메르카토르) 지금 확대 수준 기준으로 환산한다.
+ */
+function getCenterShowingPin(naverMaps: NaverMapsApi, map: NaverMap, pin: NaverLatLng, area: MapArea, zoom: number) {
+  const projection = map.getProjection();
+  const pinOffset = projection.fromCoordToOffset(pin);
+  const scale = 2 ** (map.getZoom() - zoom);
+  const shiftX = ((area.left + area.right) / 2 - area.width / 2) * scale;
+  const shiftY = ((area.top + area.bottom) / 2 - area.height / 2) * scale;
+  return projection.fromOffsetToCoord(new naverMaps.Point(pinOffset.x - shiftX, pinOffset.y - shiftY));
+}
+
+/**
+ * 장소 이름 글자 폭을 재는 함수. 이름을 실제로 그리기 전에 겹침을 따져야 해서 canvas로 잰다.
+ * 글꼴은 마커의 개수 글자(이름과 같은 caption·semibold)에서 읽는다. 마커가 아직 없으면 글자 수로 어림한다.
+ */
+function createLabelTextMeasurer(sample: HTMLElement | null) {
+  const countElement = sample?.querySelector<HTMLElement>("[data-map-marker-count]");
+  const context = document.createElement("canvas").getContext("2d");
+  if (!countElement || context === null) return (text: string) => text.length * 13;
+  const style = getComputedStyle(countElement);
+  context.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+  return (text: string) => Math.ceil(context.measureText(text).width);
+}
+
+function isSameIdSet(a: ReadonlySet<string>, b: ReadonlySet<string>) {
+  return a.size === b.size && [...a].every((id) => b.has(id));
+}
+
+function isSameMarkerLayout(a: MarkerLayout, b: MarkerLayout) {
+  return isSameIdSet(a.hiddenIds, b.hiddenIds)
+    && isSameIdSet(a.labeledIds, b.labeledIds)
+    && a.clusterMemberIds.size === b.clusterMemberIds.size
+    && [...a.clusterMemberIds].every(([id, members]) => b.clusterMemberIds.get(id)?.join("|") === members.join("|"));
+}
+
+function fitPins(naverMaps: NaverMapsApi, map: NaverMap, pins: readonly EventMapPin[], maxZoom = PLACE_ZOOM) {
   const [first, ...rest] = pins;
   if (first === undefined) {
     map.morph(new naverMaps.LatLng(MAP_DEFAULT_CENTER.latitude, MAP_DEFAULT_CENTER.longitude), DEFAULT_ZOOM);
     return;
   }
   if (rest.length === 0) {
-    map.morph(new naverMaps.LatLng(first.latitude, first.longitude), PLACE_ZOOM);
+    map.morph(new naverMaps.LatLng(first.latitude, first.longitude), maxZoom);
     return;
   }
   const firstLatLng = new naverMaps.LatLng(first.latitude, first.longitude);
   const bounds = new naverMaps.LatLngBounds(firstLatLng, firstLatLng);
   for (const pin of rest) bounds.extend(new naverMaps.LatLng(pin.latitude, pin.longitude));
-  map.fitBounds(bounds, { ...FIT_PINS_PADDING_PX, maxZoom: PLACE_ZOOM });
+  map.fitBounds(bounds, { ...FIT_PINS_PADDING_PX, maxZoom });
 }

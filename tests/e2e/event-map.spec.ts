@@ -46,6 +46,28 @@ test.describe("장소 카드", () => {
     await expect(page).toHaveURL(/:\d+\/$/);
   });
 
+  // 핀을 고른 채 지도의 빈 곳을 누르면 고른 것을 푼다(2026-11-21 사용자 요청).
+  test("고른 채 지도의 빈 곳을 누르면 카드를 닫고 고른 표시와 초점을 없앤다", async ({ page }) => {
+    await page.goto("/map");
+    const pin = page.getByRole("button", { name: MOUNTAIN_PIN_NAME });
+    await pin.click();
+    await expect(getPlacePanel(page)).toBeVisible();
+
+    // 가짜 지도는 마커를 오른쪽 위부터 늘어놓는다. 마커 줄 아래와 장소 카드 위 사이의 오른쪽 빈 곳을 누른다
+    // (장소 카드는 모바일은 아래 시트, md 이상은 왼쪽 판이라 판의 위쪽은 화면 맨 위 근처다).
+    const panelBox = await getPlacePanel(page).boundingBox();
+    const markersBottom = await page.evaluate(() =>
+      Math.max(...[...document.querySelectorAll("[data-fake-marker]")].map((marker) => marker.getBoundingClientRect().bottom)));
+    const viewportSize = page.viewportSize();
+    const panelTop = panelBox !== null && panelBox.y > markersBottom ? panelBox.y : (viewportSize?.height ?? markersBottom + 80);
+    await page.mouse.click((viewportSize?.width ?? 360) - 24, (markersBottom + panelTop) / 2);
+
+    await expect(page).toHaveURL(/\/map$/);
+    await expect(getPlacePanel(page)).toBeHidden();
+    await expect(pin).toHaveAttribute("aria-pressed", "false");
+    await expect(pin).not.toBeFocused();
+  });
+
   test("카드를 연 뒤 분야를 바꾸고 닫아도 고른 분야가 남는다", async ({ page }) => {
     await page.goto("/map");
     await page.getByRole("button", { name: MOUNTAIN_PIN_NAME }).click();

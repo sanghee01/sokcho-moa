@@ -16,8 +16,27 @@ const FAKE_NAVER_MAPS_SCRIPT = String.raw`(() => {
       this.element = element;
       this.zoom = options.zoom;
       this.listeners = [];
+      this.markers = [];
       Object.assign(element.style, { display: "flex", flexWrap: "wrap", justifyContent: "flex-end", alignContent: "flex-start", gap: "16px", padding: "16px" });
+      // 실제 SDK처럼 마커가 아닌 빈 곳을 누르면 click을 알린다(마커 상자 안을 누른 것은 마커 몫이라 알리지 않는다).
+      element.addEventListener("click", (domEvent) => {
+        if (domEvent.target instanceof Element && domEvent.target.closest("[data-fake-marker]")) return;
+        for (const listener of this.listeners) if (listener.name === "click") listener.handler({ pointerEvent: domEvent });
+      });
     }
+    // 마커 묶기·장소 이름 배치는 화면 위치로 겹침을 따진다. 가짜 지도는 좌표 대신 마커를 늘어놓으므로, 그 마커가 놓인 자리(상자 아래 가운데)를 돌려준다.
+    getProjection() {
+      return {
+        fromCoordToOffset: (coord) => {
+          const marker = this.markers.find((item) => item.position.lat() === coord.lat() && item.position.lng() === coord.lng());
+          const box = marker?.wrapper.getBoundingClientRect();
+          return box ? new Point(box.left + box.width / 2, box.bottom) : new Point(0, 0);
+        },
+        fromOffsetToCoord: () => new LatLng(0, 0),
+      };
+    }
+    getCenter() { return new LatLng(0, 0); }
+    setCenter() {}
     setZoom(zoom) {
       if (zoom === undefined || zoom === this.zoom) return;
       this.zoom = zoom;
@@ -34,7 +53,10 @@ const FAKE_NAVER_MAPS_SCRIPT = String.raw`(() => {
   class Marker {
     constructor(options) {
       this.wrapper = document.createElement("div");
+      this.wrapper.dataset.fakeMarker = "";
       this.icon = options.icon;
+      this.position = options.position;
+      options.map.markers.push(this);
       this.setMap(options.map);
     }
     setMap(map) {

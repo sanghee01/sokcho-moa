@@ -90,7 +90,7 @@ export interface EventMapPin {
   name: string | null;
   latitude: number;
   longitude: number;
-  events: Pick<Event, "slug" | "category" | "imageUrl">[];
+  events: Pick<Event, "slug" | "category">[];
 }
 
 export function toEventMapPins(places: readonly EventMapPlace[]): EventMapPin[] {
@@ -99,7 +99,7 @@ export function toEventMapPins(places: readonly EventMapPlace[]): EventMapPin[] 
     name,
     latitude,
     longitude,
-    events: events.map(({ slug, category, imageUrl }) => ({ slug, category, imageUrl })),
+    events: events.map(({ slug, category }) => ({ slug, category })),
   }));
 }
 
