@@ -90,7 +90,8 @@ function isSokchoFacilitiesDetailUrl(url: URL, path: string) {
 }
 
 function isSokchoLibraryDetailUrl(path: string) {
-  return /\/(?:post|movie)\/[^/]+$/i.test(path);
+  // 강좌·행사 신청 상세(`/lecture-event/160`)도 행사별 원문이다. 목록은 `/lecture-event/list/all`이라 숫자로 가른다(2026-11-21).
+  return /\/(?:post|movie)\/[^/]+$/i.test(path) || /\/lecture-event\/\d+$/i.test(path);
 }
 
 function isMcstDetailUrl(url: URL, path: string) {

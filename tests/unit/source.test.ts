@@ -56,7 +56,14 @@ describe("공식 원문 URL", () => {
     expect(isLikelyEventDetailUrl("https://sokchosiseol.or.kr/bbs/event.do/?bmode=VIEW&articleseq=11208")).toBe(true);
   });
 
-  it("속초시립도서관은 post와 movie 상세 경로만 허용한다", () => {
+  it("속초시립도서관 강좌 상세는 허용하고 강좌 목록은 거부한다", () => {
+    expect(isLikelyEventDetailUrl("https://library.sokcho.go.kr/eng/menu/391/lecture-event/160")).toBe(true);
+    expect(isLikelyEventDetailUrl("https://library.sokcho.go.kr/sokcho/menu/380/lecture-event/155/")).toBe(true);
+    expect(isLikelyEventDetailUrl("https://library.sokcho.go.kr/eng/menu/391/lecture-event/list/all")).toBe(false);
+    expect(isLikelyEventDetailUrl("https://library.sokcho.go.kr/eng/menu/391/lecture-event")).toBe(false);
+  });
+
+  it("속초시립도서관은 post·movie·강좌 상세 경로만 허용한다", () => {
     expect(isLikelyEventDetailUrl("https://library.sokcho.go.kr/sokcho/menu/259/board/51/post/1079")).toBe(true);
     expect(isLikelyEventDetailUrl("https://library.sokcho.go.kr/sokcho/menu/258/movie/82")).toBe(true);
     expect(isLikelyEventDetailUrl("https://library.sokcho.go.kr/sokcho/menu/259/board/51")).toBe(false);
