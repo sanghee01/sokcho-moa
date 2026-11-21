@@ -265,6 +265,17 @@
         "longitude": 128.5273887,
         "sourceUrl": "https://map.naver.com/p/entry/place/13491251"
       }
+    },
+    {
+      "name": "설악동 C지구",
+      "aliases": [],
+      "address": "강원특별자치도 속초시 설악동 246-122",
+      "sourceUrl": "https://map.naver.com/p/entry/place/214071315",
+      "coordinates": {
+        "latitude": 38.1670379,
+        "longitude": 128.5327109,
+        "sourceUrl": "https://map.naver.com/p/entry/place/214071315"
+      }
     }
   ]
 }

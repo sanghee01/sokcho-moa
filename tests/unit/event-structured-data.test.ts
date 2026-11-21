@@ -102,9 +102,10 @@ describe("event structured data", () => {
 
   it("Google 필수 장소 정보가 없으면 Event 리치 결과 데이터를 만들지 않는다", () => {
     // 장소 사전에 있는 시설이면 주소가 채워지므로(2026-11-15), 사전에 없는 장소 이름으로 "주소 없음"을 확인한다.
+    // 실제 장소는 언제든 사전에 들어갈 수 있어 가상 이름을 쓴다(2026-11-21 설악동 C지구를 사전에 넣으며 바꿈).
     const result = buildEventStructuredData({
       ...event,
-      locationName: "설악동 C지구 소공원",
+      locationName: "사전에 없는 가상 행사장",
       address: null,
       latitude: null,
       longitude: null,
