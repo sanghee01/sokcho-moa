@@ -44,8 +44,8 @@ describe("즐길거리 원본 데이터", () => {
       expect(isActivityCategory(place.activityCategory), place.slug).toBe(true);
       expect(place.tags.every(isActivityTag), place.slug).toBe(true);
       expect(isOperationStatus(place.operationStatus), place.slug).toBe(true);
-      // 운영시간·요금을 확인한 장소만 확인일이 있다. 자연·명소는 확인하지 않아 비어 있다.
-      if (place.activityCategory !== "nature") expect(place.verifiedOn, place.slug).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      // 모든 장소에 확인일이 있다. 자연·명소도 2026-11-21에 소개·운영 정보를 조사해 채웠다(그 전에는 비어 있었음).
+      expect(place.verifiedOn, place.slug).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     }
   });
 
@@ -66,9 +66,11 @@ describe("즐길거리 원본 데이터", () => {
       for (const url of ["officialUrl" in place ? place.officialUrl : null, place.bookingUrl]) {
         if (typeof url === "string") expect(isHttpUrl(url), `${place.slug}: ${url}`).toBe(true);
       }
-      // 한 줄 소개는 모든 장소에 있어야 한다(명소는 원본 소개를 이어 쓸 수 있다). 자연·명소는 긴 소개(description)를 비워 둔다.
+      // 한 줄 소개와 긴 소개(description)는 모든 장소에 있어야 한다. 자연·명소에 소개가 없어 다른 장소보다 정보가 부족했다(2026-11-21 사용자 피드백).
       expect(String(resolvedValue(place, "summary") ?? "").length, place.slug).toBeGreaterThan(0);
-      if (place.activityCategory !== "nature") expect(place.description?.length ?? 0, place.slug).toBeGreaterThan(0);
+      expect(place.description?.length ?? 0, place.slug).toBeGreaterThan(0);
+      // "속초시 일원"처럼 어디인지 알 수 없는 주소를 쓰지 않는다.
+      expect(String(resolvedValue(place, "address")), place.slug).not.toContain("일원");
       if (place.catalogSlug === null) {
         const added = place as typeof place & { id?: string; name?: string; category?: string };
         expect(added.id, place.slug).toMatch(/^[0-9a-f-]{36}$/);

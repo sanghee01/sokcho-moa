@@ -84,9 +84,9 @@ export function ShareEventButton({ slug }: { slug: string }) {
       <button
         type="button"
         onClick={handleShare}
-        className={getButtonClassName({ variant: "secondary" })}
+        className={getButtonClassName({ variant: "secondary", hasLeadingIcon: true })}
       >
-        <Share2 {...iconProps} size={18} />
+        <Share2 {...iconProps} size={16} />
         공유하기
       </button>
       {feedback !== null && (

@@ -43,18 +43,13 @@ export function eventBrowsePath(params: EventSearchParams) {
   return isSameSitePath(pathname) ? pathname : "/";
 }
 
-/** 다음 목록 주소로 이어 갈 조건과 값(첫 값). 내부 값과 지운 필터 값, 빈 값은 뺀다. 링크와 검색 폼의 숨김 입력이 함께 쓴다. */
+/** 다음 목록 주소로 이어 갈 조건과 값(첫 값). 내부 값과 지운 필터 값, 빈 값은 뺀다. 목록 링크가 쓴다. */
 export function carriedEventParams(params: EventSearchParams): [string, string][] {
   return Object.entries(params).flatMap(([name, raw]): [string, string][] => {
     if (name.startsWith(INTERNAL_PARAM_PREFIX) || DROPPED_PARAMS.has(name)) return [];
     const value = firstSearchParam(raw);
     return value ? [[name, value]] : [];
   });
-}
-
-/** 지금 주소에 걸린 조건 수(검색어 제외). 검색 분석 이벤트에 보낸다. */
-export function countActiveEventFilters(params: EventSearchParams) {
-  return EVENT_FILTER_PARAMS.filter((name) => Boolean(params[name])).length;
 }
 
 export function buildEventBrowseHref(

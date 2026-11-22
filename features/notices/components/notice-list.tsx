@@ -1,5 +1,6 @@
 import { ChevronRight } from "lucide-react";
 import { iconProps } from "@/components/ui/icon";
+import { listRowLinkClassName } from "@/components/ui/list-row-styles";
 import { TransitionLink } from "@/components/ui/transition-link";
 import { formatNoticeDate, noticeKindLabels, noticePath, type Notice } from "@/features/notices/model/notice";
 
@@ -15,7 +16,7 @@ export function NoticeList({ notices }: { notices: readonly Notice[] }) {
     <ul className="mt-6 border-t border-line">
       {notices.map((notice) => (
         <li key={notice.id} className="border-b border-line">
-          <TransitionLink href={noticePath(notice.id)} showPendingIndicator={false} className="flex min-h-11 items-center gap-3 py-5 hover:bg-surface-subtle">
+          <TransitionLink href={noticePath(notice.id)} showPendingIndicator={false} className={`${listRowLinkClassName} min-h-11 gap-3 py-5`}>
             <span className="min-w-0 flex-1">
               <span className="flex items-center gap-2 text-caption">
                 <span className="font-semibold text-primary-text">{noticeKindLabels[notice.kind]}</span>

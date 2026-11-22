@@ -15,6 +15,9 @@ const FAKE_NAVER_MAPS_SCRIPT = String.raw`(() => {
     constructor(element, options) {
       this.element = element;
       this.zoom = options.zoom;
+      this.center = options.center;
+      // test가 확대 수준을 바꾸고 읽을 수 있게 만든 지도를 모아 둔다(상세에서 돌아오면 지도 보기가 그대로인지, list-return.spec.ts).
+      (window.__fakeNaverMaps ??= []).push(this);
       this.listeners = [];
       this.markers = [];
       Object.assign(element.style, { display: "flex", flexWrap: "wrap", justifyContent: "flex-end", alignContent: "flex-start", gap: "16px", padding: "16px" });
@@ -35,17 +38,20 @@ const FAKE_NAVER_MAPS_SCRIPT = String.raw`(() => {
         fromOffsetToCoord: () => new LatLng(0, 0),
       };
     }
-    getCenter() { return new LatLng(0, 0); }
-    setCenter() {}
+    getCenter() { return this.center; }
+    setCenter(center) { this.center = center; this.emitIdle(); }
     setZoom(zoom) {
       if (zoom === undefined || zoom === this.zoom) return;
       this.zoom = zoom;
       for (const listener of this.listeners) if (listener.name === "zoom_changed") listener.handler(zoom);
+      this.emitIdle();
     }
+    // 실제 SDK처럼 움직임이 끝나면 idle을 알린다.
+    emitIdle() { for (const listener of this.listeners) if (listener.name === "idle") listener.handler(); }
     setOptions() {}
     fitBounds() {}
-    morph(center, zoom) { this.setZoom(zoom); }
-    panTo() {}
+    morph(center, zoom) { this.center = center; this.setZoom(zoom); }
+    panTo(center) { this.center = center; this.emitIdle(); }
     getZoom() { return this.zoom; }
     autoResize() {}
     destroy() { this.element.replaceChildren(); }
@@ -77,8 +83,25 @@ const FAKE_NAVER_MAPS_SCRIPT = String.raw`(() => {
   window.naver = { maps: { LatLng, LatLngBounds, Point, Size, Map: FakeMap, Marker, Event, Position } };
 })();`;
 
-/** 실제 SDK처럼 스크립트를 불러온 뒤 인증 실패를 알린다(등록하지 않은 주소, 잘못된 키). */
-const FAKE_AUTH_FAILURE_SCRIPT = `${FAKE_NAVER_MAPS_SCRIPT}\nsetTimeout(() => window.navermap_authFailure?.(), 0);`;
+/**
+ * 실제 SDK처럼 스크립트를 불러온 뒤 인증 실패를 알린다(등록하지 않은 주소, 잘못된 키).
+ * 실제 SDK는 지도와 마커를 만든 뒤에야 인증 응답(401)을 받고, 그때 내부 값을 비워 마커 떼기·이벤트 해제가 TypeError를 던진다.
+ * 그래서 마커가 그려질 때까지 기다렸다가 같은 상태로 만든다. 예전 가짜는 지도를 만들기 전에 실패를 알려 이 경우를 놓쳤다(2026-11-21).
+ */
+const FAKE_AUTH_FAILURE_SCRIPT = `${FAKE_NAVER_MAPS_SCRIPT}
+(() => {
+  const startedAt = Date.now();
+  function failAuth() {
+    const brokenSdk = () => { throw new TypeError("Cannot read properties of null (reading 'capitalize')"); };
+    window.naver.maps.Marker.prototype.setMap = brokenSdk;
+    window.naver.maps.Event.removeListener = brokenSdk;
+    window.navermap_authFailure?.();
+  }
+  (function waitForMarkers() {
+    if (document.querySelector("[data-fake-marker]") || Date.now() - startedAt > 3000) failAuth();
+    else setTimeout(waitForMarkers, 50);
+  })();
+})();`;
 
 export async function routeFakeNaverMaps(page: Page, { authFailure = false }: { authFailure?: boolean } = {}) {
   await page.route("**/oapi.map.naver.com/**", (route) => route.fulfill({

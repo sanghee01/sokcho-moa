@@ -15,6 +15,7 @@ import { submitEventReportAction } from "@/features/reports/actions";
 import { initialFormActionState } from "@/lib/action-state";
 import { HoneypotField } from "@/components/ui/honeypot-field";
 
+// 행사와 가볼만한 곳 제보를 한 폼으로 받는다. 칸(제목·본문·링크)이 둘 다에 맞아 종류 칸은 두지 않는다(2026-11-21 사용자 결정).
 export function EventReportForm() {
   const [state, formAction] = useActionState(submitEventReportAction, initialFormActionState);
   const [draft, setDraft] = useState({ title: "", body: "", sourceUrl: "" });
@@ -27,7 +28,7 @@ export function EventReportForm() {
         {/* 서버가 접수한 제보만 센다. GA 자동 수집 form_submit은 이 폼에서 기록되지 않고 실패한 제출도 센다(2026-11-07). */}
         <AnalyticsMountTracking name="event_report_submitted" properties={{}} />
         <p className="text-title-3">제보가 접수되었습니다.</p>
-        <p className="mt-2 text-body">보내주신 내용을 확인한 뒤 반영 가능한 행사라면 속초모아에 등록하겠습니다. 감사합니다.</p>
+        <p className="mt-2 text-body">보내주신 내용을 확인한 뒤 반영할 수 있는 행사나 장소라면 속초모아에 등록하겠습니다. 감사합니다.</p>
       </div>
     );
   }
@@ -44,7 +45,7 @@ export function EventReportForm() {
           value={draft.title}
           onChange={(event) => setDraft((current) => ({ ...current, title: event.target.value }))}
           autoComplete="off"
-          placeholder="행사나 프로그램 이름"
+          placeholder="행사나 장소 이름"
           className={getFormControlClassName("input")}
         />
       </FormField>
@@ -59,12 +60,12 @@ export function EventReportForm() {
           value={draft.body}
           onChange={(event) => setDraft((current) => ({ ...current, body: event.target.value }))}
           rows={8}
-          placeholder="일정, 장소, 신청 방법 등 알고 있는 내용"
+          placeholder="일정·장소·신청 방법, 운영시간·요금 등 알고 있는 내용"
           className={getFormControlClassName("textarea")}
         />
       </FormField>
 
-      <FormField id="report-source-url" label="링크" help="공식 안내 페이지나 신청 페이지 주소를 입력해 주세요." error={fieldErrors.sourceUrl}>
+      <FormField id="report-source-url" label="링크" help="공식 안내·신청 페이지나 장소 홈페이지 주소를 입력해 주세요." error={fieldErrors.sourceUrl}>
         <input
           {...getFieldControlProps("report-source-url", { hasHelp: true, error: fieldErrors.sourceUrl })}
           required

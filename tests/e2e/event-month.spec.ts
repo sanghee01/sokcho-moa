@@ -2,13 +2,13 @@ import { expect, test } from "@playwright/test";
 import { currentSeoulMonth } from "@/tests/e2e/fixtures";
 
 // 월별 행사 페이지(/months/YYYY-MM): "11월 속초 행사" 같은 기간 검색에 답하는 페이지다. 화면에는 제목과 카드만 둔다(2026-11-15).
-// 입구는 행사 탭 위쪽의 "목록 | 월별 일정" 전환이고(2026-11-21, 예전에는 헤더 버튼), 달은 페이지 위쪽 화살표로 넘긴다(2026-11-15 사용자 결정).
+// 입구는 행사 목록의 "진행중 · 마감 · 월별" 탭이고(2026-11-21 시안 A, 그 전에는 "목록 | 월별 일정" 전환·헤더 버튼), 달은 페이지 위쪽 화살표로 넘긴다(2026-11-15 사용자 결정).
 const currentMonth = currentSeoulMonth();
 const nextMonth = currentSeoulMonth(new Date(), 1);
 
-test("행사 탭의 월별 일정 전환으로 이번 달 행사 페이지에 가면 제목과 행사 카드만 보이고 요약 문장은 화면에 없다", async ({ page }) => {
+test("행사 목록의 월별 탭으로 이번 달 행사 페이지에 가면 제목과 행사 카드만 보이고 요약 문장은 화면에 없다", async ({ page }) => {
   await page.goto("/");
-  await page.getByRole("navigation", { name: "행사 보기" }).getByRole("link", { name: "월별 일정" }).click();
+  await page.getByRole("navigation", { name: "행사 상태" }).getByRole("link", { name: "월별" }).click();
 
   await expect(page).toHaveURL(new RegExp(`${currentMonth.path}$`));
   await expect(page.getByRole("heading", { level: 1 })).toContainText(currentMonth.label);
@@ -17,11 +17,11 @@ test("행사 탭의 월별 일정 전환으로 이번 달 행사 페이지에 �
   await expect(page.getByRole("region", { name: "진행 중·예정 행사" }).getByRole("link", { name: /바다빛 가족 문화축제/ })).toBeVisible();
 });
 
-test("월별 페이지에서는 보기 전환의 월별 일정이 선택되고, 목록으로 돌아갈 수 있다", async ({ page }) => {
+test("월별 페이지에서는 상태 탭의 월별이 선택되고, 진행중 목록으로 돌아갈 수 있다", async ({ page }) => {
   await page.goto(currentMonth.path);
-  const views = page.getByRole("navigation", { name: "행사 보기" });
-  await expect(views.locator('a[aria-current="page"]')).toHaveText("월별 일정");
-  await views.getByRole("link", { name: "목록" }).click();
+  const views = page.getByRole("navigation", { name: "행사 상태" });
+  await expect(views.locator('a[aria-current="page"]')).toHaveText("월별");
+  await views.getByRole("link", { name: "진행중" }).click();
   await expect.poll(() => new URL(page.url()).pathname).toBe("/");
 });
 

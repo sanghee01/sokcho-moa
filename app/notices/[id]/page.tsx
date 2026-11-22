@@ -10,7 +10,7 @@ import {
   summarizeNoticeBody,
 } from "@/features/notices/model/notice";
 import { getPublicNotices } from "@/features/notices/queries";
-import { SITE_NAME } from "@/lib/seo/site-identity";
+import { SITE_NAME, SITE_OPEN_GRAPH_IMAGES, SITE_OPEN_GRAPH_IMAGE_PATH } from "@/lib/seo/site-identity";
 import { isUuid } from "@/lib/uuid";
 
 export const revalidate = 3600;
@@ -32,7 +32,9 @@ export async function generateMetadata({ params }: PageProps<"/notices/[id]">): 
     title: notice.title,
     description,
     alternates: { canonical: noticePath(notice.id) },
-    openGraph: { type: "article", locale: "ko_KR", url: noticePath(notice.id), siteName: SITE_NAME, title: notice.title, description },
+    // 공유 미리보기 이미지가 비지 않게 사이트 기본 이미지를 넣는다(2026-11-21 SEO 점검).
+    openGraph: { type: "article", locale: "ko_KR", url: noticePath(notice.id), siteName: SITE_NAME, title: notice.title, description, images: SITE_OPEN_GRAPH_IMAGES },
+    twitter: { card: "summary_large_image", title: notice.title, description, images: [SITE_OPEN_GRAPH_IMAGE_PATH] },
   };
 }
 
@@ -47,7 +49,7 @@ export default async function NoticeDetailPage({ params }: PageProps<"/notices/[
           <time dateTime={notice.publishedAt} className="text-content-subtle tabular-nums">{formatNoticeDate(notice.publishedAt)}</time>
         </p>
         <h1 className="mt-2 text-title-1 text-content-strong lg:text-title-1-lg">{notice.title}</h1>
-        {/* 관리자가 넣은 줄바꿈(문단)만 지키고, 그 밖의 줄바꿈은 화면 폭에 맞춰 자연스럽게 흐르게 한다. */}
+        {/* 빈 줄은 문단을 나누고, 한 줄 줄바꿈은 문단 안에서 그대로 줄을 바꾼다(관리자 폼 안내 "줄바꿈은 그대로 보입니다"와 같음). */}
         <div className="mt-6 space-y-4 border-t border-line pt-6 text-body text-content">
           {notice.body.split(/\n{2,}/).map((paragraph, index) => (
             <p key={index} className="whitespace-pre-line">{paragraph}</p>

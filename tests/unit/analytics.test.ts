@@ -58,9 +58,11 @@ describe("analytics event contract", () => {
 
   it("정해 둔 이벤트 이름만 화면 속성 이벤트로 받는다", () => {
     expect(isAnalyticsEvent("status_tab_changed")).toBe(true);
-    expect(isAnalyticsEvent("nearby_places_viewed")).toBe(true);
-    // 2026-11-06에 없앤 이벤트와 객체 기본 속성 이름은 받지 않는다.
+    expect(isAnalyticsEvent("related_events_viewed")).toBe(true);
+    // 없앤 이벤트(2026-11-06 filter_used, 2026-11-21 nearby_places_viewed·search_submitted)와 객체 기본 속성 이름은 받지 않는다.
     expect(isAnalyticsEvent("filter_used")).toBe(false);
+    expect(isAnalyticsEvent("nearby_places_viewed")).toBe(false);
+    expect(isAnalyticsEvent("search_submitted")).toBe(false);
     expect(isAnalyticsEvent("toString")).toBe(false);
     expect(isAnalyticsEvent(undefined)).toBe(false);
   });

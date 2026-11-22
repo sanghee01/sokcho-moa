@@ -1,6 +1,6 @@
 import { Suspense, type ReactNode } from "react";
 import { BannerVisibility } from "@/features/events/components/browse/banner-visibility";
-import { EventSectionNavigation } from "@/features/events/components/browse/event-section-navigation";
+import { CategoryNavigation } from "@/features/events/components/browse/category-navigation";
 import { PopularBanner } from "@/features/events/components/browse/popular-banner";
 import { selectPopularEvents } from "@/features/events/model/event-list";
 import { getAllPublicEvents } from "@/features/events/queries";
@@ -19,9 +19,11 @@ export default async function EventBrowseLayout({ children }: { children: ReactN
 
   return (
     <>
-      {/* 보기 전환(목록 | 월별 일정)과 분야 탭. 탭을 바꿔도 다시 그리지 않도록 공통 틀에 둔다(2026-11-21). */}
-      <div className="mx-auto max-w-6xl px-4 pb-4 pt-4 sm:px-6 lg:pt-6">
-        <EventSectionNavigation />
+      {/* 분야 탭. 탭을 바꿔도 다시 그리지 않도록 공통 틀에 둔다. 월별 일정은 목록의 상태 탭 끝으로 옮겼다(2026-11-21, event-view-tabs.tsx).
+          위 여백은 8px(lg 12px)이다. 칩의 누르는 영역이 보이는 알약보다 위아래로 4px 커서, 공지 띠·헤더와 보이는 간격은 12px(lg 16px)이 된다.
+          가볼만한 곳·월별 페이지도 같은 값이다(2026-11-21 사용자 피드백: 공지 띠와 칩 사이가 넓었음). */}
+      <div className="mx-auto max-w-6xl px-4 pb-4 pt-2 sm:px-6 lg:pt-3">
+        <CategoryNavigation />
       </div>
       {/* 주소의 검색 조건을 읽는 동안에는 배너를 그대로 보여 준다. */}
       <Suspense fallback={banner}>

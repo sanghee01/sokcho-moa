@@ -136,6 +136,22 @@ export function hasNaverMapsAuthFailed() {
   return hasAuthFailed;
 }
 
+/**
+ * 지도 SDK 호출(마커 만들기·떼기, 이벤트 해제, 지도 지우기)이 실패해도 페이지 전체가 오류 화면이 되지 않게 감싼다. 성공했으면 true.
+ * 실제 SDK는 지도와 마커를 만든 뒤 인증에 실패하면(401) 내부 값을 비워, 이 호출들이 TypeError를 던진다. effect 안의 오류는 페이지 전체를
+ * "페이지를 불러오지 못했습니다"로 바꿔 "지금은 지도를 볼 수 없어요" 안내와 GA map_unavailable이 묻혔다(2026-11-21, 등록하지 않은 포트에서 확인).
+ * 인증 실패가 아닌데 실패하면 원인을 찾을 수 있게 콘솔에 남긴다.
+ */
+export function callNaverMapsSafely(call: () => void) {
+  try {
+    call();
+    return true;
+  } catch (error) {
+    if (!hasAuthFailed) console.error(error);
+    return false;
+  }
+}
+
 /** 인증 실패를 받을 함수를 건다. 돌려준 함수로 풀어도 실패 기록은 남겨, 화면을 떠난 사이에 온 실패도 다음 방문에 안다. */
 export function listenNaverMapsAuthFailure(onFailure: () => void) {
   window.navermap_authFailure = () => {

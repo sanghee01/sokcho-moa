@@ -1,9 +1,16 @@
 import type { Metadata } from "next";
 
 export const reportPageMetadata: Metadata = {
-  title: "행사 제보하기",
-  description: "속초모아에 아직 없는 행사·축제·프로그램을 제보해 주세요.",
+  title: "제보하기",
+  description: "속초모아에 아직 없는 행사·축제나 가볼만한 곳을 제보해 주세요.",
   alternates: { canonical: "/report" },
+  robots: { index: false, follow: true },
+};
+
+export const contactPageMetadata: Metadata = {
+  title: "문의",
+  description: "속초모아에 행사를 제보하거나, 의견을 보내거나, 카카오톡으로 물어보세요.",
+  alternates: { canonical: "/contact" },
   robots: { index: false, follow: true },
 };
 

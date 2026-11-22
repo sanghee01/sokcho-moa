@@ -7,7 +7,7 @@ import { trackAnalyticsEvent, type AnalyticsEvent, type AnalyticsEventParams } f
 const VIEW_ROOT_MARGIN = "0px 0px -25% 0px";
 
 /**
- * 감싼 영역이 화면에 들어왔을 때 GA 이벤트를 한 번 보낸다. 주변 명소처럼 아래쪽에 있어
+ * 감싼 영역이 화면에 들어왔을 때 GA 이벤트를 한 번 보낸다. 행사 상세의 관련 행사처럼 아래쪽에 있어
  * 본 사람과 안 본 사람이 갈리는 구역의 노출을 셀 때 쓴다(클릭률의 분모).
  * 감싸는 div는 여백·배치 class가 없어 화면 모양을 바꾸지 않는다.
  */

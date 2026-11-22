@@ -7,6 +7,7 @@
     "catalogSlug": "data/attractions.json에 이미 있는 장소면 그 slug. 이 파일의 값이 명소 원본 값을 덮어쓴다(null인 칸은 원본 유지).",
     "textPolicy": "summary·description은 공식 소개문을 베끼지 않고 확인한 사실로 새로 썼다. 요금은 공식 정가 기준이며 unverifiedFields에 적힌 칸은 공식 출처로 확인하지 못한 값이다.",
     "statusNote": "statusNote는 방문자에게 보이는 안내이고, statusEvidence·researchNotes는 조사 근거라 화면에 쓰지 않는다.",
+    "statusNoteUntil": "statusNote에 날짜가 들어 있으면 그 안내가 맞는 마지막 날(YYYY-MM-DD)을 적는다. 그날이 지나면 화면이 안내를 숨긴다(2026-11-22).",
     "photoPolicy": "사진은 두 종류다. (1) 재게시가 허용된 공개 라이선스 사진(위키미디어 공용의 CC0·CC BY·CC BY-SA). (2) 시설·지자체 공식 누리집에 게시된 대표 사진. (2)는 재게시 허락을 받지 않았고, 행사 포스터와 같은 방식으로 출처와 원본 페이지를 표시해 쓴다(2026-11-21 사용자 결정). 내려 달라는 요청이 오면 imageProvenance로 찾아 바로 뺀다. 네이버·블로그·예매 사이트 사진은 쓰지 않는다.",
     "nature": "자연·명소(activityCategory: nature)는 data/attractions.json의 속초 명소를 그대로 가져와 분류만 정했다. 운영시간·요금은 확인하지 않아 비워 두었고(verifiedOn 없음), 한 줄 소개는 원본 문장이 기계적이라 널리 알려진 사실로 새로 썼다(2026-11-21)."
   },
@@ -39,6 +40,7 @@
       ],
       "operationStatus": "open",
       "statusNote": null,
+      "statusNoteUntil": null,
       "verifiedOn": "2026-11-21",
       "confidence": "high",
       "unverifiedFields": [
@@ -105,6 +107,7 @@
       ],
       "operationStatus": "open",
       "statusNote": "실외 워터파크는 2026년 12월 15일까지 공사로 쉽니다. 실내 워터파크는 운영합니다.",
+      "statusNoteUntil": "2026-12-15",
       "verifiedOn": "2026-11-21",
       "confidence": "high",
       "unverifiedFields": [
@@ -165,6 +168,7 @@
       ],
       "operationStatus": "open",
       "statusNote": null,
+      "statusNoteUntil": null,
       "verifiedOn": "2026-11-21",
       "confidence": "high",
       "unverifiedFields": [
@@ -223,6 +227,7 @@
       ],
       "operationStatus": "open",
       "statusNote": null,
+      "statusNoteUntil": null,
       "verifiedOn": "2026-11-21",
       "confidence": "high",
       "unverifiedFields": [
@@ -280,7 +285,8 @@
         "야외 시설이라 비나 강한 바람이 있는 날에는 이용이 불편합니다."
       ],
       "operationStatus": "open",
-      "statusNote": "12월부터 2월까지는 겨울 휴장입니다.",
+      "statusNote": "11월 30일까지 운영하고, 12월 1일부터 2월 말까지 겨울 휴장해요. 3월에 다시 열어요.",
+      "statusNoteUntil": "2027-02-28",
       "verifiedOn": "2026-11-21",
       "confidence": "medium",
       "unverifiedFields": [
@@ -343,6 +349,7 @@
       ],
       "operationStatus": "open",
       "statusNote": null,
+      "statusNoteUntil": null,
       "verifiedOn": "2026-11-21",
       "confidence": "high",
       "unverifiedFields": [],
@@ -397,6 +404,7 @@
       ],
       "operationStatus": "open",
       "statusNote": null,
+      "statusNoteUntil": null,
       "verifiedOn": "2026-11-21",
       "confidence": "high",
       "unverifiedFields": [],
@@ -453,6 +461,7 @@
       ],
       "operationStatus": "open",
       "statusNote": null,
+      "statusNoteUntil": null,
       "verifiedOn": "2026-11-21",
       "confidence": "medium",
       "unverifiedFields": [
@@ -511,6 +520,7 @@
       ],
       "operationStatus": "open",
       "statusNote": null,
+      "statusNoteUntil": null,
       "verifiedOn": "2026-11-21",
       "confidence": "high",
       "unverifiedFields": [
@@ -568,6 +578,7 @@
       ],
       "operationStatus": "open",
       "statusNote": null,
+      "statusNoteUntil": null,
       "verifiedOn": "2026-11-21",
       "confidence": "medium",
       "unverifiedFields": [
@@ -632,6 +643,7 @@
       ],
       "operationStatus": "open",
       "statusNote": null,
+      "statusNoteUntil": null,
       "verifiedOn": "2026-11-21",
       "confidence": "high",
       "unverifiedFields": [],
@@ -695,6 +707,7 @@
       ],
       "operationStatus": "open",
       "statusNote": null,
+      "statusNoteUntil": null,
       "verifiedOn": "2026-11-21",
       "confidence": "medium",
       "unverifiedFields": [
@@ -753,6 +766,7 @@
       ],
       "operationStatus": "open",
       "statusNote": null,
+      "statusNoteUntil": null,
       "verifiedOn": "2026-11-21",
       "confidence": "medium",
       "unverifiedFields": [
@@ -811,6 +825,7 @@
       ],
       "operationStatus": "open",
       "statusNote": null,
+      "statusNoteUntil": null,
       "verifiedOn": "2026-11-21",
       "confidence": "high",
       "unverifiedFields": [
@@ -876,6 +891,7 @@
       ],
       "operationStatus": "open",
       "statusNote": null,
+      "statusNoteUntil": null,
       "verifiedOn": "2026-11-21",
       "confidence": "medium",
       "unverifiedFields": [
@@ -940,6 +956,7 @@
       ],
       "operationStatus": "open",
       "statusNote": null,
+      "statusNoteUntil": null,
       "verifiedOn": "2026-11-21",
       "confidence": "high",
       "unverifiedFields": [
@@ -995,6 +1012,7 @@
       ],
       "operationStatus": "open",
       "statusNote": null,
+      "statusNoteUntil": null,
       "verifiedOn": "2026-11-21",
       "confidence": "medium",
       "unverifiedFields": [
@@ -1054,6 +1072,7 @@
       ],
       "operationStatus": "open",
       "statusNote": null,
+      "statusNoteUntil": null,
       "verifiedOn": "2026-11-21",
       "confidence": "medium",
       "unverifiedFields": [
@@ -1118,6 +1137,7 @@
       ],
       "operationStatus": "open",
       "statusNote": "철거 명령을 둘러싼 소송이 진행 중이라 운영이 바뀔 수 있습니다. 방문 전에 운영 여부를 확인해 주세요.",
+      "statusNoteUntil": null,
       "verifiedOn": "2026-11-21",
       "confidence": "medium",
       "unverifiedFields": [
@@ -1188,6 +1208,7 @@
       ],
       "operationStatus": "open",
       "statusNote": null,
+      "statusNoteUntil": null,
       "verifiedOn": "2026-11-21",
       "confidence": "medium",
       "unverifiedFields": [
@@ -1239,6 +1260,7 @@
       ],
       "operationStatus": "open",
       "statusNote": null,
+      "statusNoteUntil": null,
       "verifiedOn": "2026-11-21",
       "confidence": "medium",
       "unverifiedFields": [
@@ -1288,6 +1310,7 @@
       ],
       "operationStatus": "open",
       "statusNote": null,
+      "statusNoteUntil": null,
       "verifiedOn": "2026-11-21",
       "confidence": "high",
       "unverifiedFields": [],
@@ -1346,6 +1369,7 @@
       ],
       "operationStatus": "open",
       "statusNote": "겨울 운항 여부는 방문 전에 전화로 확인해 주세요.",
+      "statusNoteUntil": null,
       "verifiedOn": "2026-11-21",
       "confidence": "high",
       "unverifiedFields": [
@@ -1389,7 +1413,7 @@
       "category": "요트",
       "mapUrl": "https://map.naver.com/p/search/%EC%95%84%EC%9D%B4%EB%9F%AC%EB%B8%8C%EC%9C%A0%EC%9A%94%ED%8A%B8",
       "isPublished": true,
-      "imageUrl": null,
+      "imageUrl": "/places/iloveyou-yacht-sokcho.webp",
       "summary": "청초호에서 출항하는 47인승 요트의 주간·야간 투어",
       "address": "강원특별자치도 속초시 엑스포로 10-29",
       "latitude": 38.191327,
@@ -1413,6 +1437,7 @@
       ],
       "operationStatus": "open",
       "statusNote": null,
+      "statusNoteUntil": null,
       "verifiedOn": "2026-11-21",
       "confidence": "medium",
       "unverifiedFields": [
@@ -1432,7 +1457,20 @@
         "https://m.place.naver.com/place/1751453674/home",
         "https://www.trazy.com/ko/experience/detail/sokcho-romantic-yacht-tour-public-private",
         "https://leisure-web.yanolja.com/leisure/10379220"
-      ]
+      ],
+      "imageCredit": "사진: 속초시 관광 누리집",
+      "imageSourceUrl": "https://www.sokcho.go.kr/ct/tour/attraction/nature?contentSeq=124",
+      "imageAlt": "아이러브유요트가 출발하는 코마린 마리나에 정박한 요트와 구명조끼를 입은 탑승객",
+      "imageProvenance": {
+        "kind": "official",
+        "author": "속초시 관광 누리집",
+        "license": null,
+        "originalUrl": "https://www.sokcho.go.kr/upload/board/TSZZZZ01/cd52153f-1b1c-422a-b385-f519de905f78.jpg",
+        "pageUrl": "https://www.sokcho.go.kr/ct/tour/attraction/nature?contentSeq=124",
+        "downloadedOn": "2026-11-21",
+        "modification": "3:2로 자르고 폭 1080px 이하 WebP로 변환, 240×240 썸네일 생성",
+        "note": "공식 누리집에 게시된 사진. 재게시 허락은 받지 않았다. 행사 포스터와 같은 방식으로 출처를 표시하고, 내려 달라는 요청이 오면 바로 뺀다(2026-11-21 사용자 결정)."
+      }
     },
     {
       "slug": "sokcho-yacht-boat-club",
@@ -1442,7 +1480,7 @@
       "category": "요트",
       "mapUrl": "https://map.naver.com/p/search/%EC%86%8D%EC%B4%88%EC%9A%94%ED%8A%B8%EB%B3%B4%ED%8A%B8%ED%81%B4%EB%9F%BD",
       "isPublished": true,
-      "imageUrl": null,
+      "imageUrl": "/places/sokcho-yacht-boat-club.webp",
       "summary": "장사항에서 타는 제트보트와 요트",
       "address": "강원특별자치도 속초시 장사항해안길 42",
       "latitude": 38.225361,
@@ -1467,6 +1505,7 @@
       ],
       "operationStatus": "open",
       "statusNote": "제트보트는 12월 10일까지만 운영합니다.",
+      "statusNoteUntil": "2026-12-10",
       "verifiedOn": "2026-11-21",
       "confidence": "medium",
       "unverifiedFields": [
@@ -1488,7 +1527,20 @@
         "https://m.place.naver.com/place/33956648/home",
         "https://www.waug.com/ko/activities/143054",
         "https://leisure-web.yanolja.com/leisure/10364170"
-      ]
+      ],
+      "imageCredit": "사진: 속초시 관광 누리집",
+      "imageSourceUrl": "https://www.sokcho.go.kr/ct/tour/attraction/nature?contentSeq=99",
+      "imageAlt": "속초요트보트클럽이 있는 장사항 부두와 바다",
+      "imageProvenance": {
+        "kind": "official",
+        "author": "속초시 관광 누리집",
+        "license": null,
+        "originalUrl": "https://www.sokcho.go.kr/upload/board/TSZZZZ01/0bfdd457-6d97-4b70-9d3e-de96ee51f925.jpg",
+        "pageUrl": "https://www.sokcho.go.kr/ct/tour/attraction/nature?contentSeq=99",
+        "downloadedOn": "2026-11-21",
+        "modification": "3:2로 자르고 폭 1080px 이하 WebP로 변환, 240×240 썸네일 생성",
+        "note": "공식 누리집에 게시된 사진. 재게시 허락은 받지 않았다. 행사 포스터와 같은 방식으로 출처를 표시하고, 내려 달라는 요청이 오면 바로 뺀다(2026-11-21 사용자 결정)."
+      }
     },
     {
       "slug": "jangsahang-marina",
@@ -1498,7 +1550,7 @@
       "category": "요트",
       "mapUrl": "https://map.naver.com/p/search/%EC%9E%A5%EC%82%AC%ED%95%AD%EB%A7%88%EB%A6%AC%EB%82%98",
       "isPublished": true,
-      "imageUrl": null,
+      "imageUrl": "/places/jangsahang-marina.webp",
       "summary": "장사항에서 출항하는 세일요트 투어",
       "address": "강원특별자치도 속초시 장사항해안길 42",
       "latitude": 38.225485,
@@ -1523,6 +1575,7 @@
       ],
       "operationStatus": "open",
       "statusNote": null,
+      "statusNoteUntil": null,
       "verifiedOn": "2026-11-21",
       "confidence": "medium",
       "unverifiedFields": [
@@ -1536,7 +1589,20 @@
         "https://m.blog.naver.com/fcm2/224307026719",
         "https://booking.naver.com/booking/12/bizes/1208339/items/6077965",
         "https://m.place.naver.com/place/1193583014/home"
-      ]
+      ],
+      "imageCredit": "사진: 속초시 관광 누리집",
+      "imageSourceUrl": "https://www.sokcho.go.kr/ct/tour/attraction/nature?contentSeq=99",
+      "imageAlt": "장사항마리나가 있는 장사항에 정박한 작은 배들",
+      "imageProvenance": {
+        "kind": "official",
+        "author": "속초시 관광 누리집",
+        "license": null,
+        "originalUrl": "https://www.sokcho.go.kr/upload/board/TSZZZZ01/eaec8367-df59-4192-bb9b-2692b1a0d3c2.jpg",
+        "pageUrl": "https://www.sokcho.go.kr/ct/tour/attraction/nature?contentSeq=99",
+        "downloadedOn": "2026-11-21",
+        "modification": "3:2로 자르고 폭 1080px 이하 WebP로 변환, 240×240 썸네일 생성",
+        "note": "공식 누리집에 게시된 사진. 재게시 허락은 받지 않았다. 행사 포스터와 같은 방식으로 출처를 표시하고, 내려 달라는 요청이 오면 바로 뺀다(2026-11-21 사용자 결정)."
+      }
     },
     {
       "slug": "bada-surf",
@@ -1569,6 +1635,7 @@
       ],
       "operationStatus": "open",
       "statusNote": null,
+      "statusNoteUntil": null,
       "verifiedOn": "2026-11-21",
       "confidence": "high",
       "unverifiedFields": [],
@@ -1605,7 +1672,7 @@
       "category": "서핑",
       "mapUrl": "https://map.naver.com/p/search/%EC%84%A0%EB%9D%BC%EC%9D%B4%EC%A6%88%20%EC%84%9C%ED%94%84",
       "isPublished": true,
-      "imageUrl": null,
+      "imageUrl": "/places/sunrise-surf.webp",
       "summary": "일출·일몰 서핑과 해변 요가를 하는 서핑숍",
       "address": "강원특별자치도 속초시 청호로4길 28 1층",
       "latitude": 38.194215,
@@ -1629,6 +1696,7 @@
       ],
       "operationStatus": "open",
       "statusNote": "겨울 강습 여부는 방문 전에 확인해 주세요.",
+      "statusNoteUntil": null,
       "verifiedOn": "2026-11-21",
       "confidence": "medium",
       "unverifiedFields": [
@@ -1646,7 +1714,20 @@
         "https://m.place.naver.com/place/1635232132/home",
         "https://m.blog.naver.com/sunrise_surf/224457286311",
         "https://daangn.com/kr/local-profile/%EC%84%A0%EB%9D%BC%EC%9D%B4%EC%A6%88%EC%84%9C%ED%94%84-o59wox2udzn7/"
-      ]
+      ],
+      "imageCredit": "사진: 선라이즈 서프 공식 인스타그램",
+      "imageSourceUrl": "https://www.instagram.com/sunrise_surf_yoga/reel/DKxvAL8zUMo/",
+      "imageAlt": "선라이즈 서프의 서핑보드 위에서 바닷가 요가를 하는 사람들",
+      "imageProvenance": {
+        "kind": "official",
+        "author": "선라이즈 서프 공식 인스타그램",
+        "license": null,
+        "originalUrl": "https://www.instagram.com/sunrise_surf_yoga/reel/DKxvAL8zUMo/",
+        "pageUrl": "https://www.instagram.com/sunrise_surf_yoga/reel/DKxvAL8zUMo/",
+        "downloadedOn": "2026-11-21",
+        "modification": "스티커·글자가 없는 아래쪽을 3:2로 잘라 WebP로 변환, 240×240 썸네일 생성",
+        "note": "업체 공식 인스타그램 게시물(릴스 표지)에서 가져온 사진. 공식 누리집이 없어 인스타그램을 썼다(2026-11-21 사용자 결정: 출처를 남기니 쓴다). 재게시 허락은 받지 않았고, 요청이 오면 바로 뺀다. 이미지 주소(CDN)는 만료되므로 게시물 주소를 남긴다."
+      }
     },
     {
       "slug": "national-mountaineering-school",
@@ -1675,6 +1756,7 @@
       ],
       "operationStatus": "open",
       "statusNote": "스포츠클라이밍 기초교육은 2월부터 11월까지만 진행합니다.",
+      "statusNoteUntil": null,
       "verifiedOn": "2026-11-21",
       "confidence": "high",
       "unverifiedFields": [
@@ -1742,6 +1824,7 @@
       ],
       "operationStatus": "open",
       "statusNote": null,
+      "statusNoteUntil": null,
       "verifiedOn": "2026-11-21",
       "confidence": "high",
       "unverifiedFields": [],
@@ -1779,7 +1862,7 @@
       "category": "체험마을",
       "mapUrl": "https://map.naver.com/p/search/%EC%9E%A5%EC%82%AC%EC%96%B4%EC%B4%8C%EC%B2%B4%ED%97%98%EB%A7%88%EC%9D%84",
       "isPublished": true,
-      "imageUrl": null,
+      "imageUrl": "/places/jangsa-fishing-village.webp",
       "summary": "장사항에서 공예·배낚시·오징어 체험을 하는 어촌 마을",
       "address": "강원특별자치도 속초시 장사항해안길 44",
       "latitude": 38.226635,
@@ -1805,6 +1888,7 @@
       ],
       "operationStatus": "open",
       "statusNote": "오징어 맨손잡기는 4~10월, 스쿠버·스노클링은 8~10월에만 운영합니다.",
+      "statusNoteUntil": null,
       "verifiedOn": "2026-11-21",
       "confidence": "high",
       "unverifiedFields": [
@@ -1828,7 +1912,20 @@
         "https://cms.seantour.com/jangsa/experience-reservation.do?mode=view&articleNo=6442",
         "https://www.seantour.kr/newseantour/fhlg/vilage/vilageDetail.do?vilageSvcSn=VLAGE0000001078",
         "https://m.place.naver.com/place/36072132/home"
-      ]
+      ],
+      "imageCredit": "사진: 속초시 관광 누리집",
+      "imageSourceUrl": "https://www.sokcho.go.kr/ct/tour/attraction/nature?contentSeq=125",
+      "imageAlt": "장사항에 정박한 장사어촌계 낚시 어선들",
+      "imageProvenance": {
+        "kind": "official",
+        "author": "속초시 관광 누리집",
+        "license": null,
+        "originalUrl": "https://www.sokcho.go.kr/upload/board/TSZZZZ01/abc62440-ce12-40aa-b2eb-4359d9921c5f.jpg",
+        "pageUrl": "https://www.sokcho.go.kr/ct/tour/attraction/nature?contentSeq=125",
+        "downloadedOn": "2026-11-21",
+        "modification": "3:2로 자르고 폭 1080px 이하 WebP로 변환, 240×240 썸네일 생성",
+        "note": "공식 누리집에 게시된 사진. 재게시 허락은 받지 않았다. 행사 포스터와 같은 방식으로 출처를 표시하고, 내려 달라는 요청이 오면 바로 뺀다(2026-11-21 사용자 결정)."
+      }
     },
     {
       "slug": "yeongrangho-story-bike",
@@ -1860,6 +1957,7 @@
       ],
       "operationStatus": "open",
       "statusNote": null,
+      "statusNoteUntil": null,
       "verifiedOn": "2026-11-21",
       "confidence": "high",
       "unverifiedFields": [
@@ -1899,7 +1997,7 @@
       "category": "체험시설",
       "mapUrl": "https://map.naver.com/p/search/%EC%8A%A4%ED%8F%AC%EC%B8%A0%20%EB%84%A5%EC%8A%A4%ED%8A%B8%EB%A0%88%EB%B2%A8",
       "isPublished": true,
-      "imageUrl": null,
+      "imageUrl": "/places/sports-next-level.webp",
       "summary": "VR·AR로 클라이밍과 스케이트보드를 해 보는 공공 체험관",
       "address": "강원특별자치도 속초시 척산양지말길 41 척산생활체육관 1층",
       "latitude": 38.18645,
@@ -1926,6 +2024,7 @@
       ],
       "operationStatus": "open",
       "statusNote": null,
+      "statusNoteUntil": null,
       "verifiedOn": "2026-11-21",
       "confidence": "high",
       "unverifiedFields": [
@@ -1943,33 +2042,58 @@
         "https://nextlevel.sports.or.kr/board/notice/read/48",
         "https://nextlevel.sports.or.kr/reserve",
         "https://m.place.naver.com/place/2059304778/home"
-      ]
+      ],
+      "imageCredit": "사진: 스포츠 넥스트레벨 공식 홈페이지",
+      "imageSourceUrl": "https://nextlevel.sports.or.kr/sub2_2",
+      "imageAlt": "푸른 조명이 켜진 스포츠 넥스트레벨의 실내 클라이밍 체험 공간",
+      "imageProvenance": {
+        "kind": "official",
+        "author": "스포츠 넥스트레벨 공식 홈페이지",
+        "license": null,
+        "originalUrl": "https://nextlevel.sports.or.kr/images/sub/climing-01.JPG",
+        "pageUrl": "https://nextlevel.sports.or.kr/sub2_2",
+        "downloadedOn": "2026-11-21",
+        "modification": "3:2로 자르고 폭 1080px 이하 WebP로 변환, 240×240 썸네일 생성",
+        "note": "공식 누리집에 게시된 사진. 재게시 허락은 받지 않았다. 행사 포스터와 같은 방식으로 출처를 표시하고, 내려 달라는 요청이 오면 바로 뺀다(2026-11-21 사용자 결정)."
+      }
     },
     {
       "slug": "dinosaur-ridge",
       "catalogSlug": "sokcho-attraction-012",
-      "summary": "설악산 마등령과 신선대를 잇는 바위 능선",
+      "summary": "마등령과 신선대 사이를 잇는 설악산의 험한 바위 능선",
       "activityCategory": "nature",
-      "tags": [],
-      "description": null,
+      "tags": [
+        "free"
+      ],
+      "description": "마등령에서 신선대까지 약 5km 이어지는 설악산의 대표 암릉으로, 해발 1,000m가 넘는 봉우리를 여러 번 오르내리며 외설악과 내설악을 함께 내려다봅니다. 소공원에서 비선대·마등령으로 올라 능선을 지나 천불동계곡으로 내려오는 원점 코스는 약 20km라 하루를 통째로 쓰는 장거리 산행입니다. 산행 경험과 장비를 갖춘 사람에게 맞고, 가벼운 나들이 코스로는 맞지 않습니다.",
       "hoursSummary": null,
-      "closedSummary": null,
-      "priceSummary": null,
-      "phone": null,
-      "parkingSummary": null,
-      "cautions": [],
+      "closedSummary": "봄·가을 산불조심기간에 고지대 탐방로로 통제(가을은 11월 중순~12월 중순 무렵)",
+      "priceSummary": "무료",
+      "phone": "033-801-0900",
+      "parkingSummary": "설악산 소공원 유료 주차장 이용",
+      "cautions": [
+        "급경사 바위 구간이 계속 이어지는 매우 어려운 코스입니다.",
+        "통제 기간에 탐방로가 아닌 길로 들어가면 과태료를 냅니다.",
+        "하루 안에 내려오려면 이른 새벽에 출발해야 합니다."
+      ],
       "bookingUrl": null,
       "operationStatus": "open",
       "statusNote": null,
-      "verifiedOn": null,
-      "confidence": "catalog",
+      "statusNoteUntil": null,
+      "verifiedOn": "2026-11-21",
+      "confidence": "medium",
       "unverifiedFields": [
-        "hoursSummary",
-        "priceSummary"
+        "closedSummary",
+        "hoursSummary"
       ],
       "sources": [
+        "https://www.khan.co.kr/article/202511061252001",
+        "https://www.news1.kr/life-culture/travel-leisure/4838351",
+        "https://www.ktriptips.com/kor/tourspot/125756",
+        "https://www.knps.or.kr/front/portal/visit/visitCourseMain.do?parkId=120400&menuNo=7020016",
         "https://www.sokcho.go.kr/ct/tour/attraction",
-        "https://www.openstreetmap.org/way/178142232"
+        "https://www.openstreetmap.org/way/178142232",
+        "https://map.naver.com/p/entry/place/15101204"
       ],
       "imageUrl": "/places/dinosaur-ridge.webp",
       "imageCredit": "사진: 속초시 관광 누리집",
@@ -1984,33 +2108,45 @@
         "downloadedOn": "2026-11-21",
         "modification": "3:2로 자르고 폭 1080px 이하 WebP로 변환, 240×240 썸네일 생성",
         "note": "공식 누리집에 게시된 사진. 재게시 허락은 받지 않았다. 행사 포스터와 같은 방식으로 출처를 표시하고, 내려 달라는 요청이 오면 바로 뺀다(2026-11-21 사용자 결정)."
-      }
+      },
+      "address": "강원특별자치도 속초시 설악동 설악산국립공원",
+      "latitude": 38.150235,
+      "longitude": 128.442923,
+      "coordinateSource": "네이버 지도 장소 '공룡능선' 좌표"
     },
     {
       "slug": "gwongeumseong",
       "catalogSlug": "sokcho-attraction-013",
-      "summary": "설악케이블카로 오르는 설악산 봉우리의 옛 산성터",
+      "summary": "설악케이블카로 오르는 해발 약 700m 봉우리의 옛 산성 터",
       "activityCategory": "nature",
-      "tags": [],
-      "description": null,
-      "hoursSummary": null,
-      "closedSummary": null,
-      "priceSummary": null,
-      "phone": null,
-      "parkingSummary": null,
-      "cautions": [],
+      "tags": [
+        "kids"
+      ],
+      "description": "소공원에서 설악케이블카를 타고 5분쯤 오르는 바위 봉우리로, 두 장수가 하룻밤에 쌓았다는 이야기가 전해지는 옛 산성 터가 남아 있습니다. 상부 승강장에서 계단을 10분 정도 오르면 봉화대가 나오고, 외설악 봉우리와 속초 시내, 멀리 동해까지 함께 보입니다. 걸어서 오르내리는 길이 없어 왕복 케이블카로만 갈 수 있어, 산행 부담 없이 설악산 전망을 보고 싶은 가족에게 맞습니다.",
+      "hoursSummary": "케이블카 운행시간은 계절·날씨에 따라 달라 설악케이블카 홈페이지에 날마다 게시",
+      "closedSummary": "정기 휴무 없음(강풍·악천후 때 케이블카 운행 중단)",
+      "priceSummary": "케이블카 왕복 대인 16,000원 · 소인(37개월~초등학생) 12,000원",
+      "phone": "033-636-4300",
+      "parkingSummary": "설악산 소공원 유료 주차장 이용",
+      "cautions": [
+        "승차권은 당일 현장에서 왕복으로만 팔고, 주말·단풍철에는 대기가 길어질 수 있습니다.",
+        "마지막 편을 타면 권금성에 머무는 시간이 20분 정도뿐입니다.",
+        "유모차는 탈 수 없어 탑승장 옆 무료 보관소에 맡겨야 합니다."
+      ],
       "bookingUrl": null,
       "operationStatus": "open",
       "statusNote": null,
-      "verifiedOn": null,
-      "confidence": "catalog",
-      "unverifiedFields": [
-        "hoursSummary",
-        "priceSummary"
-      ],
+      "statusNoteUntil": null,
+      "verifiedOn": "2026-11-21",
+      "confidence": "medium",
+      "unverifiedFields": [],
       "sources": [
+        "https://www.sorakcablecar.co.kr",
+        "https://www.sorakcablecar.co.kr/guide",
+        "https://www.ktriptips.com/kor/tourspot/128788",
         "https://www.sokcho.go.kr/ct/tour/attraction",
-        "https://www.openstreetmap.org/node/2879829401"
+        "https://www.openstreetmap.org/node/2879829401",
+        "https://map.naver.com/p/entry/place/19494153"
       ],
       "imageUrl": "/places/gwongeumseong.webp",
       "imageCredit": "사진: 속초시 관광 누리집",
@@ -2025,60 +2161,97 @@
         "downloadedOn": "2026-11-21",
         "modification": "3:2로 자르고 폭 1080px 이하 WebP로 변환, 240×240 썸네일 생성",
         "note": "공식 누리집에 게시된 사진. 재게시 허락은 받지 않았다. 행사 포스터와 같은 방식으로 출처를 표시하고, 내려 달라는 요청이 오면 바로 뺀다(2026-11-21 사용자 결정)."
-      }
+      },
+      "address": "강원특별자치도 속초시 설악동 설악산국립공원",
+      "latitude": 38.163966,
+      "longitude": 128.485127,
+      "coordinateSource": "네이버 지도 장소 '권금성' 좌표"
     },
     {
       "slug": "geumganggul-cave",
       "catalogSlug": "sokcho-attraction-049",
-      "summary": "설악산 비선대 위 절벽 중턱의 자연 동굴",
+      "summary": "비선대 위 장군봉 중턱 절벽에 있는 자연 석굴",
       "activityCategory": "nature",
-      "tags": [],
-      "description": null,
+      "tags": [
+        "free"
+      ],
+      "description": "비선대 서쪽 장군봉 중턱, 해발 약 600m 암벽에 난 자연 동굴로, 원효대사가 수도했다고 전해지며 지금은 신흥사에 딸린 암자입니다. 소공원에서 와선대·비선대를 지나 약 3.6km, 편도 2시간쯤 걸리고, 비선대부터는 계단이 이어지는 가파른 오르막입니다. 굴 앞에서 천불동계곡이 내려다보여, 비선대까지 걷고도 체력이 남는 사람에게 맞습니다.",
       "hoursSummary": null,
       "closedSummary": null,
-      "priceSummary": null,
-      "phone": null,
-      "parkingSummary": null,
-      "cautions": [],
+      "priceSummary": "무료",
+      "phone": "033-801-0900",
+      "parkingSummary": "설악산 소공원 유료 주차장 이용",
+      "cautions": [
+        "비선대 이후 구간은 경사가 급하고 계단이 계속됩니다.",
+        "코스마다 입산할 수 있는 시간이 달라 국립공원공단 누리집에서 미리 보세요."
+      ],
       "bookingUrl": null,
       "operationStatus": "open",
       "statusNote": null,
-      "verifiedOn": null,
-      "confidence": "catalog",
+      "statusNoteUntil": null,
+      "verifiedOn": "2026-11-21",
+      "confidence": "medium",
       "unverifiedFields": [
         "hoursSummary",
-        "priceSummary"
+        "closedSummary"
       ],
       "sources": [
+        "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=3e0da4de-c6aa-4216-bdf9-2f7aef816eb2",
+        "https://www.ktriptips.com/kor/tourspot/125730",
         "https://www.sokcho.go.kr/ct/tour/",
-        "https://www.openstreetmap.org/node/6902812485"
-      ]
+        "https://www.openstreetmap.org/node/6902812485",
+        "https://map.naver.com/p/entry/place/13490879"
+      ],
+      "address": "강원특별자치도 속초시 설악동 설악산국립공원",
+      "latitude": 38.164711,
+      "longitude": 128.464701,
+      "coordinateSource": "네이버 지도 장소 '금강굴' 좌표",
+      "imageUrl": "/places/geumganggul-cave.webp",
+      "imageCredit": "사진: Sohyeon Bak, CC BY-SA 3.0 (위키미디어 공용) · 원본에서 잘라냄",
+      "imageSourceUrl": "https://commons.wikimedia.org/wiki/File:%EA%B8%88%EA%B0%95%EA%B5%B4.jpg",
+      "imageAlt": "깎아지른 바위 절벽을 따라 금강굴로 오르는 철계단",
+      "imageProvenance": {
+        "title": "금강굴.jpg",
+        "author": "Sohyeon Bak",
+        "license": "CC BY-SA 3.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+        "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/9/9d/%EA%B8%88%EA%B0%95%EA%B5%B4.jpg",
+        "downloadedOn": "2026-11-21",
+        "modification": "3:2로 자르고 WebP로 변환, 240×240 썸네일 생성",
+        "kind": "open-license",
+        "takenYear": 2013,
+        "note": "사용자가 위키미디어 공용에서 내려받아 전달한 1,280px 이하 사본을 썼다(2026-11-21). 자동 다운로드는 위키미디어 요청 제한(429)으로 막혔다."
+      }
     },
     {
       "slug": "dalmabong-peak",
       "catalogSlug": "sokcho-attraction-014",
-      "summary": "설악산 소공원 동쪽에 솟은 바위 봉우리",
+      "summary": "소공원 동쪽의 바위 봉우리, 평소 출입 제한",
       "activityCategory": "nature",
       "tags": [],
-      "description": null,
+      "description": "설악산 소공원 동쪽에 솟은 바위 봉우리입니다. 자연 보호와 안전을 위해 평소에는 일반인 출입이 제한되는 구간이라, 트레킹 축제 같은 행사가 있을 때만 하루씩 임시로 열립니다. 평소에는 소공원 일대에서 바라보는 풍경으로 즐기면 됩니다.",
       "hoursSummary": null,
-      "closedSummary": null,
+      "closedSummary": "평소 일반인 출입 제한(행사 때만 임시 개방)",
       "priceSummary": null,
-      "phone": null,
+      "phone": "033-801-0900",
       "parkingSummary": null,
-      "cautions": [],
+      "cautions": [
+        "출입 제한 구간에 들어가면 과태료를 낼 수 있습니다."
+      ],
       "bookingUrl": null,
       "operationStatus": "open",
-      "statusNote": null,
-      "verifiedOn": null,
-      "confidence": "catalog",
+      "statusNote": "평소에는 일반인 출입이 제한돼 오를 수 없어요. 트레킹 축제 같은 행사 때만 하루씩 임시로 열려요.",
+      "statusNoteUntil": null,
+      "verifiedOn": "2026-11-21",
+      "confidence": "medium",
       "unverifiedFields": [
-        "hoursSummary",
-        "priceSummary"
+        "closedSummary"
       ],
       "sources": [
+        "https://www.kukinews.com/article/view/kuk202506110138",
         "https://www.sokcho.go.kr/ct/tour/attraction",
-        "https://www.openstreetmap.org/node/444223898"
+        "https://www.openstreetmap.org/node/444223898",
+        "https://map.naver.com/p/entry/place/15093793"
       ],
       "imageUrl": "/places/dalmabong-peak.webp",
       "imageCredit": "사진: 속초시 관광 누리집",
@@ -2093,36 +2266,43 @@
         "downloadedOn": "2026-11-21",
         "modification": "3:2로 자르고 폭 1080px 이하 WebP로 변환, 240×240 썸네일 생성",
         "note": "공식 누리집에 게시된 사진. 재게시 허락은 받지 않았다. 행사 포스터와 같은 방식으로 출처를 표시하고, 내려 달라는 요청이 오면 바로 뺀다(2026-11-21 사용자 결정)."
-      }
+      },
+      "address": "강원특별자치도 속초시 노학동 산1",
+      "latitude": 38.181947,
+      "longitude": 128.49606,
+      "coordinateSource": "네이버 지도 장소 '달마봉' 좌표"
     },
     {
       "slug": "daepo-port",
       "catalogSlug": "daepo-port",
       "summary": "튀김골목과 수산시장이 있는 속초 남쪽 항구",
       "activityCategory": "nature",
-      "tags": [
-        "free"
-      ],
-      "description": null,
-      "hoursSummary": null,
+      "tags": [],
+      "description": "속초 남쪽 바닷가의 어항으로, 회와 해산물을 파는 대포항관광수산시장과 새우·오징어 같은 해산물을 튀겨 파는 튀김골목이 항구에 붙어 있습니다. 항구를 한 바퀴 둘러보고 시장에서 먹거리를 사 먹으면 1시간 안팎이 걸립니다. 북쪽의 외옹치항과 가까워 바닷가 산책과 묶어 들르기에 맞습니다.",
+      "hoursSummary": "항구는 늘 열려 있고, 시장 점포는 대체로 10:00~23:00(점포마다 다름)",
       "closedSummary": null,
-      "priceSummary": null,
+      "priceSummary": "입장 무료(회·튀김은 점포별 가격)",
       "phone": null,
-      "parkingSummary": null,
-      "cautions": [],
+      "parkingSummary": "근처 공영주차장 이용",
+      "cautions": [
+        "점포마다 영업시간과 가격이 달라 주문 전에 확인하세요."
+      ],
       "bookingUrl": null,
       "operationStatus": "open",
       "statusNote": null,
-      "verifiedOn": null,
-      "confidence": "catalog",
+      "statusNoteUntil": null,
+      "verifiedOn": "2026-11-21",
+      "confidence": "medium",
       "unverifiedFields": [
-        "hoursSummary",
-        "priceSummary"
+        "parkingSummary"
       ],
       "sources": [
+        "https://www.ktriptips.com/kor/tourspot/264440",
+        "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=33248853-b262-4808-bfbb-50d88d9f43ac",
         "https://www.sokcho.go.kr/ct/tour/attraction/experience?contentSeq=104",
         "https://www.openstreetmap.org/?mlat=38.1706&mlon=128.6053#map=17/38.1706/128.6053",
-        "https://www.sokcho.go.kr/ct/tour/attraction/experience"
+        "https://www.sokcho.go.kr/ct/tour/attraction/experience",
+        "https://map.naver.com/p/entry/place/13491463"
       ],
       "imageUrl": "/places/daepo-port.webp",
       "imageCredit": "사진: 속초시 관광 누리집",
@@ -2137,35 +2317,42 @@
         "downloadedOn": "2026-11-21",
         "modification": "3:2로 자르고 폭 1080px 이하 WebP로 변환, 240×240 썸네일 생성",
         "note": "공식 누리집에 게시된 사진. 재게시 허락은 받지 않았다. 행사 포스터와 같은 방식으로 출처를 표시하고, 내려 달라는 요청이 오면 바로 뺀다(2026-11-21 사용자 결정)."
-      }
+      },
+      "latitude": 38.173795,
+      "longitude": 128.606991,
+      "coordinateSource": "네이버 지도 장소 '대포항' 좌표"
     },
     {
       "slug": "dongmyeong-port",
       "catalogSlug": "sokcho-attraction-032",
       "summary": "영금정 옆 활어회센터가 있는 항구",
       "activityCategory": "nature",
-      "tags": [
-        "free"
-      ],
-      "description": null,
-      "hoursSummary": null,
+      "tags": [],
+      "description": "속초 동북쪽 바닷가의 항구로, 방파제 입구의 동명활어센터에서는 1층 수조에서 횟감을 고르고 2층 식당에서 먹을 수 있습니다. 영금정 해돋이 정자와 속초등대가 걸어서 닿는 거리라 해돋이나 바닷가 산책과 묶어 1~2시간 잡으면 좋습니다.",
+      "hoursSummary": "항구는 늘 열려 있고, 동명활어센터는 대체로 07:00~21:00",
       "closedSummary": null,
-      "priceSummary": null,
+      "priceSummary": "입장 무료(회는 시가)",
       "phone": null,
       "parkingSummary": null,
-      "cautions": [],
+      "cautions": [
+        "회는 시가라 고르기 전에 가격을 물어보세요."
+      ],
       "bookingUrl": null,
       "operationStatus": "open",
       "statusNote": null,
-      "verifiedOn": null,
-      "confidence": "catalog",
+      "statusNoteUntil": null,
+      "verifiedOn": "2026-11-21",
+      "confidence": "medium",
       "unverifiedFields": [
-        "hoursSummary",
-        "priceSummary"
+        "parkingSummary",
+        "hoursSummary"
       ],
       "sources": [
+        "https://www.ktriptips.com/kor/tourspot/129454",
+        "https://www.ktriptips.com/kor/shopping/2782154",
         "https://www.sokcho.go.kr/ct/tour/attraction/experience",
-        "https://www.openstreetmap.org/node/4821909424"
+        "https://www.openstreetmap.org/node/4821909424",
+        "https://map.naver.com/p/entry/place/13491529"
       ],
       "imageUrl": "/places/dongmyeong-port.webp",
       "imageCredit": "사진: 속초시 관광 누리집",
@@ -2180,65 +2367,97 @@
         "downloadedOn": "2026-11-21",
         "modification": "3:2로 자르고 폭 1080px 이하 WebP로 변환, 240×240 썸네일 생성",
         "note": "공식 누리집에 게시된 사진. 재게시 허락은 받지 않았다. 행사 포스터와 같은 방식으로 출처를 표시하고, 내려 달라는 요청이 오면 바로 뺀다(2026-11-21 사용자 결정)."
-      }
+      },
+      "address": "강원특별자치도 속초시 영금정로 50",
+      "latitude": 38.210568,
+      "longitude": 128.601462,
+      "coordinateSource": "네이버 지도 장소 '동명항' 좌표"
     },
     {
       "slug": "beombawi-rock",
       "catalogSlug": "sokcho-attraction-046",
-      "summary": "영랑호 둘레길 옆의 커다란 바위",
+      "summary": "영랑호와 설악산·동해가 내려다보이는 바위 전망지",
       "activityCategory": "nature",
       "tags": [
         "free"
       ],
-      "description": null,
+      "description": "영랑호 서남쪽 호숫가에 크고 작은 바위가 모여 있는 곳으로, 웅크린 범을 닮았다고 해서 이 이름이 붙었고 속초 8경에 들어갑니다. 입구에서 5분쯤 걸어 오르면 영랑호와 동해, 울산바위를 비롯한 설악산 능선이 한눈에 보입니다. 영랑호 둘레길을 걷다가 잠깐 들르기 좋습니다.",
       "hoursSummary": null,
       "closedSummary": null,
-      "priceSummary": null,
+      "priceSummary": "무료",
       "phone": null,
       "parkingSummary": null,
-      "cautions": [],
+      "cautions": [
+        "오르는 길이 짧지만 가파른 바위라 미끄럽습니다.",
+        "비가 온 뒤나 얼음이 언 날에는 바위 위에 오르지 않는 편이 안전합니다."
+      ],
       "bookingUrl": null,
       "operationStatus": "open",
       "statusNote": null,
-      "verifiedOn": null,
-      "confidence": "catalog",
+      "statusNoteUntil": null,
+      "verifiedOn": "2026-11-21",
+      "confidence": "medium",
       "unverifiedFields": [
-        "hoursSummary",
-        "priceSummary"
+        "parkingSummary"
       ],
       "sources": [
+        "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=899855c5-8cc4-4ec1-89d8-36bd2166016e",
+        "https://www.ktriptips.com/kor/tourspot/2776855",
         "https://www.sokcho.go.kr/ct/tour/",
-        "https://www.openstreetmap.org/way/485477797"
-      ]
+        "https://www.openstreetmap.org/way/485477797",
+        "https://map.naver.com/p/entry/place/21576070"
+      ],
+      "address": "강원특별자치도 속초시 금호동 610-22",
+      "latitude": 38.214716,
+      "longitude": 128.575824,
+      "coordinateSource": "네이버 지도 장소 '영랑호범바위' 좌표",
+      "imageUrl": "/places/beombawi-rock.webp",
+      "imageCredit": "사진: 속초시 관광 누리집",
+      "imageSourceUrl": "https://www.sokcho.go.kr/ct/tour/attraction/nature?contentSeq=140",
+      "imageAlt": "푸른 하늘 아래 둥글게 포개진 범바위의 큰 바위들",
+      "imageProvenance": {
+        "kind": "official",
+        "author": "속초시 관광 누리집",
+        "license": null,
+        "originalUrl": "https://www.sokcho.go.kr/upload/board/TSZZZZ01/0501c4fa-3bcc-46b2-b5e9-39a6e9a5957d.jpg",
+        "pageUrl": "https://www.sokcho.go.kr/ct/tour/attraction/nature?contentSeq=140",
+        "downloadedOn": "2026-11-21",
+        "modification": "3:2로 자르고 폭 1080px 이하 WebP로 변환, 240×240 썸네일 생성",
+        "note": "공식 누리집에 게시된 사진. 재게시 허락은 받지 않았다. 행사 포스터와 같은 방식으로 출처를 표시하고, 내려 달라는 요청이 오면 바로 뺀다(2026-11-21 사용자 결정)."
+      }
     },
     {
       "slug": "bogwangsa-temple",
       "catalogSlug": "sokcho-attraction-042",
-      "summary": "영랑호 근처의 사찰",
+      "summary": "영랑호 호숫가의 작은 사찰",
       "activityCategory": "nature",
       "tags": [
         "free"
       ],
-      "description": null,
+      "description": "영랑호 호숫가에 있는 절로, 목조 지장보살상과 옥으로 만든 와불상(누운 불상)을 모시고 있습니다. 영랑호 산책길에 들러 30분 정도 조용히 둘러보기에 알맞습니다.",
       "hoursSummary": null,
       "closedSummary": null,
-      "priceSummary": null,
-      "phone": null,
+      "priceSummary": "무료",
+      "phone": "033-632-9800",
       "parkingSummary": null,
-      "cautions": [],
+      "cautions": [
+        "예불이나 법회 중에는 법당 안 촬영과 큰 소리를 삼가 주세요."
+      ],
       "bookingUrl": null,
       "operationStatus": "open",
       "statusNote": null,
-      "verifiedOn": null,
-      "confidence": "catalog",
+      "statusNoteUntil": null,
+      "verifiedOn": "2026-11-21",
+      "confidence": "medium",
       "unverifiedFields": [
-        "hoursSummary",
-        "priceSummary"
+        "parkingSummary"
       ],
       "sources": [
+        "https://www.ktriptips.com/kor/tourspot/127749",
         "https://www.sokcho.go.kr/ct/tour/attraction",
         "https://www.openstreetmap.org/node/6915203709",
-        "https://www.sokcho.go.kr/ct/tour/attraction/culture"
+        "https://www.sokcho.go.kr/ct/tour/attraction/culture",
+        "https://map.naver.com/p/entry/place/15005380"
       ],
       "imageUrl": "/places/bogwangsa-temple.webp",
       "imageCredit": "사진: 속초시 관광 누리집",
@@ -2253,33 +2472,44 @@
         "downloadedOn": "2026-11-21",
         "modification": "3:2로 자르고 폭 1080px 이하 WebP로 변환, 240×240 썸네일 생성",
         "note": "공식 누리집에 게시된 사진. 재게시 허락은 받지 않았다. 행사 포스터와 같은 방식으로 출처를 표시하고, 내려 달라는 요청이 오면 바로 뺀다(2026-11-21 사용자 결정)."
-      }
+      },
+      "address": "강원특별자치도 속초시 영랑호반길 69-2",
+      "latitude": 38.213601,
+      "longitude": 128.585688,
+      "coordinateSource": "네이버 지도 장소 '보광사' 좌표"
     },
     {
       "slug": "biryong-falls",
       "catalogSlug": "sokcho-attraction-015",
-      "summary": "설악산 소공원에서 걸어가는 계곡 폭포",
+      "summary": "소공원에서 2.4km 걸어가는 높이 16m 계곡 폭포",
       "activityCategory": "nature",
-      "tags": [],
-      "description": null,
-      "hoursSummary": null,
+      "tags": [
+        "free"
+      ],
+      "description": "토왕골 계곡 안쪽에 있는 높이 약 16m의 폭포로, 폭포 아래 맑은 소를 둘러 전망 데크가 놓여 있습니다. 소공원 매표소에서 육담폭포를 지나 약 2.4km, 편도 1시간 안팎이 걸리며 난이도는 보통입니다. 여유가 있으면 약 400m 위 토왕성폭포 전망대까지 이어서 걸을 수 있습니다.",
+      "hoursSummary": "입산 가능 시간 동절기 04:00~12:00 · 하절기 03:00~14:00",
       "closedSummary": null,
-      "priceSummary": null,
-      "phone": null,
-      "parkingSummary": null,
-      "cautions": [],
+      "priceSummary": "무료",
+      "phone": "033-801-0900",
+      "parkingSummary": "설악산 소공원 유료 주차장 이용",
+      "cautions": [
+        "폭포에서 토왕성폭포 쪽으로 곧장 가는 길은 낙석 위험으로 막혀 있습니다."
+      ],
       "bookingUrl": null,
       "operationStatus": "open",
       "statusNote": null,
-      "verifiedOn": null,
-      "confidence": "catalog",
+      "statusNoteUntil": null,
+      "verifiedOn": "2026-11-21",
+      "confidence": "medium",
       "unverifiedFields": [
-        "hoursSummary",
-        "priceSummary"
+        "hoursSummary"
       ],
       "sources": [
+        "https://english.visitkorea.or.kr/svc/whereToGo/locIntrdn/rgnContentsView.do?vcontsId=111233",
+        "https://www.ktriptips.com/kor/tourspot/125674",
         "https://www.sokcho.go.kr/ct/tour/attraction",
-        "https://www.openstreetmap.org/node/444218280"
+        "https://www.openstreetmap.org/node/444218280",
+        "https://map.naver.com/p/entry/place/13491651"
       ],
       "imageUrl": "/places/biryong-falls.webp",
       "imageCredit": "사진: 속초시 관광 누리집",
@@ -2294,33 +2524,46 @@
         "downloadedOn": "2026-11-21",
         "modification": "3:2로 자르고 폭 1080px 이하 WebP로 변환, 240×240 썸네일 생성",
         "note": "공식 누리집에 게시된 사진. 재게시 허락은 받지 않았다. 행사 포스터와 같은 방식으로 출처를 표시하고, 내려 달라는 요청이 오면 바로 뺀다(2026-11-21 사용자 결정)."
-      }
+      },
+      "address": "강원특별자치도 속초시 설악동 설악산국립공원",
+      "latitude": 38.161976,
+      "longitude": 128.501649,
+      "coordinateSource": "네이버 지도 장소 '비룡폭포' 좌표"
     },
     {
       "slug": "seoraksan-sogongwon",
       "catalogSlug": "seoraksan-sogongwon",
       "activityCategory": "nature",
-      "tags": [],
-      "description": null,
+      "tags": [
+        "free",
+        "kids"
+      ],
+      "description": "설악동 안쪽 끝에 있는 외설악 탐방의 출발점으로, 설악케이블카 탑승장과 신흥사, 비룡폭포·비선대·울산바위로 가는 탐방로 입구가 모두 이곳에 모여 있습니다. 산에 오르지 않아도 통일대불이 있는 신흥사 경내와 광장 주변을 걸어서 둘러볼 수 있고, 휴게소와 식당도 있습니다. 속초 시내에서 시내버스가 닿아 차 없이도 오갈 수 있고, 단풍철에는 설악동 일대에 차가 몰립니다.",
       "hoursSummary": null,
       "closedSummary": null,
-      "priceSummary": null,
-      "phone": null,
-      "parkingSummary": null,
-      "cautions": [],
+      "priceSummary": "무료",
+      "phone": "033-801-0900",
+      "parkingSummary": "유료(차종·성수기에 따라 요금이 다름)",
+      "cautions": [
+        "단풍철에는 설악동 일대에 교통 통제와 셔틀버스 운영이 있을 수 있습니다."
+      ],
       "bookingUrl": null,
       "operationStatus": "open",
       "statusNote": null,
-      "verifiedOn": null,
-      "confidence": "catalog",
+      "statusNoteUntil": null,
+      "verifiedOn": "2026-11-21",
+      "confidence": "medium",
       "unverifiedFields": [
-        "hoursSummary",
-        "priceSummary"
+        "parkingSummary"
       ],
       "sources": [
+        "https://www.ktriptips.com/kor/tourspot/127586",
+        "https://www.ktriptips.com/kor/tourspot/125756",
+        "https://www.kukinews.com/article/view/kuk202305040153",
         "https://www.knps.or.kr/seorak",
         "https://www.openstreetmap.org/?mlat=38.173&mlon=128.488#map=17/38.173/128.488",
-        "https://www.sokcho.go.kr/ct/tour/attraction"
+        "https://www.sokcho.go.kr/ct/tour/attraction",
+        "https://map.naver.com/p/entry/place/15101407"
       ],
       "imageUrl": "/places/seoraksan-sogongwon.webp",
       "imageCredit": "사진: 속초시 관광 누리집",
@@ -2335,35 +2578,44 @@
         "downloadedOn": "2026-11-21",
         "modification": "3:2로 자르고 폭 1080px 이하 WebP로 변환, 240×240 썸네일 생성",
         "note": "공식 누리집에 게시된 사진. 재게시 허락은 받지 않았다. 행사 포스터와 같은 방식으로 출처를 표시하고, 내려 달라는 요청이 오면 바로 뺀다(2026-11-21 사용자 결정)."
-      }
+      },
+      "latitude": 38.172527,
+      "longitude": 128.493664,
+      "coordinateSource": "네이버 지도 장소 '설악산소공원' 좌표",
+      "summary": "케이블카·신흥사·주요 탐방로가 모이는 외설악 입구"
     },
     {
       "slug": "seoraksan-native-botanical-garden",
       "catalogSlug": "sokcho-attraction-017",
-      "summary": "설악산에 자라는 식물을 모아 둔 식물원",
+      "summary": "설악산 자생식물을 모아 둔 무료 생태 식물원",
       "activityCategory": "nature",
       "tags": [
-        "free"
+        "free",
+        "kids"
       ],
-      "description": null,
-      "hoursSummary": null,
-      "closedSummary": null,
-      "priceSummary": null,
-      "phone": null,
-      "parkingSummary": null,
-      "cautions": [],
+      "description": "설악산에 자라는 희귀식물과 야생화를 모아 둔 속초시 생태학습장으로, 수생식물원·암석원·온실과 숲속 산책로, 아이들이 뛰어놀 수 있는 미로원이 있습니다. 노학동 바람꽃마을 안쪽에 있어 설악동을 오가는 길에 들를 수 있고, 1시간 정도면 천천히 둘러볼 수 있습니다.",
+      "hoursSummary": "09:00~17:30",
+      "closedSummary": "연중무휴",
+      "priceSummary": "무료",
+      "phone": "033-639-2928",
+      "parkingSummary": "무료(소형차 약 20대)",
+      "cautions": [
+        "반려동물은 함께 들어갈 수 없습니다."
+      ],
       "bookingUrl": null,
       "operationStatus": "open",
       "statusNote": null,
-      "verifiedOn": null,
-      "confidence": "catalog",
+      "statusNoteUntil": null,
+      "verifiedOn": "2026-11-21",
+      "confidence": "medium",
       "unverifiedFields": [
-        "hoursSummary",
-        "priceSummary"
+        "hoursSummary"
       ],
       "sources": [
+        "https://www.ktriptips.com/kor/tourspot/2513888",
         "https://www.sokcho.go.kr/ct/tour/attraction",
-        "https://www.openstreetmap.org/node/4821909535"
+        "https://www.openstreetmap.org/node/4821909535",
+        "https://map.naver.com/p/entry/place/20758200"
       ],
       "imageUrl": "/places/seoraksan-native-botanical-garden.webp",
       "imageCredit": "사진: 속초시 관광 누리집",
@@ -2378,36 +2630,59 @@
         "downloadedOn": "2026-11-21",
         "modification": "3:2로 자르고 폭 1080px 이하 WebP로 변환, 240×240 썸네일 생성",
         "note": "공식 누리집에 게시된 사진. 재게시 허락은 받지 않았다. 행사 포스터와 같은 방식으로 출처를 표시하고, 내려 달라는 요청이 오면 바로 뺀다(2026-11-21 사용자 결정)."
-      }
+      },
+      "address": "강원특별자치도 속초시 바람꽃마을길 164",
+      "latitude": 38.196435,
+      "longitude": 128.524975,
+      "coordinateSource": "네이버 지도 장소 '설악산자생식물원' 좌표"
     },
     {
       "slug": "seorak-sunrise-park",
       "catalogSlug": "sokcho-attraction-044",
-      "summary": "대포항 근처 바닷가의 조각 공원",
+      "summary": "설악항 옆 바닷가의 조각 공원",
       "activityCategory": "nature",
       "tags": [
         "free"
       ],
-      "description": null,
+      "description": "설악항 바로 옆 바닷가에 조각 작품을 세워 둔 공원으로, 테마 산책길을 따라 동해를 보며 걸을 수 있고 바닷가 쪽에 인어 연인 조각상이 있습니다. 입장과 주차가 무료라 대포항이나 설악항에 가는 길에 30분쯤 쉬어 가기에 맞습니다.",
       "hoursSummary": null,
       "closedSummary": null,
-      "priceSummary": null,
+      "priceSummary": "무료",
       "phone": null,
-      "parkingSummary": null,
+      "parkingSummary": "무료",
       "cautions": [],
       "bookingUrl": null,
       "operationStatus": "open",
       "statusNote": null,
-      "verifiedOn": null,
-      "confidence": "catalog",
-      "unverifiedFields": [
-        "hoursSummary",
-        "priceSummary"
-      ],
+      "statusNoteUntil": null,
+      "verifiedOn": "2026-11-21",
+      "confidence": "medium",
+      "unverifiedFields": [],
       "sources": [
+        "https://www.ktriptips.com/kor/tourspot/128571",
+        "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=cb5d1e65-148e-44fd-99e8-6fc06d29a29a",
         "https://www.sokcho.go.kr/ct/tour/",
-        "https://www.openstreetmap.org/way/168875206"
-      ]
+        "https://www.openstreetmap.org/way/168875206",
+        "https://map.naver.com/p/entry/place/13446710"
+      ],
+      "address": "강원특별자치도 속초시 동해대로 3664",
+      "latitude": 38.163224,
+      "longitude": 128.608637,
+      "coordinateSource": "네이버 지도 장소 '설악해맞이공원' 좌표",
+      "imageUrl": "/places/seorak-sunrise-park.webp",
+      "imageCredit": "사진: 속초시 관광 누리집",
+      "imageSourceUrl": "https://www.sokcho.go.kr/ct/tour/attraction/nature?contentSeq=135",
+      "imageAlt": "바다를 내려다보는 설악해맞이공원의 조형물과 잔디밭",
+      "imageProvenance": {
+        "kind": "official",
+        "author": "속초시 관광 누리집",
+        "license": null,
+        "originalUrl": "https://www.sokcho.go.kr/upload/board/TSZZZZ01/17367907-8680-41cc-8189-09646b0b2996.jpg",
+        "pageUrl": "https://www.sokcho.go.kr/ct/tour/attraction/nature?contentSeq=135",
+        "downloadedOn": "2026-11-21",
+        "modification": "3:2로 자르고 폭 1080px 이하 WebP로 변환, 240×240 썸네일 생성",
+        "note": "공식 누리집에 게시된 사진. 재게시 허락은 받지 않았다. 행사 포스터와 같은 방식으로 출처를 표시하고, 내려 달라는 요청이 오면 바로 뺀다(2026-11-21 사용자 결정)."
+      }
     },
     {
       "slug": "sokcho-tourist-fish-market",
@@ -2415,54 +2690,80 @@
       "summary": "닭강정·건어물 가게가 모인 속초 대표 전통시장",
       "activityCategory": "nature",
       "tags": [],
-      "description": null,
-      "hoursSummary": null,
-      "closedSummary": null,
-      "priceSummary": null,
+      "description": "옛 중앙시장으로, 상가 건물과 닭전골목·순대골목·젓갈골목 같은 품목별 골목으로 이루어진 전통시장입니다. 닭강정, 오징어순대, 건어물, 젓갈을 사고 지하 회센터에서 활어회를 먹을 수 있습니다. 골목에 비가림 지붕이 있어 비 오는 날 들르기에도 무난하고, 아바이마을 갯배 선착장과 가깝습니다.",
+      "hoursSummary": "대체로 08:00~24:00(점포마다 다름)",
+      "closedSummary": "점포마다 다름(지하 회센터는 매월 둘째 수요일 휴무, 8~9월은 무휴)",
+      "priceSummary": "입장 무료(상품은 점포별 가격)",
       "phone": null,
-      "parkingSummary": null,
-      "cautions": [],
+      "parkingSummary": "시장 주차장 약 350대, 08:00~21:00 유료(그 밖의 시간 무료), 물건을 사면 주차권 지급",
+      "cautions": [
+        "주차권은 하루 1시간까지 쓸 수 있고, 잃어버리면 하루 최대 요금을 냅니다."
+      ],
       "bookingUrl": null,
       "operationStatus": "open",
       "statusNote": null,
-      "verifiedOn": null,
-      "confidence": "catalog",
+      "statusNoteUntil": null,
+      "verifiedOn": "2026-11-21",
+      "confidence": "medium",
       "unverifiedFields": [
-        "hoursSummary",
-        "priceSummary"
+        "parkingSummary"
       ],
       "sources": [
+        "https://www.sokcho-central.co.kr/",
+        "https://www.ktriptips.com/kor/shopping/1260275",
         "https://www.sokcho.go.kr/ct/tour/",
-        "https://www.openstreetmap.org/way/1306387160"
-      ]
+        "https://www.openstreetmap.org/way/1306387160",
+        "https://map.naver.com/p/entry/place/13345965"
+      ],
+      "address": "강원특별자치도 속초시 중앙로147번길 12",
+      "latitude": 38.203988,
+      "longitude": 128.590598,
+      "coordinateSource": "네이버 지도 장소 '속초관광수산시장' 좌표",
+      "imageUrl": "/places/sokcho-tourist-fish-market.webp",
+      "imageCredit": "사진: 속초시 관광 누리집",
+      "imageSourceUrl": "https://www.sokcho.go.kr/ct/tour/attraction/nature?contentSeq=131",
+      "imageAlt": "지붕 덮인 골목에 가게가 늘어선 속초관광수산시장",
+      "imageProvenance": {
+        "kind": "official",
+        "author": "속초시 관광 누리집",
+        "license": null,
+        "originalUrl": "https://www.sokcho.go.kr/upload/board/TSZZZZ01/5f4fdd94-dfb3-42d4-a5e7-1290de555f1e.jpg",
+        "pageUrl": "https://www.sokcho.go.kr/ct/tour/attraction/nature?contentSeq=131",
+        "downloadedOn": "2026-11-21",
+        "modification": "3:2로 자르고 폭 1080px 이하 WebP로 변환, 240×240 썸네일 생성",
+        "note": "공식 누리집에 게시된 사진. 재게시 허락은 받지 않았다. 행사 포스터와 같은 방식으로 출처를 표시하고, 내려 달라는 요청이 오면 바로 뺀다(2026-11-21 사용자 결정)."
+      }
     },
     {
       "slug": "sokcho-port",
       "catalogSlug": "sokcho-attraction-033",
-      "summary": "여객선이 드나드는 속초 도심의 항구",
+      "summary": "오징어난전과 제철 먹거리 장터가 서는 도심 항구",
       "activityCategory": "nature",
       "tags": [
         "free"
       ],
-      "description": null,
-      "hoursSummary": null,
+      "description": "속초 도심 동쪽의 항구로, 동명항과 이어진 부두에서 고깃배와 바다를 볼 수 있습니다. 5월 중순부터 12월까지는 부두의 오징어난전에서 그날 잡은 오징어회를 시가로 팔고, 11~12월에는 도루묵·양미리 구이 장터가 열려 제철 먹거리를 맛보러 가기 좋습니다.",
+      "hoursSummary": "오징어난전은 5월 중순~12월, 대체로 06:00~20:00(물량이 떨어지면 마감)",
       "closedSummary": null,
-      "priceSummary": null,
+      "priceSummary": "입장 무료(난전 음식은 시가)",
       "phone": null,
       "parkingSummary": null,
       "cautions": [],
       "bookingUrl": null,
       "operationStatus": "open",
       "statusNote": null,
-      "verifiedOn": null,
-      "confidence": "catalog",
+      "statusNoteUntil": null,
+      "verifiedOn": "2026-11-21",
+      "confidence": "medium",
       "unverifiedFields": [
-        "hoursSummary",
-        "priceSummary"
+        "parkingSummary"
       ],
       "sources": [
+        "https://www.ktriptips.com/kor/tourspot/987582",
+        "https://www.ktriptips.com/kor/tourspot/3040955",
         "https://www.sokcho.go.kr/ct/tour/attraction/experience",
-        "https://www.openstreetmap.org/node/4821909525"
+        "https://www.openstreetmap.org/node/4821909525",
+        "https://map.naver.com/p/entry/place/13537968"
       ],
       "imageUrl": "/places/sokcho-port.webp",
       "imageCredit": "사진: 속초시 관광 누리집",
@@ -2477,35 +2778,46 @@
         "downloadedOn": "2026-11-21",
         "modification": "3:2로 자르고 폭 1080px 이하 WebP로 변환, 240×240 썸네일 생성",
         "note": "공식 누리집에 게시된 사진. 재게시 허락은 받지 않았다. 행사 포스터와 같은 방식으로 출처를 표시하고, 내려 달라는 요청이 오면 바로 뺀다(2026-11-21 사용자 결정)."
-      }
+      },
+      "address": "강원특별자치도 속초시 동명동 일대",
+      "latitude": 38.208676,
+      "longitude": 128.595108,
+      "coordinateSource": "네이버 지도 장소 '속초항' 좌표"
     },
     {
       "slug": "sokcho-beach",
       "catalogSlug": "sokcho-beach",
       "activityCategory": "nature",
       "tags": [
-        "free"
+        "free",
+        "kids"
       ],
-      "description": null,
-      "hoursSummary": null,
+      "description": "고속버스터미널에서 걸어갈 수 있을 만큼 도심과 가까운 속초의 대표 해변입니다. 물이 맑고 경사가 완만하며, 모래사장에 사진 찍기 좋은 조형물이 있고 뒤쪽 솔숲에는 산책로가 있습니다.",
+      "hoursSummary": "물놀이는 여름 개장 기간(7월 초~8월 하순)에만 가능",
       "closedSummary": null,
-      "priceSummary": null,
+      "priceSummary": "무료",
       "phone": null,
-      "parkingSummary": null,
-      "cautions": [],
+      "parkingSummary": "무료",
+      "cautions": [
+        "개장 기간이 아니면 안전요원이 없어 물에 들어가지 마세요.",
+        "7~8월 성수기에는 매우 붐빕니다."
+      ],
       "bookingUrl": null,
       "operationStatus": "open",
       "statusNote": null,
-      "verifiedOn": null,
-      "confidence": "catalog",
+      "statusNoteUntil": null,
+      "verifiedOn": "2026-11-21",
+      "confidence": "medium",
       "unverifiedFields": [
-        "hoursSummary",
-        "priceSummary"
+        "parkingSummary"
       ],
       "sources": [
+        "https://www.ktriptips.com/kor/tourspot/264130",
+        "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=12e3b8dc-81ad-44e7-87af-ffd9adb412d6",
         "https://www.sokcho.go.kr/ct/tour/attraction/nature?contentSeq=87",
         "https://www.openstreetmap.org/?mlat=38.1907&mlon=128.6015#map=17/38.1907/128.6015",
-        "https://www.sokcho.go.kr/ct/tour/attraction"
+        "https://www.sokcho.go.kr/ct/tour/attraction",
+        "https://map.naver.com/p/entry/place/11491735"
       ],
       "imageUrl": "/places/sokcho-beach.webp",
       "imageCredit": "사진: 속초시 관광 누리집",
@@ -2520,34 +2832,42 @@
         "downloadedOn": "2026-11-21",
         "modification": "3:2로 자르고 폭 1080px 이하 WebP로 변환, 240×240 썸네일 생성",
         "note": "공식 누리집에 게시된 사진. 재게시 허락은 받지 않았다. 행사 포스터와 같은 방식으로 출처를 표시하고, 내려 달라는 요청이 오면 바로 뺀다(2026-11-21 사용자 결정)."
-      }
+      },
+      "latitude": 38.190798,
+      "longitude": 128.603467,
+      "coordinateSource": "네이버 지도 장소 '속초해수욕장' 좌표",
+      "summary": "터미널에서 걸어가는 속초 도심의 대표 해변"
     },
     {
       "slug": "sinheungsa",
       "catalogSlug": "sokcho-attraction-037",
-      "summary": "설악산 소공원 안의 오래된 절과 통일대불",
+      "summary": "설악산 소공원 안의 천년 고찰과 청동 통일대불",
       "activityCategory": "nature",
-      "tags": [],
-      "description": null,
+      "tags": [
+        "free",
+        "kids"
+      ],
+      "description": "신라 때 자장율사가 세웠다고 전해지는 조계종 교구 본사로, 소공원에서 울산바위로 가는 탐방로 초입에 있습니다. 높이 14.6m의 청동좌불인 통일대불과 극락보전 등 전각을 둘러볼 수 있고, 템플스테이도 운영합니다. 소공원에서 가까워 비룡폭포나 흔들바위를 오가는 길에 함께 들르기 좋습니다.",
       "hoursSummary": null,
       "closedSummary": null,
-      "priceSummary": null,
-      "phone": null,
-      "parkingSummary": null,
+      "priceSummary": "무료",
+      "phone": "033-636-7044",
+      "parkingSummary": "설악산 소공원 유료 주차장 이용",
       "cautions": [],
       "bookingUrl": null,
       "operationStatus": "open",
       "statusNote": null,
-      "verifiedOn": null,
-      "confidence": "catalog",
-      "unverifiedFields": [
-        "hoursSummary",
-        "priceSummary"
-      ],
+      "statusNoteUntil": null,
+      "verifiedOn": "2026-11-21",
+      "confidence": "medium",
+      "unverifiedFields": [],
       "sources": [
+        "https://www.ktriptips.com/kor/tourspot/127671",
+        "https://www.kukinews.com/article/view/kuk202305040153",
         "https://www.sokcho.go.kr/ct/tour/attraction/experience",
         "https://www.openstreetmap.org/node/444216838",
-        "https://www.sokcho.go.kr/ct/tour/attraction/culture"
+        "https://www.sokcho.go.kr/ct/tour/attraction/culture",
+        "https://map.naver.com/p/entry/place/12323245"
       ],
       "imageUrl": "/places/sinheungsa.webp",
       "imageCredit": "사진: 속초시 관광 누리집",
@@ -2562,7 +2882,10 @@
         "downloadedOn": "2026-11-21",
         "modification": "3:2로 자르고 폭 1080px 이하 WebP로 변환, 240×240 썸네일 생성",
         "note": "공식 누리집에 게시된 사진. 재게시 허락은 받지 않았다. 행사 포스터와 같은 방식으로 출처를 표시하고, 내려 달라는 요청이 오면 바로 뺀다(2026-11-21 사용자 결정)."
-      }
+      },
+      "latitude": 38.175604,
+      "longitude": 128.484751,
+      "coordinateSource": "네이버 지도 장소 '신흥사' 좌표"
     },
     {
       "slug": "abai-village",
@@ -2571,27 +2894,31 @@
       "tags": [
         "free"
       ],
-      "description": null,
+      "description": "한국전쟁 때 내려온 함경도 실향민들이 모여 살며 생긴 청호동 마을입니다. 골목에 남은 옛집과 고향을 그린 벽화를 보고, 아바이순대·오징어순대·함흥냉면 같은 이북식 음식을 맛볼 수 있습니다. 시장 쪽에서 갯배로 물길을 건너 들어가면 마을 산책과 식사를 묶어 1~2시간이면 둘러봅니다.",
       "hoursSummary": null,
       "closedSummary": null,
-      "priceSummary": null,
+      "priceSummary": "무료",
       "phone": null,
       "parkingSummary": null,
-      "cautions": [],
+      "cautions": [
+        "주민이 사는 마을이라 골목에서는 조용히 다녀 주세요."
+      ],
       "bookingUrl": null,
       "operationStatus": "open",
       "statusNote": null,
-      "verifiedOn": null,
-      "confidence": "catalog",
+      "statusNoteUntil": null,
+      "verifiedOn": "2026-11-21",
+      "confidence": "medium",
       "unverifiedFields": [
-        "hoursSummary",
-        "priceSummary"
+        "parkingSummary"
       ],
       "sources": [
+        "https://www.ktriptips.com/kor/tourspot/251738",
         "https://www.sokcho.go.kr/ct/tour/attraction/culture?contentSeq=56",
         "https://www.openstreetmap.org/?mlat=38.2028&mlon=128.5918#map=17/38.2028/128.5918",
         "https://www.sokcho.go.kr/ct/tour/attraction",
-        "https://www.sokcho.go.kr/ct/tour/attraction/culture"
+        "https://www.sokcho.go.kr/ct/tour/attraction/culture",
+        "https://map.naver.com/p/entry/place/12108687"
       ],
       "imageUrl": "/places/abai-village.webp",
       "imageCredit": "사진: 속초시 관광 누리집",
@@ -2606,34 +2933,44 @@
         "downloadedOn": "2026-11-21",
         "modification": "3:2로 자르고 폭 1080px 이하 WebP로 변환, 240×240 썸네일 생성",
         "note": "공식 누리집에 게시된 사진. 재게시 허락은 받지 않았다. 행사 포스터와 같은 방식으로 출처를 표시하고, 내려 달라는 요청이 오면 바로 뺀다(2026-11-21 사용자 결정)."
-      }
+      },
+      "latitude": 38.203518,
+      "longitude": 128.594393,
+      "coordinateSource": "네이버 지도 장소 '아바이마을' 좌표",
+      "summary": "함경도 실향민이 일군 마을과 이북 음식 골목"
     },
     {
       "slug": "abai-gaetbae",
       "catalogSlug": "sokcho-attraction-028",
       "summary": "줄을 당겨 청초호 물길을 건너는 작은 배",
       "activityCategory": "nature",
-      "tags": [],
-      "description": null,
-      "hoursSummary": null,
+      "tags": [
+        "kids"
+      ],
+      "description": "속초 시내 중앙동과 아바이마을 사이 약 50m 물길을 오가는 동력 없는 배로, 승객이 쇠줄을 당겨 움직입니다. 건너는 데 5분쯤 걸리고, 속초관광수산시장에서 아바이마을로 넘어갈 때 타기 좋습니다.",
+      "hoursSummary": "5~10월 05:00~23:00, 11~4월 05:30~22:30(날씨에 따라 바뀜)",
       "closedSummary": null,
-      "priceSummary": null,
-      "phone": null,
+      "priceSummary": "편도 어른 500원 · 초등학생 300원",
+      "phone": "033-639-2449",
       "parkingSummary": null,
-      "cautions": [],
+      "cautions": [
+        "요금은 편도라 돌아올 때 다시 냅니다."
+      ],
       "bookingUrl": null,
       "operationStatus": "open",
       "statusNote": null,
-      "verifiedOn": null,
-      "confidence": "catalog",
+      "statusNoteUntil": null,
+      "verifiedOn": "2026-11-21",
+      "confidence": "medium",
       "unverifiedFields": [
-        "hoursSummary",
-        "priceSummary"
+        "parkingSummary"
       ],
       "sources": [
+        "https://www.ktriptips.com/kor/tourspot/129468",
         "https://www.sokcho.go.kr/ct/tour/attraction/experience",
         "https://www.openstreetmap.org/node/4813565222",
-        "https://www.sokcho.go.kr/ct/tour/"
+        "https://www.sokcho.go.kr/ct/tour/",
+        "https://map.naver.com/p/entry/place/38331607"
       ],
       "imageUrl": "/places/abai-gaetbae.webp",
       "imageCredit": "사진: 속초시 관광 누리집",
@@ -2648,7 +2985,11 @@
         "downloadedOn": "2026-11-21",
         "modification": "3:2로 자르고 폭 1080px 이하 WebP로 변환, 240×240 썸네일 생성",
         "note": "공식 누리집에 게시된 사진. 재게시 허락은 받지 않았다. 행사 포스터와 같은 방식으로 출처를 표시하고, 내려 달라는 요청이 오면 바로 뺀다(2026-11-21 사용자 결정)."
-      }
+      },
+      "address": "강원특별자치도 속초시 중앙부두길 51",
+      "latitude": 38.202951,
+      "longitude": 128.592275,
+      "coordinateSource": "네이버 지도 장소 '갯배선착장' 좌표"
     },
     {
       "slug": "yeonggeumjeong",
@@ -2657,27 +2998,30 @@
       "tags": [
         "free"
       ],
-      "description": null,
+      "description": "속초등대 아래 바닷가에 넓게 깔린 바위 지대로, 파도가 바위에 부딪히는 소리가 거문고 소리 같다는 데서 이름이 붙었습니다. 바위 위로 다리가 이어진 바다 위 정자가 있어 해 뜰 무렵 동해를 보러 많이 찾습니다. 동명항 활어센터와 바로 붙어 있어 30분 정도 들렀다 가기 좋습니다.",
       "hoursSummary": null,
       "closedSummary": null,
-      "priceSummary": null,
+      "priceSummary": "무료",
       "phone": null,
-      "parkingSummary": null,
-      "cautions": [],
+      "parkingSummary": "유료",
+      "cautions": [
+        "바위가 젖으면 미끄러우니 바위 위로 내려갈 때 조심하세요."
+      ],
       "bookingUrl": null,
       "operationStatus": "open",
       "statusNote": null,
-      "verifiedOn": null,
-      "confidence": "catalog",
-      "unverifiedFields": [
-        "hoursSummary",
-        "priceSummary"
-      ],
+      "statusNoteUntil": null,
+      "verifiedOn": "2026-11-21",
+      "confidence": "medium",
+      "unverifiedFields": [],
       "sources": [
+        "https://www.ktriptips.com/kor/tourspot/125779",
+        "https://www.ktriptips.com/kor/tourspot/1758206",
         "https://www.sokcho.go.kr/ct/tour/attraction/culture?contentSeq=42",
         "https://www.openstreetmap.org/?mlat=38.2124&mlon=128.5994#map=17/38.2124/128.5994",
         "https://www.sokcho.go.kr/ct/tour/attraction",
-        "https://www.sokcho.go.kr/ct/tour/attraction/culture"
+        "https://www.sokcho.go.kr/ct/tour/attraction/culture",
+        "https://map.naver.com/p/entry/place/15085338"
       ],
       "imageUrl": "/places/yeonggeumjeong.webp",
       "imageCredit": "사진: 속초시 관광 누리집",
@@ -2692,36 +3036,44 @@
         "downloadedOn": "2026-11-21",
         "modification": "3:2로 자르고 폭 1080px 이하 WebP로 변환, 240×240 썸네일 생성",
         "note": "공식 누리집에 게시된 사진. 재게시 허락은 받지 않았다. 행사 포스터와 같은 방식으로 출처를 표시하고, 내려 달라는 요청이 오면 바로 뺀다(2026-11-21 사용자 결정)."
-      }
+      },
+      "latitude": 38.211832,
+      "longitude": 128.601537,
+      "coordinateSource": "네이버 지도 장소 '영금정' 좌표",
+      "summary": "파도 소리로 이름난 바위와 해돋이 정자"
     },
     {
       "slug": "yeongrang-lake",
       "catalogSlug": "yeongrang-lake",
       "activityCategory": "nature",
       "tags": [
-        "free"
+        "free",
+        "kids"
       ],
-      "description": null,
+      "description": "바닷가 모래언덕이 바다를 막아 생긴 둘레 약 7.8km의 자연 석호로, 호숫가를 따라 산책로가 이어집니다. 길을 따라 범바위, 보광사, 습지생태공원, 맨발 황톳길을 차례로 들를 수 있고, 봄에는 벚꽃과 영산홍이, 가을에는 갈대가 핍니다. 한 바퀴를 다 걸으면 2시간 안팎이 걸려 한 구간만 골라 걸어도 좋습니다.",
       "hoursSummary": null,
       "closedSummary": null,
-      "priceSummary": null,
+      "priceSummary": "무료",
       "phone": null,
-      "parkingSummary": null,
-      "cautions": [],
+      "parkingSummary": "무료",
+      "cautions": [
+        "호수를 가로지르는 부교는 철거가 결정돼 건널 수 없을 수 있습니다."
+      ],
       "bookingUrl": null,
       "operationStatus": "open",
       "statusNote": null,
-      "verifiedOn": null,
-      "confidence": "catalog",
-      "unverifiedFields": [
-        "hoursSummary",
-        "priceSummary"
-      ],
+      "statusNoteUntil": null,
+      "verifiedOn": "2026-11-21",
+      "confidence": "medium",
+      "unverifiedFields": [],
       "sources": [
+        "https://www.ktriptips.com/kor/tourspot/127565",
+        "https://www.ytn.co.kr/_ln/0115_202609030221495365",
         "https://www.sokcho.go.kr/ct/tour/attraction/nature?contentSeq=71",
         "https://www.openstreetmap.org/?mlat=38.2227&mlon=128.5747#map=17/38.2227/128.5747",
         "https://www.sokcho.go.kr/ct/tour/attraction",
-        "https://www.sokcho.go.kr/ct/tour/attraction/experience"
+        "https://www.sokcho.go.kr/ct/tour/attraction/experience",
+        "https://map.naver.com/p/entry/place/13491910"
       ],
       "imageUrl": "/places/yeongrang-lake.webp",
       "imageCredit": "사진: 속초시 관광 누리집",
@@ -2736,33 +3088,45 @@
         "downloadedOn": "2026-11-21",
         "modification": "3:2로 자르고 폭 1080px 이하 WebP로 변환, 240×240 썸네일 생성",
         "note": "공식 누리집에 게시된 사진. 재게시 허락은 받지 않았다. 행사 포스터와 같은 방식으로 출처를 표시하고, 내려 달라는 요청이 오면 바로 뺀다(2026-11-21 사용자 결정)."
-      }
+      },
+      "latitude": 38.218276,
+      "longitude": 128.581925,
+      "coordinateSource": "네이버 지도 장소 '영랑호' 좌표",
+      "summary": "범바위·보광사·습지공원을 잇는 둘레 약 8km 호수"
     },
     {
       "slug": "yeongrangho-barefoot-trail",
       "catalogSlug": "sokcho-attraction-024",
-      "summary": "영랑호 둘레의 맨발 걷기 황톳길",
+      "summary": "영랑호 산책로의 왕복 840m 맨발 황톳길",
       "activityCategory": "nature",
       "tags": [
-        "free"
+        "free",
+        "kids"
       ],
-      "description": null,
-      "hoursSummary": null,
-      "closedSummary": null,
-      "priceSummary": null,
+      "description": "영랑호 산책로 일부를 젖은 황토로 깐 맨발 걷기 길로, 편도 420m를 오가는 왕복 840m 길입니다. 세족장과 신발장, 그늘막이 있어 걷고 나서 발을 씻을 수 있습니다. 한 번 오가는 데 20~30분이면 충분해 아이와 함께 가볍게 걷기 좋습니다.",
+      "hoursSummary": "3월 중순~12월 초 운영, 09:00~18:00 이용 권장",
+      "closedSummary": "겨울(12월 초~3월 초) 휴장, 비·강풍 때 임시 통제",
+      "priceSummary": "무료",
       "phone": null,
       "parkingSummary": null,
-      "cautions": [],
+      "cautions": [
+        "비 오는 날에는 미끄러워 운영을 멈춥니다.",
+        "발을 닦을 수건을 챙겨 가면 편합니다."
+      ],
       "bookingUrl": null,
       "operationStatus": "open",
       "statusNote": null,
-      "verifiedOn": null,
-      "confidence": "catalog",
+      "statusNoteUntil": null,
+      "verifiedOn": "2026-11-21",
+      "confidence": "medium",
       "unverifiedFields": [
-        "hoursSummary",
-        "priceSummary"
+        "address",
+        "parkingSummary"
       ],
       "sources": [
+        "https://www.kmib.co.kr/article/view.asp?arcid=0020313998",
+        "https://view.asiae.co.kr/article/2026031120592189081",
+        "https://www.heraldk.com/article/2025120622464452035",
         "https://www.sokcho.go.kr/ct/tour/attraction",
         "https://www.openstreetmap.org/relation/7143200",
         "https://www.sokcho.go.kr/ct/tour/attraction/experience"
@@ -2780,36 +3144,38 @@
         "downloadedOn": "2026-11-21",
         "modification": "3:2로 자르고 폭 1080px 이하 WebP로 변환, 240×240 썸네일 생성",
         "note": "공식 누리집에 게시된 사진. 재게시 허락은 받지 않았다. 행사 포스터와 같은 방식으로 출처를 표시하고, 내려 달라는 요청이 오면 바로 뺀다(2026-11-21 사용자 결정)."
-      }
+      },
+      "address": "강원특별자치도 속초시 영랑호유원지 일대"
     },
     {
       "slug": "yeongrangho-wetland-park",
       "catalogSlug": "sokcho-attraction-025",
-      "summary": "영랑호 습지를 따라 걷는 생태공원",
+      "summary": "관찰데크와 억새길이 있는 영랑호 상류 습지공원",
       "activityCategory": "nature",
       "tags": [
-        "free"
+        "free",
+        "kids"
       ],
-      "description": null,
+      "description": "영랑호로 흘러드는 장천천 하류의 습지를 살린 공원으로, 영랑호 둘레길과 이어지는 약 1.3km 생태탐방로가 있습니다. 억새 군락과 야생화 길을 지나 관찰데크에서 습지를 가까이 볼 수 있습니다. 한 바퀴 도는 데 30분쯤 걸리는 평탄한 길이라 아이와 산책하기 좋고, 가을에는 억새와 코스모스가 핍니다.",
       "hoursSummary": null,
       "closedSummary": null,
-      "priceSummary": null,
-      "phone": null,
-      "parkingSummary": null,
+      "priceSummary": "무료",
+      "phone": "033-639-2422",
+      "parkingSummary": "무료",
       "cautions": [],
       "bookingUrl": null,
       "operationStatus": "open",
       "statusNote": null,
-      "verifiedOn": null,
-      "confidence": "catalog",
-      "unverifiedFields": [
-        "hoursSummary",
-        "priceSummary"
-      ],
+      "statusNoteUntil": null,
+      "verifiedOn": "2026-11-21",
+      "confidence": "medium",
+      "unverifiedFields": [],
       "sources": [
+        "https://www.ktriptips.com/kor/tourspot/2713187",
         "https://www.sokcho.go.kr/ct/tour/attraction",
         "https://www.openstreetmap.org/relation/7143200",
-        "https://www.sokcho.go.kr/ct/tour/attraction/experience"
+        "https://www.sokcho.go.kr/ct/tour/attraction/experience",
+        "https://map.naver.com/p/entry/place/847881340"
       ],
       "imageUrl": "/places/yeongrangho-wetland-park.webp",
       "imageCredit": "사진: 속초시 관광 누리집",
@@ -2824,7 +3190,11 @@
         "downloadedOn": "2026-11-21",
         "modification": "3:2로 자르고 폭 1080px 이하 WebP로 변환, 240×240 썸네일 생성",
         "note": "공식 누리집에 게시된 사진. 재게시 허락은 받지 않았다. 행사 포스터와 같은 방식으로 출처를 표시하고, 내려 달라는 요청이 오면 바로 뺀다(2026-11-21 사용자 결정)."
-      }
+      },
+      "address": "강원특별자치도 속초시 영랑호반길 329-1",
+      "latitude": 38.214002,
+      "longitude": 128.569566,
+      "coordinateSource": "네이버 지도 장소 '영랑호습지생태공원' 좌표"
     },
     {
       "slug": "oeyongchi-bada-hyanggiro",
@@ -2833,26 +3203,32 @@
       "tags": [
         "free"
       ],
-      "description": null,
-      "hoursSummary": null,
-      "closedSummary": null,
-      "priceSummary": null,
-      "phone": null,
+      "description": "속초해수욕장에서 외옹치항까지 바닷가를 따라 이어진 약 1.7km 산책로로, 군 경계 때문에 오래 민간인 출입이 막혔다가 개방된 구간입니다. 나무 데크와 흙길이 섞여 있고 외옹치 쪽에는 대나무길과 바위 관찰길 같은 구간이 있습니다. 다시 열리면 한쪽 방향으로 30~40분이면 걸을 수 있습니다.",
+      "hoursSummary": "평소 4~9월 06:00~20:00, 10~3월 07:00~18:00",
+      "closedSummary": "보수공사로 2025년 12월 1일부터 전 구간 통행 금지(평소에도 풍랑주의보·경보 때 통제)",
+      "priceSummary": "무료",
+      "phone": "033-639-2362",
       "parkingSummary": null,
-      "cautions": [],
+      "cautions": [
+        "가기 전에 033-639-2362로 다시 열었는지 확인하세요.",
+        "보수가 끝난 구간부터 먼저 열 예정이라 일부만 열려 있을 수 있어요."
+      ],
       "bookingUrl": null,
-      "operationStatus": "open",
-      "statusNote": "보수공사로 일부 구간 통행을 막았다는 안내가 있었어요. 방문 전에 확인해 주세요.",
-      "verifiedOn": null,
-      "confidence": "catalog",
+      "operationStatus": "temporarily_closed",
+      "statusNote": "데크길 안전 문제로 2025년 12월부터 전 구간 통행을 막고 있어요. 다시 여는 날짜는 아직 발표되지 않았어요.",
+      "statusNoteUntil": null,
+      "verifiedOn": "2026-11-21",
+      "confidence": "medium",
       "unverifiedFields": [
-        "hoursSummary",
-        "priceSummary"
+        "parkingSummary"
       ],
       "sources": [
+        "https://www.ktriptips.com/kor/leisure/2549932",
+        "https://www.asiae.co.kr/en/article/2025112718062282524",
         "https://www.sokcho.go.kr/ct/tour/attraction/nature?contentSeq=70",
         "https://www.openstreetmap.org/?mlat=38.1776&mlon=128.6066#map=17/38.1776/128.6066",
-        "https://www.sokcho.go.kr/ct/tour/attraction"
+        "https://www.sokcho.go.kr/ct/tour/attraction",
+        "https://map.naver.com/p/entry/place/1666471524"
       ],
       "imageUrl": "/places/oeyongchi-bada-hyanggiro.webp",
       "imageCredit": "사진: 속초시 관광 누리집",
@@ -2867,35 +3243,43 @@
         "downloadedOn": "2026-11-21",
         "modification": "3:2로 자르고 폭 1080px 이하 WebP로 변환, 240×240 썸네일 생성",
         "note": "공식 누리집에 게시된 사진. 재게시 허락은 받지 않았다. 행사 포스터와 같은 방식으로 출처를 표시하고, 내려 달라는 요청이 오면 바로 뺀다(2026-11-21 사용자 결정)."
-      }
+      },
+      "latitude": 38.182961,
+      "longitude": 128.609336,
+      "coordinateSource": "네이버 지도 장소 '외옹치바다향기로 (보수공사 통행금지)' 좌표",
+      "summary": "속초해수욕장과 외옹치항을 잇는 해안 산책로"
     },
     {
       "slug": "oeongchi-beach",
       "catalogSlug": "sokcho-attraction-011",
-      "summary": "외옹치항 옆의 작은 해변",
+      "summary": "외옹치항 옆의 한적한 작은 해변",
       "activityCategory": "nature",
       "tags": [
         "free"
       ],
-      "description": null,
-      "hoursSummary": null,
+      "description": "대포항과 속초해수욕장 사이에 있는 백사장 약 400m의 작은 해변으로, 큰 해변보다 한적합니다. 여름 개장 기간에는 샤워장·탈의실과 안전요원이 운영되고, 해안까지 경사로와 데크길이 있어 휠체어로도 다가갈 수 있습니다.",
+      "hoursSummary": "물놀이는 여름 개장 기간(7월 초~8월 하순)에만 가능",
       "closedSummary": null,
-      "priceSummary": null,
+      "priceSummary": "무료",
       "phone": null,
       "parkingSummary": null,
-      "cautions": [],
+      "cautions": [
+        "개장 기간이 아니면 안전요원이 없어 물에 들어가지 마세요."
+      ],
       "bookingUrl": null,
       "operationStatus": "open",
       "statusNote": null,
-      "verifiedOn": null,
-      "confidence": "catalog",
+      "statusNoteUntil": null,
+      "verifiedOn": "2026-11-21",
+      "confidence": "medium",
       "unverifiedFields": [
-        "hoursSummary",
-        "priceSummary"
+        "parkingSummary"
       ],
       "sources": [
+        "https://access.visitkorea.or.kr/ms/detail.do?cotId=e45ec752-6454-4cb6-86a4-7f094ab860af",
         "https://www.sokcho.go.kr/ct/tour/attraction",
-        "https://www.openstreetmap.org/way/178808353"
+        "https://www.openstreetmap.org/way/178808353",
+        "https://map.naver.com/p/entry/place/13491373"
       ],
       "imageUrl": "/places/oeongchi-beach.webp",
       "imageCredit": "사진: 속초시 관광 누리집",
@@ -2910,62 +3294,89 @@
         "downloadedOn": "2026-11-21",
         "modification": "3:2로 자르고 폭 1080px 이하 WebP로 변환, 240×240 썸네일 생성",
         "note": "공식 누리집에 게시된 사진. 재게시 허락은 받지 않았다. 행사 포스터와 같은 방식으로 출처를 표시하고, 내려 달라는 요청이 오면 바로 뺀다(2026-11-21 사용자 결정)."
-      }
+      },
+      "address": "강원특별자치도 속초시 해오름로 83",
+      "latitude": 38.183479,
+      "longitude": 128.60893,
+      "coordinateSource": "네이버 지도 장소 '외옹치해수욕장' 좌표"
     },
     {
       "slug": "yukdam-falls",
       "catalogSlug": "sokcho-attraction-016",
-      "summary": "비룡폭포 가는 길에 이어진 여섯 개의 폭포",
-      "activityCategory": "nature",
-      "tags": [],
-      "description": null,
-      "hoursSummary": null,
-      "closedSummary": null,
-      "priceSummary": null,
-      "phone": null,
-      "parkingSummary": null,
-      "cautions": [],
-      "bookingUrl": null,
-      "operationStatus": "open",
-      "statusNote": null,
-      "verifiedOn": null,
-      "confidence": "catalog",
-      "unverifiedFields": [
-        "hoursSummary",
-        "priceSummary"
-      ],
-      "sources": [
-        "https://www.sokcho.go.kr/ct/tour/attraction",
-        "https://www.openstreetmap.org/node/6908160885"
-      ]
-    },
-    {
-      "slug": "joyang-dong-prehistoric-site",
-      "catalogSlug": "sokcho-attraction-038",
-      "summary": "청동기 시대 집터가 발견된 유적",
+      "summary": "비룡폭포 가는 길에 층층이 이어진 여섯 개의 작은 폭포",
       "activityCategory": "nature",
       "tags": [
         "free"
       ],
-      "description": null,
-      "hoursSummary": null,
+      "description": "토왕골의 계단식 암반을 따라 작은 폭포와 소 여섯 개가 층층이 이어진 곳으로, 위쪽으로 비룡폭포와 토왕성폭포가 차례로 나옵니다. 소공원에서 비룡폭포로 가는 탐방로 중간에 있어 따로 찾아가기보다 지나는 길에 보는 곳입니다.",
+      "hoursSummary": "입산 가능 시간 동절기 04:00~12:00 · 하절기 03:00~14:00",
       "closedSummary": null,
-      "priceSummary": null,
-      "phone": null,
-      "parkingSummary": null,
+      "priceSummary": "무료",
+      "phone": "033-801-0900",
+      "parkingSummary": "설악산 소공원 유료 주차장 이용",
       "cautions": [],
       "bookingUrl": null,
       "operationStatus": "open",
       "statusNote": null,
-      "verifiedOn": null,
-      "confidence": "catalog",
+      "statusNoteUntil": null,
+      "verifiedOn": "2026-11-21",
+      "confidence": "medium",
       "unverifiedFields": [
-        "hoursSummary",
-        "priceSummary"
+        "hoursSummary"
       ],
       "sources": [
+        "https://www.ktriptips.com/kor/tourspot/125674",
+        "https://www.sokcho.go.kr/ct/tour/attraction",
+        "https://www.openstreetmap.org/node/6908160885",
+        "https://map.naver.com/p/entry/place/13491148"
+      ],
+      "address": "강원특별자치도 속초시 설악동 설악산국립공원",
+      "latitude": 38.165851,
+      "longitude": 128.501126,
+      "coordinateSource": "네이버 지도 장소 '육담폭포' 좌표",
+      "imageUrl": "/places/yukdam-falls.webp",
+      "imageCredit": "사진: 속초시 관광 누리집",
+      "imageSourceUrl": "https://www.sokcho.go.kr/ct/tour/attraction/nature?contentSeq=78",
+      "imageAlt": "구름다리 아래 바위 골짜기로 흘러내리는 육담폭포",
+      "imageProvenance": {
+        "kind": "official",
+        "author": "속초시 관광 누리집",
+        "license": null,
+        "originalUrl": "https://www.sokcho.go.kr/upload/board/TSZZZZ01/55cf74fc-a1fc-4035-980c-da76d83c34dc.jpg",
+        "pageUrl": "https://www.sokcho.go.kr/ct/tour/attraction/nature?contentSeq=78",
+        "downloadedOn": "2026-11-21",
+        "modification": "3:2로 자르고 폭 1080px 이하 WebP로 변환, 240×240 썸네일 생성",
+        "note": "공식 누리집에 게시된 사진. 재게시 허락은 받지 않았다. 행사 포스터와 같은 방식으로 출처를 표시하고, 내려 달라는 요청이 오면 바로 뺀다(2026-11-21 사용자 결정)."
+      }
+    },
+    {
+      "slug": "joyang-dong-prehistoric-site",
+      "catalogSlug": "sokcho-attraction-038",
+      "summary": "청동기 시대 집터와 고인돌이 나온 국가 사적",
+      "activityCategory": "nature",
+      "tags": [
+        "free"
+      ],
+      "description": "청초호 서쪽 언덕에서 1992년 발굴된 신석기 말~청동기 초의 유적으로, 움집터 7기와 고인돌 2기가 확인되어 국가 사적으로 지정되었습니다. 고인돌에서는 남한에서 처음으로 부채꼴 청동도끼가 나왔습니다. 건물 없이 야외에 유적만 있어 언제든 볼 수 있고, 20~30분이면 둘러볼 수 있습니다.",
+      "hoursSummary": null,
+      "closedSummary": null,
+      "priceSummary": "무료",
+      "phone": "033-639-2958",
+      "parkingSummary": "무료",
+      "cautions": [],
+      "bookingUrl": null,
+      "operationStatus": "open",
+      "statusNote": null,
+      "statusNoteUntil": null,
+      "verifiedOn": "2026-11-21",
+      "confidence": "medium",
+      "unverifiedFields": [],
+      "sources": [
+        "https://www.ktriptips.com/kor/tourspot/250357",
+        "https://encykorea.aks.ac.kr/Article/E0066150",
         "https://www.sokcho.go.kr/ct/tour/attraction/culture",
-        "https://www.openstreetmap.org/node/1899068038"
+        "https://www.openstreetmap.org/node/1899068038",
+        "https://map.naver.com/p/entry/place/20103764"
       ],
       "imageUrl": "/places/joyang-dong-prehistoric-site.webp",
       "imageCredit": "사진: 속초시 관광 누리집",
@@ -2980,63 +3391,95 @@
         "downloadedOn": "2026-11-21",
         "modification": "3:2로 자르고 폭 1080px 이하 WebP로 변환, 240×240 썸네일 생성",
         "note": "공식 누리집에 게시된 사진. 재게시 허락은 받지 않았다. 행사 포스터와 같은 방식으로 출처를 표시하고, 내려 달라는 요청이 오면 바로 뺀다(2026-11-21 사용자 결정)."
-      }
+      },
+      "address": "강원특별자치도 속초시 선사로1길 16",
+      "latitude": 38.188245,
+      "longitude": 128.590783,
+      "coordinateSource": "네이버 지도 장소 '속초조양동선사유적' 좌표"
     },
     {
       "slug": "cheongdaesan",
       "catalogSlug": "sokcho-attraction-047",
-      "summary": "속초 시내에서 가볍게 오르는 낮은 산",
+      "summary": "정상까지 30~40분, 속초 시내와 설악산이 보이는 낮은 산",
       "activityCategory": "nature",
       "tags": [
         "free"
       ],
-      "description": null,
+      "description": "조양동에 있는 해발 230m 남짓의 낮은 산으로, 속초 8경 중 하나입니다. 어느 들머리에서 올라도 정상까지 30~40분이면 닿고, 길목에 운동시설과 쉼터, 전망대가 있습니다. 정상에서는 속초 시가지와 동해, 울산바위와 달마봉 같은 설악산 능선이 보여 가벼운 산행이나 해돋이 산책으로 찾기 좋습니다.",
       "hoursSummary": null,
       "closedSummary": null,
-      "priceSummary": null,
+      "priceSummary": "무료",
       "phone": null,
       "parkingSummary": null,
-      "cautions": [],
+      "cautions": [
+        "해돋이를 보러 오를 때는 어두운 산길이라 손전등을 챙기세요."
+      ],
       "bookingUrl": null,
       "operationStatus": "open",
       "statusNote": null,
-      "verifiedOn": null,
-      "confidence": "catalog",
+      "statusNoteUntil": null,
+      "verifiedOn": "2026-11-21",
+      "confidence": "medium",
       "unverifiedFields": [
-        "hoursSummary",
-        "priceSummary"
+        "address",
+        "parkingSummary"
       ],
       "sources": [
+        "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=e0b643ae-448d-4112-aef2-e45308d12e52",
+        "https://www.gwm20.com/mountain_detail.do?idx=21",
         "https://www.sokcho.go.kr/ct/tour/",
-        "https://www.openstreetmap.org/node/444224895"
-      ]
+        "https://www.openstreetmap.org/node/444224895",
+        "https://map.naver.com/p/entry/place/11491545"
+      ],
+      "address": "강원특별자치도 속초시 조양동 일대",
+      "latitude": 38.178306,
+      "longitude": 128.572196,
+      "coordinateSource": "네이버 지도 장소 '청대산' 좌표",
+      "imageUrl": "/places/cheongdaesan.webp",
+      "imageCredit": "사진: 속초시 관광 누리집",
+      "imageSourceUrl": "https://www.sokcho.go.kr/ct/tour/attraction/nature?contentSeq=139",
+      "imageAlt": "소나무 숲 사이로 이어지는 청대산 등산로 계단",
+      "imageProvenance": {
+        "kind": "official",
+        "author": "속초시 관광 누리집",
+        "license": null,
+        "originalUrl": "https://www.sokcho.go.kr/upload/board/TSZZZZ01/c060ac40-c223-4a65-8073-5584b276a64f.jpg",
+        "pageUrl": "https://www.sokcho.go.kr/ct/tour/attraction/nature?contentSeq=139",
+        "downloadedOn": "2026-11-21",
+        "modification": "3:2로 자르고 폭 1080px 이하 WebP로 변환, 240×240 썸네일 생성",
+        "note": "공식 누리집에 게시된 사진. 재게시 허락은 받지 않았다. 행사 포스터와 같은 방식으로 출처를 표시하고, 내려 달라는 요청이 오면 바로 뺀다(2026-11-21 사용자 결정)."
+      }
     },
     {
       "slug": "cheongcho-lake-park",
       "catalogSlug": "cheongcho-lake-park",
       "activityCategory": "nature",
       "tags": [
-        "free"
+        "free",
+        "kids"
       ],
-      "description": null,
+      "description": "속초 시내 한가운데 청초호 호숫가에 꾸민 공원으로, 산책로와 벤치, 밤에 불을 밝히는 조형물이 있고 호수 위 정자 청초정에서 설악산과 바다 쪽을 볼 수 있습니다. 공원 옆 73.4m 높이의 엑스포타워 전망대에 오르면 동해와 설악산, 시내가 한눈에 보입니다. 평탄한 길이라 아이와 함께 1시간 안팎으로 걷기 좋고, 야경을 보러 저녁에 찾아도 좋습니다.",
       "hoursSummary": null,
       "closedSummary": null,
-      "priceSummary": null,
+      "priceSummary": "무료(엑스포타워 전망대 어른 2,500원 · 청소년 2,000원 · 어린이 1,500원)",
       "phone": null,
-      "parkingSummary": null,
-      "cautions": [],
+      "parkingSummary": "무료",
+      "cautions": [
+        "엑스포타워 전망대는 09:00~22:00 운영하고 21:30에 입장을 마감합니다."
+      ],
       "bookingUrl": null,
       "operationStatus": "open",
       "statusNote": null,
-      "verifiedOn": null,
-      "confidence": "catalog",
-      "unverifiedFields": [
-        "hoursSummary",
-        "priceSummary"
-      ],
+      "statusNoteUntil": null,
+      "verifiedOn": "2026-11-21",
+      "confidence": "medium",
+      "unverifiedFields": [],
       "sources": [
+        "https://www.ktriptips.com/kor/tourspot/125750",
+        "https://www.ktriptips.com/kor/tourspot/128804",
         "https://www.sokcho.go.kr/ct/tour/attraction/nature?contentSeq=72",
-        "https://www.openstreetmap.org/?mlat=38.1999&mlon=128.5859#map=17/38.1999/128.5859"
+        "https://www.openstreetmap.org/?mlat=38.1999&mlon=128.5859#map=17/38.1999/128.5859",
+        "https://map.naver.com/p/entry/place/528686921"
       ],
       "imageUrl": "/places/cheongcho-lake-park.webp",
       "imageCredit": "사진: 속초시 관광 누리집",
@@ -3051,35 +3494,44 @@
         "downloadedOn": "2026-11-21",
         "modification": "3:2로 자르고 폭 1080px 이하 WebP로 변환, 240×240 썸네일 생성",
         "note": "공식 누리집에 게시된 사진. 재게시 허락은 받지 않았다. 행사 포스터와 같은 방식으로 출처를 표시하고, 내려 달라는 요청이 오면 바로 뺀다(2026-11-21 사용자 결정)."
-      }
+      },
+      "latitude": 38.19606,
+      "longitude": 128.582464,
+      "coordinateSource": "네이버 지도 장소 '청초호호수공원' 좌표",
+      "summary": "청초호 산책로와 엑스포타워가 있는 도심 공원"
     },
     {
       "slug": "cheongho-beach",
       "catalogSlug": "sokcho-attraction-022",
-      "summary": "아바이마을 옆의 작은 해변",
+      "summary": "아바이마을 끝, 파도가 잔잔한 작은 해변",
       "activityCategory": "nature",
       "tags": [
-        "free"
+        "free",
+        "kids"
       ],
-      "description": null,
-      "hoursSummary": null,
+      "description": "아바이마을 끝자락의 작은 해변으로, 방파제가 바다를 감싸 파도가 잔잔하고 물이 얕아 어린아이와 물놀이하기 좋습니다. 등대가 선 방파제 옆이라 다른 해변보다 한적하고, 아바이마을 구경이나 순대 식사와 묶어 들르기에 맞습니다.",
+      "hoursSummary": "물놀이는 여름 개장 기간(7월 초~8월 하순)에만 가능",
       "closedSummary": null,
-      "priceSummary": null,
+      "priceSummary": "무료",
       "phone": null,
       "parkingSummary": null,
-      "cautions": [],
+      "cautions": [
+        "개장 기간이 아니면 안전요원이 없어 물에 들어가지 마세요."
+      ],
       "bookingUrl": null,
       "operationStatus": "open",
       "statusNote": null,
-      "verifiedOn": null,
-      "confidence": "catalog",
+      "statusNoteUntil": null,
+      "verifiedOn": "2026-11-21",
+      "confidence": "medium",
       "unverifiedFields": [
-        "hoursSummary",
-        "priceSummary"
+        "parkingSummary"
       ],
       "sources": [
+        "https://access.visitkorea.or.kr/ms/detail.do?cotId=d2cb5a83-de75-4e02-958e-8860b7998233",
         "https://www.sokcho.go.kr/ct/tour/attraction",
-        "https://www.openstreetmap.org/way/179520942"
+        "https://www.openstreetmap.org/way/179520942",
+        "https://map.naver.com/p/entry/place/1891233798"
       ],
       "imageUrl": "/places/cheongho-beach.webp",
       "imageCredit": "사진: 속초시 관광 누리집",
@@ -3094,61 +3546,119 @@
         "downloadedOn": "2026-11-21",
         "modification": "3:2로 자르고 폭 1080px 이하 WebP로 변환, 240×240 썸네일 생성",
         "note": "공식 누리집에 게시된 사진. 재게시 허락은 받지 않았다. 행사 포스터와 같은 방식으로 출처를 표시하고, 내려 달라는 요청이 오면 바로 뺀다(2026-11-21 사용자 결정)."
-      }
+      },
+      "address": "강원특별자치도 속초시 청호로 120-1",
+      "latitude": 38.200226,
+      "longitude": 128.595745,
+      "coordinateSource": "네이버 지도 장소 '청호해수욕장' 좌표"
     },
     {
       "slug": "towangseong-falls-observatory",
       "catalogSlug": "sokcho-attraction-050",
-      "summary": "비룡폭포 위에서 토왕성폭포를 바라보는 전망대",
+      "summary": "비룡폭포 위에서 320m 토왕성폭포를 바라보는 전망대",
       "activityCategory": "nature",
-      "tags": [],
-      "description": null,
-      "hoursSummary": null,
+      "tags": [
+        "free"
+      ],
+      "description": "상·중·하 3단을 합쳐 약 320m에 이르는 토왕성폭포를 멀리서 바라보는 전망대로, 비룡폭포 탐방로를 약 400m 늘려 만들었습니다. 소공원에서 육담폭포·비룡폭포를 지나 약 2.8km, 편도 1시간 30분 안팎이 걸리며, 비룡폭포부터 전망대까지는 계단이 많아 가장 힘든 구간입니다. 겨울에는 폭포가 얼어 큰 빙폭이 되고, 날씨가 흐리면 폭포가 잘 보이지 않을 수 있습니다.",
+      "hoursSummary": "입산 가능 시간 동절기 04:00~12:00 · 하절기 03:00~14:00",
       "closedSummary": null,
-      "priceSummary": null,
-      "phone": null,
-      "parkingSummary": null,
-      "cautions": [],
+      "priceSummary": "무료",
+      "phone": "033-801-0900",
+      "parkingSummary": "설악산 소공원 유료 주차장 이용",
+      "cautions": [
+        "비룡폭포에서 전망대까지 약 400m가 계단 위주의 오르막입니다.",
+        "주변에 낙석·낙빙 위험이 있어 정해진 길로만 다니세요."
+      ],
       "bookingUrl": null,
       "operationStatus": "open",
       "statusNote": null,
-      "verifiedOn": null,
-      "confidence": "catalog",
+      "statusNoteUntil": null,
+      "verifiedOn": "2026-11-21",
+      "confidence": "medium",
       "unverifiedFields": [
-        "hoursSummary",
-        "priceSummary"
+        "hoursSummary"
       ],
       "sources": [
+        "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=d6bba112-5e8f-4184-9c28-e625c4e1d894",
+        "https://www.ktriptips.com/kor/tourspot/125676",
         "https://www.sokcho.go.kr/ct/tour/",
-        "https://www.openstreetmap.org/node/4218866495"
-      ]
+        "https://www.openstreetmap.org/node/4218866495",
+        "https://map.naver.com/p/entry/place/1361630489"
+      ],
+      "address": "강원특별자치도 속초시 설악동 설악산국립공원",
+      "latitude": 38.162037,
+      "longitude": 128.498735,
+      "coordinateSource": "네이버 지도 장소 '토왕성폭포전망대' 좌표",
+      "imageUrl": "/places/towangseong-falls-observatory.webp",
+      "imageCredit": "사진: Camangbarry, CC BY-SA 3.0 (위키미디어 공용) · 원본에서 잘라냄",
+      "imageSourceUrl": "https://commons.wikimedia.org/wiki/File:%ED%86%A0%EC%99%95%EC%84%B1_%ED%8F%AD%ED%8F%AC.jpg",
+      "imageAlt": "바위 절벽을 따라 길게 떨어지는 토왕성폭포",
+      "imageProvenance": {
+        "title": "토왕성 폭포.jpg",
+        "author": "Camangbarry",
+        "license": "CC BY-SA 3.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+        "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/e/e1/%ED%86%A0%EC%99%95%EC%84%B1_%ED%8F%AD%ED%8F%AC.jpg",
+        "downloadedOn": "2026-11-21",
+        "modification": "세로 사진에서 폭포 부분을 3:2로 잘라 WebP로 변환, 240×240 썸네일 생성",
+        "kind": "open-license",
+        "takenYear": 2018,
+        "note": "사용자가 위키미디어 공용에서 내려받아 전달한 1,280px 이하 사본을 썼다(2026-11-21). 자동 다운로드는 위키미디어 요청 제한(429)으로 막혔다."
+      }
     },
     {
       "slug": "heundeulbawi",
       "catalogSlug": "sokcho-attraction-051",
-      "summary": "계조암 앞의 흔들리는 큰 바위",
+      "summary": "계조암 앞 너른 바위 위에 얹힌 흔들리는 둥근 바위",
       "activityCategory": "nature",
-      "tags": [],
-      "description": null,
+      "tags": [
+        "free"
+      ],
+      "description": "신흥사에 딸린 암자 계조암 앞의 넓은 반석 위에 얹힌 둥근 바위로, 혼자 밀어도 여럿이 밀어도 비슷하게 흔들린다고 알려져 있습니다. 소공원에서 신흥사를 지나 울산바위로 오르는 길 중간에 있어 편도 1시간 정도면 닿고, 여기서 울산바위까지는 1시간 남짓 더 걸립니다. 바로 뒤 큰 바위 속에 계조암 법당이 있어 함께 둘러볼 수 있습니다.",
       "hoursSummary": null,
       "closedSummary": null,
-      "priceSummary": null,
-      "phone": null,
-      "parkingSummary": null,
+      "priceSummary": "무료",
+      "phone": "033-801-0900",
+      "parkingSummary": "설악산 소공원 유료 주차장 이용",
       "cautions": [],
       "bookingUrl": null,
       "operationStatus": "open",
       "statusNote": null,
-      "verifiedOn": null,
-      "confidence": "catalog",
+      "statusNoteUntil": null,
+      "verifiedOn": "2026-11-21",
+      "confidence": "medium",
       "unverifiedFields": [
         "hoursSummary",
-        "priceSummary"
+        "closedSummary"
       ],
       "sources": [
+        "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=122e2deb-ef38-4902-97ee-dfbc0c74e395",
+        "https://www.ktriptips.com/kor/tourspot/125806",
         "https://www.sokcho.go.kr/ct/tour/",
-        "https://www.openstreetmap.org/node/444216049"
-      ]
+        "https://www.openstreetmap.org/node/444216049",
+        "https://map.naver.com/p/entry/place/19796743"
+      ],
+      "address": "강원특별자치도 속초시 설악동 설악산국립공원",
+      "latitude": 38.189891,
+      "longitude": 128.474955,
+      "coordinateSource": "네이버 지도 장소 '흔들바위' 좌표",
+      "imageUrl": "/places/heundeulbawi.webp",
+      "imageCredit": "사진: Steve46814, CC BY-SA 3.0 (위키미디어 공용) · 원본에서 잘라냄",
+      "imageSourceUrl": "https://commons.wikimedia.org/wiki/File:Korea-Seoraksan-Kyejoam-Heundeulbawi-01.jpg",
+      "imageAlt": "계조암 앞 너른 바위 위에 얹힌 흔들바위를 한 사람이 밀고 있는 모습",
+      "imageProvenance": {
+        "title": "Korea-Seoraksan-Kyejoam-Heundeulbawi-01.jpg",
+        "author": "Steve46814",
+        "license": "CC BY-SA 3.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+        "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/e/e2/Korea-Seoraksan-Kyejoam-Heundeulbawi-01.jpg",
+        "downloadedOn": "2026-11-21",
+        "modification": "오른쪽 아래 촬영 날짜 표시를 빼고 3:2로 자른 뒤 WebP로 변환, 240×240 썸네일 생성",
+        "kind": "open-license",
+        "takenYear": 2007,
+        "note": "사용자가 위키미디어 공용에서 내려받아 전달한 1,280px 이하 사본을 썼다(2026-11-21). 자동 다운로드는 위키미디어 요청 제한(429)으로 막혔다."
+      }
     }
   ]
 }

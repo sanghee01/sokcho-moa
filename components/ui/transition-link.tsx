@@ -21,6 +21,7 @@ export function TransitionLink({
   rel,
   title,
   onNavigate,
+  shouldGoBack,
   ...analyticsAttributes
 }: {
   href: string;
@@ -34,6 +35,8 @@ export function TransitionLink({
   title?: string;
   /** 이동을 시작하는 transition 안에서 부른다. 부모가 useOptimistic으로 누른 상태를 먼저 보여 줄 때 쓴다. */
   onNavigate?: () => void;
+  /** 누를 때 true를 돌려주면 href로 가지 않고 브라우저 뒤로 가기를 한다(상세의 목록으로 돌아가기, back-to-list-link.tsx). */
+  shouldGoBack?: () => boolean;
 } & Partial<AnalyticsDataAttributes> & {
   "aria-current"?: "page";
   "aria-label"?: string;
@@ -48,7 +51,8 @@ export function TransitionLink({
 
     startTransition(() => {
       onNavigate?.();
-      router.push(href, { scroll });
+      if (shouldGoBack?.() === true) router.back();
+      else router.push(href, { scroll });
     });
   }
 

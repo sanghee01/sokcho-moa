@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { AnalyticsViewTracking } from "@/components/analytics/analytics-view-tracking";
-import { getButtonClassName } from "@/components/ui/button-styles";
+import { BackToListLink } from "@/components/ui/back-to-list-link";
 import { TransitionLink } from "@/components/ui/transition-link";
 import { JsonLd } from "@/components/seo/json-ld";
 import { EventActionBar } from "@/features/events/components/detail/event-action-bar";
@@ -100,8 +100,13 @@ export default async function EventDetailPage({ params }: PageProps<"/events/[sl
       />
       {eventJsonLd !== null && <JsonLd data={eventJsonLd} />}
       <JsonLd data={breadcrumbJsonLd} />
-      {/* 경로는 모바일 첫 화면을 쓰지 않도록 화면 읽기 프로그램용으로만 두고, 넓은 화면에서 보여 준다(.ai/DESIGN.md 행사 상세 7). */}
-      <nav aria-label="현재 위치" className="sr-only text-label font-normal text-content-subtle lg:not-sr-only lg:mb-6 lg:block">
+      {/* 맨 위의 "‹ 목록으로 돌아가기". 가볼만한 곳이 생겨 로고만으로는 어느 목록으로 가는지 알 수 없어 둔다(2026-11-21 사용자 결정). */}
+      <div className="px-4 pt-1 lg:mb-4 lg:px-0 lg:pt-0">
+        <BackToListLink href="/" pendingLabel="행사 목록 불러오는 중" />
+      </div>
+      {/* 경로는 화면 읽기 프로그램용으로만 둔다. 넓은 화면에서도 보였지만 위 "목록으로 돌아가기"와 겹쳐 숨겼다(2026-11-21).
+          안의 링크는 Tab 초점을 받으므로, 초점이 들어오면 보이게 해 보이지 않는 곳에 초점이 머물지 않게 한다(WCAG 2.4.7). */}
+      <nav aria-label="현재 위치" className="sr-only text-label font-normal text-content-subtle focus-within:not-sr-only focus-within:block focus-within:px-4 focus-within:py-2 lg:focus-within:px-0">
         <TransitionLink href="/" pendingLabel="행사 목록 불러오는 중" showPendingIndicator={false} className="text-primary-text hover:underline">{SITE_NAME}</TransitionLink>{" "}
         <span aria-hidden="true">/</span>{" "}
         <TransitionLink href={eventTopicPath(event.category)} pendingLabel={`속초 ${categoryLabels[event.category]} 목록 불러오는 중`} showPendingIndicator={false} className="text-primary-text hover:underline">속초 {categoryLabels[event.category]}</TransitionLink>{" "}
@@ -156,12 +161,8 @@ export default async function EventDetailPage({ params }: PageProps<"/events/[sl
       )}
 
       <div className={`${lowerSectionClassName} flex justify-center`}>
-        {/* 모바일은 폭 전체, sm부터는 글자 폭만 하면 작아 보여 320px로 둔다(2026-11-07 사용자 결정). */}
-        {/* 목록은 동적 페이지라 미리 받지 않아, 응답을 기다리는 동안 버튼을 흐리게 한다(2026-11-15).
-            버튼 모양 링크의 모서리 스피너는 글자 옆 "["처럼 보여 쓰지 않는다(2026-11-07 관리자 버튼과 같은 결정). */}
-        <TransitionLink href="/" pendingLabel="행사 목록 불러오는 중" showPendingIndicator={false} className={`${getButtonClassName({ variant: "tonal", width: "full" })} sm:w-80`}>
-          목록으로 돌아가기
-        </TransitionLink>
+        {/* 버튼 모양 링크의 모서리 스피너는 글자 옆 "["처럼 보여 쓰지 않는다(2026-11-07 관리자 버튼과 같은 결정, BackToListLink). */}
+        <BackToListLink href="/" pendingLabel="행사 목록 불러오는 중" appearance="button" />
       </div>
     </main>
   );

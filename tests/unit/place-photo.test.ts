@@ -42,7 +42,7 @@ describe("placeFormSchema의 사진 값", () => {
     slug: "expo-tower", name: "엑스포타워", category: "전망", summary: "", address: "", latitude: "38.19", longitude: "128.59",
     imageUrl: "", imageCredit: "", imageSourceUrl: "", imageAlt: "", officialUrl: "", mapUrl: "", isPublished: true,
     activityCategory: "", tags: [], description: "", hoursSummary: "", closedSummary: "", priceSummary: "", phone: "",
-    parkingSummary: "", cautions: "", bookingUrl: "", operationStatus: "open", statusNote: "", verifiedOn: "",
+    parkingSummary: "", cautions: "", bookingUrl: "", operationStatus: "open", statusNote: "", statusNoteUntil: "", verifiedOn: "",
   };
 
   it("우리 사이트 경로와 http(s) 주소를 받는다", () => {

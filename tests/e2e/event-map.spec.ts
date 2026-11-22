@@ -45,7 +45,8 @@ test.describe("장소 카드", () => {
     await expect(page).toHaveURL(/\/map$/);
     await expect(getPlacePanel(page)).toBeHidden();
     await expect(pin).toBeFocused();
-    expect(await analyticsEventParams(page, "map_place_selected")).toEqual([{ map_category: "all", event_count: 1 }]);
+    // select_method: 핀으로 골랐는지 PC 왼쪽 목록에서 골랐는지(2026-11-21 GA 보강으로 더함).
+    expect(await analyticsEventParams(page, "map_place_selected")).toEqual([{ map_category: "all", event_count: 1, select_method: "pin" }]);
 
     await page.goBack();
     await expect(page).toHaveURL(/:\d+\/$/);
@@ -114,6 +115,23 @@ test.describe("장소 카드", () => {
     await page.keyboard.press("Escape");
     await expect(page).toHaveURL(/\/map$/);
     await expect(getPlacePanel(page)).toBeHidden();
+  });
+
+  // md 이상은 왼쪽 판에 지금 레이어·분야의 장소 목록이 있고, 누르면 핀을 누른 것처럼 카드가 열린다(2026-11-21 사용자 결정: 시안 D).
+  test("넓은 화면에서는 왼쪽 목록에서 장소를 골라 카드를 열고, 레이어를 바꾸면 목록도 바뀐다", async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== "desktop-chromium", "왼쪽 목록은 md 이상에만 있다");
+    await page.goto("/map");
+    const list = page.getByRole("list", { name: "지도에 보이는 곳" });
+    await list.getByRole("button", { name: new RegExp(MOUNTAIN_PLACE_NAME) }).click();
+    await expect(page).toHaveURL(/\/map\?place=/);
+    await expect(getPlacePanel(page)).toBeVisible();
+    await expect(list.getByRole("button", { name: new RegExp(MOUNTAIN_PLACE_NAME) })).toHaveAttribute("aria-pressed", "true");
+    // 목록 판을 남길지 정하려고 목록에서 고른 것을 따로 센다(2026-11-21).
+    expect(await analyticsEventParams(page, "map_place_selected")).toEqual([{ map_category: "all", event_count: 1, select_method: "list" }]);
+
+    await page.getByRole("group", { name: "지도 레이어" }).getByRole("button", { name: "가볼만한 곳" }).click();
+    await expect(page).toHaveURL(/layer=places/);
+    await expect(list.getByRole("button", { name: /물놀이·온천/ }).first()).toBeVisible();
   });
 
   test("주소의 장소로 열면 카드가 열려 있고, 지도에 없는 장소는 주소에서 뺀다", async ({ page }) => {

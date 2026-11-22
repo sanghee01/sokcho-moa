@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { useOptimistic } from "react";
+import { getFilterChipClassName } from "@/components/ui/filter-chip-styles";
 import { TransitionLink } from "@/components/ui/transition-link";
 import { categoryLabels, eventCategories } from "@/features/events/model/taxonomy";
 
@@ -32,9 +33,9 @@ function getCategoryLinks(pathname: string) {
 }
 
 /**
- * 행사 분야 탭(.ai/DESIGN.md Components > Tabs). 행사 목록·월별 페이지 위쪽에 있고(EventSectionNavigation), 화면에 고정하지 않는다.
+ * 행사 분야 탭(.ai/DESIGN.md Components > Tabs). 행사 목록(app/(event-browse)/layout.tsx)·월별 페이지 위쪽에 있고, 화면에 고정하지 않는다.
  * 예전에는 헤더 안에 고정했지만 모바일 하단 탭이 생기며 위아래 고정 영역이 너무 커져 목록 안으로 옮겼다(2026-11-21 사용자 결정).
- * 7개가 한 줄에 다 들어가게 모바일은 같은 폭으로 나누고, 좌우 스크롤은 쓰지 않는다(2026-11-06).
+ * 7개가 한 줄에 다 들어가게 모바일은 같은 폭으로 나누고, 좌우 스크롤은 쓰지 않는다(2026-11-06). 넓은 화면은 아래 목록처럼 왼쪽 정렬이다.
  * 밑줄로는 현재 탭이 잘 안 보여 바다색 알약으로 채운다(2026-11-06). E2E가 이 이름("행사 분야")과 링크 순서를 확인한다.
  */
 export function CategoryNavigation() {
@@ -47,7 +48,7 @@ export function CategoryNavigation() {
 
   return (
     <nav aria-label="행사 분야">
-      <div className="-mx-3 grid grid-cols-7 sm:mx-0 sm:flex sm:gap-1">
+      <div className="-mx-2.5 grid grid-cols-7 sm:mx-0 sm:flex sm:gap-2">
         {categoryLinks.map((item) => {
           const active = selectedHref === item.href;
           return (
@@ -59,14 +60,10 @@ export function CategoryNavigation() {
               onNavigate={() => setSelectedHref(item.href)}
               aria-current={active ? "page" : undefined}
               // 누르는 영역은 칸 전체(높이 44px 이상)이고, 보이는 모양은 안쪽 알약이다. 알약끼리는 떨어져 보인다.
-              className="group inline-flex min-h-11 items-center justify-center whitespace-nowrap"
+              className="group inline-flex min-h-11 items-center justify-center px-0.5 sm:px-0"
             >
-              {/* 밑줄만으로는 현재 탭이 잘 보이지 않아, 정렬 버튼처럼 선택된 탭을 바다색으로 채운다(2026-11-06). */}
-              <span className={`rounded-control px-2.5 py-1.5 text-label sm:px-4 ${active
-                ? "bg-primary font-semibold text-on-primary"
-                : "text-content-muted group-hover:bg-surface-muted group-hover:text-content"}`}>
-                {item.label}
-              </span>
+              {/* 선택된 탭은 바다색으로 채운다(2026-11-06). 모양은 가볼만한 곳 분류·지도 분야와 같은 칩이다(filter-chip-styles.ts). */}
+              <span className={getFilterChipClassName(active, "fill")}>{item.label}</span>
             </TransitionLink>
           );
         })}

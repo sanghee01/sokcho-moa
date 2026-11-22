@@ -43,6 +43,7 @@ export async function savePlaceAction(
     // 예전 폼(운영 상태 칸이 없던 화면)에서 온 제출은 정상 운영으로 본다.
     operationStatus: formString(formData, "operationStatus") || "open",
     statusNote: formString(formData, "statusNote"),
+    statusNoteUntil: formString(formData, "statusNoteUntil"),
     verifiedOn: formString(formData, "verifiedOn"),
   });
   if (!parsed.success) return invalidInput(parsed.error);
@@ -75,6 +76,7 @@ export async function savePlaceAction(
     booking_url: place.bookingUrl,
     operation_status: place.operationStatus,
     status_note: place.statusNote,
+    status_note_until: place.statusNoteUntil,
     verified_on: place.verifiedOn,
   };
   const client = await createSessionSupabaseClient();

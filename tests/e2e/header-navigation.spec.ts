@@ -72,7 +72,8 @@ test("상세의 목록으로 돌아가기는 응답이 늦어도 불러오는 �
 
   await page.goto(SAMPLE_EVENT_PATH);
   // 불러오는 동안에는 링크 이름 뒤에 "불러오는 중"이 붙어서 앞부분으로 찾는다.
-  const backToList = page.getByRole("link", { name: /^목록으로 돌아가기/ });
+  // 맨 위 글자 링크와 맨 아래 버튼이 같은 이름이라(2026-11-21) 맨 아래 버튼을 고른다.
+  const backToList = page.getByRole("link", { name: /^목록으로 돌아가기/ }).last();
 
   await backToList.click();
 

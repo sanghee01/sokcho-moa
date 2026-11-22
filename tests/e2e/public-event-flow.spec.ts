@@ -207,10 +207,11 @@ test("GA 이벤트는 탐색부터 상세 도달까지 구조화된 파라미터
 
   await page.getByRole("link", { name: /바다빛 가족 문화축제/ }).click();
   await expect(page).toHaveURL(new RegExp(`${SAMPLE_EVENT_PATH}$`));
+  // 통합 검색 결과에서 고른 행사는 site_search로 센다. 그 전에는 목록과 같은 event_list로 섞였다(2026-11-21 GA 보강).
   await expect.poll(async () => (await capturedAnalyticsEvents(page)).some((event) => (
     event.name === "select_content"
       && event.params.content_id === SAMPLE_EVENT_SLUG
-      && event.params.content_source === "event_list"
+      && event.params.content_source === "site_search"
   ))).toBe(true);
   await expect.poll(async () => (await capturedAnalyticsEvents(page)).some((event) => (
     event.name === "event_detail_viewed"
@@ -333,7 +334,10 @@ test("헤더에서 검색하고 상세·원문·외부 지도 링크를 확인�
   await page.getByRole("link", { name: /바다빛 가족 문화축제/ }).click();
   await expect(page).toHaveURL(new RegExp(`${SAMPLE_EVENT_PATH}$`));
   await expect(page.getByRole("heading", { level: 1, name: /바다빛 가족 문화축제/ })).toBeVisible();
-  await expect(page.getByRole("link", { name: "목록으로 돌아가기" })).toHaveAttribute("href", "/");
+  // 맨 위 "‹ 목록으로 돌아가기"와 맨 아래 버튼 둘 다 행사 목록으로 간다(2026-11-21 사용자 결정으로 맨 위에도 둠).
+  const backToListLinks = page.getByRole("link", { name: "목록으로 돌아가기" });
+  await expect(backToListLinks).toHaveCount(2);
+  for (const link of await backToListLinks.all()) await expect(link).toHaveAttribute("href", "/");
 
   const sourceLink = page.getByRole("link", { name: /행사 안내/ });
   await expect(sourceLink).toHaveAttribute("href", "https://www.sokcho.go.kr/");

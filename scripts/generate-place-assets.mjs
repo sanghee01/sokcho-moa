@@ -86,6 +86,7 @@ const placeColumns = [
   ["booking_url", (place) => sqlString(place.bookingUrl)],
   ["operation_status", (place) => sqlString(place.operationStatus ?? "open")],
   ["status_note", (place) => sqlString(place.statusNote)],
+  ["status_note_until", (place) => sqlString(place.statusNoteUntil)],
   ["verified_on", (place) => sqlString(place.verifiedOn)],
 ];
 

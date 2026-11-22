@@ -1,5 +1,6 @@
 -- 되돌리기: supabase/migrations/20261121094236_fill_place_links_and_activity_data.sql
--- 값만 되돌린다. 적용 뒤 관리자가 고친 값은 건드리지 않도록, 이 migration이 넣은 값 그대로일 때만 되돌린다.
+-- 값만 되돌린다. 1절 공식 주소는 이 migration이 넣은 값 그대로일 때만 되돌리지만, 2절(즐길거리 값)은 slug와 분류만 보고 되돌려
+-- 적용 뒤 관리자가 고친 소개·요금 등도 지운다. 그래서 아래 CSV 백업이 꼭 필요하다(2026-11-21 리뷰).
 -- 되돌리기 전에 장소 전체를 CSV로 내려받아 둔다: select * from public.places;
 -- 새로 넣은 장소를 지우면 그 장소의 상세 주소(/places/<slug>)가 404가 된다.
 

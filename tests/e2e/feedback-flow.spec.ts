@@ -1,14 +1,16 @@
 import { expect, test } from "@playwright/test";
 import { analyticsEventParams } from "@/tests/e2e/fixtures";
 
-test("푸터에서 의견 보내기 폼으로 이동해 링크 없이도 의견을 보낼 수 있다", async ({ page }) => {
+// 제보·의견·카카오톡 문의는 헤더 "문의" 화면에 모았다(2026-11-21 사용자 결정, 그 전에는 푸터 링크).
+test("헤더 문의에서 의견 보내기 폼으로 이동해 링크 없이도 의견을 보낼 수 있다", async ({ page }) => {
   await page.goto("/");
 
-  const footer = page.getByRole("contentinfo");
-  await expect(footer.getByRole("link", { name: "행사 제보하기", exact: true })).toBeVisible();
-  const feedbackLink = footer.getByRole("link", { name: "의견 보내기", exact: true });
-  await expect(feedbackLink).toBeVisible();
-  await feedbackLink.click();
+  await page.getByRole("banner").getByRole("link", { name: "문의", exact: true }).click();
+  await expect(page).toHaveURL(/\/contact$/);
+  const options = page.getByRole("main");
+  await expect(options.getByRole("link", { name: /제보하기/ })).toHaveAttribute("href", "/report");
+  await expect(options.getByRole("link", { name: /카카오톡으로 묻기/ })).toHaveAttribute("target", "_blank");
+  await options.getByRole("link", { name: /의견 보내기/ }).click();
 
   await expect(page).toHaveURL(/\/feedback$/);
   await expect(page.getByRole("heading", { level: 1, name: "의견 보내기" })).toBeVisible();

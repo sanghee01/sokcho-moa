@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { getButtonClassName } from "@/components/ui/button-styles";
 import { TransitionLink } from "@/components/ui/transition-link";
+import { analyticsData } from "@/lib/analytics/events";
 import { activityCategoryLabels, activityPlacePath } from "@/features/places/model/activity";
 import type { ActivityPlace } from "@/features/places/model/place";
 import { selectPlacePhoto } from "@/features/places/model/place-photo";
@@ -18,7 +19,7 @@ export function PlaceMapCard({ place }: { place: ActivityPlace }) {
       <h3 className="mt-0.5 text-title-3 text-content-strong">{place.name}</h3>
       {place.summary !== null && <p className="mt-1 text-label font-normal text-content-muted">{place.summary}</p>}
       {place.priceSummary !== null && <p className="mt-1 truncate text-caption text-content-subtle">{place.priceSummary}</p>}
-      <TransitionLink href={activityPlacePath(place.slug)} showPendingIndicator={false} className={`${getButtonClassName({ variant: "primary" })} mt-4 w-full`}>
+      <TransitionLink href={activityPlacePath(place.slug)} showPendingIndicator={false} {...analyticsData("select_content", { content_type: "place", content_id: place.slug, content_source: "event_map", place_category: place.activityCategory })} className={`${getButtonClassName({ variant: "primary" })} mt-4 w-full`}>
         자세히 보기
       </TransitionLink>
     </div>

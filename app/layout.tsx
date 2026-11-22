@@ -1,14 +1,13 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
-import { ExternalLink } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import Script from "next/script";
 import type { ReactNode } from "react";
 import { AnalyticsRuntime } from "@/components/analytics/analytics-runtime";
 import { CopyrightYear } from "@/components/layout/copyright-year";
+import { PathnameRecorder } from "@/components/layout/pathname-recorder";
 import { ScrollToTopButton } from "@/components/layout/scroll-to-top-button";
-import { iconProps } from "@/components/ui/icon";
 import { textLinkClassName } from "@/components/ui/link-styles";
 import { TransitionLink } from "@/components/ui/transition-link";
 import { DesktopHeaderActions, MobileHeaderActions } from "@/components/layout/site-header-actions";
@@ -21,7 +20,6 @@ import {
   HOME_TITLE,
   INDEXABLE_ROBOTS,
   SITE_DESCRIPTION,
-  SITE_INQUIRY_URL,
   SITE_NAME,
   SITE_OPEN_GRAPH_IMAGE_PATH,
 } from "@/lib/seo/site-identity";
@@ -107,23 +105,19 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
         {/* 새 공지가 있으면 헤더 아래 한 줄로 알린다. 헤더와 달리 화면에 고정하지 않아 내리면 사라진다(2026-11-21 사용자 결정). */}
         <NoticeBanner />
         <AnalyticsRuntime />
+        <PathnameRecorder />
         <div className="flex-1">{children}</div>
         {/* 회색 바탕 푸터. 로고 이미지는 바탕이 투명해 그대로 얹는다(2026-11-07). 묶음 제목 없이 링크만 한 줄로 둔다(2026-11-06). */}
         <footer className="mt-16 border-t border-line bg-surface-subtle">
           <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-8 sm:px-6 md:flex-row md:items-start md:justify-between md:gap-10">
             <div>
               <Image src={headerLogo} alt="속초모아" sizes="128px" className="h-7 w-auto object-contain" />
-              {/* 안내는 폭 제한 없이 한 문단으로 둔다. 넓은 화면에서는 한 줄, 좁은 화면에서는 글자 폭에 맞춰 자연스럽게 줄이 바뀐다(2026-11-06). */}
-              <p className="mt-3 text-caption text-content-subtle">각 기관의 공고를 옮긴 정보라 실제와 다를 수 있어요. 방문하거나 신청하기 전에 원문을 꼭 확인해 주세요.</p>
+              {/* 서비스 소개 한 문장과 정보 출처 안내를 함께 둔다. 다른 곳의 정보를 모아 보여 주는 서비스(여기어때·NOL)도 푸터에 출처·책임 안내를 둔다(2026-11-21 사용자 결정).
+                  폭 제한 없이 한 문단이라 넓은 화면에서는 한 줄, 좁은 화면에서는 글자 폭에 맞춰 줄이 바뀐다(2026-11-06). */}
+              <p className="mt-3 text-caption text-content-subtle">속초의 행사와 가볼만한 곳을 한곳에 모아 보여 줘요. 각 기관 공고를 옮긴 정보라 바뀔 수 있으니, 원문을 확인해 주세요.</p>
             </div>
             <nav aria-label="사이트 이용" className="flex flex-wrap gap-x-5">
-              <Link href="/places" className={textLinkClassName}>가볼만한 곳</Link>
-              <Link href="/report" className={textLinkClassName}>행사 제보하기</Link>
-              <Link href="/feedback" className={textLinkClassName}>의견 보내기</Link>
-              <Link href="/notices" className={textLinkClassName}>공지사항</Link>
-              <a className={textLinkClassName} href={SITE_INQUIRY_URL} target="_blank" rel="noreferrer">
-                카카오톡 문의 <ExternalLink {...iconProps} size={14} /><span className="sr-only">(새 창)</span>
-              </a>
+              {/* 가볼만한 곳·공지·문의(제보·의견·카카오톡)는 헤더에 늘 있어 푸터에서 되풀이하지 않는다(2026-11-21 사용자 결정). */}
               <Link href="/privacy" className={textLinkClassName}>개인정보 처리방침</Link>
             </nav>
           </div>

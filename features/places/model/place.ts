@@ -1,8 +1,8 @@
 import type { ActivityCategory, ActivityTag, OperationStatus } from "@/features/places/model/activity";
 
 /**
- * 장소 한 곳. 행사 상세의 "주변 명소"와 즐길거리 목록·상세가 함께 쓴다.
- * activityCategory가 null이면 주변 명소로만 나오고 즐길거리 목록에는 나오지 않는다(2026-11-21).
+ * 장소 한 곳. 즐길거리(가볼만한 곳) 목록·상세·지도·검색이 쓴다.
+ * activityCategory가 null이면 사이트 어디에도 나오지 않는다. 행사 상세의 "주변 명소" 구역을 뺐기 때문이다(2026-11-21).
  */
 export interface Place {
   id: string;
@@ -37,12 +37,11 @@ export interface Place {
   bookingUrl: string | null;
   operationStatus: OperationStatus;
   statusNote: string | null;
+  /** 운영 안내가 맞는 마지막 날(YYYY-MM-DD). 지나면 화면에서 숨긴다(model/place-status.ts). null이면 늘 보인다. */
+  statusNoteUntil: string | null;
   /** 정보를 마지막으로 확인한 날(YYYY-MM-DD) */
   verifiedOn: string | null;
 }
 
 /** 즐길거리 목록·상세에 나오는 장소. 분류가 정해져 있다. */
 export type ActivityPlace = Place & { activityCategory: ActivityCategory };
-
-/** 기준 위치에서 떨어진 거리를 붙인 명소. 좌표가 없는 행사는 지역으로만 고르므로 거리가 null이다. */
-export type NearbyPlace = Place & { distanceKm: number | null };

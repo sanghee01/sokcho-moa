@@ -2,8 +2,8 @@
 // 행사가 문화예술회관·도서관 같은 몇 시설에 몰려 있어, 행사마다 핀을 찍으면 같은 자리에 겹쳐 누를 수 없다(2026-11-16).
 import type { Event } from "@/features/events/model/event";
 import { filterEvents, sortEvents } from "@/features/events/model/event-list";
-import type { EventCategory } from "@/features/events/model/taxonomy";
-import type { ActivityCategory } from "@/features/places/model/activity";
+import { isEventCategory, type EventCategory } from "@/features/events/model/taxonomy";
+import { isActivityCategory, type ActivityCategory } from "@/features/places/model/activity";
 import { findVenueName, resolveEventCoordinates, venues, type Coordinates, type Venue } from "@/features/events/model/venue";
 import { createMapSearchName, distanceInKm } from "@/lib/map";
 
@@ -87,21 +87,52 @@ function createPlaceId({ latitude, longitude }: Coordinates) {
 
 /**
  * 지도 화면(브라우저)에 넘기는 핀. 핀과 접근성 이름, 분야 거르기에 필요한 필드만 둔다. 카드는 서버가 따로 그려 넘긴다.
- * 행사 핀은 장소별로 묶은 행사(events)를 갖고, "가볼만한 곳" 핀(kind: "place")은 장소 하나라 events가 비어 있다(2026-11-21).
+ * 행사 장소 핀(venue)은 장소별로 묶은 행사를 갖고, "가볼만한 곳" 핀(place)은 장소 하나와 그 분류를 갖는다(2026-11-21).
+ * 종류(kind)를 반드시 적는다. 예전에는 행사 핀에 선택 칸(kind?, placeCategory?)을 덧붙여 장소 핀을 담아, 장소 핀에도 빈 events가 있고
+ * 분류가 없을 수 있다고 타입이 말했다. 새 종류를 더할 때 고칠 곳을 컴파일러가 찾게 나눴다(2026-11-22 리뷰, 사용자 결정).
  */
-export interface EventMapPin {
+interface MapPinBase {
   id: string;
-  name: string | null;
   latitude: number;
   longitude: number;
-  events: Pick<Event, "slug" | "category">[];
-  kind?: "place";
-  placeCategory?: ActivityCategory;
 }
+
+export interface VenueMapPin extends MapPinBase {
+  kind: "venue";
+  /** 장소 이름이 없는 행사만 있으면 null */
+  name: string | null;
+  events: Pick<Event, "slug" | "category">[];
+}
+
+export interface PlaceMapPin extends MapPinBase {
+  kind: "place";
+  name: string;
+  placeCategory: ActivityCategory;
+}
+
+export type MapPin = VenueMapPin | PlaceMapPin;
 
 /** 지도 레이어. 한 번에 한 종류만 보여 범례 없이도 핀이 무엇인지 알 수 있게 한다(2026-11-21). */
 export const mapLayers = ["events", "places"] as const;
 export type MapLayer = (typeof mapLayers)[number];
+
+/** 지도가 보여 주는 것: 레이어와 그 레이어의 분야. 분야 값의 종류가 레이어마다 달라 함께 묶는다(주소 ?layer=&category=). */
+export type MapFilter =
+  | { layer: "events"; category: EventCategory | null }
+  | { layer: "places"; category: ActivityCategory | null };
+
+/** 레이어와 분야 값(주소·분야 칩의 문자열)으로 지도 필터를 만든다. 그 레이어에 없는 분야면 전체로 본다. */
+export function createMapFilter(layer: MapLayer, category: string | null | undefined): MapFilter {
+  const value = category ?? undefined;
+  if (layer === "places") return { layer, category: isActivityCategory(value) ? value : null };
+  return { layer, category: isEventCategory(value) ? value : null };
+}
+
+/** 핀이 지도 필터에 보이는지. 다른 레이어의 핀은 보이지 않는다. */
+export function isPinInFilter(pin: MapPin, filter: MapFilter) {
+  if (pin.kind === "place") return filter.layer === "places" && (filter.category === null || pin.placeCategory === filter.category);
+  return filter.layer === "events" && (filter.category === null || pin.events.some((event) => event.category === filter.category));
+}
 
 export function isMapLayer(value: string | null | undefined): value is MapLayer {
   return mapLayers.some((layer) => layer === value);
@@ -115,28 +146,28 @@ export function placeMapPinId(slug: string) {
 /** "가볼만한 곳"을 지도 핀으로 바꾼다. 지도 범위 밖 좌표는 뺀다. 화면 순서(북쪽에서 남쪽)로 놓는다. */
 export function toPlaceMapPins(
   places: readonly { slug: string; name: string; latitude: number; longitude: number; activityCategory: ActivityCategory }[],
-): EventMapPin[] {
+): PlaceMapPin[] {
   return places
     .filter((place) => isInMapRegion(place.latitude, place.longitude))
     .map((place) => ({
+      kind: "place" as const,
       id: placeMapPinId(place.slug),
       name: place.name,
       latitude: place.latitude,
       longitude: place.longitude,
-      events: [],
-      kind: "place" as const,
       placeCategory: place.activityCategory,
     }))
     .sort(compareNorthWest);
 }
 
 /** 고른 분야의 "가볼만한 곳" 핀만 남긴다. category가 없으면 그대로 돌려준다. */
-export function filterPlaceMapPins(pins: readonly EventMapPin[], category: ActivityCategory | null): EventMapPin[] {
+export function filterPlaceMapPins(pins: readonly PlaceMapPin[], category: ActivityCategory | null): PlaceMapPin[] {
   return category === null ? [...pins] : pins.filter((pin) => pin.placeCategory === category);
 }
 
-export function toEventMapPins(places: readonly EventMapPlace[]): EventMapPin[] {
+export function toEventMapPins(places: readonly EventMapPlace[]): VenueMapPin[] {
   return places.map(({ id, name, latitude, longitude, events }) => ({
+    kind: "venue" as const,
     id,
     name,
     latitude,

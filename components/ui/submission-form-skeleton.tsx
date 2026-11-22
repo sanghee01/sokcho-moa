@@ -5,7 +5,7 @@ const skeletonBlockClassName = "rounded-control bg-skeleton";
 /** 제보·의견 화면 로딩 자리 표시. 실제 폼과 같은 한 열·40rem 배치를 따른다. */
 export function SubmissionFormSkeleton({ kind }: { kind: "report" | "feedback" }) {
   const isFeedback = kind === "feedback";
-  const label = isFeedback ? "의견 보내기" : "행사 제보하기";
+  const label = isFeedback ? "의견 보내기" : "제보하기";
   const additionalFields = isFeedback ? ["관련 링크", "사진 첨부"] : ["링크"];
 
   return (

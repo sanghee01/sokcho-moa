@@ -11,5 +11,5 @@ const statusToggleClassNamesByTone: Record<StatusToggleTone, string> = {
 
 /** 지금 상태의 버튼은 disabled로 흐리게 보이고, aria-pressed로 눌린 상태를 알린다. 높이 44px. */
 export function getStatusToggleClassName(tone: StatusToggleTone) {
-  return `inline-flex min-h-11 min-w-20 items-center justify-center gap-1.5 whitespace-nowrap rounded-control px-3 text-label font-semibold transition-opacity disabled:cursor-not-allowed disabled:opacity-40 ${statusToggleClassNamesByTone[tone]}`;
+  return `relative inline-flex min-h-11 min-w-20 items-center justify-center gap-1.5 whitespace-nowrap rounded-control px-3 text-label font-semibold transition-opacity disabled:cursor-not-allowed disabled:opacity-40 ${statusToggleClassNamesByTone[tone]}`;
 }

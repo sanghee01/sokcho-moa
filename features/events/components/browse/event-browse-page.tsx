@@ -3,7 +3,7 @@ import { getButtonClassName } from "@/components/ui/button-styles";
 import { TransitionLink } from "@/components/ui/transition-link";
 import { EventCard, eventCardGridClassName } from "@/features/events/components/event-card";
 import { EventSort } from "@/features/events/components/browse/event-sort";
-import { analyticsData } from "@/lib/analytics/events";
+import { EventViewTabs } from "@/features/events/components/browse/event-view-tabs";
 import { getPublicEnv } from "@/lib/env";
 import { getAllPublicEvents } from "@/features/events/queries";
 import {
@@ -24,13 +24,6 @@ import type { EventTopic } from "@/features/events/model/topics";
 import { buildSiteStructuredData } from "@/lib/seo/site-structured-data";
 import { buildTopicStructuredData } from "@/features/events/topic-seo";
 import { JsonLd } from "@/components/seo/json-ld";
-
-// 진행중/마감은 밑줄 탭, 정렬은 묶음 버튼으로 모양을 구분한다(.ai/DESIGN.md 페이지 구조 > 홈·주제 목록).
-function statusTabClassName(selected: boolean) {
-  return `-mb-px inline-flex min-h-11 items-center border-b-2 px-3 text-label lg:min-h-12 lg:px-4 lg:text-body ${selected
-    ? "border-primary font-semibold text-primary-text"
-    : "border-transparent text-content-subtle hover:text-content"}`;
-}
 
 function EventCardGrid({ events, showCategory }: { events: Event[]; showCategory: boolean }) {
   return (
@@ -151,33 +144,11 @@ export async function EventBrowsePage({
             />
           )}
           <div className="mb-4 flex items-center justify-between gap-3 border-b border-line">
-            <nav aria-label="행사 상태" className="flex items-center">
-                {/* 이미 선택된 탭을 다시 누른 것은 세지 않는다. 정렬(sort_changed)과 같은 방식이다(2026-11-07). */}
-                <TransitionLink
-                  href={buildEventBrowseHref(navigationParams, { status: undefined, application: undefined })}
-                  pendingLabel="진행중 행사 불러오는 중"
-                  showPendingIndicator={false}
-                  scroll={false}
-                  rel="nofollow"
-                  {...(closedView ? analyticsData("status_tab_changed", { status_tab: "active" }) : {})}
-                  aria-current={!closedView ? "page" : undefined}
-                  className={statusTabClassName(!closedView)}
-                >
-                  진행중
-                </TransitionLink>
-                <TransitionLink
-                  href={buildEventBrowseHref(navigationParams, { status: "closed", application: undefined })}
-                  pendingLabel="마감 행사 불러오는 중"
-                  showPendingIndicator={false}
-                  scroll={false}
-                  rel="nofollow"
-                  {...(!closedView ? analyticsData("status_tab_changed", { status_tab: "closed" }) : {})}
-                  aria-current={closedView ? "page" : undefined}
-                  className={statusTabClassName(closedView)}
-                >
-                  마감
-                </TransitionLink>
-            </nav>
+            <EventViewTabs
+              current={statusTab}
+              activeHref={buildEventBrowseHref(navigationParams, { status: undefined, application: undefined })}
+              closedHref={buildEventBrowseHref(navigationParams, { status: "closed", application: undefined })}
+            />
             <div className="pb-1.5">
               <EventSort params={navigationParams} activeSort={filters.sort} />
             </div>

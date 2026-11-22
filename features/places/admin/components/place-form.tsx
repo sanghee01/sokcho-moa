@@ -54,7 +54,8 @@ export function PlaceForm({ row }: { row: Row }) {
           <label className={label}>
             가볼만한 곳 분류
             <select name="activityCategory" defaultValue={text(row, "activity_category")} className={input}>
-              <option value="">가볼만한 곳에 올리지 않음</option>
+              {/* 행사 상세의 주변 명소 구역을 뺀 뒤(2026-11-21) 분류가 없는 장소는 공개여도 방문자에게 보이지 않는다. */}
+              <option value="">없음 (사이트에 보이지 않음)</option>
               {activityCategories.map((category) => <option key={category} value={category}>{activityCategoryLabels[category]}</option>)}
             </select>
           </label>
@@ -74,7 +75,9 @@ export function PlaceForm({ row }: { row: Row }) {
               ))}
             </div>
           </div>
-          <label className={`${label} sm:col-span-2`}>운영 상태 안내 <span className="font-normal text-content-subtle">(예: 겨울 휴장, 12월~2월)</span><input name="statusNote" defaultValue={text(row, "status_note")} className={input} /></label>
+          <label className={label}>운영 상태 안내 <span className="font-normal text-content-subtle">(예: 겨울 휴장, 12월~2월)</span><input name="statusNote" defaultValue={text(row, "status_note")} className={input} /></label>
+          {/* 안내에 날짜가 들어 있으면 그 안내가 맞는 마지막 날을 적는다. 지나면 사이트에서 안내만 숨긴다(2026-11-22 사용자 결정). */}
+          <label className={label}>안내 끝나는 날 <span className="font-normal text-content-subtle">(지나면 안내를 숨김, 비우면 늘 보임)</span><input type="date" name="statusNoteUntil" defaultValue={text(row, "status_note_until")} className={input} /></label>
           <label className={`${label} sm:col-span-2`}>소개 <span className="font-normal text-content-subtle">(직접 쓴 2~4문장)</span><textarea name="description" defaultValue={text(row, "description")} rows={4} className={textarea} /></label>
           <label className={label}>운영시간<textarea name="hoursSummary" defaultValue={text(row, "hours_summary")} rows={2} className={textarea} /></label>
           <label className={label}>휴무<input name="closedSummary" defaultValue={text(row, "closed_summary")} className={input} /></label>
@@ -92,12 +95,12 @@ export function PlaceForm({ row }: { row: Row }) {
         // "명소 삭제" 버튼은 확인 창을 열기만 해서 secondary, 확인 창 안의 확정 버튼이 danger다(.ai/DESIGN.md Button).
         <section className="space-y-3 rounded-card bg-danger-subtle p-5 ring-1 ring-danger-subtle sm:p-6">
           <p className="font-bold text-danger">명소 삭제</p>
-          <p className="text-label font-normal text-danger">삭제한 명소는 복구할 수 없고, 행사 상세의 주변 명소에서도 빠집니다.</p>
+          <p className="text-label font-normal text-danger">삭제한 명소는 복구할 수 없고, 가볼만한 곳 목록·상세·지도에서도 빠집니다.</p>
           <ConfirmDialog
             triggerLabel="명소 삭제"
             triggerClassName={getButtonClassName({ variant: "secondary" })}
             title={`${text(row, "name")} 삭제`}
-            description="삭제한 명소는 복구할 수 없고, 행사 상세의 주변 명소에서도 빠집니다."
+            description="삭제한 명소는 복구할 수 없고, 가볼만한 곳 목록·상세·지도에서도 빠집니다."
           >
             <AdminActionForm action={deletePlaceAction} className="space-y-3">
               <input type="hidden" name="id" value={id} />

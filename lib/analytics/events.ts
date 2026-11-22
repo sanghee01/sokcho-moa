@@ -14,18 +14,22 @@ export interface AnalyticsEventParams {
     event_audiences: string;
     application_available: boolean;
   };
-  select_content: {
-    content_type: "event";
-    content_id: string;
-    // place_detail: 즐길거리 상세의 "근처에서 열리는 행사"(2026-11-21)
-    content_source: "event_list" | "related_events" | "popular_events" | "event_map" | "place_detail";
-    event_category: string;
-  };
-  search_submitted: {
-    query_length: number;
-    has_query: boolean;
-    active_filter_count: number;
-  };
+  // 목록·검색·지도에서 행사나 장소를 골라 상세로 갈 때. 어느 길로 상세에 오는지 보고 그 입구를 키울지 정한다.
+  // 장소(place)는 2026-11-21에 더했다: 가볼만한 곳 목록·통합 검색·지도·"다른 곳" 가운데 어디서 장소를 고르는지 본다.
+  select_content:
+    | {
+      content_type: "event";
+      content_id: string;
+      // place_detail: 즐길거리 상세의 "근처에서 열리는 행사", site_search: 통합 검색 결과(2026-11-21)
+      content_source: "event_list" | "related_events" | "popular_events" | "event_map" | "place_detail" | "site_search";
+      event_category: string;
+    }
+    | {
+      content_type: "place";
+      content_id: string;
+      content_source: "place_list" | "site_search" | "similar_places" | "event_map";
+      place_category: string;
+    };
   search_results_viewed: {
     result_count: number;
     query_length: number;
@@ -48,22 +52,13 @@ export interface AnalyticsEventParams {
     link_position: "action_bar";
     source_type: "primary";
   };
-  map_link_clicked:
-    | {
-      event_slug: string;
-      event_category: string;
-      link_position: "facts_address";
-      map_method: "coordinates" | "search";
-    }
-    | {
-      content_type: "nearby_place";
-      place_name: string;
-      link_position: "nearby_place_card";
-    };
-  nearby_places_viewed: {
+  map_link_clicked: {
+    event_slug: string;
     event_category: string;
+    link_position: "facts_address";
+    map_method: "coordinates" | "search";
   };
-  // 명소 클릭률과 비교하는 기준. 같은 상세 아래쪽의 관련 행사 목록 노출(2026-11-07)
+  // 행사 상세 아래쪽의 관련 행사 목록 노출(2026-11-07). 관련 행사 클릭률의 분모다.
   related_events_viewed: {
     event_category: string;
   };
@@ -71,6 +66,8 @@ export interface AnalyticsEventParams {
   map_place_selected: {
     map_category: string;
     event_count: number;
+    // pin: 지도 핀, list: md 이상 왼쪽 목록 판(2026-11-21). 목록 판을 남길지 정하는 근거다.
+    select_method: "pin" | "list";
   };
   // 지도 분야 칩으로 분야를 실제로 바꿨을 때. 칩을 남길지 정하는 근거다(2026-11-16). "전체"로 돌아가면 all.
   map_category_changed: {
@@ -79,11 +76,6 @@ export interface AnalyticsEventParams {
   // 지도 대신 "지금은 지도를 볼 수 없어요"를 보여 줄 때 한 번. 운영에서 키를 빠뜨리거나 주소 등록이 틀리면 조용히 죽어 있어서 센다(2026-11-16).
   map_unavailable: {
     reason: "missing_key" | "auth_failed" | "script_error";
-  };
-  nearby_place_clicked: {
-    place_name: string;
-    place_category: string;
-    link_position: "nearby_place_card";
   };
   // 통합 검색(/search) 결과가 그려질 때(2026-11-21). 검색어 원문은 보내지 않는다. 결과 0건 비율로 데이터가 모자란 곳을 찾는다.
   site_search_viewed: {
@@ -112,6 +104,20 @@ export interface AnalyticsEventParams {
     content_type: "event";
     item_id: string;
   };
+  // 헤더 아래 공지 띠가 보였을 때(viewed, 페이지를 처음 열 때 한 번), 눌러 공지 글로 가거나(clicked) 닫았을 때(dismissed).
+  // 띠가 읽히는지, 거슬리기만 하는지 본다. viewed는 비율의 분모다: 닫은 방문자는 띠가 숨겨져 세지 않는다(2026-11-22).
+  notice_banner_viewed: {
+    notice_id: string;
+    notice_kind: string;
+  };
+  notice_banner_clicked: {
+    notice_id: string;
+    notice_kind: string;
+  };
+  notice_banner_dismissed: {
+    notice_id: string;
+    notice_kind: string;
+  };
   // 제보·의견 내용에는 개인정보가 섞일 수 있어 파라미터를 보내지 않는다.
   event_report_submitted: Record<string, never>;
   feedback_submitted: Record<string, never>;
@@ -124,24 +130,24 @@ export type AnalyticsEvent = keyof AnalyticsEventParams;
 const analyticsEventNames = {
   event_detail_viewed: true,
   select_content: true,
-  search_submitted: true,
   search_results_viewed: true,
   sort_changed: true,
   status_tab_changed: true,
   application_link_clicked: true,
   source_link_clicked: true,
   map_link_clicked: true,
-  nearby_places_viewed: true,
   related_events_viewed: true,
   map_place_selected: true,
   map_category_changed: true,
   map_unavailable: true,
-  nearby_place_clicked: true,
   place_detail_viewed: true,
   site_search_viewed: true,
   place_link_clicked: true,
   poster_viewed: true,
   share: true,
+  notice_banner_viewed: true,
+  notice_banner_clicked: true,
+  notice_banner_dismissed: true,
   event_report_submitted: true,
   feedback_submitted: true,
 } satisfies Record<AnalyticsEvent, true>;

@@ -180,24 +180,21 @@ body {
 
   /*
    * 화면 아래에 고정된 요소의 높이(--bottom-chrome-height). 맨 위로 버튼이 이만큼 올라가고, body 끝에 이만큼 여백을 둔다.
-   * - 모바일(md 미만): 하단 탭(위 테두리 1px + 56px = 3.5rem + 1px, site-navigation.tsx)
+   * - 모바일(md 미만): 하단 탭(위 테두리 1px + 64px = 4rem + 1px, site-navigation.tsx). 56px은 아이콘과 라벨이 빠듯해 64px로 늘렸다(2026-11-21 사용자 요청)
    * - 상세의 하단 행동 바(data-bottom-action-bar)가 있으면 탭 대신 바(위 테두리 1px + 위 여백 12px + 버튼 44px + 아래 여백 20px = 4.8125rem).
    *   바는 lg에서 본문 안으로 들어가 0이 된다. 탭 위에 바가 또 쌓이면 아래 고정 영역이 화면의 5분의 1을 넘어 바가 있는 화면은 탭을 숨긴다(2026-11-21).
-   * - 검색 화면(data-hide-bottom-nav): 키보드가 열리면 고정된 탭이 가려지거나 떠 보여 숨긴다(Chrome viewport resize behavior).
+   * - 검색 화면(data-hide-bottom-nav): 검색창에 입력하는 동안만 탭을 숨긴다. 키보드가 열리면 고정된 탭이 가려지거나 떠 보인다(Chrome viewport resize behavior).
+   *   예전에는 화면 내내 숨겨 결과를 보던 방문자가 다른 탭으로 갈 수 없었다(2026-11-22 리뷰). 여백은 그대로 두어 입력을 시작할 때 화면이 밀리지 않게 한다.
    * safe area는 따로 더한다.
    */
   :root {
-    --bottom-chrome-height: calc(3.5rem + 1px);
+    --bottom-chrome-height: calc(4rem + 1px);
   }
 
   @media (width >= 48rem) {
     :root {
       --bottom-chrome-height: 0rem;
     }
-  }
-
-  :root:has([data-hide-bottom-nav]) {
-    --bottom-chrome-height: 0rem;
   }
 
   :root:has([data-bottom-action-bar]) {
@@ -211,7 +208,13 @@ body {
   }
 
   body:has([data-bottom-action-bar]) [data-bottom-nav],
-  body:has([data-hide-bottom-nav]) [data-bottom-nav] {
+  body:has([data-hide-bottom-nav] input:focus) [data-bottom-nav] {
+    display: none;
+  }
+
+  /* 검색 화면(data-hide-header-search)에는 화면 안에 큰 검색창이 있어 lg 이상 헤더 검색창을 숨긴다.
+     둘 다 보이면 같은 이름("사이트 검색")의 검색 영역이 둘로 읽혔다(2026-11-21 리뷰). */
+  body:has([data-hide-header-search]) [data-header-search] {
     display: none;
   }
 

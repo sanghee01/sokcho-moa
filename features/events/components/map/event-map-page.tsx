@@ -2,7 +2,7 @@ import { Suspense, type ReactNode } from "react";
 import { EventCard } from "@/features/events/components/event-card";
 import { EventMap } from "@/features/events/components/map/event-map";
 import type { Event } from "@/features/events/model/event";
-import { selectEventMapPlaces, toEventMapPins, type EventMapPin } from "@/features/events/model/event-map";
+import { selectEventMapPlaces, toEventMapPins, type PlaceMapPin } from "@/features/events/model/event-map";
 
 /**
  * 지도 탭 화면(.ai/DESIGN.md 지도). 장소 묶기와 카드는 서버에서 만들고, 지도·핀·칩은 브라우저에서 그린다.
@@ -16,7 +16,7 @@ export function EventMapPage({
   clientId,
 }: {
   events: Event[];
-  placePins: EventMapPin[];
+  placePins: PlaceMapPin[];
   /** 장소 핀 id → 장소 카드 */
   placeCards: Record<string, ReactNode>;
   clientId: string | null;

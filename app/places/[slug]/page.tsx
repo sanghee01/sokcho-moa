@@ -4,6 +4,7 @@ import { AnalyticsMountTracking } from "@/components/analytics/analytics-mount-t
 import { JsonLd } from "@/components/seo/json-ld";
 import { Badge } from "@/components/ui/badge";
 import { textLinkClassName } from "@/components/ui/link-styles";
+import { BackToListLink } from "@/components/ui/back-to-list-link";
 import { TransitionLink } from "@/components/ui/transition-link";
 import { EventCard, eventCardGridClassName } from "@/features/events/components/event-card";
 import { selectEventsNearPlace } from "@/features/events/model/location";
@@ -24,11 +25,13 @@ import {
   selectSimilarPlaces,
 } from "@/features/places/model/activity";
 import { selectPlacePhoto } from "@/features/places/model/place-photo";
+import { getVisibleStatusNote } from "@/features/places/model/place-status";
 import { getPublicPlaces } from "@/features/places/queries";
 import {
   ACTIVITY_LIST_TITLE,
   buildPlaceBreadcrumbStructuredData,
   buildPlaceSeoDescription,
+  buildPlaceSeoTitle,
   buildPlaceStructuredData,
 } from "@/features/places/seo";
 import { getPublicEnv } from "@/lib/env";
@@ -49,7 +52,7 @@ export async function generateMetadata({ params }: PageProps<"/places/[slug]">):
   const { slug } = await params;
   const place = await getActivityPlace(slug);
   if (place === null) return { title: "장소를 찾을 수 없습니다" };
-  const title = `${place.name} 운영시간·요금·위치 안내`;
+  const title = buildPlaceSeoTitle(place);
   const description = buildPlaceSeoDescription(place);
   const path = activityPlacePath(place.slug);
   const photo = selectPlacePhoto(place);
@@ -84,14 +87,19 @@ export default async function PlaceDetailPage({ params }: PageProps<"/places/[sl
   const photo = selectPlacePhoto(place);
   const categoryLabel = activityCategoryLabels[place.activityCategory];
   const meta = [categoryLabel, ...place.tags.map((tag) => activityTagLabels[tag])].join(" · ");
+  const statusNote = getVisibleStatusNote(place);
 
   return (
     <main id="main-content" className="mx-auto max-w-6xl px-4 pb-16 pt-6 sm:px-6 lg:pt-8">
       <AnalyticsMountTracking name="place_detail_viewed" properties={{ place_slug: place.slug, place_category: place.activityCategory }} onceKey={place.slug} />
       <JsonLd data={buildPlaceStructuredData(place, siteUrl)} />
       <JsonLd data={buildPlaceBreadcrumbStructuredData(place, siteUrl)} />
-      {/* 경로는 모바일 첫 화면을 쓰지 않도록 화면 읽기 프로그램용으로만 두고, 넓은 화면에서 보여 준다(행사 상세와 같음). */}
-      <nav aria-label="현재 위치" className="sr-only text-label font-normal text-content-subtle lg:not-sr-only lg:mb-6 lg:block">
+      {/* 맨 위의 "‹ 목록으로 돌아가기"(행사 상세와 같음, 2026-11-21 사용자 결정). 경로는 화면 읽기 프로그램용으로만 두되,
+          안의 링크에 Tab 초점이 들어오면 보이게 한다(WCAG 2.4.7: 보이지 않는 곳에 초점이 머물지 않게). */}
+      <div className="-mt-4 mb-3 lg:-mt-4">
+        <BackToListLink href={ACTIVITY_LIST_PATH} pendingLabel="가볼만한 곳 목록 불러오는 중" />
+      </div>
+      <nav aria-label="현재 위치" className="sr-only text-label font-normal text-content-subtle focus-within:not-sr-only focus-within:mb-3 focus-within:block">
         <TransitionLink href={ACTIVITY_LIST_PATH} showPendingIndicator={false} className="text-primary-text hover:underline">{ACTIVITY_LIST_TITLE}</TransitionLink>{" "}
         <span aria-hidden="true">/</span>{" "}
         <TransitionLink href={activityCategoryPath(place.activityCategory)} showPendingIndicator={false} className="text-primary-text hover:underline">{categoryLabel}</TransitionLink>{" "}
@@ -108,7 +116,7 @@ export default async function PlaceDetailPage({ params }: PageProps<"/places/[sl
         </div>
         <h1 className="mt-2 text-title-1 text-content-strong lg:text-title-1-lg">{place.name}</h1>
         {place.summary !== null && <p className="mt-2 text-body text-content-muted">{place.summary}</p>}
-        {place.statusNote !== null && <p className="mt-3 rounded-control bg-surface-subtle px-4 py-3 text-label font-medium text-content-strong">{place.statusNote}</p>}
+        {statusNote !== null && <p className="mt-3 rounded-control bg-surface-subtle px-4 py-3 text-label font-medium text-content-strong">{statusNote}</p>}
         <PlaceActions place={place} />
         {photo !== null && <PlacePhotoFigure photo={photo} />}
         <PlaceFactList place={place} />
@@ -129,12 +137,12 @@ export default async function PlaceDetailPage({ params }: PageProps<"/places/[sl
           </section>
         )}
 
-        {/* 상시 정보는 조용히 낡는다. 언제 확인한 값인지와 바로잡을 길을 함께 둔다(2026-11-21, Stanford Web Credibility Guidelines 8번). */}
-        <p className="mt-10 text-caption text-content-subtle">
-          {verifiedLabel !== null && <><span className="font-medium text-content-muted">{verifiedLabel}</span>{" · "}</>}
-          운영시간과 요금은 시즌에 따라 바뀝니다. 방문하기 전에 공식 홈페이지에서 확인해 주세요.
+        {/* 상시 정보는 조용히 낡는다. 언제 확인한 값인지와 바로잡을 길을 한 줄로 둔다(2026-11-21, Stanford Web Credibility Guidelines 8번).
+            "운영시간과 요금은 시즌에 따라 바뀝니다…" 문장은 거의 모든 장소에 되풀이되고 목록 위 안내 띠와 같은 말이라 뺐다(2026-11-21 사용자 결정). */}
+        <p className="mt-10 flex flex-wrap items-center gap-x-2 text-caption text-content-subtle">
+          {verifiedLabel !== null && <span className="font-medium text-content-muted">{verifiedLabel}</span>}
+          <TransitionLink href="/feedback" showPendingIndicator={false} className={textLinkClassName}>정보가 다른가요? 알려 주세요</TransitionLink>
         </p>
-        <TransitionLink href="/feedback" showPendingIndicator={false} className={textLinkClassName}>정보가 다른가요? 알려 주세요</TransitionLink>
       </article>
 
       {nearbyEvents.length > 0 && (
@@ -148,10 +156,15 @@ export default async function PlaceDetailPage({ params }: PageProps<"/places/[sl
         <section aria-labelledby="similar-title" className={sectionClassName}>
           <h2 id="similar-title" className={sectionTitleClassName}>{categoryLabel} 다른 곳</h2>
           <ul className={`mt-3 ${activityPlaceListClassName}`}>
-            {similarPlaces.map((item) => <ActivityPlaceRow key={item.id} place={item} showCategory={false} />)}
+            {similarPlaces.map((item) => <ActivityPlaceRow key={item.id} place={item} showCategory={false} contentSource="similar_places" />)}
           </ul>
         </section>
       )}
+
+      {/* 행사 상세처럼 맨 아래에도 목록으로 돌아가는 버튼을 둔다(2026-11-21 사용자 결정). */}
+      <div className={`${sectionClassName} flex justify-center`}>
+        <BackToListLink href={ACTIVITY_LIST_PATH} pendingLabel="가볼만한 곳 목록 불러오는 중" appearance="button" />
+      </div>
     </main>
   );
 }

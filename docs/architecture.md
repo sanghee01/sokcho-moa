@@ -19,7 +19,7 @@ app/                 URL과 1:1. 데이터 함수 호출 + feature 컴포넌트 
 features/
   events/            행사 탐색·상세·관리 (model, queries, cache, mappers, seo, components, admin/)
     model/           event.ts(타입), event-state.ts(진행·신청 상태), event-list.ts(필터·정렬·인기 행사),
-                     review-status.ts, taxonomy.ts, location.ts(주변 명소), venue.ts(장소 사전으로 빈 주소 채우기), badges.ts, format.ts,
+                     review-status.ts, taxonomy.ts, location.ts(지도 링크, 가볼만한 곳 근처 행사), venue.ts(장소 사전으로 빈 주소 채우기), badges.ts, format.ts,
                      event-map.ts(지도 탭의 장소별 묶기)
     components/      카드·이미지·상태 배지처럼 목록과 상세가 함께 쓰는 부품
       browse/        목록 화면(검색·정렬·분야 탭·인기 배너)
@@ -46,7 +46,8 @@ lib/                 도메인을 모르는 인프라
   map.ts             거리 계산, 네이버 지도 링크(행사·명소가 함께 씀)
   seo/, analytics/   사이트 전체 SEO·GA4
 data/                코드와 함께 관리하는 확인된 원본 데이터: attractions.json(명소 수집·검증 결과), activity-places.json(즐길거리 값과 즐길거리로 새로 넣은 장소),
-                     venues.json(시설 이름→공식 주소·지도 좌표 장소 사전). 두 장소 파일은 scripts/generate-place-assets.mjs가 합쳐 로컬 seed를 만든다
+                     venues.json(시설 이름→공식 주소·지도 좌표 장소 사전). 두 장소 파일은 scripts/generate-place-assets.mjs가 합쳐 로컬 seed를 만든다.
+                     `pnpm places:check`는 seed가 최신인지와, migration을 차례로 적용한 장소(운영에 가는 값)가 seed와 같은지(scripts/check-place-migrations.mjs)를 함께 본다
 supabase/            migrations, seed.sql, tests/database(pgTAP), rollbacks(migration마다 같은 이름), config.toml
 public/              brand/(헤더 로고 wordmark.webp, 기본 포스터 default-event-poster.svg), icons/(홈 화면 아이콘), sample-events/(시드 이미지),
                      places/(즐길거리 장소 사진 <slug>.webp와 목록 썸네일 <slug>-thumb.webp. 공개 라이선스 사진과 공식 누리집 사진이고, 출처·원본 주소는 data/activity-places.json의 imageProvenance에 남긴다).
@@ -72,7 +73,7 @@ import합니다. 이 규칙은 `pnpm lint`가 강제합니다(`eslint.config.mjs
 | `/topics/[topic]` | 동적 | 위와 같음. 카테고리 SEO 페이지 6개. 없는 토픽은 `proxy.ts`가 404 |
 | (공통 틀) `app/(event-browse)/layout.tsx` | - | `/`와 `/topics/[topic]`이 함께 쓰는 보기 전환·분야 탭·배너(많이 보는 행사). 탭을 바꿔도 다시 그리지 않음 |
 | `/events/[slug]` | ISR 1시간, 공개 행사 전부 미리 생성 | 행사 상세, 관련 행사. 주변 명소 구역은 2026-11-21에 뺐다 |
-| `/months` | 동적 | 헤더 "월별 일정" 버튼의 목적지. 요청한 때의 이번 달 `/months/YYYY-MM`으로 307 redirect |
+| `/months` | 동적 | 행사 목록 상태 탭 "월별"의 목적지. 요청한 때의 이번 달 `/months/YYYY-MM`으로 307 redirect |
 | `/months/[month]` | ISR 5분(`revalidate = 3600`이지만 행사 데이터 캐시 5분을 따름), 이번 달·다음 달 미리 생성 | 월별 행사(`features/events/components/month`, `features/events/model/event-month.ts`). 지난 달은 행사가 있을 때만 열고 다다음 달부터 404 |
 | `/months/[month]/[category]` | 위와 같음, 이번 달·다음 달 × 6분야 미리 생성 | 그 달의 한 분야(헤더 분야 탭). 행사가 없으면 `noindex`. 조회는 `features/events/month-page.ts`를 두 route가 함께 씀 |
 | `/places` | ISR 5분(`revalidate = 3600`이지만 장소 데이터 캐시 5분을 따름) | 즐길거리 목록(`features/places/components/activity-list-page`, `features/places/model/activity.ts`). `places` 가운데 즐길거리 분류(`activity_category`)가 있고 운영을 끝내지 않은 곳만, 분류별로 묶어 보인다. 장소가 없으면 `noindex` |
@@ -80,10 +81,11 @@ import합니다. 이 규칙은 `pnpm lint`가 강제합니다(`eslint.config.mjs
 | `/places/[slug]` | 위와 같음, 즐길거리 장소 전부 미리 생성 | 즐길거리 상세: 핵심 정보, 공식 홈페이지·예매·길찾기 버튼, 확인일, 근처에서 열리는 행사(`features/events/model/location.ts`의 `selectEventsNearPlace`, 300m 안), 같은 분류의 다른 곳. 분류가 없는 장소는 404 |
 | `/notices`, `/notices/[id]` | ISR 5분, 공개한 공지 전부 미리 생성 | 공지·업데이트 목록과 글 페이지(`features/notices`). 공개하지 않은 글과 uuid가 아닌 주소는 404 |
 | (공통 틀) 공지 띠 | - | `app/layout.tsx`의 `NoticeBanner`가 공개한 지 14일이 지나지 않은 가장 최근 공지 하나를 헤더 아래에 보인다. 공통 틀이 공지 캐시(5분)를 읽으므로 `/report`·`/feedback`·`/privacy`도 정적에서 ISR 5분으로 바뀌었다. 닫은 글은 브라우저(localStorage)에 적고 inline script가 첫 그리기 전에 숨긴다 |
-| `/map` | ISR 5분(월별 페이지와 같은 방식) | 지도 탭(`features/events/components/map`, `features/events/model/event-map.ts`). 서버가 행사를 장소별로 묶고 행사 카드를 그려 넘기고, 브라우저가 네이버 지도 SDK를 불러 핀·칩을 그린다. "가볼만한 곳" 레이어의 핀과 카드는 `app/map/page.tsx`가 `features/places`에서 만들어 넘긴다(feature끼리는 model만 import). 레이어·분야·장소는 주소의 `?layer=places`·`?category=`·`?place=` |
-| `/search` | 동적(`searchParams`) | 통합 검색. 행사(`filterEvents`의 검색어)와 가볼만한 곳(`searchActivityPlaces`)을 함께 찾고 `?type=events|places`로 좁힌다. `noindex` |
-| (공통 틀) 주요 메뉴 | - | `components/layout/site-navigation.tsx`: 모바일 하단 탭과 md 이상 헤더 가로 메뉴(행사 · 가볼만한 곳 · 지도). 헤더 검색·공지·문의는 `site-header-actions.tsx`. 행사 분야 탭과 "목록 | 월별 일정" 전환은 `features/events/components/browse/event-section-navigation.tsx`로 행사 목록·월별 페이지 위쪽에 있다 |
+| `/map` | ISR 5분(월별 페이지와 같은 방식) | 지도 탭(`features/events/components/map`, `features/events/model/event-map.ts`). 서버가 행사를 장소별로 묶고 행사 카드를 그려 넘기고, 브라우저가 네이버 지도 SDK를 불러 핀·칩을 그린다. "가볼만한 곳" 레이어의 핀과 카드는 `app/map/page.tsx`가 `features/places`에서 만들어 넘긴다(feature끼리는 model만 import). 레이어·분야·장소는 주소의 `?layer=places`·`?category=`·`?place=`이고, 지도 보기(가운데·확대 수준)는 기록 칸(history.state)에 남겨 상세에서 돌아오면 되살린다. 핀은 행사 장소(`venue`)와 가볼만한 곳(`place`)을 `kind`로 나눈 `MapPin`이다. 화면(`event-map.tsx`)은 지도 만들기(`use-naver-map.ts`)·마커(`use-map-markers.ts`)·마커 묶기(`use-map-marker-layout.ts`)·보기 계산(`map-camera.ts`)을 조립한다(2026-11-22) |
+| `/search` | 동적(`searchParams`) | 통합 검색. 행사(`filterEvents`의 검색어)와 가볼만한 곳(`searchActivityPlaces`)을 함께 찾고 `?type=events|places`로 좁힌다. 검색어가 없으면 최근 검색어(브라우저 localStorage, `components/layout/recent-search-list.tsx`). `noindex` |
+| (공통 틀) 주요 메뉴 | - | `components/layout/site-navigation.tsx`: 모바일 하단 탭과 md 이상 헤더 가로 메뉴(행사 · 가볼만한 곳 · 지도). 헤더 검색·공지·문의는 `site-header-actions.tsx`. 행사 분야 탭(`features/events/components/browse/category-navigation.tsx`)은 행사 목록·월별 페이지 위쪽에, "진행중 · 마감 · 월별" 탭(`event-view-tabs.tsx`)은 그 아래 결과 줄에 있다 |
 | `/calendar` | 동적 | 목록으로 redirect만(캘린더는 삭제, 옛 북마크 보호) |
+| `/contact` | 정적 | 문의. 헤더 "문의"의 목적지로, 행사 제보(`/report`)·의견 보내기(`/feedback`)·카카오톡 오픈채팅을 고른다. `noindex` |
 | `/report`, `/feedback` | 정적 | 방문자 제보·의견 폼 |
 | `/privacy` | 정적 | 개인정보 처리방침(GA 사용, 쿠키 거부 방법, 보호책임자) |
 | `/admin/**` | 동적(쿠키) | 모든 페이지가 `requireAdmin()`으로 시작 |

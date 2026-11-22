@@ -1,6 +1,4 @@
 import type { Event } from "@/features/events/model/event";
-import type { Place } from "@/features/places/model/place";
-import attractionCatalog from "@/data/attractions.json";
 
 /** 테스트의 기준 시각. 2026-07-20 12:00 KST. 실행 시각과 무관하게 같은 결과가 나오게 고정한다. */
 export const NOW = new Date("2026-07-20T03:00:00.000Z");
@@ -54,36 +52,3 @@ export function makeEvent(overrides: Partial<Event> = {}): Event {
     ...overrides,
   };
 }
-
-/** 검증된 명소 원본(data/attractions.json)을 공개 조회와 같은 Place 형태로 바꾼 목록. */
-export const catalogPlaces: Place[] = attractionCatalog.accepted.map((place) => ({
-  id: place.id,
-  slug: place.slug,
-  name: place.name,
-  category: place.category,
-  summary: place.summary,
-  address: place.address,
-  latitude: place.latitude,
-  longitude: place.longitude,
-  imageUrl: place.imageUrl,
-  imageCredit: null,
-  imageSourceUrl: null,
-  imageAlt: null,
-  officialUrl: place.officialUrl,
-  mapUrl: place.mapUrl,
-  isPublished: place.isPublished,
-  // 원본에는 즐길거리 값이 없다. 주변 명소로만 쓰는 장소와 같은 기본값을 둔다.
-  activityCategory: null,
-  tags: [],
-  description: null,
-  hoursSummary: null,
-  closedSummary: null,
-  priceSummary: null,
-  phone: null,
-  parkingSummary: null,
-  cautions: [],
-  bookingUrl: null,
-  operationStatus: "open",
-  statusNote: null,
-  verifiedOn: null,
-}));

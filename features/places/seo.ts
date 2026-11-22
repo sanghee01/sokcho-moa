@@ -23,14 +23,33 @@ export function buildActivityListDescription(places: readonly ActivityPlace[], c
   return `${subject} 정보를 모았습니다.${examples} 운영시간, 요금, 위치와 공식 홈페이지를 확인하세요.`;
 }
 
-/** 상세 페이지의 검색 결과 설명: 한 줄 소개 + 운영시간·요금 요약. */
+/**
+ * 장소 상세의 검색 결과 제목. "이름 운영시간·요금·위치 안내"에서 이 페이지에 없는 항목은 뺀다.
+ * 예전에는 모든 장소가 "운영시간·요금"을 약속해, 운영시간이 없는 자연 명소 16곳은 검색 결과가 없는 정보를 내세웠다(2026-11-22 리뷰).
+ */
+export function buildPlaceSeoTitle(place: ActivityPlace) {
+  const facts = [place.hoursSummary !== null ? "운영시간" : null, place.priceSummary !== null ? "요금" : null, "위치"]
+    .filter((fact) => fact !== null)
+    .join("·");
+  return `${place.name} ${facts} 안내`;
+}
+
+/**
+ * 장소 상세의 검색 결과 설명(meta description). "속초 + 이름: 소개. 운영시간·요금·주차·위치를 확인하세요."
+ * 예전에는 운영시간·요금 원문을 이어 붙여 160자에서 숫자 중간이 잘렸고(설악워터피아 "…소인 49,00"),
+ * 시즌마다 바뀌는 날짜가 검색 결과에 낡은 채 남았다. 그래서 바뀌는 값 대신 이 페이지에서 확인할 수 있는 항목 이름만 쓴다(2026-11-21).
+ * 위치는 모든 장소에 좌표가 있어 늘 넣는다.
+ */
 export function buildPlaceSeoDescription(place: ActivityPlace) {
+  const summary = place.summary?.trim() ?? "";
+  const lead = summary === "" ? `속초 ${place.name}` : `속초 ${place.name}: ${/[.!?]$/.test(summary) ? summary : `${summary}.`}`;
   const facts = [
-    place.hoursSummary ? `운영시간 ${place.hoursSummary}` : null,
-    place.priceSummary ? `요금 ${place.priceSummary}` : null,
-    place.address,
-  ].filter(Boolean).join(" · ");
-  return [place.summary, facts].filter(Boolean).join(" ").slice(0, 160);
+    place.hoursSummary !== null ? "운영시간" : null,
+    place.priceSummary !== null ? "요금" : null,
+    place.parkingSummary !== null ? "주차" : null,
+    "위치",
+  ].filter((fact) => fact !== null).join("·");
+  return `${lead} ${facts}를 확인하세요.`;
 }
 
 /**

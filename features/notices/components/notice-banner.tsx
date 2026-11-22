@@ -4,6 +4,7 @@ import { iconProps } from "@/components/ui/icon";
 import { NoticeBannerFrame } from "@/features/notices/components/notice-banner-frame";
 import { DISMISSED_NOTICE_STORAGE_KEY, noticeKindLabels, noticePath } from "@/features/notices/model/notice";
 import { getBannerNotice } from "@/features/notices/queries";
+import { analyticsData } from "@/lib/analytics/events";
 import { isUuid } from "@/lib/uuid";
 
 /**
@@ -20,8 +21,8 @@ export async function NoticeBanner() {
 
   return (
     <>
-      <NoticeBannerFrame noticeId={notice.id}>
-        <Link href={noticePath(notice.id)} className="flex min-h-11 min-w-0 flex-1 items-center gap-2 text-label text-content-strong">
+      <NoticeBannerFrame noticeId={notice.id} noticeKind={notice.kind}>
+        <Link href={noticePath(notice.id)} {...analyticsData("notice_banner_clicked", { notice_id: notice.id, notice_kind: notice.kind })} className="flex min-h-11 min-w-0 flex-1 items-center gap-2 text-label text-content-strong">
           <Megaphone {...iconProps} size={16} className="shrink-0 text-primary-text" />
           <span className="shrink-0 font-semibold text-primary-text">{noticeKindLabels[notice.kind]}</span>
           <span className="truncate font-medium">{notice.title}</span>

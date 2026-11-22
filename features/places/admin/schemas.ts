@@ -41,7 +41,7 @@ export const placeFormSchema = z.object({
   officialUrl: optionalUrlField,
   mapUrl: optionalUrlField,
   isPublished: z.boolean(),
-  // 아래는 즐길거리 목록·상세에 쓰는 값이다. 분류를 비우면 주변 명소로만 나온다(2026-11-21).
+  // 아래는 즐길거리 목록·상세에 쓰는 값이다. 분류를 비우면 사이트 어디에도 보이지 않는다(2026-11-21 행사 상세의 주변 명소 구역을 뺌).
   activityCategory: z.union([z.literal("").transform(() => null), z.enum(activityCategories, { message: "가볼만한 곳 분류를 다시 골라 주세요." })]),
   tags: z.array(z.enum(activityTags)),
   description: optionalTextField,
@@ -54,11 +54,12 @@ export const placeFormSchema = z.object({
   bookingUrl: optionalUrlField,
   operationStatus: z.enum(operationStatuses, { message: "운영 상태를 다시 골라 주세요." }),
   statusNote: optionalTextField,
+  statusNoteUntil: optionalDateField,
   verifiedOn: optionalDateField,
 }).superRefine((place, context) => {
   // 사진은 출처 표시가 조건인 것만 쓴다. 출처 없이 사진만 저장하면 DB 제약에도 막힌다.
   if (place.imageUrl !== null && place.imageCredit === null) {
-    context.addIssue({ code: "custom", path: ["imageCredit"], message: "사진을 싣려면 출처 문구를 함께 적어 주세요." });
+    context.addIssue({ code: "custom", path: ["imageCredit"], message: "사진을 실으려면 출처 문구를 함께 적어 주세요." });
   }
 });
 

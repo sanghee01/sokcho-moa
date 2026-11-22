@@ -11,7 +11,8 @@ import {
   selectSimilarPlaces,
 } from "@/features/places/model/activity";
 import type { Place } from "@/features/places/model/place";
-import { buildPlaceSeoDescription, buildPlaceStructuredData } from "@/features/places/seo";
+import { getVisibleStatusNote } from "@/features/places/model/place-status";
+import { buildPlaceSeoDescription, buildPlaceSeoTitle, buildPlaceStructuredData } from "@/features/places/seo";
 import { makeEvent, NOW } from "@/tests/unit/support/event-builder";
 
 function makePlace(overrides: Partial<Place> = {}): Place {
@@ -43,6 +44,7 @@ function makePlace(overrides: Partial<Place> = {}): Place {
     bookingUrl: null,
     operationStatus: "open",
     statusNote: null,
+    statusNoteUntil: null,
     verifiedOn: null,
     ...overrides,
   };
@@ -133,6 +135,7 @@ describe("mapPlaceRow", () => {
     booking_url: null,
     operation_status: "seasonal_closed",
     status_note: null,
+    status_note_until: null,
     verified_on: "2026-11-21",
     created_at: "2026-11-21T00:00:00.000Z",
     updated_at: "2026-11-21T00:00:00.000Z",
@@ -181,10 +184,11 @@ describe("placeFormSchema의 즐길거리 값", () => {
     bookingUrl: "",
     operationStatus: "open",
     statusNote: "",
+    statusNoteUntil: "",
     verifiedOn: "",
   };
 
-  it("분류를 비우면 null(주변 명소로만 씀)로 받는다", () => {
+  it("분류를 비우면 null(사이트에 보이지 않음)로 받는다", () => {
     expect(placeFormSchema.parse(input)).toMatchObject({ activityCategory: null, tags: [], verifiedOn: null, bookingUrl: null });
   });
 
@@ -235,10 +239,44 @@ describe("즐길거리 구조화 데이터", () => {
     expect(data).not.toHaveProperty("aggregateRating");
   });
 
-  it("검색 결과 설명에 소개와 운영시간·요금을 함께 쓴다", () => {
+  // 운영시간·요금 원문을 이어 붙이면 160자에서 숫자 중간이 잘리고, 시즌마다 바뀌는 날짜가 검색 결과에 낡은 채 남았다(2026-11-21).
+  // 그래서 "속초 + 이름: 소개"와 이 페이지에서 확인할 수 있는 항목 이름만 쓴다.
+  it("검색 결과 설명은 이름·소개와 확인할 수 있는 항목 이름만 쓰고 바뀌는 값은 넣지 않는다", () => {
     const description = buildPlaceSeoDescription(place);
-    expect(description).toContain("샘플 한 줄 소개입니다.");
-    expect(description).toContain("운영시간 매일 10:00~18:00");
-    expect(description.length).toBeLessThanOrEqual(160);
+    expect(description).toBe("속초 샘플 전시관: 샘플 한 줄 소개입니다. 운영시간·요금·위치를 확인하세요.");
+    expect(description).not.toContain("10:00");
+  });
+
+  it("값이 없는 항목은 설명에서 빼고, 마침표 없는 소개에는 마침표를 붙인다", () => {
+    const bare = selectActivityPlaces([makePlace({ summary: "바위 능선", hoursSummary: null, priceSummary: null, parkingSummary: "유료" })])[0];
+    expect(buildPlaceSeoDescription(bare)).toBe("속초 샘플 전시관: 바위 능선. 주차·위치를 확인하세요.");
+  });
+
+  // 제목이 "운영시간·요금"을 약속하는데 그 정보가 없는 장소(자연 명소 16곳)가 있었다(2026-11-22 리뷰). 있는 항목만 제목에 쓴다.
+  it("검색 결과 제목은 이 페이지에 있는 항목만 쓴다", () => {
+    expect(buildPlaceSeoTitle(place)).toBe("샘플 전시관 운영시간·요금·위치 안내");
+    const priceOnly = selectActivityPlaces([makePlace({ hoursSummary: null, priceSummary: "무료" })])[0];
+    expect(buildPlaceSeoTitle(priceOnly)).toBe("샘플 전시관 요금·위치 안내");
+    const bare = selectActivityPlaces([makePlace({ hoursSummary: null, priceSummary: null })])[0];
+    expect(buildPlaceSeoTitle(bare)).toBe("샘플 전시관 위치 안내");
+  });
+});
+
+// 날짜가 든 운영 안내는 끝나는 날이 지나면 숨긴다(2026-11-22 사용자 결정). 하루의 끝은 서울 기준 자정이다.
+describe("getVisibleStatusNote", () => {
+  const note = "제트보트는 12월 10일까지만 운영합니다.";
+
+  it("끝나는 날이 없으면 늘 보인다", () => {
+    expect(getVisibleStatusNote(makePlace({ statusNote: note }), new Date("2030-01-01T00:00:00Z"))).toBe(note);
+  });
+
+  it("끝나는 날 서울 자정 전까지 보이고, 자정이 지나면 숨긴다", () => {
+    const place = makePlace({ statusNote: note, statusNoteUntil: "2026-12-10" });
+    expect(getVisibleStatusNote(place, new Date("2026-12-10T14:59:59Z"))).toBe(note);
+    expect(getVisibleStatusNote(place, new Date("2026-12-10T15:00:00Z"))).toBeNull();
+  });
+
+  it("안내가 없으면 끝나는 날과 상관없이 없다", () => {
+    expect(getVisibleStatusNote(makePlace({ statusNoteUntil: "2026-12-10" }), new Date("2026-12-01T00:00:00Z"))).toBeNull();
   });
 });

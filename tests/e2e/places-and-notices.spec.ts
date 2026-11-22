@@ -20,6 +20,19 @@ test.describe("가볼만한 곳", () => {
     await page.getByRole("main").getByRole("link", { name: new RegExp(SAMPLE_PLACE.name) }).click();
     await expect(page).toHaveURL(SAMPLE_PLACE.path);
     await expect(page.getByRole("heading", { level: 1, name: SAMPLE_PLACE.name })).toBeVisible();
+    // 어느 목록에서 장소를 골랐는지 GA로 센다(2026-11-21).
+    await expect.poll(() => analyticsEventParams(page, "select_content")).toContainEqual(
+      expect.objectContaining({ content_type: "place", content_source: "place_list", place_category: SAMPLE_PLACE.category }),
+    );
+
+    // 상세 맨 위 "‹ 목록으로 돌아가기"와 맨 아래 버튼이 있다(2026-11-21 사용자 결정). 링크 주소는 가볼만한 곳 목록이지만,
+    // 분류 목록에서 들어왔으므로 누르면 그 분류 목록으로 돌아간다(2026-11-22 사용자 결정, list-return.spec.ts).
+    const backToListLinks = page.getByRole("main").getByRole("link", { name: "목록으로 돌아가기" });
+    await expect(backToListLinks).toHaveCount(2);
+    for (const link of await backToListLinks.all()) await expect(link).toHaveAttribute("href", "/places");
+    await expect(backToListLinks.first()).toBeInViewport();
+    await backToListLinks.first().click();
+    await expect(page).toHaveURL(`/places/category/${SAMPLE_PLACE.category}`);
   });
 
   test("상세 첫 화면에 이름과 밖으로 나가는 버튼이 보이고, 확인일과 제보 링크가 있다", async ({ page }) => {
@@ -89,6 +102,16 @@ test.describe("가볼만한 곳", () => {
     expect((await page.goto("/places/no-such-place"))?.status()).toBe(404);
   });
 
+  // 공유 미리보기 이미지가 비지 않고, 상세 설명은 바뀌는 운영시간 원문 대신 확인할 항목만 알린다(2026-11-21 SEO 점검).
+  test("목록·분류에는 공유 이미지가 있고, 상세 설명은 이름과 소개로 시작한다", async ({ request }) => {
+    for (const path of ["/places", `/places/category/${SAMPLE_PLACE.category}`]) {
+      const html = await (await request.get(path)).text();
+      expect(html, path).toMatch(/<meta property="og:image" content="[^"]+"/);
+    }
+    const detail = await (await request.get(SAMPLE_PLACE.path)).text();
+    expect(detail).toContain(`<meta name="description" content="속초 ${SAMPLE_PLACE.name}:`);
+  });
+
   test("sitemap에 가볼만한 곳 목록과 장소 상세가 있다", async ({ request }) => {
     const xml = await (await request.get("/sitemap.xml")).text();
     expect(xml).toContain("/places</loc>");
@@ -109,13 +132,53 @@ test.describe("통합 검색", () => {
     await expect(page).toHaveURL(/type=places/);
     await expect(page.getByRole("region", { name: "행사" })).toHaveCount(0);
     await expect(page.getByRole("region", { name: "가볼만한 곳" })).toBeVisible();
+
+    // 검색 결과를 실제로 눌렀는지 GA로 센다(2026-11-21). 결과 수(site_search_viewed)만으로는 검색이 쓸모 있는지 알 수 없다.
+    await page.getByRole("region", { name: "가볼만한 곳" }).getByRole("link", { name: new RegExp(SAMPLE_PLACE.name) }).click();
+    await expect(page).toHaveURL(SAMPLE_PLACE.path);
+    await expect.poll(() => analyticsEventParams(page, "select_content")).toContainEqual(
+      expect.objectContaining({ content_type: "place", content_source: "site_search", place_category: SAMPLE_PLACE.category }),
+    );
   });
 
-  test("결과가 없으면 다시 찾을 방법을 알려 주고, 검색 화면에서는 하단 탭을 숨긴다", async ({ page }) => {
+  // 하단 탭은 검색창에 입력하는 동안만 숨긴다(2026-11-22 사용자 결정, 아래 "입력하는 동안만" test).
+  test("결과가 없으면 다시 찾을 방법을 알려 준다", async ({ page }) => {
     await page.goto("/search?q=%EC%97%86%EB%8A%94%EC%9E%A5%EC%86%8C%EC%9D%B4%EB%A6%84");
     await expect(page.getByText("에 맞는 행사나 장소가 없어요.")).toBeVisible();
-    await expect(page.locator("[data-bottom-nav]")).toBeHidden();
     await expect.poll(() => analyticsEventParams(page, "site_search_viewed")).toEqual([{ query_length: 6, event_count: 0, place_count: 0 }]);
+  });
+
+  // 결과를 보던 방문자가 다른 탭으로 갈 수 있게, 키보드가 열리는 입력 중에만 하단 탭을 숨긴다(2026-11-22 리뷰, 사용자 결정).
+  test("검색 결과 화면에서는 하단 탭이 보이고, 검색창에 입력하는 동안만 숨긴다", async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== "mobile-chromium", "하단 탭은 md 미만에서만 보인다");
+    await page.goto("/search?q=%EC%9B%8C%ED%84%B0");
+    await expect(page.getByRole("region", { name: "가볼만한 곳" })).toBeVisible();
+    const bottomNav = page.locator("[data-bottom-nav]");
+    await expect(bottomNav).toBeVisible();
+
+    await page.getByRole("main").getByRole("search", { name: "사이트 검색" }).getByRole("textbox").focus();
+    await expect(bottomNav).toBeHidden();
+  });
+
+  // 검색어 없이 열면 인기 행사 대신 최근 검색어를 보인다(2026-11-21 사용자 결정). 기록은 이 브라우저에만 남는다.
+  test("처음에는 최근 검색 내역이 없다고 알리고, 검색한 말은 다시 누르거나 지울 수 있다", async ({ page }) => {
+    await page.goto("/search");
+    const recent = page.getByRole("region", { name: "최근 검색어" });
+    await expect(recent.getByText("최근 검색 내역이 없어요.")).toBeVisible();
+
+    const field = page.getByRole("main").getByRole("search", { name: "사이트 검색" }).getByRole("textbox");
+    await field.fill("워터");
+    await field.press("Enter");
+    await expect(page).toHaveURL(/\/search\?q=%EC%9B%8C%ED%84%B0/);
+
+    await page.goto("/search");
+    await recent.getByRole("link", { name: "워터" }).click();
+    await expect(page).toHaveURL(/\/search\?q=%EC%9B%8C%ED%84%B0/);
+    await expect(field).toHaveValue("워터");
+
+    await page.goto("/search");
+    await recent.getByRole("button", { name: "최근 검색어 워터 삭제" }).click();
+    await expect(recent.getByText("최근 검색 내역이 없어요.")).toBeVisible();
   });
 
   test("검색 결과는 검색엔진에 올리지 않는다", async ({ request }) => {
@@ -152,6 +215,24 @@ test.describe("공지", () => {
     await expect(page.getByRole("heading", { level: 1, name: SAMPLE_NOTICE.title })).toBeVisible();
   });
 
+  // 공지 띠를 둘지 판단하려면 띠를 본 사람 수(분모)가 필요하다. 닫은 방문자는 띠가 숨겨져 세지 않는다(2026-11-22 사용자 결정).
+  test("공지 띠가 보이면 GA에 한 번 알리고, 닫은 뒤 다시 열면 알리지 않는다", async ({ page }) => {
+    await page.goto("/report");
+    const banner = page.getByRole("complementary", { name: "새 공지" });
+    await expect(banner).toBeVisible();
+    await expect.poll(() => analyticsEventParams(page, "notice_banner_viewed")).toEqual([
+      expect.objectContaining({ notice_id: expect.any(String), notice_kind: expect.any(String) }),
+    ]);
+    await page.getByRole("navigation", { name: "주요 메뉴" }).getByRole("link", { name: "가볼만한 곳", exact: true }).click();
+    await expect(page).toHaveURL(/\/places$/);
+    expect(await analyticsEventParams(page, "notice_banner_viewed")).toHaveLength(1);
+
+    await banner.getByRole("button", { name: "공지 닫기" }).click();
+    await page.goto("/report");
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    expect(await analyticsEventParams(page, "notice_banner_viewed")).toHaveLength(0);
+  });
+
   test("공개하지 않은 공지와 형식이 틀린 주소는 열지 않는다", async ({ page }) => {
     expect((await page.goto("/notices/40000000-0000-4000-8000-000000000002"))?.status()).toBe(404);
     expect((await page.goto("/notices/not-a-uuid"))?.status()).toBe(404);
@@ -170,9 +251,12 @@ test.describe("공지", () => {
     await link.click();
     await expect(page).toHaveURL(new RegExp(`${href}$`));
     await expect(page.getByRole("heading", { level: 1, name: title })).toBeVisible();
+    // 띠가 읽히는지(클릭)와 거슬리는지(닫기)를 GA로 센다(2026-11-21).
+    await expect.poll(async () => (await analyticsEventParams(page, "notice_banner_clicked")).length).toBe(1);
 
     await banner.getByRole("button", { name: "공지 닫기" }).click();
     await expect(banner).toHaveCount(0);
+    await expect.poll(async () => (await analyticsEventParams(page, "notice_banner_dismissed")).length).toBe(1);
 
     await page.goto("/report");
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
@@ -220,5 +304,52 @@ test.describe("공지", () => {
 
     await page.goto("/notices");
     await expect(page.getByRole("main").getByRole("link", { name: new RegExp(title) })).toHaveCount(0);
+  });
+});
+
+test.describe("관리자 장소 저장", () => {
+  // 관리자 폼의 가볼만한 곳 칸(분류·운영 상태·태그·운영시간·확인일)이 저장돼 공개 상세에 그대로 보이고,
+  // 지우면 상세가 닫히는지 본다. 그 전에는 입력 검증 단위 test만 있었다(2026-11-21 리뷰).
+  test("관리자가 가볼만한 곳 값을 넣어 장소를 만들면 상세에 보이고, 지우면 상세가 닫힌다", async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== "desktop-chromium", "DB를 바꾸는 흐름은 한 프로젝트에서만 실행한다");
+    const stamp = Date.now();
+    const name = `E2E 장소 ${stamp}`;
+    const slug = `e2e-place-${stamp}`;
+
+    await loginAsAdmin(page);
+    await page.goto("/admin/places/new");
+    await page.locator('input[name="name"]').fill(name);
+    await page.locator('input[name="slug"]').fill(slug);
+    await page.locator('input[name="category"]').fill("체험시설");
+    await page.locator('input[name="latitude"]').fill("38.2");
+    await page.locator('input[name="longitude"]').fill("128.59");
+    await page.locator('input[name="isPublished"]').check();
+    await page.locator('select[name="activityCategory"]').selectOption("experience");
+    await page.locator('select[name="operationStatus"]').selectOption("seasonal_closed");
+    await page.locator('input[name="tags"][value="indoor"]').check();
+    await page.locator('input[name="statusNote"]').fill("겨울에는 쉬어요.");
+    await page.locator('textarea[name="hoursSummary"]').fill("매일 10:00~18:00");
+    await page.locator('input[name="verifiedOn"]').fill("2026-11-21");
+    await page.getByRole("button", { name: "명소 저장" }).click();
+    await expect(page).toHaveURL(/\/admin\/places\/[0-9a-f-]{36}\?result=place-saved$/);
+    await expect(page.getByText("명소 정보를 저장했습니다.")).toBeVisible();
+    const editUrl = page.url();
+
+    await page.goto(`/places/${slug}`);
+    const main = page.getByRole("main");
+    await expect(main.getByRole("heading", { level: 1, name })).toBeVisible();
+    await expect(main.getByText("체험 · 실내")).toBeVisible();
+    await expect(main.getByText("시즌 휴장")).toBeVisible();
+    await expect(main.getByText("겨울에는 쉬어요.")).toBeVisible();
+    await expect(main.getByText("매일 10:00~18:00")).toBeVisible();
+    await expect(main.getByText("2026년 11월 확인")).toBeVisible();
+
+    await page.goto(editUrl);
+    await page.getByRole("button", { name: "명소 삭제" }).click();
+    await page.getByRole("dialog").getByRole("button", { name: "명소 삭제" }).click();
+    await expect(page).toHaveURL(/\/admin\?tab=places&result=place-deleted$/);
+
+    const response = await page.goto(`/places/${slug}`);
+    expect(response?.status()).toBe(404);
   });
 });

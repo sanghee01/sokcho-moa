@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
 import { z } from "zod";
 import { AnalyticsMountTracking } from "@/components/analytics/analytics-mount-tracking";
+import { RecentSearchList } from "@/components/layout/recent-search-list";
 import { SiteSearchField } from "@/components/layout/site-search-field";
+import { buildSiteSearchHref } from "@/components/layout/site-search-href";
 import { getButtonClassName } from "@/components/ui/button-styles";
+import { getFilterChipClassName } from "@/components/ui/filter-chip-styles";
 import { TransitionLink } from "@/components/ui/transition-link";
 import { EventCard, eventCardGridClassName } from "@/features/events/components/event-card";
-import { filterEvents, selectPopularEvents, sortEvents } from "@/features/events/model/event-list";
+import { filterEvents, sortEvents } from "@/features/events/model/event-list";
 import { isEventClosedForDiscovery } from "@/features/events/model/event-state";
 import { getAllPublicEvents } from "@/features/events/queries";
 import { ActivityPlaceRow, activityPlaceListClassName } from "@/features/places/components/activity-place-row";
@@ -21,7 +24,6 @@ export const metadata: Metadata = {
 };
 
 const searchTypes = ["events", "places"] as const;
-type SearchType = (typeof searchTypes)[number];
 
 const searchParamsSchema = z.object({
   q: z.string().trim().max(100).catch(""),
@@ -32,16 +34,11 @@ const searchParamsSchema = z.object({
 const PREVIEW_EVENT_COUNT = 4;
 const PREVIEW_PLACE_COUNT = 5;
 
-function searchHref(query: string, type: SearchType | null) {
-  const params = new URLSearchParams({ q: query });
-  if (type !== null) params.set("type", type);
-  return `/search?${params.toString()}`;
-}
-
 /**
- * 통합 검색(.ai/DESIGN.md 통합 검색). 헤더 돋보기(모바일)나 검색창(md 이상)에서 온다.
+ * 통합 검색(.ai/DESIGN.md 통합 검색). 헤더 돋보기(lg 미만)나 검색창(lg 이상)에서 온다.
  * 행사와 가볼만한 곳을 함께 찾고, 범위 칩(전체·행사·가볼만한 곳)과 건수로 좁힌다. 검색어와 범위는 주소에 남는다(2026-11-21 사용자 결정).
- * data-hide-bottom-nav: 키보드가 열리면 고정된 하단 탭이 가려지거나 떠 보여 이 화면에서는 숨긴다(globals.css).
+ * data-hide-bottom-nav: 검색창에 입력하는 동안만 하단 탭을 숨긴다. 키보드가 열리면 고정된 탭이 가려지거나 떠 보인다(globals.css).
+ * data-hide-header-search: 화면 안의 검색창과 겹치지 않게 lg 이상 헤더 검색창을 숨긴다(globals.css).
  */
 export default async function SearchPage({ searchParams }: PageProps<"/search">) {
   const raw = await searchParams;
@@ -65,19 +62,16 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
   ];
 
   return (
-    <main id="main-content" data-hide-bottom-nav className="mx-auto max-w-6xl px-4 pb-16 pt-4 sm:px-6 lg:pt-8">
+    <main id="main-content" data-hide-bottom-nav data-hide-header-search className="mx-auto max-w-6xl px-4 pb-16 pt-4 sm:px-6 lg:pt-8">
       <h1 className="sr-only">검색</h1>
       <div className="lg:mx-auto lg:max-w-2xl">
         <SiteSearchField query={query} type={type} />
       </div>
 
       {query === "" ? (
-        <section aria-labelledby="search-suggestion-title" className="mt-8">
-          <h2 id="search-suggestion-title" className="text-title-2 text-content-strong">지금 많이 보는 행사</h2>
-          <div className={`mt-4 ${eventCardGridClassName}`}>
-            {selectPopularEvents(allEvents, now, 4).map((event) => <EventCard key={event.id} event={event} />)}
-          </div>
-        </section>
+        <div className="lg:mx-auto lg:max-w-2xl">
+          <RecentSearchList />
+        </div>
       ) : (
         <>
           <AnalyticsMountTracking
@@ -85,19 +79,20 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
             properties={{ query_length: Array.from(query).length, event_count: events.length, place_count: matchedPlaces.length }}
             onceKey={`${query}|${type ?? "all"}`}
           />
-          <nav aria-label="검색 범위" className="mt-5 flex flex-wrap gap-2">
+          <nav aria-label="검색 범위" className="mt-4 flex flex-wrap gap-x-2">
             {scopes.map((scope) => {
               const isCurrent = scope.type === type;
               return (
                 <TransitionLink
                   key={scope.label}
-                  href={searchHref(query, scope.type)}
+                  href={buildSiteSearchHref(query, scope.type)}
                   showPendingIndicator={false}
                   scroll={false}
                   aria-current={isCurrent ? "page" : undefined}
-                  className={`inline-flex min-h-11 items-center gap-1.5 rounded-full px-4 text-label font-medium ${isCurrent ? "bg-primary text-on-primary" : "bg-surface text-content ring-1 ring-inset ring-line-strong hover:bg-surface-subtle"}`}
+                  className="group inline-flex min-h-11 items-center"
                 >
-                  {scope.label}<span className="tabular-nums">{scope.count}</span>
+                  {/* 분야 칩과 같은 모양(filter-chip-styles.ts, 2026-11-21 통일) */}
+                  <span className={getFilterChipClassName(isCurrent)}>{scope.label}<span className="ml-1.5 tabular-nums">{scope.count}</span></span>
                 </TransitionLink>
               );
             })}
@@ -115,11 +110,11 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
               <div className="flex items-center justify-between gap-3">
                 <h2 id="search-events-title" className="text-title-2 text-content-strong">행사</h2>
                 {type === null && events.length > PREVIEW_EVENT_COUNT && (
-                  <TransitionLink href={searchHref(query, "events")} showPendingIndicator={false} className={getButtonClassName({ variant: "tonal" })}>행사 {events.length}개 모두 보기</TransitionLink>
+                  <TransitionLink href={buildSiteSearchHref(query, "events")} showPendingIndicator={false} className={getButtonClassName({ variant: "tonal" })}>행사 {events.length}개 모두 보기</TransitionLink>
                 )}
               </div>
               <div className={`mt-4 ${eventCardGridClassName}`}>
-                {(type === null ? events.slice(0, PREVIEW_EVENT_COUNT) : events).map((event) => <EventCard key={event.id} event={event} />)}
+                {(type === null ? events.slice(0, PREVIEW_EVENT_COUNT) : events).map((event) => <EventCard key={event.id} event={event} contentSource="site_search" />)}
               </div>
             </section>
           )}
@@ -129,11 +124,11 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
               <div className="flex items-center justify-between gap-3">
                 <h2 id="search-places-title" className="text-title-2 text-content-strong">가볼만한 곳</h2>
                 {type === null && matchedPlaces.length > PREVIEW_PLACE_COUNT && (
-                  <TransitionLink href={searchHref(query, "places")} showPendingIndicator={false} className={getButtonClassName({ variant: "tonal" })}>{matchedPlaces.length}곳 모두 보기</TransitionLink>
+                  <TransitionLink href={buildSiteSearchHref(query, "places")} showPendingIndicator={false} className={getButtonClassName({ variant: "tonal" })}>{matchedPlaces.length}곳 모두 보기</TransitionLink>
                 )}
               </div>
               <ul className={`mt-3 ${activityPlaceListClassName}`}>
-                {(type === null ? matchedPlaces.slice(0, PREVIEW_PLACE_COUNT) : matchedPlaces).map((place) => <ActivityPlaceRow key={place.id} place={place} />)}
+                {(type === null ? matchedPlaces.slice(0, PREVIEW_PLACE_COUNT) : matchedPlaces).map((place) => <ActivityPlaceRow key={place.id} place={place} contentSource="site_search" />)}
               </ul>
             </section>
           )}

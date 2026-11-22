@@ -61,7 +61,7 @@ export function resolveEventAddress(event: Pick<Event, "address" | "locationName
 
 /**
  * 지도 탭이 핀을 찍는 행사 좌표. 행사에 저장된 좌표가 우선이고, 없으면 장소 사전에서 찾는다.
- * 지금은 지도 탭만 쓴다. 구조화 데이터·주변 명소 거리는 저장된 좌표만 쓴다(2026-11-16, 범위를 지도로 좁힘).
+ * 지도 탭과 가볼만한 곳 상세의 "근처에서 열리는 행사"(selectEventsNearPlace, 2026-11-21)가 쓴다. 구조화 데이터는 저장된 좌표만 쓴다(2026-11-16).
  */
 export function resolveEventCoordinates(
   event: Pick<Event, "latitude" | "longitude" | "locationName">,

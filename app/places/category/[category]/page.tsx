@@ -10,7 +10,7 @@ import {
 } from "@/features/places/model/activity";
 import { getPublicPlaces } from "@/features/places/queries";
 import { buildActivityListDescription } from "@/features/places/seo";
-import { INDEXABLE_ROBOTS } from "@/lib/seo/site-identity";
+import { INDEXABLE_ROBOTS, SITE_NAME, SITE_OPEN_GRAPH_IMAGES, SITE_OPEN_GRAPH_IMAGE_PATH } from "@/lib/seo/site-identity";
 
 export const revalidate = 3600;
 
@@ -30,7 +30,9 @@ export async function generateMetadata({ params }: PageProps<"/places/category/[
     description,
     alternates: { canonical: path },
     robots: INDEXABLE_ROBOTS,
-    openGraph: { type: "website", locale: "ko_KR", url: path, title, description },
+    // 공유 미리보기 이미지가 비지 않게 사이트 기본 이미지를 넣는다(2026-11-21 SEO 점검).
+    openGraph: { type: "website", locale: "ko_KR", url: path, siteName: SITE_NAME, title, description, images: SITE_OPEN_GRAPH_IMAGES },
+    twitter: { card: "summary_large_image", title, description, images: [SITE_OPEN_GRAPH_IMAGE_PATH] },
   };
 }
 

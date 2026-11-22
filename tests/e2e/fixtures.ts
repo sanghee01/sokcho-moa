@@ -50,7 +50,8 @@ export const SAMPLE_PHOTO_PLACE = {
 };
 
 /** supabase/seed.sql의 즐길거리 가운데 사진이 없는 장소. 사진 자리를 비워 두지 않는지 확인한다. */
-export const SAMPLE_NO_PHOTO_PLACE = { path: "/places/sports-next-level", name: "스포츠 넥스트레벨" };
+// 사진을 찾지 못한 장소. 스포츠 넥스트레벨은 2026-11-21 공식 누리집 사진이 생겨 바꿨다(레이저어택은 쓸 수 있는 사진이 없어 비워 둠).
+export const SAMPLE_NO_PHOTO_PLACE = { path: "/places/laser-attack-sokcho", name: "레이저어택 속초점" };
 
 /** supabase/seed.sql의 공지 샘플. 공개 글은 상단 공지 띠에 보이고, 비공개 글은 관리자 화면에만 보인다. */
 export const SAMPLE_NOTICE = {

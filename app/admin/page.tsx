@@ -17,7 +17,7 @@ const adminTabs = [
   { id: "exclusions", label: "재수집 제외" },
   { id: "reports", label: "접수된 제보" },
   { id: "feedback", label: "접수된 의견" },
-  { id: "places", label: "주변 명소" },
+  { id: "places", label: "장소" },
   { id: "notices", label: "공지" },
 ] as const;
 

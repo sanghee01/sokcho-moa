@@ -15,19 +15,24 @@ export function PlaceActions({ place }: { place: ActivityPlace }) {
   const officialUrl = place.officialUrl || null;
   const bookingUrl = place.bookingUrl || null;
   const base = { place_slug: place.slug, place_category: place.activityCategory };
+  const buttonCount = 1 + Number(officialUrl !== null) + Number(bookingUrl !== null);
+  // 모바일은 두 칸 격자다. 버튼이 3개면 한 줄에 104px씩이라 "공식 홈페이지"가 들어가지 않아, 공식 홈페이지를 맨 위 한 줄로 올리고
+  // 예매하기·길찾기를 그 아래 두 칸에 둔다. 버튼이 하나면 한 줄을 다 쓴다. sm부터는 한 줄에 나란히 둔다(2026-11-21 사용자 피드백).
+  const officialLayout = buttonCount === 3 ? "col-span-2 order-first sm:order-none" : "";
+  const mapLayout = buttonCount === 1 ? "col-span-2" : "";
   return (
-    <div className="mt-5 flex flex-wrap gap-2">
+    <div className="mt-5 grid grid-cols-2 gap-2 sm:flex">
       {bookingUrl !== null && (
-        <a href={bookingUrl} target="_blank" rel="noreferrer" {...analyticsData("place_link_clicked", { ...base, link_type: "booking" })} className={`${getButtonClassName({ variant: "accent" })} min-w-0 flex-1 whitespace-nowrap`}>
+        <a href={bookingUrl} target="_blank" rel="noreferrer" {...analyticsData("place_link_clicked", { ...base, link_type: "booking" })} className={`${getButtonClassName({ variant: "accent", hasLeadingIcon: true })} whitespace-nowrap sm:flex-1`}>
           <Ticket {...iconProps} size={16} />예매하기<span className="sr-only">(새 창)</span>
         </a>
       )}
       {officialUrl !== null && (
-        <a href={officialUrl} target="_blank" rel="noreferrer" {...analyticsData("place_link_clicked", { ...base, link_type: "official" })} className={`${getButtonClassName({ variant: "primary" })} min-w-0 flex-1 whitespace-nowrap`}>
+        <a href={officialUrl} target="_blank" rel="noreferrer" {...analyticsData("place_link_clicked", { ...base, link_type: "official" })} className={`${getButtonClassName({ variant: "primary", hasLeadingIcon: true })} whitespace-nowrap sm:flex-1 ${officialLayout}`}>
           <ExternalLink {...iconProps} size={16} />공식 홈페이지<span className="sr-only">(새 창)</span>
         </a>
       )}
-      <a href={mapUrl} target="_blank" rel="noreferrer" {...analyticsData("place_link_clicked", { ...base, link_type: "map" })} className={`${getButtonClassName({ variant: "tonal" })} min-w-0 flex-1 whitespace-nowrap`}>
+      <a href={mapUrl} target="_blank" rel="noreferrer" {...analyticsData("place_link_clicked", { ...base, link_type: "map" })} className={`${getButtonClassName({ variant: "tonal", hasLeadingIcon: true })} whitespace-nowrap sm:flex-1 ${mapLayout}`}>
         <MapPin {...iconProps} size={16} />길찾기<span className="sr-only">(새 창)</span>
       </a>
     </div>

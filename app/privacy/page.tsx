@@ -55,7 +55,7 @@ export default function PrivacyPage() {
         <h3 className={subheadingClassName}>직접 입력하는 정보</h3>
         <ul className={listClassName}>
           <li>
-            <span className={termClassName}>행사 제보</span>: 제목, 본문, 행사 안내 링크(모두 필수). 제보 내용을 확인하고 행사를 등록하는 데 써요.
+            <span className={termClassName}>제보</span>: 제목, 본문, 안내 링크(모두 필수). 제보 내용을 확인하고 행사나 가볼만한 곳을 등록하는 데 써요.
           </li>
           <li>
             <span className={termClassName}>의견 보내기</span>: 제목, 본문(필수)과 관련 링크, 사진 1장(선택). 사이트를 고치는 데 참고해요.
@@ -66,8 +66,8 @@ export default function PrivacyPage() {
         <h3 className={`${subheadingClassName} pt-2`}>자동으로 수집되는 정보</h3>
         <ul className={listClassName}>
           <li>
-            <span className={termClassName}>방문 통계</span>: Google Analytics로 본 화면, 누른 링크·버튼(행사 원문·신청·지도 링크, 주변 명소,
-            공유, 정렬과 진행중·마감 탭), 검색한 글자 수와 결과 수, 머문 시간, 들어온 경로, 기기·운영체제·브라우저 종류,
+            <span className={termClassName}>방문 통계</span>: Google Analytics로 본 화면, 누른 링크·버튼(행사 원문·신청·지도 링크, 가볼만한 곳의
+            공식 홈페이지·예매·길찾기, 공유, 정렬과 진행중·마감 탭, 지도 분야, 공지 띠 열기·닫기), 검색한 글자 수와 결과 수, 머문 시간, 들어온 경로, 기기·운영체제·브라우저 종류,
             IP 주소로 추정한 대략적 지역, 브라우저에 저장한 무작위 식별자(쿠키)를 처리해요. 어떤 정보가 쓸모 있는지 보고
             사이트를 고치는 데만 쓰고, 광고에는 쓰지 않아요. 검색어 원문은 보내지 않고, 주소에 담긴 검색어도 가린 뒤 보내요.
           </li>

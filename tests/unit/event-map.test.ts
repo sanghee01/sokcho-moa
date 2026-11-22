@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { filterEventMapPlaces, selectEventMapPlaces } from "@/features/events/model/event-map";
+import { createMapFilter, filterEventMapPlaces, isPinInFilter, selectEventMapPlaces, type PlaceMapPin, type VenueMapPin } from "@/features/events/model/event-map";
 import type { Venue } from "@/features/events/model/venue";
 import { makeEvent, NOW } from "@/tests/unit/support/event-builder";
 
@@ -189,5 +189,35 @@ describe("filterEventMapPlaces", () => {
     const places = selectEventMapPlaces([makeEvent(ART_CENTER), makeEvent(LIBRARY)], NO_VENUES, NOW);
 
     expect(filterEventMapPlaces(places, null)).toEqual(places);
+  });
+});
+
+// 지도 필터는 레이어마다 분야 값이 달라, 다른 레이어의 분야나 모르는 값은 전체로 본다(2026-11-22 핀 타입 정리).
+describe("createMapFilter", () => {
+  it("레이어에 맞는 분야만 받고, 아니면 전체로 본다", () => {
+    expect(createMapFilter("events", "festival")).toEqual({ layer: "events", category: "festival" });
+    expect(createMapFilter("events", "water")).toEqual({ layer: "events", category: null });
+    expect(createMapFilter("places", "water")).toEqual({ layer: "places", category: "water" });
+    expect(createMapFilter("places", "festival")).toEqual({ layer: "places", category: null });
+    expect(createMapFilter("places", null)).toEqual({ layer: "places", category: null });
+  });
+});
+
+describe("isPinInFilter", () => {
+  const venuePin: VenueMapPin = { kind: "venue", id: "v", name: "문화회관", latitude: 38.2, longitude: 128.59, events: [{ slug: "a", category: "performance" }] };
+  const placePin: PlaceMapPin = { kind: "place", id: "place:p", name: "워터파크", latitude: 38.2, longitude: 128.59, placeCategory: "water" };
+
+  it("행사 장소 핀은 행사 레이어에서 그 분야 행사가 있을 때만 보인다", () => {
+    expect(isPinInFilter(venuePin, { layer: "events", category: null })).toBe(true);
+    expect(isPinInFilter(venuePin, { layer: "events", category: "performance" })).toBe(true);
+    expect(isPinInFilter(venuePin, { layer: "events", category: "festival" })).toBe(false);
+    expect(isPinInFilter(venuePin, { layer: "places", category: null })).toBe(false);
+  });
+
+  it("가볼만한 곳 핀은 가볼만한 곳 레이어에서 그 분류일 때만 보인다", () => {
+    expect(isPinInFilter(placePin, { layer: "places", category: null })).toBe(true);
+    expect(isPinInFilter(placePin, { layer: "places", category: "water" })).toBe(true);
+    expect(isPinInFilter(placePin, { layer: "places", category: "exhibition" })).toBe(false);
+    expect(isPinInFilter(placePin, { layer: "events", category: null })).toBe(false);
   });
 });

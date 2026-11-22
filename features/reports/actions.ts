@@ -12,7 +12,7 @@ import { eventReportSchema } from "@/features/reports/schemas";
 
 const UNAVAILABLE = "현재 제보 접수를 준비 중입니다. 잠시 후 다시 이용해 주세요.";
 
-/** 방문자 행사 제보. 검증 → 요청 제한 → 저장 순서로 처리한다. */
+/** 방문자 제보(행사·가볼만한 곳). 검증 → 요청 제한 → 저장 순서로 처리한다. */
 export async function submitEventReportAction(
   _previousState: FormActionState,
   formData: FormData,
