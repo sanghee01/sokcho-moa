@@ -21,8 +21,7 @@ export function mapPlaceRow(row: Tables<"places">): Place {
     isPublished: row.is_published,
     // 분류·태그·운영 상태는 DB check 제약이 값을 정해 두지만 생성 타입은 string이라 여기서 좁힌다.
     activityCategory: isActivityCategory(row.activity_category) ? row.activity_category : null,
-    // 코드가 migration(20261121050439)보다 먼저 배포되면 이 컬럼이 아직 없어 undefined가 온다. 그때도 장소를 쓰는 화면이 죽지 않게 한다.
-    tags: (row.tags ?? []).filter(isActivityTag),
+    tags: row.tags.filter(isActivityTag),
     description: row.description,
     hoursSummary: row.hours_summary,
     closedSummary: row.closed_summary,

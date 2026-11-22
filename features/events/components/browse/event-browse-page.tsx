@@ -1,4 +1,4 @@
-import { AnalyticsMountTracking } from "@/components/analytics/analytics-mount-tracking";
+import { permanentRedirect } from "next/navigation";
 import { getButtonClassName } from "@/components/ui/button-styles";
 import { TransitionLink } from "@/components/ui/transition-link";
 import { EventCard, eventCardGridClassName } from "@/features/events/components/event-card";
@@ -42,29 +42,20 @@ interface EmptyResultContent {
 /**
  * 목록이 비었을 때 상황에 맞는 안내(2026-11-06). 사용자가 하지 않은 일("검색어를 바꾸거나 조건을 지우고")을 말하지 않고,
  * 실제로 갈 만한 곳 하나를 버튼으로 준다. 분야 이름 뒤에는 받침에 따라 바뀌는 조사를 붙이지 않는다.
- * 고르는 순서: 검색어 → 예전 주소의 조건 → 마감 탭 → 기본(예전에는 중첩 삼항 한 식이었다, 2026-11-07).
+ * 고르는 순서: 예전 주소의 조건 → 마감 탭 → 기본(예전에는 중첩 삼항 한 식이었다, 2026-11-07).
  */
 function getEmptyResultContent({
-  query,
   closedView,
   topicLabel,
   hasLegacyFilters,
   params,
 }: {
-  query?: string;
   closedView: boolean;
   topicLabel?: string;
   hasLegacyFilters: boolean;
   params: EventSearchParams;
 }): EmptyResultContent {
   const label = topicLabel ?? "행사";
-  if (query) {
-    return {
-      title: `'${query}' 검색 결과가 없어요`,
-      description: "다른 단어로 검색해 보세요.",
-      action: { label: "검색 지우기", href: buildEventBrowseHref(params, { q: undefined }) },
-    };
-  }
   if (hasLegacyFilters) {
     return { title: "조건에 맞는 행사가 없어요", action: { label: "조건 지우기", href: clearEventFiltersHref(params) } };
   }
@@ -106,6 +97,11 @@ export async function EventBrowsePage({
     : rawParams;
   const navigationParams = withEventBrowsePath(browseParams, topic?.path ?? "/");
   const parsedFilters = parseEventFilters(rawParams);
+  // 예전 검색 주소(?q=)는 통합 검색의 행사 결과로 영구 이동한다(2026-11-22 사용자 결정). 목록 위 검색창을 헤더 통합 검색으로 옮긴 뒤에도
+  // ?q=가 목록을 걸렀는데, 걸렀다는 표시도 지울 방법도 없어 일부 행사만 보이는 목록이 됐다. 예전 링크의 뜻(행사 검색)대로 행사 범위로 보낸다.
+  if (parsedFilters.query !== undefined) {
+    permanentRedirect(`/search?${new URLSearchParams({ q: parsedFilters.query, type: "events" })}`);
+  }
   const filters = topic
     ? { ...parsedFilters, category: topic.category }
     : parsedFilters;
@@ -130,19 +126,10 @@ export async function EventBrowsePage({
         {!topic && <h1 id="home-hero-title" className="sr-only">요즘 속초에서 뭐하지?</h1>}
         {!topic && <p className="sr-only">공연·체험·교육·전시를 포함한 속초의 최신 행사 정보를 확인하세요.</p>}
 
-        {/* 검색창은 헤더의 통합 검색(/search)으로 옮겼다(2026-11-21 사용자 결정). 예전 주소의 ?q=는 계속 목록을 거른다. */}
+        {/* 검색창은 헤더의 통합 검색(/search)으로 옮겼다(2026-11-21 사용자 결정). */}
         <section aria-labelledby="event-results-title" data-event-view={statusTab} className="mt-2 lg:mt-6">
           {/* 행사 개수는 보여 주지 않는다(2026-11-06). 구역 제목은 화면 읽기 프로그램용으로 남긴다. */}
           <h2 id="event-results-title" className="sr-only">{closedView ? "마감 행사" : "행사 목록"}</h2>
-          {/* 검색어가 있는 목록이 그려지면 결과 수를 GA에 남긴다. 검색어 원문은 보내지 않고,
-              같은 분야·탭·검색어에서 정렬만 바꾼 것은 다시 세지 않는다(2026-11-07). */}
-          {filters.query !== undefined && (
-            <AnalyticsMountTracking
-              name="search_results_viewed"
-              properties={{ result_count: events.length, query_length: Array.from(filters.query).length, status_tab: statusTab }}
-              onceKey={`${topic?.path ?? "/"}|${statusTab}|${filters.query}`}
-            />
-          )}
           <div className="mb-4 flex items-center justify-between gap-3 border-b border-line">
             <EventViewTabs
               current={statusTab}
@@ -156,7 +143,6 @@ export async function EventBrowsePage({
           {events.length === 0 ? (
             <EmptyResult
               content={getEmptyResultContent({
-                query: filters.query,
                 closedView,
                 topicLabel: topic?.label,
                 hasLegacyFilters: hasLegacyEventFilters(filters),

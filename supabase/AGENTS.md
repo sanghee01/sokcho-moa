@@ -9,6 +9,7 @@ DB schema, 권한, DB test의 규칙입니다. 운영 DB 안전 규칙은 [루�
 - 새 migration에는 같은 이름의 rollback SQL을 `rollbacks/`에 둡니다. 되돌릴 수 없는 변경(데이터 삭제, 정보가 사라지는 형 변환)이면 이유와 백업 방법을 적습니다.
 - 운영 적용은 사용자가 합니다. 적용 뒤 원격 migration 이력이 로컬 파일과 같은지 확인합니다.
 - `seed.sql`은 로컬 전용입니다(로컬 관리자 계정과 `demo-` 샘플 행사).
+- 장소 값의 원본은 운영 DB(관리자 화면)입니다. 한 곳을 고치는 일은 migration으로 하지 않고, 여러 곳을 한꺼번에 넣거나 고칠 때만 JSON과 함께 migration을 씁니다(앞 값이 그대로일 때만 update, [결정](../docs/decisions/conventions.md#장소-데이터의-원본-2026-11-22)).
 
 ## RLS 정책
 

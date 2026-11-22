@@ -76,7 +76,7 @@ const sectionClassName = "mt-12";
 export default async function PlaceDetailPage({ params }: PageProps<"/places/[slug]">) {
   const [{ slug }, places, events] = await Promise.all([params, getPublicPlaces(), getAllPublicEvents()]);
   const found = places.find((item) => item.slug === slug);
-  // 즐길거리 분류가 없는 장소(주변 명소로만 쓰는 곳)는 상세를 열지 않는다. 채운 정보가 없어 빈 페이지가 된다.
+  // 가볼만한 곳 분류가 없는 장소는 상세를 열지 않는다. 사이트 어디에도 보이지 않는 곳이고, 채운 정보가 없어 빈 페이지가 된다.
   if (found === undefined || !isActivityPlace(found)) notFound();
   const place = found;
 
@@ -96,7 +96,7 @@ export default async function PlaceDetailPage({ params }: PageProps<"/places/[sl
       <JsonLd data={buildPlaceBreadcrumbStructuredData(place, siteUrl)} />
       {/* 맨 위의 "‹ 목록으로 돌아가기"(행사 상세와 같음, 2026-11-21 사용자 결정). 경로는 화면 읽기 프로그램용으로만 두되,
           안의 링크에 Tab 초점이 들어오면 보이게 한다(WCAG 2.4.7: 보이지 않는 곳에 초점이 머물지 않게). */}
-      <div className="-mt-4 mb-3 lg:-mt-4">
+      <div className="-mt-4 mb-3">
         <BackToListLink href={ACTIVITY_LIST_PATH} pendingLabel="가볼만한 곳 목록 불러오는 중" />
       </div>
       <nav aria-label="현재 위치" className="sr-only text-label font-normal text-content-subtle focus-within:not-sr-only focus-within:mb-3 focus-within:block">

@@ -202,6 +202,9 @@ describe("placeFormSchema의 즐길거리 값", () => {
     expect(placeFormSchema.safeParse({ ...input, tags: ["pets"] }).success).toBe(false);
     expect(placeFormSchema.safeParse({ ...input, operationStatus: "unknown" }).success).toBe(false);
     expect(placeFormSchema.safeParse({ ...input, verifiedOn: "2026-13-40" }).success).toBe(false);
+    // 없는 날짜는 Date.parse가 다음 달로 넘겨 통과시켰고, DB가 거부해 "저장하지 못했습니다"만 보였다(2026-11-22 리뷰).
+    expect(placeFormSchema.safeParse({ ...input, verifiedOn: "2026-02-31" }).success).toBe(false);
+    expect(placeFormSchema.safeParse({ ...input, statusNoteUntil: "2026-11-31" }).success).toBe(false);
     expect(placeFormSchema.safeParse({ ...input, bookingUrl: "javascript:alert(1)" }).success).toBe(false);
   });
 });

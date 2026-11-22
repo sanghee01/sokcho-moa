@@ -2,7 +2,7 @@ import type { Page } from "@playwright/test";
 
 /**
  * 지도 탭 E2E용 가짜 네이버 지도 SDK. 실제 SDK는 등록한 주소·키에서만 뜨고 외부 서비스라, 핀·장소 카드 흐름은 이 가짜로 돌린다.
- * 지도 탭이 쓰는 API(features/events/components/map/naver-maps.ts)만 흉내 내고, 마커는 지도 상자 오른쪽 위부터 차례로 늘어놓는다.
+ * 지도 탭이 쓰는 API(features/map/components/naver-maps.ts)만 흉내 내고, 마커는 지도 상자 오른쪽 위부터 차례로 늘어놓는다.
  * 오른쪽에 두는 이유: 장소 카드가 모바일은 아래, md 이상은 왼쪽을 덮어 핀을 가리지 않게 한다.
  * playwright.config.ts가 가짜 Client ID로 빌드하므로, 이 파일로 막지 않은 요청은 네이버에서 인증 실패가 난다.
  */

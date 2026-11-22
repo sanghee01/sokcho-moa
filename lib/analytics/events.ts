@@ -30,11 +30,6 @@ export interface AnalyticsEventParams {
       content_source: "place_list" | "site_search" | "similar_places" | "event_map";
       place_category: string;
     };
-  search_results_viewed: {
-    result_count: number;
-    query_length: number;
-    status_tab: AnalyticsStatusTab;
-  };
   sort_changed: {
     sort_method: string;
   };
@@ -130,7 +125,6 @@ export type AnalyticsEvent = keyof AnalyticsEventParams;
 const analyticsEventNames = {
   event_detail_viewed: true,
   select_content: true,
-  search_results_viewed: true,
   sort_changed: true,
   status_tab_changed: true,
   application_link_clicked: true,

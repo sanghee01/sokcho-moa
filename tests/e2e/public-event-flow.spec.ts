@@ -220,7 +220,7 @@ test("GA 이벤트는 탐색부터 상세 도달까지 구조화된 파라미터
   ))).toBe(true);
 });
 
-test("GA 이벤트는 목록의 진행중·마감 탭 전환과 검색 결과 수를 기록한다", async ({ page }) => {
+test("GA 이벤트는 목록의 진행중·마감 탭 전환을 기록한다", async ({ page }) => {
   await page.goto("/");
   const statusTabs = page.getByRole("navigation", { name: "행사 상태" });
   const activeTab = statusTabs.getByRole("link", { name: "진행중", exact: true });
@@ -236,14 +236,18 @@ test("GA 이벤트는 목록의 진행중·마감 탭 전환과 검색 결과 �
     { status_tab: "closed" },
     { status_tab: "active" },
   ]);
+});
 
-  // 홈의 검색창은 헤더 통합 검색으로 옮겼지만, 예전 주소의 ?q=는 계속 목록을 거르고 결과 수를 남긴다(2026-11-21).
+// 목록 위 검색창을 헤더 통합 검색으로 옮겨(2026-11-21), 예전 주소의 ?q=는 통합 검색의 행사 결과로 영구 이동한다(2026-11-22 사용자 결정).
+// 예전에는 목록을 거르기만 하고 걸렀다는 표시도 지울 방법도 없어 일부 행사만 보이는 목록이 됐다.
+test("예전 검색 주소는 통합 검색의 행사 결과로 옮겨 간다", async ({ page }) => {
+  const response = await page.request.get("/topics/festival?q=%EB%B0%94%EB%8B%A4%EB%B9%9B", { maxRedirects: 0 });
+  expect(response.status()).toBe(308);
+  expect(response.headers().location).toMatch(/\/search\?q=%EB%B0%94%EB%8B%A4%EB%B9%9B&type=events$/);
+
   await page.goto("/?q=%EB%B0%94%EB%8B%A4%EB%B9%9B");
-  await expect.poll(() => analyticsEventParams(page, "search_results_viewed")).toEqual([
-    { result_count: 1, query_length: 3, status_tab: "active" },
-  ]);
-  // 검색어 원문은 보내지 않는다.
-  expect(JSON.stringify(await analyticsEventParams(page, "search_results_viewed"))).not.toContain("바다빛");
+  await expect(page).toHaveURL(/\/search\?q=%EB%B0%94%EB%8B%A4%EB%B9%9B&type=events$/);
+  await expect(page.getByRole("region", { name: "행사" }).getByRole("article")).toHaveCount(1);
 });
 
 // 같은 상세 아래쪽에 있는 관련 행사 목록의 노출을 센다(2026-11-07). 주변 명소 구역은 2026-11-21에 뺐다.
@@ -263,11 +267,11 @@ test("GA 이벤트는 관련 행사 목록이 화면에 들어왔을 때 상세 
 
 test("GA page_view는 주소에 담긴 검색어를 가려서 보낸다", async ({ page }) => {
   const query = "바다빛";
-  await page.goto(`/?q=${encodeURIComponent(query)}`);
+  await page.goto(`/search?q=${encodeURIComponent(query)}`);
   await expect.poll(() => analyticsEventParams(page, "page_view")).toHaveLength(1);
 
   // 검색 결과 → 상세 → 뒤로 가기에서 검색어가 page_location·page_referrer로 실려 갈 수 있다.
-  await page.getByRole("link", { name: /바다빛 가족 문화축제/ }).click();
+  await page.getByRole("region", { name: "행사" }).getByRole("link", { name: /바다빛 가족 문화축제/ }).click();
   await expect(page).toHaveURL(new RegExp(`${SAMPLE_EVENT_PATH}$`));
   // 주소는 화면을 그리는 순간 바뀌고 page_view는 그린 뒤(useEffect)에 남는다. 부하가 크면 그 사이에 뒤로 가서
   // 상세·되돌아온 목록의 page_view가 모두 빠졌다. 사람처럼 상세가 기록된 뒤에 뒤로 간다(2026-11-15).

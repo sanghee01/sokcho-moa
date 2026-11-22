@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-import { EventMapPage } from "@/features/events/components/map/event-map-page";
-import { placeMapPinId, toPlaceMapPins } from "@/features/events/model/event-map";
+import { EventCard } from "@/features/events/components/event-card";
 import { getAllPublicEvents } from "@/features/events/queries";
+import { EventMapPage } from "@/features/map/components/event-map-page";
+import { placeMapPinId, selectEventMapPlaces, toEventMapPins, toPlaceMapPins } from "@/features/map/model/map-pins";
 import { PlaceMapCard } from "@/features/places/components/place-map-card";
 import { selectActivityPlaces } from "@/features/places/model/activity";
 import { getPublicPlaces } from "@/features/places/queries";
@@ -21,13 +22,18 @@ export const metadata: Metadata = {
 
 export default async function MapPage() {
   const [events, places] = await Promise.all([getAllPublicEvents(), getPublicPlaces()]);
+  const eventPlaces = selectEventMapPlaces(events);
   const activityPlaces = selectActivityPlaces(places);
-  const placeCards = Object.fromEntries(activityPlaces.map((place) => [placeMapPinId(place.slug), <PlaceMapCard key={place.slug} place={place} />]));
+  // 카드는 목록과 같은 EventCard·장소 카드를 서버에서 그려 넘긴다. 브라우저에 행사 전체(Event)를 넘기지 않으려는 것이다.
+  const cards = {
+    ...Object.fromEntries(eventPlaces.flatMap((place) => place.events).map((event) => [event.slug, <EventCard key={event.slug} event={event} contentSource="event_map" />])),
+    ...Object.fromEntries(activityPlaces.map((place) => [placeMapPinId(place.slug), <PlaceMapCard key={place.slug} place={place} />])),
+  };
   return (
     <EventMapPage
-      events={events}
+      pins={toEventMapPins(eventPlaces)}
       placePins={toPlaceMapPins(activityPlaces)}
-      placeCards={placeCards}
+      cards={cards}
       clientId={getNaverMapClientId()}
     />
   );

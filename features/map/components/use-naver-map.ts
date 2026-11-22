@@ -1,10 +1,10 @@
 // 네이버 지도 SDK의 지도를 만들고 지우는 hook(event-map.tsx). 지도 상태(status)와 지도(mapRef)는 화면이 가진다:
 // 마커 hook(use-map-markers.ts)이 이 hook보다 먼저 effect를 등록해야 화면을 떠날 때 마커를 뗀 뒤 지도를 지운다(정리는 등록 순서대로 돈다).
 import { useEffect, useRef, useState, type Dispatch, type RefObject, type SetStateAction } from "react";
-import { DEFAULT_ZOOM, MIN_ZOOM } from "@/features/events/components/map/map-camera";
-import { readMapView, saveMapView } from "@/features/events/components/map/map-history";
-import { callNaverMapsSafely, getNaverMaps, listenNaverMapsAuthFailure, type NaverMap } from "@/features/events/components/map/naver-maps";
-import { MAP_DEFAULT_CENTER, MAP_REGION_BOUNDS } from "@/features/events/model/event-map";
+import { DEFAULT_ZOOM, MIN_ZOOM } from "@/features/map/components/map-camera";
+import { readMapView, saveMapView } from "@/features/map/components/map-history";
+import { callNaverMapsSafely, getNaverMaps, listenNaverMapsAuthFailure, type NaverMap } from "@/features/map/components/naver-maps";
+import { MAP_DEFAULT_CENTER, MAP_REGION_BOUNDS } from "@/features/map/model/map-pins";
 import type { AnalyticsEventParams } from "@/lib/analytics/events";
 
 export type MapUnavailableReason = AnalyticsEventParams["map_unavailable"]["reason"];

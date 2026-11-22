@@ -34,7 +34,6 @@ GA4 주요 이벤트(Key event)는 `application_link_clicked`(2026-10-25 지정)
 | `place_link_clicked` | 즐길거리 상세에서 공식 홈페이지·예매·지도 버튼을 선택할 때(2026-11-21) | `place_slug`, `place_category`, `link_type`(`official`, `booking`, `map`) | 방문 의도. `place_detail_viewed` 대비 비율이 행사의 `source_link_clicked` 비율보다 크게 낮으면 상세 구성을 다시 본다 |
 | `poster_viewed` | 행사 상세에서 포스터 크게 보기를 열 때. 열 때마다 센다(2026-11-18) | `event_slug`, `event_category` | 크게 보기를 쓰는지. `event_detail_viewed` 대비 비율이 높으면 포스터 여러 장 수집·갤러리를 검토한다 |
 | `share` | 네이티브 공유 또는 링크 복사가 성공했을 때 | `method`, `content_type`, `item_id` | 추천·확산 |
-| `search_results_viewed` | 검색어가 있는 목록이 그려질 때. 같은 분야·탭·검색어에서 정렬만 바꾼 것은 다시 세지 않는다 | `result_count`, `query_length`, `status_tab` | 결과 0건 검색 비율. 검색 개선·행사 보강이 필요한지 |
 | `status_tab_changed` | 목록의 진행중·마감 탭을 눌러 실제로 바꿀 때. 이미 선택된 탭은 세지 않는다 | `status_tab`(`active` 진행중, `closed` 마감) | 마감 행사를 찾는 수요. 마감 탭을 계속 둘지 |
 | `related_events_viewed` | 행사 상세 아래쪽의 "이 행사도 살펴보세요" 목록이 화면 아래쪽 4분의 1을 뺀 영역에 처음 들어왔을 때. 상세 화면마다 한 번 | `event_category` | 관련 행사 클릭률의 분모. 아래까지 내려온 사람이 다른 행사로 이어 가는지 |
 | `event_report_submitted` | 제보(행사·가볼만한 곳, 2026-11-21부터 한 폼)가 서버에 접수돼 완료 화면이 보일 때. 입력 오류·서버 오류는 세지 않는다 | 없음 | 제보 완료율(아래 판단 규칙). 제보 폼을 줄일지 |
@@ -52,7 +51,8 @@ GA4 주요 이벤트(Key event)는 `application_link_clicked`(2026-10-25 지정)
 
 2026-11-21 개편에서 아래 이벤트를 더 이상 보내지 않는다. 그 전 데이터는 GA4에 남아 있다.
 
-- `search_submitted`(`query_length`·`has_query`·`active_filter_count`): 목록 위 검색창을 헤더의 통합 검색(`/search`)으로 옮겼다. 통합 검색은 결과가 그려질 때 `site_search_viewed`로 센다. 예전 주소 `/?q=`로 들어오면 `search_results_viewed`는 계속 온다.
+- `search_submitted`(`query_length`·`has_query`·`active_filter_count`): 목록 위 검색창을 헤더의 통합 검색(`/search`)으로 옮겼다. 통합 검색은 결과가 그려질 때 `site_search_viewed`로 센다.
+- `search_results_viewed`(`result_count`·`query_length`·`status_tab`, 2026-11-22부터): 예전 주소 `/?q=`를 통합 검색(`/search?q=&type=events`)으로 영구 이동해, 목록에서 검색 결과가 그려지는 일이 없어졌다. 검색은 `site_search_viewed`로 센다.
 - `nearby_places_viewed`·`nearby_place_clicked`, `map_link_clicked`의 `link_position` = `nearby_place_card`: 행사 상세의 주변 명소 구역을 뺐다(사용자 결정). 장소는 `place_detail_viewed`·`place_link_clicked`로 센다. GA 탐색 분석 "속초모아 핵심 퍼널"의 "명소 클릭률" 탭도 이날 이후로는 숫자가 쌓이지 않는다.
 
 ### 2026-11-07에 더한 이벤트
@@ -63,7 +63,6 @@ GA4 주요 이벤트(Key event)는 `application_link_clicked`(2026-10-25 지정)
 - 제출 성공을 직접 보내는 이유: GA4 향상된 측정에도 `form_submit`이 있지만 이 사이트에서는 2026-07-01~11-06에 한 번도 기록되지 않았고(같은 기간 `form_start` 89회),
   기록되더라도 입력 오류로 실패한 제출까지 센다. 자동 이벤트와 헷갈리지 않게 이름도 폼마다 따로 짓는다.
 - 제보·의견의 제목·본문·링크와 검색어 원문은 보내지 않는다. 그래서 0건 검색이 많아도 무엇을 찾았는지는 알 수 없다. 검색어 수집은 개인정보 판단이 필요해 뺐다.
-- 검색은 2026-07-01~11-06에 73회뿐이라 `search_results_viewed`는 몇 달 쌓인 뒤에 본다.
 
 ## 판단 규칙
 
@@ -72,11 +71,10 @@ GA4 주요 이벤트(Key event)는 `application_link_clicked`(2026-10-25 지정)
 | 판단 | 계산 | 기준 |
 | --- | --- | --- |
 | 제보·의견 폼을 줄일지 | `/report`의 `page_view` → 같은 경로의 `form_start` → `event_report_submitted`(의견은 `/feedback`, `feedback_submitted`) | 검색창도 `<form>`이라 `form_start`가 생기므로 반드시 페이지 경로로 거른다 |
-| 검색을 고칠지 | `search_results_viewed` 중 `result_count` = 0 비율 | 높게 나오면 검색어 수집 여부를 다시 정한다 |
 | 마감 탭을 둘지 | 목록 `page_view` 사용자 중 `status_tab_changed`(`closed`) 사용자 비율 | 몇 달 쌓인 뒤 본다 |
 | 검색이 쓸모 있는지 | `site_search_viewed` 사용자 중 `select_content`(`content_source` = `site_search`) 사용자 비율. 결과 0건 비율은 `event_count` + `place_count` = 0 | 기준값은 출시 뒤 쌓이면 사용자가 정한다(2026-11-21) |
 | 가볼만한 곳 입구를 키울지 | `place_detail_viewed` 직전 `select_content`(`content_type` = `place`)의 `content_source` 나눔: `place_list` · `site_search` · `event_map` · `similar_places` | 한쪽이 대부분이면 그 입구를 키우고, 거의 없는 입구는 줄일지 본다(2026-11-21) |
-| 지도 왼쪽 목록 판을 남길지 | md 이상 `map_place_selected` 가운데 `select_method` = `list` 비율 | 거의 쓰지 않으면 지도를 넓게 쓰도록 판을 줄인다(2026-11-21) |
+| 지도 왼쪽 목록 판을 남길지 | 기기 카테고리 = desktop인 `map_place_selected` 가운데 `select_method` = `list` 비율(GA에는 화면 폭이 없어 기기로 나눈다. 목록 판은 md 이상에만 있다) | 거의 쓰지 않으면 지도를 넓게 쓰도록 판을 줄인다(2026-11-21) |
 | 공지 띠를 둘지 | 공지를 공개한 뒤 띠가 뜨는 14일 동안 `notice_banner_viewed` 사용자 중(띠에는 늘 가장 최근 공지 하나만 떠서 `notice_id`로 나누지 않아도 된다) `notice_banner_clicked` 비율과 `notice_banner_dismissed` 비율 | 닫기만 많고 클릭이 거의 없으면 띠 대신 공지 아이콘 표시(점)로 바꿀지 본다(2026-11-21) |
 | 지도 탭을 둘지 | `/map`의 `page_view` 사용자 중 `map_place_selected` 사용자 비율, 그중 `select_content`(`content_source` = `event_map`) 사용자 비율. 분야 칩은 `map_category_changed` 사용자 비율 | 기준값은 아직 정하지 않았다. 지도 방문 사용자가 몇백 명 쌓인 뒤 사용자가 정한다(2026-11-16). `map_unavailable`이 있는 기간은 빼고 본다 |
 

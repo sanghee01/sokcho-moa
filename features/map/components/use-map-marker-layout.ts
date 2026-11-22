@@ -1,12 +1,12 @@
 // 마커 배치 hook(event-map.tsx). 시내 전체를 볼 때 몸통이 겹치는 마커는 하나로 묶고, 남은 마커 중 다른 마커와 겹치지 않는 것만 장소 이름을 붙인다.
 // 포스터 핀이 시내에 몰려 서로 가렸던 문제를 지도 서비스의 마커 묶기·겹침 관리 방식으로 푼다(2026-11-21 사용자 피드백).
 import { useEffect, useState, type RefObject } from "react";
-import { getPinLabel } from "@/features/events/components/map/map-marker-icon";
-import { callNaverMapsSafely, getNaverMaps, type NaverMap } from "@/features/events/components/map/naver-maps";
-import type { MarkerSlot } from "@/features/events/components/map/use-map-markers";
-import type { MapStatus } from "@/features/events/components/map/use-naver-map";
-import type { MapPin } from "@/features/events/model/event-map";
-import { clusterMapMarkers, MAP_MARKER_BODY_PX, selectMapLabelIds } from "@/features/events/model/map-label-layout";
+import { getPinLabel } from "@/features/map/components/map-marker-icon";
+import { callNaverMapsSafely, getNaverMaps, type NaverMap } from "@/features/map/components/naver-maps";
+import type { MarkerSlot } from "@/features/map/components/use-map-markers";
+import type { MapStatus } from "@/features/map/components/use-naver-map";
+import type { MapPin } from "@/features/map/model/map-pins";
+import { clusterMapMarkers, MAP_MARKER_BODY_PX, selectMapLabelIds } from "@/features/map/model/map-label-layout";
 
 /** 장소 이름 알약에서 이름 글자 말고 더해지는 폭: 안쪽 여백 4 + 개수 동그라미 36 + 간격 6 + 오른쪽 여백 12(event-map-marker.tsx의 p-1·size-9·gap-1.5·pr-3) */
 const MAP_LABEL_EXTRA_PX = 58;

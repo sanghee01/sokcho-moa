@@ -71,13 +71,13 @@ describe("analytics event contract", () => {
     const gtag = vi.fn();
     vi.stubGlobal("window", { gtag });
 
-    trackAnalyticsEvent("search_results_viewed", { result_count: 0, query_length: 3, status_tab: "active" });
+    trackAnalyticsEvent("site_search_viewed", { query_length: 3, event_count: 0, place_count: 1 });
     trackAnalyticsEvent("feedback_submitted", {});
 
-    expect(gtag).toHaveBeenCalledWith("event", "search_results_viewed", {
-      result_count: 0,
+    expect(gtag).toHaveBeenCalledWith("event", "site_search_viewed", {
       query_length: 3,
-      status_tab: "active",
+      event_count: 0,
+      place_count: 1,
     });
     expect(gtag).toHaveBeenCalledWith("event", "feedback_submitted", {});
   });

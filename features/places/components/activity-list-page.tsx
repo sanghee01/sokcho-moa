@@ -1,5 +1,5 @@
 import { getButtonClassName } from "@/components/ui/button-styles";
-import { InfoNote } from "@/components/ui/info-note";
+import { InfoNote } from "@/features/places/components/info-note";
 import { TransitionLink } from "@/components/ui/transition-link";
 import { ActivityCategoryNav } from "@/features/places/components/activity-category-nav";
 import { ActivityPlaceRow, activityPlaceListClassName } from "@/features/places/components/activity-place-row";

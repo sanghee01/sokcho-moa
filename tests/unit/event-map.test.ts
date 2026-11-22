@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createMapFilter, filterEventMapPlaces, isPinInFilter, selectEventMapPlaces, type PlaceMapPin, type VenueMapPin } from "@/features/events/model/event-map";
+import { createMapFilter, filterEventMapPlaces, isPinInFilter, selectEventMapPlaces, type PlaceMapPin, type VenueMapPin } from "@/features/map/model/map-pins";
 import type { Venue } from "@/features/events/model/venue";
 import { makeEvent, NOW } from "@/tests/unit/support/event-builder";
 

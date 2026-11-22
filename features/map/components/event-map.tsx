@@ -7,7 +7,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { getButtonClassName } from "@/components/ui/button-styles";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
-import { EventMapClusterMarker, EventMapMarker, PlaceMapMarker } from "@/features/events/components/map/event-map-marker";
+import { EventMapClusterMarker, EventMapMarker, PlaceMapMarker } from "@/features/map/components/event-map-marker";
 import {
   fitPins,
   getCenterShowingPin,
@@ -15,15 +15,15 @@ import {
   isPinInArea,
   PLACE_ZOOM,
   SIDE_PANEL_MEDIA_QUERY,
-} from "@/features/events/components/map/map-camera";
-import { MapCategoryChips } from "@/features/events/components/map/map-category-chips";
-import { closeMapPlace, openMapPlace, replaceMapQuery } from "@/features/events/components/map/map-history";
-import { MapPinList } from "@/features/events/components/map/map-pin-list";
-import { MapPlacePanel } from "@/features/events/components/map/map-place-panel";
-import { callNaverMapsSafely, getNaverMaps, hasNaverMapsAuthFailed, NAVER_MAPS_SCRIPT_URL, type NaverMap } from "@/features/events/components/map/naver-maps";
-import { CLUSTER_EXPAND_MAX_ZOOM, useMapMarkerLayout } from "@/features/events/components/map/use-map-marker-layout";
-import { useMapMarkers } from "@/features/events/components/map/use-map-markers";
-import { useNaverMap, type MapStatus, type MapUnavailableReason } from "@/features/events/components/map/use-naver-map";
+} from "@/features/map/components/map-camera";
+import { MapCategoryChips } from "@/features/map/components/map-category-chips";
+import { closeMapPlace, openMapPlace, replaceMapQuery } from "@/features/map/components/map-history";
+import { MapPinList } from "@/features/map/components/map-pin-list";
+import { MapPlacePanel } from "@/features/map/components/map-place-panel";
+import { callNaverMapsSafely, getNaverMaps, hasNaverMapsAuthFailed, NAVER_MAPS_SCRIPT_URL, type NaverMap } from "@/features/map/components/naver-maps";
+import { CLUSTER_EXPAND_MAX_ZOOM, useMapMarkerLayout } from "@/features/map/components/use-map-marker-layout";
+import { useMapMarkers } from "@/features/map/components/use-map-markers";
+import { useNaverMap, type MapStatus, type MapUnavailableReason } from "@/features/map/components/use-naver-map";
 import {
   createMapFilter,
   filterEventMapPlaces,
@@ -34,7 +34,7 @@ import {
   type MapPin,
   type PlaceMapPin,
   type VenueMapPin,
-} from "@/features/events/model/event-map";
+} from "@/features/map/model/map-pins";
 import { categoryLabels } from "@/features/events/model/taxonomy";
 import { activityCategoryLabels } from "@/features/places/model/activity";
 import { trackAnalyticsEvent } from "@/lib/analytics/events";

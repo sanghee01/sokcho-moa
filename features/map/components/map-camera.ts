@@ -1,8 +1,8 @@
 // 지도 보기(가운데·확대 수준) 계산. 핀을 다 보이게 맞추기, 장소 카드에 가리지 않게 핀 옮기기(event-map.tsx).
-import type { NaverLatLng, NaverMap, NaverMapsApi } from "@/features/events/components/map/naver-maps";
-import { FIT_PINS_PADDING_PX } from "@/features/events/components/map/map-marker-icon";
-import { MAP_DEFAULT_CENTER, type MapPin } from "@/features/events/model/event-map";
-import { MAP_MARKER_BODY_PX } from "@/features/events/model/map-label-layout";
+import type { NaverLatLng, NaverMap, NaverMapsApi } from "@/features/map/components/naver-maps";
+import { FIT_PINS_PADDING_PX } from "@/features/map/components/map-marker-icon";
+import { MAP_DEFAULT_CENTER, type MapPin } from "@/features/map/model/map-pins";
+import { MAP_MARKER_BODY_PX } from "@/features/map/model/map-label-layout";
 
 /** 지도를 처음 열 때와 분야를 바꿀 때의 확대 수준. 속초 시내 전체가 보이고, 고성·양양까지 줄여 볼 수 있다. */
 export const DEFAULT_ZOOM = 13;

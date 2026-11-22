@@ -2,7 +2,7 @@
 
 import { ChevronRight } from "lucide-react";
 import { iconProps } from "@/components/ui/icon";
-import type { MapPin } from "@/features/events/model/event-map";
+import type { MapPin } from "@/features/map/model/map-pins";
 import { activityCategoryLabels } from "@/features/places/model/activity";
 
 /**

@@ -1,7 +1,7 @@
 "use client";
 
 import { getFilterChipClassName } from "@/components/ui/filter-chip-styles";
-import { mapLayers, type MapLayer } from "@/features/events/model/event-map";
+import { mapLayers, type MapLayer } from "@/features/map/model/map-pins";
 import { categoryLabels, eventCategories } from "@/features/events/model/taxonomy";
 import { activityCategories, activityCategoryLabels } from "@/features/places/model/activity";
 

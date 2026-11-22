@@ -3,7 +3,7 @@
 import { X } from "lucide-react";
 import type { KeyboardEvent, ReactNode, Ref } from "react";
 import { iconProps } from "@/components/ui/icon";
-import type { MapPin } from "@/features/events/model/event-map";
+import type { MapPin } from "@/features/map/model/map-pins";
 
 /**
  * 장소 카드(.ai/DESIGN.md 지도). 모바일은 지도 아래쪽 시트(최대 60%), md 이상은 왼쪽 24rem 떠 있는 판이다.

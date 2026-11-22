@@ -190,8 +190,23 @@ function applyUpdate(rows, tokens) {
   return count;
 }
 
-function applyDelete(rows, tokens) {
-  for (const token of tokens) if (token.type === "string") rows.delete(token.value);
+/** delete는 where id·slug의 값(= 또는 in)으로만 받는다. 예전에는 문장 속 문자열을 모두 id로 보고 지워, slug로 지우면 아무것도 지우지 않고 통과했다(2026-11-22 리뷰). */
+function applyDelete(rows, tokens, statement) {
+  const whereIndex = tokens.findIndex((token) => isToken(token, "word", "where"));
+  const column = tokens[whereIndex + 1]?.value;
+  const values = tokens.slice(whereIndex + 2).filter((token) => token.type === "string").map((token) => token.value);
+  if (whereIndex === -1 || (column !== "id" && column !== "slug") || values.length === 0) {
+    throw new Error(`읽을 수 없는 delete(where id 또는 slug만 받는다): ${statement.trim().slice(0, 160)}`);
+  }
+  for (const [key, row] of rows) if (values.includes(row[column])) rows.delete(key);
+}
+
+/** 해석하지 못하는 모양(update … from, insert … select)은 조용히 건너뛰지 않고 멈춘다. 건너뛰면 확인이 빈 채로 "일치"가 나온다(2026-11-22 리뷰). */
+function assertReadablePlaceStatement(tokens, statement) {
+  const isJoinedUpdate = isToken(tokens[0], "word", "update")
+    && tokens.some((token, index) => isToken(token, "word", "from") && !isToken(tokens[index - 1], "word", "distinct"));
+  const isInsertSelect = isToken(tokens[0], "word", "insert") && tokens.some((token) => isToken(token, "word", "select"));
+  if (isJoinedUpdate || isInsertSelect) throw new Error(`이 script가 읽을 수 없는 장소 문장: ${statement.trim().slice(0, 160)}`);
 }
 
 /** SQL 파일에서 장소 insert·update·delete만 적용한다. 0행에 맞은 update는 위치를 돌려준다(조건이 앞 단계와 어긋났다는 뜻). */
@@ -200,10 +215,12 @@ function applyPlaceStatements(rows, sql, fileName) {
   for (const statement of splitStatements(sql)) {
     const tokens = tokenize(statement);
     if (tokens.length === 0) continue;
+    const isPlaceStatement = isToken(tokens[1], "word", TABLE) || isToken(tokens[2], "word", TABLE);
+    if (isPlaceStatement) assertReadablePlaceStatement(tokens, statement);
     if (isToken(tokens[0], "word", "insert") && isToken(tokens[2], "word", TABLE)) applyInsert(rows, tokens);
     else if (isToken(tokens[0], "word", "update") && isToken(tokens[1], "word", TABLE)) {
       if (applyUpdate(rows, tokens) === 0) unmatched.push(`${fileName}: ${statement.trim().slice(0, 160)}`);
-    } else if (isToken(tokens[0], "word", "delete") && isToken(tokens[2], "word", TABLE)) applyDelete(rows, tokens);
+    } else if (isToken(tokens[0], "word", "delete") && isToken(tokens[2], "word", TABLE)) applyDelete(rows, tokens, statement);
   }
   return unmatched;
 }

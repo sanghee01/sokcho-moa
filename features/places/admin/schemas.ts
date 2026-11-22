@@ -3,10 +3,14 @@ import { optionalTextField, optionalUrlField } from "@/lib/form-data";
 import { slugSchema } from "@/lib/slug";
 import { activityCategories, activityTags, operationStatuses } from "@/features/places/model/activity";
 
-/** 비워 둘 수 있는 날짜 입력(YYYY-MM-DD). 비어 있으면 null. */
+/**
+ * 비워 둘 수 있는 날짜 입력(YYYY-MM-DD). 비어 있으면 null.
+ * 달력에 있는 날인지는 다시 쓴 날짜가 같은지로 본다. Date.parse만 쓰면 2026-02-31을 3월 3일로 넘겨 통과시키고 DB가 거부했다(2026-11-22 리뷰).
+ */
 const optionalDateField = z.string().trim().transform((value, context) => {
   if (!value) return null;
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(value) || Number.isNaN(Date.parse(value))) {
+  const parsed = new Date(`${value}T00:00:00Z`);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value) || Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== value) {
     context.addIssue({ code: "custom", message: "날짜를 다시 확인해 주세요." });
     return z.NEVER;
   }

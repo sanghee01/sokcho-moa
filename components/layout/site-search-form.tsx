@@ -25,7 +25,7 @@ export function SiteSearchForm({
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (isPending) return;
+    // 기다리는 중에 검색어를 고쳐 다시 제출해도 막지 않는다. 새 이동이 앞 이동을 대신한다(2026-11-22 리뷰: 느린 회선에서 다시 검색이 무시됐음).
     const formData = new FormData(event.currentTarget);
     const query = String(formData.get("q") ?? "").trim();
     const type = formData.get("type");

@@ -1,9 +1,9 @@
 // 지도 SDK 마커를 만들고 쌓는 순서를 정하는 hook(event-map.tsx). 마커 상자 안의 내용은 화면이 createPortal로 그린다.
 import { useEffect, useState, type RefObject } from "react";
-import { createMarkerContainer, createMarkerIcon, getPinLabel } from "@/features/events/components/map/map-marker-icon";
-import { callNaverMapsSafely, getNaverMaps, type NaverMap, type NaverMarker } from "@/features/events/components/map/naver-maps";
-import type { MapStatus } from "@/features/events/components/map/use-naver-map";
-import type { MapPin } from "@/features/events/model/event-map";
+import { createMarkerContainer, createMarkerIcon, getPinLabel } from "@/features/map/components/map-marker-icon";
+import { callNaverMapsSafely, getNaverMaps, type NaverMap, type NaverMarker } from "@/features/map/components/naver-maps";
+import type { MapStatus } from "@/features/map/components/use-naver-map";
+import type { MapPin } from "@/features/map/model/map-pins";
 
 /** 지도에 올린 핀 하나. 지도 SDK 마커와 그 마커 상자(안의 내용은 React가 portal로 그린다)를 함께 둔다. pin은 분야로 거르기 전 장소다. */
 export interface MarkerSlot {

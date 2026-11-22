@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { MAP_REGION_BOUNDS } from "@/features/events/model/event-map";
+import { MAP_REGION_BOUNDS } from "@/features/map/model/map-pins";
 import {
   findVenueAddress,
   findVenueCoordinates,

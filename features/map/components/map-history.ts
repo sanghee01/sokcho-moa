@@ -1,6 +1,6 @@
 // 지도 탭의 주소(?category=, ?place=)와 브라우저 기록. 분야와 장소를 주소에 남겨 상세에서 뒤로 오면 같은 화면으로 돌아오고,
 // 브라우저 뒤로 가기로 장소 카드를 닫는다(.ai/DESIGN.md 지도). 주소를 바꾸면 Next.js가 useSearchParams에 반영한다.
-import type { MapFilter } from "@/features/events/model/event-map";
+import type { MapFilter } from "@/features/map/model/map-pins";
 
 /**
  * 장소 카드를 열면서 쌓은 기록 칸의 표시. 닫기 버튼은 이 표시가 있으면 뒤로 가기로 그 칸을 지워 기록이 남지 않게 한다.

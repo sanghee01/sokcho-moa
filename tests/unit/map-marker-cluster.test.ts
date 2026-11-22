@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { clusterMapMarkers } from "@/features/events/model/map-label-layout";
+import { clusterMapMarkers } from "@/features/map/model/map-label-layout";
 
 function marker(id: string, x: number, y: number, priority = 1) {
   return { id, anchor: { x, y }, priority };

@@ -1,8 +1,8 @@
 // 지도 SDK에 넘기는 마커 상자(.ai/DESIGN.md 지도). 마커 모양은 event-map-marker.tsx가 그린다.
 // 크기 숫자는 model/map-label-layout.ts 한 곳에 두고, 이름 배치 계산과 마커 상자가 같은 숫자를 쓴다(Tailwind class와 숫자가 따로 놀지 않게, 2026-11-16 리뷰).
-import type { NaverMapsApi } from "@/features/events/components/map/naver-maps";
-import { MAP_MARKER_BODY_PX, MAP_MARKER_TAIL_TIP_PX } from "@/features/events/model/map-label-layout";
-import type { MapPin } from "@/features/events/model/event-map";
+import type { NaverMapsApi } from "@/features/map/components/naver-maps";
+import { MAP_MARKER_BODY_PX, MAP_MARKER_TAIL_TIP_PX } from "@/features/map/model/map-label-layout";
+import type { MapPin } from "@/features/map/model/map-pins";
 
 /** 핀이 다 보이게 맞출 때 지도 가장자리에 두는 여백. 위쪽은 마커 몸통(44) + 꼬리(5)가, 양옆은 장소 이름 알약이 잘리지 않게 띄운다. */
 export const FIT_PINS_PADDING_PX = { top: 72, right: 72, bottom: 48, left: 72 } as const;

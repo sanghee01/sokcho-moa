@@ -9,6 +9,16 @@
 맡습니다. 방문자 쓰기는 서버가 검증·요청 제한을 한 뒤 secret key client로, 관리자 쓰기는 로그인 세션 client로 하고
 DB의 RLS·RPC가 다시 권한을 검사합니다.
 
+### 같은 것을 부르는 이름
+
+| 화면 | 코드·DB | 뜻 |
+| --- | --- | --- |
+| 가볼만한 곳 | `ActivityPlace`, `activity_category`, 라우트 `/places` | 분류(`activity_category`)가 있어 사이트에 보이는 장소. 예전 주석의 "즐길거리"와 같다 |
+| 명소(관리자 화면) | 테이블 `places`, `Place` | 분류가 없는 장소까지 포함한 장소 전체. 분류가 없으면 사이트 어디에도 보이지 않는다 |
+| 지도 핀 | `MapPin` = `VenueMapPin`(행사 장소) \| `PlaceMapPin`(가볼만한 곳) | `features/map/model/map-pins.ts` |
+
+`places`의 `category`는 수집할 때의 자유 글(예: "공원")이고, 사이트에서 거르는 분류는 `activity_category`다.
+
 ---
 
 ## 폴더
@@ -45,7 +55,7 @@ lib/                 도메인을 모르는 인프라
   seoul-time.ts      Asia/Seoul 날짜 계산의 원본(날짜 경계, 관리자 입력 시각 변환)
   map.ts             거리 계산, 네이버 지도 링크(행사·명소가 함께 씀)
   seo/, analytics/   사이트 전체 SEO·GA4
-data/                코드와 함께 관리하는 확인된 원본 데이터: attractions.json(명소 수집·검증 결과), activity-places.json(즐길거리 값과 즐길거리로 새로 넣은 장소),
+data/                처음 넣을 때의 확인된 조사 데이터(출시 뒤 장소 값의 원본은 운영 DB·관리자 화면, docs/decisions/conventions.md 2026-11-22): attractions.json(명소 수집·검증 결과), activity-places.json(즐길거리 값과 즐길거리로 새로 넣은 장소),
                      venues.json(시설 이름→공식 주소·지도 좌표 장소 사전). 두 장소 파일은 scripts/generate-place-assets.mjs가 합쳐 로컬 seed를 만든다.
                      `pnpm places:check`는 seed가 최신인지와, migration을 차례로 적용한 장소(운영에 가는 값)가 seed와 같은지(scripts/check-place-migrations.mjs)를 함께 본다
 supabase/            migrations, seed.sql, tests/database(pgTAP), rollbacks(migration마다 같은 이름), config.toml
@@ -81,7 +91,7 @@ import합니다. 이 규칙은 `pnpm lint`가 강제합니다(`eslint.config.mjs
 | `/places/[slug]` | 위와 같음, 즐길거리 장소 전부 미리 생성 | 즐길거리 상세: 핵심 정보, 공식 홈페이지·예매·길찾기 버튼, 확인일, 근처에서 열리는 행사(`features/events/model/location.ts`의 `selectEventsNearPlace`, 300m 안), 같은 분류의 다른 곳. 분류가 없는 장소는 404 |
 | `/notices`, `/notices/[id]` | ISR 5분, 공개한 공지 전부 미리 생성 | 공지·업데이트 목록과 글 페이지(`features/notices`). 공개하지 않은 글과 uuid가 아닌 주소는 404 |
 | (공통 틀) 공지 띠 | - | `app/layout.tsx`의 `NoticeBanner`가 공개한 지 14일이 지나지 않은 가장 최근 공지 하나를 헤더 아래에 보인다. 공통 틀이 공지 캐시(5분)를 읽으므로 `/report`·`/feedback`·`/privacy`도 정적에서 ISR 5분으로 바뀌었다. 닫은 글은 브라우저(localStorage)에 적고 inline script가 첫 그리기 전에 숨긴다 |
-| `/map` | ISR 5분(월별 페이지와 같은 방식) | 지도 탭(`features/events/components/map`, `features/events/model/event-map.ts`). 서버가 행사를 장소별로 묶고 행사 카드를 그려 넘기고, 브라우저가 네이버 지도 SDK를 불러 핀·칩을 그린다. "가볼만한 곳" 레이어의 핀과 카드는 `app/map/page.tsx`가 `features/places`에서 만들어 넘긴다(feature끼리는 model만 import). 레이어·분야·장소는 주소의 `?layer=places`·`?category=`·`?place=`이고, 지도 보기(가운데·확대 수준)는 기록 칸(history.state)에 남겨 상세에서 돌아오면 되살린다. 핀은 행사 장소(`venue`)와 가볼만한 곳(`place`)을 `kind`로 나눈 `MapPin`이다. 화면(`event-map.tsx`)은 지도 만들기(`use-naver-map.ts`)·마커(`use-map-markers.ts`)·마커 묶기(`use-map-marker-layout.ts`)·보기 계산(`map-camera.ts`)을 조립한다(2026-11-22) |
+| `/map` | ISR 5분(월별 페이지와 같은 방식) | 지도 탭(`features/map/components`, `features/map/model/map-pins.ts`). 서버가 행사를 장소별로 묶고 행사 카드를 그려 넘기고, 브라우저가 네이버 지도 SDK를 불러 핀·칩을 그린다. "가볼만한 곳" 레이어의 핀과 카드는 `app/map/page.tsx`가 `features/places`에서 만들어 넘긴다(feature끼리는 model만 import). 레이어·분야·장소는 주소의 `?layer=places`·`?category=`·`?place=`이고, 지도 보기(가운데·확대 수준)는 기록 칸(history.state)에 남겨 상세에서 돌아오면 되살린다. 핀은 행사 장소(`venue`)와 가볼만한 곳(`place`)을 `kind`로 나눈 `MapPin`이다. 화면(`event-map.tsx`)은 지도 만들기(`use-naver-map.ts`)·마커(`use-map-markers.ts`)·마커 묶기(`use-map-marker-layout.ts`)·보기 계산(`map-camera.ts`)을 조립한다(2026-11-22) |
 | `/search` | 동적(`searchParams`) | 통합 검색. 행사(`filterEvents`의 검색어)와 가볼만한 곳(`searchActivityPlaces`)을 함께 찾고 `?type=events|places`로 좁힌다. 검색어가 없으면 최근 검색어(브라우저 localStorage, `components/layout/recent-search-list.tsx`). `noindex` |
 | (공통 틀) 주요 메뉴 | - | `components/layout/site-navigation.tsx`: 모바일 하단 탭과 md 이상 헤더 가로 메뉴(행사 · 가볼만한 곳 · 지도). 헤더 검색·공지·문의는 `site-header-actions.tsx`. 행사 분야 탭(`features/events/components/browse/category-navigation.tsx`)은 행사 목록·월별 페이지 위쪽에, "진행중 · 마감 · 월별" 탭(`event-view-tabs.tsx`)은 그 아래 결과 줄에 있다 |
 | `/calendar` | 동적 | 목록으로 redirect만(캘린더는 삭제, 옛 북마크 보호) |

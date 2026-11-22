@@ -2,8 +2,8 @@
 
 import { MapPin } from "lucide-react";
 import { iconProps } from "@/components/ui/icon";
-import { getPinLabel } from "@/features/events/components/map/map-marker-icon";
-import type { PlaceMapPin, VenueMapPin } from "@/features/events/model/event-map";
+import { getPinLabel } from "@/features/map/components/map-marker-icon";
+import type { PlaceMapPin, VenueMapPin } from "@/features/map/model/map-pins";
 
 /**
  * 지도 마커 하나(.ai/DESIGN.md 지도). 행사 개수 동그라미(몸통) + 아래 꼬리와 위치 점이고, 자리가 있으면 몸통 옆에 장소 이름을 붙여 알약이 된다.

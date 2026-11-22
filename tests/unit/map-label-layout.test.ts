@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { selectMapLabelIds, type MapLabelCandidate } from "@/features/events/model/map-label-layout";
+import { selectMapLabelIds, type MapLabelCandidate } from "@/features/map/model/map-label-layout";
 
 // 마커 몸통은 44px 동그라미, 이름을 붙이면 기준점 가운데로 넓어지는 알약이다(.ai/DESIGN.md 지도).
 function candidate(id: string, x: number, y: number, labelWidth: number, priority = 1): MapLabelCandidate {
