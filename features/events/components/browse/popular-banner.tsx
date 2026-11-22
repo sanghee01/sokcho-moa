@@ -59,10 +59,14 @@ function PopularSlide({ event }: { event: Event }) {
  */
 export function PopularBanner({ events }: { events: Event[] }) {
   if (events.length === 0) return null;
+  // 배너 위아래 여백은 배너가 가진다. 배너가 없을 때 칩과 목록 사이에 빈 여백이 남지 않게 하려는 것이다(2026-11-22, layout.tsx).
+  // 아래 여백은 예전 배너~상태 탭 간격(24px, lg 48px)을 지킨다: 여기 8px(lg 32px) + 목록의 위 여백 16px.
   return (
-    <BannerCarousel
-      label="지금 많이 보는 행사"
-      slides={events.map((event) => <PopularSlide key={event.id} event={event} />)}
-    />
+    <div className="pb-2 pt-4 lg:pb-8">
+      <BannerCarousel
+        label="지금 많이 보는 행사"
+        slides={events.map((event) => <PopularSlide key={event.id} event={event} />)}
+      />
+    </div>
   );
 }

@@ -21,8 +21,10 @@ export default async function EventBrowseLayout({ children }: { children: ReactN
     <>
       {/* 분야 탭. 탭을 바꿔도 다시 그리지 않도록 공통 틀에 둔다. 월별 일정은 목록의 상태 탭 끝으로 옮겼다(2026-11-21, event-view-tabs.tsx).
           위 여백은 8px(lg 12px)이다. 칩의 누르는 영역이 보이는 알약보다 위아래로 4px 커서, 공지 띠·헤더와 보이는 간격은 12px(lg 16px)이 된다.
-          가볼만한 곳·월별 페이지도 같은 값이다(2026-11-21 사용자 피드백: 공지 띠와 칩 사이가 넓었음). */}
-      <div className="mx-auto max-w-6xl px-4 pb-4 pt-2 sm:px-6 lg:pt-3">
+          가볼만한 곳·월별 페이지도 같은 값이다(2026-11-21 사용자 피드백: 공지 띠와 칩 사이가 넓었음).
+          아래 여백은 두지 않는다. 배너 위아래 여백은 배너가 가지고(popular-banner.tsx), 배너가 없으면 칩과 상태 탭 사이가 월별 페이지와 같은 16px이 된다.
+          예전에는 이 아래 여백과 목록의 위 여백이 배너 없이 겹쳐 40px(lg 64px)로 벌어졌다(2026-11-22 사용자 피드백). */}
+      <div className="mx-auto max-w-6xl px-4 pt-2 sm:px-6 lg:pt-3">
         <CategoryNavigation />
       </div>
       {/* 주소의 검색 조건을 읽는 동안에는 배너를 그대로 보여 준다. */}

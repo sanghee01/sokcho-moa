@@ -120,14 +120,14 @@ export async function EventBrowsePage({
     <main id="main-content">
       <JsonLd data={jsonLd} />
 
-      <div className="mx-auto max-w-6xl px-4 pb-8 pt-4 sm:px-6 lg:pt-6">
+      <div className="mx-auto max-w-6xl px-4 pb-8 pt-4 sm:px-6">
         {/* 주제 페이지 제목은 화면 읽기 프로그램·검색엔진용으로만 남긴다. 소개 문장은 쓰지 않는다(2026-11-06). */}
         {topic !== undefined && <h1 id="topic-page-title" className="sr-only">{topic.heading}</h1>}
         {!topic && <h1 id="home-hero-title" className="sr-only">요즘 속초에서 뭐하지?</h1>}
         {!topic && <p className="sr-only">공연·체험·교육·전시를 포함한 속초의 최신 행사 정보를 확인하세요.</p>}
 
         {/* 검색창은 헤더의 통합 검색(/search)으로 옮겼다(2026-11-21 사용자 결정). */}
-        <section aria-labelledby="event-results-title" data-event-view={statusTab} className="mt-2 lg:mt-6">
+        <section aria-labelledby="event-results-title" data-event-view={statusTab}>
           {/* 행사 개수는 보여 주지 않는다(2026-11-06). 구역 제목은 화면 읽기 프로그램용으로 남긴다. */}
           <h2 id="event-results-title" className="sr-only">{closedView ? "마감 행사" : "행사 목록"}</h2>
           <div className="mb-4 flex items-center justify-between gap-3 border-b border-line">
