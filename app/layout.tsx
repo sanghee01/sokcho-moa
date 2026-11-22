@@ -73,7 +73,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
   const currentYear = getSeoulDateParts(new Date()).year;
 
   return (
-    <html lang="ko" data-scroll-behavior="smooth" className={pretendard.variable}>
+    <html lang="ko" className={pretendard.variable}>
       {/* 브라우저 확장 프로그램이 hydration 전에 body 속성을 주입해도 앱 내부 오류와 구분한다. */}
       <body suppressHydrationWarning className="flex min-h-svh flex-col">
         <a href="#main-content" className="fixed left-3 top-3 z-60 -translate-y-24 rounded-control bg-surface px-4 py-3 text-label font-semibold text-primary-text shadow-floating focus:translate-y-0">

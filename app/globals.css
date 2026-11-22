@@ -145,8 +145,10 @@
   }
 }
 
+/* 페이지 전체에 부드러운 스크롤(scroll-behavior: smooth)을 두지 않는다. 상세에서 목록으로 돌아올 때 브라우저가 스크롤 위치를 되살리며
+   맨 위에서 그 위치까지 1초 넘게 미끄러져 내려가 정신없었다(2026-11-22 사용자 피드백). 맨 위로 버튼·배너처럼 움직임이 필요한 곳은
+   코드에서 behavior: "smooth"를 직접 준다. */
 html {
-  scroll-behavior: smooth;
   scroll-padding-top: calc(var(--site-header-height) + 1rem);
 }
 
@@ -258,10 +260,6 @@ select {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
-  }
-
   *,
   *::before,
   *::after {
