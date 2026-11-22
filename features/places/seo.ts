@@ -7,6 +7,7 @@ import {
 } from "@/features/places/model/activity";
 import type { ActivityPlace } from "@/features/places/model/place";
 import { selectPlacePhoto } from "@/features/places/model/place-photo";
+import { choiceOfRegion, DEFAULT_LIST_REGION, filterPlacesByRegion, getPlaceRegion, placeRegionHref, placeRegionLabels } from "@/features/places/model/region";
 import { SITE_NAME } from "@/lib/seo/site-identity";
 
 export const ACTIVITY_LIST_TITLE = "속초 가볼만한 곳";
@@ -15,12 +16,37 @@ function absoluteUrl(path: string, siteUrl: string) {
   return new URL(path, siteUrl.endsWith("/") ? siteUrl : `${siteUrl}/`).toString();
 }
 
-/** 목록 페이지의 검색 결과 설명. 화면에는 쓰지 않는 문장이라 여기에만 둔다(.ai/DESIGN.md Do's and Don'ts). */
+/**
+ * 목록 페이지의 검색 결과 설명. 화면에는 쓰지 않는 문장이라 여기에만 둔다(.ai/DESIGN.md Do's and Don'ts).
+ * 예시 장소는 목록이 처음 보이는 지역(속초)에서 고른다. 제목 "속초 가볼만한 곳"과 화면에 맞춘다(2026-11-22).
+ */
 export function buildActivityListDescription(places: readonly ActivityPlace[], category?: ActivityCategory) {
-  const names = places.slice(0, 4).map((place) => place.name).join(", ");
+  const defaultRegionPlaces = filterPlacesByRegion(places, DEFAULT_LIST_REGION);
+  const names = (defaultRegionPlaces.length > 0 ? defaultRegionPlaces : places).slice(0, 4).map((place) => place.name).join(", ");
   const subject = category === undefined ? "속초 가볼만한 곳: 해변·호수 같은 명소와 워터파크, 전시, 전망대, 바다 레저" : `속초 ${activityCategoryLabels[category]}`;
   const examples = names ? ` ${names} 등의` : "";
   return `${subject} 정보를 모았습니다.${examples} 운영시간, 요금, 위치와 공식 홈페이지를 확인하세요.`;
+}
+
+/**
+ * 분류 페이지(/places/category/*)의 검색 결과 제목. 그 분류의 속초 장소(목록이 처음 보이는 지역) 절반 이상에 있는 항목만 약속한다.
+ * 예전에는 모든 분류가 "운영시간·요금 안내"였는데, 자연·명소는 대부분 운영시간이 없었다(2026-11-22 리뷰, 상세 제목과 같은 규칙).
+ */
+export function buildActivityCategorySeoTitle(places: readonly ActivityPlace[], category: ActivityCategory) {
+  const inCategory = places.filter((place) => place.activityCategory === category);
+  const defaultRegionPlaces = filterPlacesByRegion(inCategory, DEFAULT_LIST_REGION);
+  const basis = defaultRegionPlaces.length > 0 ? defaultRegionPlaces : inCategory;
+  const facts = [
+    isCommonFact(basis, (place) => place.hoursSummary !== null) ? "운영시간" : null,
+    isCommonFact(basis, (place) => place.priceSummary !== null) ? "요금" : null,
+    "위치",
+  ].filter((fact) => fact !== null).join("·");
+  return `속초 ${activityCategoryLabels[category]} ${facts} 안내`;
+}
+
+/** 장소 절반 이상에 있는 항목인지 */
+function isCommonFact(places: readonly ActivityPlace[], hasFact: (place: ActivityPlace) => boolean) {
+  return places.length > 0 && places.filter(hasFact).length * 2 >= places.length;
 }
 
 /**
@@ -35,14 +61,18 @@ export function buildPlaceSeoTitle(place: ActivityPlace) {
 }
 
 /**
- * 장소 상세의 검색 결과 설명(meta description). "속초 + 이름: 소개. 운영시간·요금·주차·위치를 확인하세요."
+ * 장소 상세의 검색 결과 설명(meta description). "지역 + 이름: 소개. 운영시간·요금·주차·위치를 확인하세요."
  * 예전에는 운영시간·요금 원문을 이어 붙여 160자에서 숫자 중간이 잘렸고(설악워터피아 "…소인 49,00"),
  * 시즌마다 바뀌는 날짜가 검색 결과에 낡은 채 남았다. 그래서 바뀌는 값 대신 이 페이지에서 확인할 수 있는 항목 이름만 쓴다(2026-11-21).
  * 위치는 모든 장소에 좌표가 있어 늘 넣는다.
  */
 export function buildPlaceSeoDescription(place: ActivityPlace) {
   const summary = place.summary?.trim() ?? "";
-  const lead = summary === "" ? `속초 ${place.name}` : `속초 ${place.name}: ${/[.!?]$/.test(summary) ? summary : `${summary}.`}`;
+  // 고성·양양 장소는 그 지역 이름을 붙인다(2026-11-22). 이름이 이미 지역으로 시작하면("고성군 진부령미술관") 되풀이하지 않는다.
+  const region = getPlaceRegion(place);
+  const regionLabel = region === null ? "속초" : placeRegionLabels[region];
+  const subject = place.name.startsWith(regionLabel) ? place.name : `${regionLabel} ${place.name}`;
+  const lead = summary === "" ? subject : `${subject}: ${/[.!?]$/.test(summary) ? summary : `${summary}.`}`;
   const facts = [
     place.hoursSummary !== null ? "운영시간" : null,
     place.priceSummary !== null ? "요금" : null,
@@ -76,13 +106,23 @@ export function buildPlaceStructuredData(place: ActivityPlace, siteUrl: string) 
   };
 }
 
+/**
+ * 장소 상세의 경로(목록 → 분류). 장소 지역의 목록을 거친다: 고성 장소는 "고성 가볼만한 곳 / 고성 자연·명소"(2026-11-22 리뷰).
+ * 예전에는 모든 장소가 "속초 …"를 거쳐 고성 장소의 경로가 속초를 말했다. 화면 읽기용 경로와 구조화 데이터가 함께 쓴다.
+ */
+export function buildPlaceBreadcrumbItems(place: ActivityPlace) {
+  const region = getPlaceRegion(place);
+  const regionLabel = region === null ? "전체" : placeRegionLabels[region];
+  const choice = choiceOfRegion(region);
+  return [
+    { name: `${regionLabel} 가볼만한 곳`, path: placeRegionHref(ACTIVITY_LIST_PATH, choice) },
+    { name: `${regionLabel} ${activityCategoryLabels[place.activityCategory]}`, path: placeRegionHref(activityCategoryPath(place.activityCategory), choice) },
+  ];
+}
+
 export function buildPlaceBreadcrumbStructuredData(place: ActivityPlace, siteUrl: string) {
   const pageUrl = absoluteUrl(activityPlacePath(place.slug), siteUrl);
-  const items = [
-    { name: SITE_NAME, path: "/" },
-    { name: ACTIVITY_LIST_TITLE, path: ACTIVITY_LIST_PATH },
-    { name: `속초 ${activityCategoryLabels[place.activityCategory]}`, path: activityCategoryPath(place.activityCategory) },
-  ];
+  const items = [{ name: SITE_NAME, path: "/" }, ...buildPlaceBreadcrumbItems(place)];
   return {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",

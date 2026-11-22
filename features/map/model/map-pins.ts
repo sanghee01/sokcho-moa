@@ -3,7 +3,8 @@
 import type { Event } from "@/features/events/model/event";
 import { filterEvents, sortEvents } from "@/features/events/model/event-list";
 import { isEventCategory, type EventCategory } from "@/features/events/model/taxonomy";
-import { isActivityCategory, type ActivityCategory } from "@/features/places/model/activity";
+import { activityCategories, isActivityCategory, type ActivityCategory } from "@/features/places/model/activity";
+import { DEFAULT_LIST_REGION, getPlaceRegion, placeRegions, type PlaceRegion } from "@/features/places/model/region";
 import { findVenueName, resolveEventCoordinates, venues, type Coordinates, type Venue } from "@/features/events/model/venue";
 import { createMapSearchName, distanceInKm } from "@/lib/map";
 
@@ -108,6 +109,8 @@ export interface PlaceMapPin extends MapPinBase {
   kind: "place";
   name: string;
   placeCategory: ActivityCategory;
+  /** 목록 판 줄의 지역 이름과 첫 보기 맞추기에 쓴다(2026-11-22). 속초·고성·양양 밖이면 null */
+  region: PlaceRegion | null;
 }
 
 export type MapPin = VenueMapPin | PlaceMapPin;
@@ -116,7 +119,11 @@ export type MapPin = VenueMapPin | PlaceMapPin;
 export const mapLayers = ["events", "places"] as const;
 export type MapLayer = (typeof mapLayers)[number];
 
-/** 지도가 보여 주는 것: 레이어와 그 레이어의 분야. 분야 값의 종류가 레이어마다 달라 함께 묶는다(주소 ?layer=&category=). */
+/**
+ * 지도가 보여 주는 것: 레이어와 그 레이어의 분야. 분야 값의 종류가 레이어마다 달라 함께 묶는다(주소 ?layer=&category=).
+ * 지도는 지역으로 거르지 않는다. 속초·고성·양양 장소를 모두 보이고 어디인지는 지도와 카드·목록 판의 지역 이름이 알려 준다
+ * (2026-11-22 사용자 결정: 지도에서는 굳이 지역을 나눌 필요 없음). 예전 공유 주소의 ?region=은 무시한다.
+ */
 export type MapFilter =
   | { layer: "events"; category: EventCategory | null }
   | { layer: "places"; category: ActivityCategory | null };
@@ -145,7 +152,7 @@ export function placeMapPinId(slug: string) {
 
 /** "가볼만한 곳"을 지도 핀으로 바꾼다. 지도 범위 밖 좌표는 뺀다. 화면 순서(북쪽에서 남쪽)로 놓는다. */
 export function toPlaceMapPins(
-  places: readonly { slug: string; name: string; latitude: number; longitude: number; activityCategory: ActivityCategory }[],
+  places: readonly { id: string; slug: string; name: string; address: string | null; latitude: number; longitude: number; activityCategory: ActivityCategory }[],
 ): PlaceMapPin[] {
   return places
     .filter((place) => isInMapRegion(place.latitude, place.longitude))
@@ -156,13 +163,61 @@ export function toPlaceMapPins(
       latitude: place.latitude,
       longitude: place.longitude,
       placeCategory: place.activityCategory,
+      region: getPlaceRegion(place),
     }))
     .sort(compareNorthWest);
+}
+
+/**
+ * 가볼만한 곳 레이어의 분류 칩으로 보일 분류. 장소 핀이 있는 분류만 칩 순서대로 돌려준다. 이미 고른 분류는 핀이 없어도 남긴다
+ * (고른 칩이 사라지면 무엇을 보는지 알 수 없음). 누르면 빈 지도가 되는 칩을 보이지 않으려는 것이다(2026-11-22 리뷰).
+ */
+export function listPlacePinCategories(pins: readonly PlaceMapPin[], selected: ActivityCategory | null): ActivityCategory[] {
+  const used = new Set(pins.map((pin) => pin.placeCategory));
+  return activityCategories.filter((category) => category === selected || used.has(category));
 }
 
 /** 고른 분야의 "가볼만한 곳" 핀만 남긴다. category가 없으면 그대로 돌려준다. */
 export function filterPlaceMapPins(pins: readonly PlaceMapPin[], category: ActivityCategory | null): PlaceMapPin[] {
   return category === null ? [...pins] : pins.filter((pin) => pin.placeCategory === category);
+}
+
+/**
+ * md 이상 왼쪽 목록 판의 줄 순서. 가볼만한 곳 핀은 속초 → 고성 → 양양(가볼만한 곳 목록과 같은 지역 순서), 지역 안에서는 지금처럼 북쪽부터다.
+ * 화면 순서(북쪽부터)만 쓰면 맨 위에 고성 통일전망대 쪽이 먼저 나와 속초 장소를 한참 내려야 보였다(2026-11-22 사용자 요청: 속초를 먼저).
+ * 핀 버튼의 Tab 순서는 지도 위 화면 순서 그대로다. 행사 핀은 지역이 없어 순서를 바꾸지 않는다.
+ */
+export function orderPinsForList<TPin extends MapPin>(pins: readonly TPin[]): TPin[] {
+  return pins.map((pin, index) => ({ pin, index })).sort((a, b) => listRegionOrder(a.pin) - listRegionOrder(b.pin) || a.index - b.index).map(({ pin }) => pin);
+}
+
+/** 목록 판의 지역 순서(속초·고성·양양). 지역을 모르는 장소 핀은 맨 뒤, 행사 핀은 모두 같다. */
+function listRegionOrder(pin: MapPin) {
+  if (pin.kind !== "place") return 0;
+  return pin.region === null ? placeRegions.length : placeRegions.indexOf(pin.region);
+}
+
+/**
+ * 핀 구성이 바뀔 때(처음 열기·레이어·분야) 지도 보기를 어떻게 옮길지. 주소의 장소(?place=)로 열거나 상세에서 돌아와 보기를 되살린 경우는 화면이 먼저 따로 다룬다.
+ * - 가볼만한 곳 전체: 처음에는 만들 때의 속초 시내 기본 보기 그대로(none), 레이어를 바꾸거나 분야를 전체로 돌리면 기본 보기로(default).
+ *   모든 핀에 맞추면 고성 남쪽~양양까지 넓게 열려 속초 핀이 작은 묶음으로만 보였다(2026-11-22 사용자 피드백: 처음부터 속초가 보여야 함).
+ * - 가볼만한 곳 분야: 그 분야 핀에 맞춘다(fit, 속초 핀 기준·최소 확대 수준은 화면이 정함).
+ * - 행사: 늘 핀에 맞춘다. 행사는 거의 속초라 맞춰도 시내가 보인다.
+ */
+export function selectMapCameraMove(filter: MapFilter, isFirstFit: boolean): "none" | "default" | "fit" {
+  if (filter.layer === "places" && filter.category === null) return isFirstFit ? "none" : "default";
+  return "fit";
+}
+
+/**
+ * 지도 보기를 맞출 때 기준으로 삼을 핀. 가볼만한 곳 핀은 속초에 있는 핀이 있으면 그 핀에만 맞춘다(나머지 핀도 지도에는 그대로 보인다).
+ * 지역으로 거르지 않고 모든 핀에 맞추면 북쪽 통일전망대부터 남쪽 양양까지 담느라 속초 시내가 알아볼 수 없을 만큼 작아졌다(2026-11-22 화면 확인).
+ * 속초 핀이 없으면(고성·양양에만 있는 분류) 보이는 핀 전체에 맞춘다. 행사 핀은 그대로 둔다.
+ */
+export function selectCameraPins(pins: readonly MapPin[]): MapPin[] {
+  const defaultRegionPins = pins.filter((pin) => pin.kind === "place" && pin.region === DEFAULT_LIST_REGION);
+  const hasOnlyPlacePins = pins.every((pin) => pin.kind === "place");
+  return hasOnlyPlacePins && defaultRegionPins.length > 0 ? defaultRegionPins : [...pins];
 }
 
 export function toEventMapPins(places: readonly EventMapPlace[]): VenueMapPin[] {

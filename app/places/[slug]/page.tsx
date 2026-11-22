@@ -1,22 +1,22 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { Fragment } from "react";
 import { AnalyticsMountTracking } from "@/components/analytics/analytics-mount-tracking";
 import { JsonLd } from "@/components/seo/json-ld";
 import { Badge } from "@/components/ui/badge";
 import { textLinkClassName } from "@/components/ui/link-styles";
 import { BackToListLink } from "@/components/ui/back-to-list-link";
 import { TransitionLink } from "@/components/ui/transition-link";
-import { EventCard, eventCardGridClassName } from "@/features/events/components/event-card";
+import { EventCard } from "@/features/events/components/event-card";
 import { selectEventsNearPlace } from "@/features/events/model/location";
 import { getAllPublicEvents } from "@/features/events/queries";
-import { ActivityPlaceRow, activityPlaceListClassName } from "@/features/places/components/activity-place-row";
+import { ActivityPlaceRow } from "@/features/places/components/activity-place-row";
 import { PlaceActions } from "@/features/places/components/place-actions";
 import { PlaceFactList } from "@/features/places/components/place-fact-list";
 import { PlacePhotoFigure } from "@/features/places/components/place-photo";
 import {
-  ACTIVITY_LIST_PATH,
+  activityListPathForPlace,
   activityCategoryLabels,
-  activityCategoryPath,
   activityPlacePath,
   activityTagLabels,
   formatVerifiedOn,
@@ -26,9 +26,10 @@ import {
 } from "@/features/places/model/activity";
 import { selectPlacePhoto } from "@/features/places/model/place-photo";
 import { getVisibleStatusNote } from "@/features/places/model/place-status";
+import { getPlaceRegion } from "@/features/places/model/region";
 import { getPublicPlaces } from "@/features/places/queries";
 import {
-  ACTIVITY_LIST_TITLE,
+  buildPlaceBreadcrumbItems,
   buildPlaceBreadcrumbStructuredData,
   buildPlaceSeoDescription,
   buildPlaceSeoTitle,
@@ -71,6 +72,10 @@ export async function generateMetadata({ params }: PageProps<"/places/[slug]">):
 }
 
 const sectionTitleClassName = "text-title-2 text-content-strong";
+// 640px 한 단 안에서 쓰는 아래 목록 모양. 공용 목록(md 2열)·행사 카드 격자(md 3열·lg 4열)는 넓은 목록 화면용이라 이 화면에서만 줄인다(2026-11-22).
+const similarPlaceListClassName = "border-t border-line";
+const nearbyEventGridClassName = "grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-3 sm:gap-x-4";
+
 const sectionClassName = "mt-12";
 
 export default async function PlaceDetailPage({ params }: PageProps<"/places/[slug]">) {
@@ -90,26 +95,31 @@ export default async function PlaceDetailPage({ params }: PageProps<"/places/[sl
   const statusNote = getVisibleStatusNote(place);
 
   return (
-    <main id="main-content" className="mx-auto max-w-6xl px-4 pb-16 pt-6 sm:px-6 lg:pt-8">
-      <AnalyticsMountTracking name="place_detail_viewed" properties={{ place_slug: place.slug, place_category: place.activityCategory }} onceKey={place.slug} />
+    // PC도 가운데 한 단이다(본문 폭 640px + 좌우 여백, 2026-11-22 사용자 결정). 예전에는 main이 1152px이고 본문만 640px라 왼쪽에 붙고
+    // 오른쪽이 비었으며, 아래 목록은 전체 폭·맨 아래 버튼은 가운데라 정렬이 셋으로 갈렸다. 행사 상세의 2단과 달리 글을 읽는 화면이다.
+    <main id="main-content" className="mx-auto w-full max-w-172 px-4 pb-16 pt-6 sm:px-6 lg:pt-8">
+      <AnalyticsMountTracking name="place_detail_viewed" properties={{ place_slug: place.slug, place_category: place.activityCategory, place_region: getPlaceRegion(place) ?? "unknown" }} onceKey={place.slug} />
       <JsonLd data={buildPlaceStructuredData(place, siteUrl)} />
       <JsonLd data={buildPlaceBreadcrumbStructuredData(place, siteUrl)} />
       {/* 맨 위의 "‹ 목록으로 돌아가기"(행사 상세와 같음, 2026-11-21 사용자 결정). 경로는 화면 읽기 프로그램용으로만 두되,
           안의 링크에 Tab 초점이 들어오면 보이게 한다(WCAG 2.4.7: 보이지 않는 곳에 초점이 머물지 않게). */}
       <div className="-mt-4 mb-3">
-        <BackToListLink href={ACTIVITY_LIST_PATH} pendingLabel="가볼만한 곳 목록 불러오는 중" />
+        <BackToListLink href={activityListPathForPlace(place)} pendingLabel="가볼만한 곳 목록 불러오는 중" />
       </div>
       <nav aria-label="현재 위치" className="sr-only text-label font-normal text-content-subtle focus-within:not-sr-only focus-within:mb-3 focus-within:block">
-        <TransitionLink href={ACTIVITY_LIST_PATH} showPendingIndicator={false} className="text-primary-text hover:underline">{ACTIVITY_LIST_TITLE}</TransitionLink>{" "}
-        <span aria-hidden="true">/</span>{" "}
-        <TransitionLink href={activityCategoryPath(place.activityCategory)} showPendingIndicator={false} className="text-primary-text hover:underline">{categoryLabel}</TransitionLink>{" "}
-        <span aria-hidden="true">/</span> {place.name}
+        {buildPlaceBreadcrumbItems(place).map((item) => (
+          <Fragment key={item.path}>
+            <TransitionLink href={item.path} showPendingIndicator={false} className="text-primary-text hover:underline">{item.name}</TransitionLink>{" "}
+            <span aria-hidden="true">/</span>{" "}
+          </Fragment>
+        ))}
+        {place.name}
       </nav>
 
       {/* 글을 읽는 화면이라 본문 최대 폭 40rem. 제목 → 버튼 → 사진 → 핵심 정보 순서다. 사진을 맨 위에 두지 않는 이유:
           사진 없는 장소와 윗부분이 같아지고, 검색으로 들어온 방문자가 제목으로 맞는 페이지인지 먼저 확인하며,
           이 화면의 목표가 핵심 정보와 공식 사이트로 가는 버튼이기 때문이다(2026-11-21). */}
-      <article className="max-w-160">
+      <article>
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
           <p className="text-caption font-medium text-primary-text">{meta}</p>
           {place.operationStatus !== "open" && <Badge tone={place.operationStatus === "closed" ? "muted" : "danger"}>{operationStatusLabels[place.operationStatus]}</Badge>}
@@ -148,14 +158,14 @@ export default async function PlaceDetailPage({ params }: PageProps<"/places/[sl
       {nearbyEvents.length > 0 && (
         <section aria-labelledby="nearby-events-title" className={sectionClassName}>
           <h2 id="nearby-events-title" className={sectionTitleClassName}>근처에서 열리는 행사</h2>
-          <div className={`mt-4 ${eventCardGridClassName}`}>{nearbyEvents.map((event) => <EventCard key={event.id} event={event} contentSource="place_detail" />)}</div>
+          <div className={`mt-4 ${nearbyEventGridClassName}`}>{nearbyEvents.map((event) => <EventCard key={event.id} event={event} contentSource="place_detail" />)}</div>
         </section>
       )}
 
       {similarPlaces.length > 0 && (
         <section aria-labelledby="similar-title" className={sectionClassName}>
           <h2 id="similar-title" className={sectionTitleClassName}>{categoryLabel} 다른 곳</h2>
-          <ul className={`mt-3 ${activityPlaceListClassName}`}>
+          <ul className={`mt-3 ${similarPlaceListClassName}`}>
             {similarPlaces.map((item) => <ActivityPlaceRow key={item.id} place={item} showCategory={false} contentSource="similar_places" />)}
           </ul>
         </section>
@@ -163,7 +173,7 @@ export default async function PlaceDetailPage({ params }: PageProps<"/places/[sl
 
       {/* 행사 상세처럼 맨 아래에도 목록으로 돌아가는 버튼을 둔다(2026-11-21 사용자 결정). */}
       <div className={`${sectionClassName} flex justify-center`}>
-        <BackToListLink href={ACTIVITY_LIST_PATH} pendingLabel="가볼만한 곳 목록 불러오는 중" appearance="button" />
+        <BackToListLink href={activityListPathForPlace(place)} pendingLabel="가볼만한 곳 목록 불러오는 중" appearance="button" />
       </div>
     </main>
   );

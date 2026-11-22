@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { EventCard } from "@/features/events/components/event-card";
 import { getAllPublicEvents } from "@/features/events/queries";
-import { EventMapPage } from "@/features/map/components/event-map-page";
+import { MapScreen } from "@/features/map/components/map-screen";
 import { placeMapPinId, selectEventMapPlaces, toEventMapPins, toPlaceMapPins } from "@/features/map/model/map-pins";
 import { PlaceMapCard } from "@/features/places/components/place-map-card";
 import { selectActivityPlaces } from "@/features/places/model/activity";
@@ -30,7 +30,7 @@ export default async function MapPage() {
     ...Object.fromEntries(activityPlaces.map((place) => [placeMapPinId(place.slug), <PlaceMapCard key={place.slug} place={place} />])),
   };
   return (
-    <EventMapPage
+    <MapScreen
       pins={toEventMapPins(eventPlaces)}
       placePins={toPlaceMapPins(activityPlaces)}
       cards={cards}

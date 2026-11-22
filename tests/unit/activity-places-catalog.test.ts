@@ -3,8 +3,10 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import activityCatalog from "@/data/activity-places.json";
 import attractionCatalog from "@/data/attractions.json";
+import { MAP_REGION_BOUNDS } from "@/features/map/model/map-pins";
 import { isActivityCategory, isActivityTag, isOperationStatus } from "@/features/places/model/activity";
 import { getPlaceThumbnailUrl } from "@/features/places/model/place-photo";
+import { getPlaceRegion } from "@/features/places/model/region";
 import { slugPattern } from "@/lib/slug";
 import { isHttpUrl } from "@/lib/url";
 
@@ -18,8 +20,7 @@ function resolvedValue<K extends "latitude" | "longitude" | "address" | "summary
   if (own !== undefined && own !== null) return own;
   return place.catalogSlug ? catalogBySlug.get(place.catalogSlug)?.[key] : undefined;
 }
-// 1차 공개 범위는 속초시다(2026-11-21 사용자 결정).
-const SOKCHO_BOUNDS = { south: 38.12, west: 128.4, north: 38.26, east: 128.62 };
+// 공개 범위는 속초·고성·양양이다(2026-11-21 속초시로 시작, 2026-11-22 사용자 결정으로 고성·양양 명소를 더함).
 
 // 즐길거리 원본(data/activity-places.json)이 DB 제약과 화면이 기대하는 모양을 지키는지 확인한다.
 describe("즐길거리 원본 데이터", () => {
@@ -49,15 +50,17 @@ describe("즐길거리 원본 데이터", () => {
     }
   });
 
-  it("좌표는 속초시 안이고 주소는 속초시 주소다", () => {
+  it("좌표는 지도 범위(속초·고성·양양) 안이고, 모든 장소가 지역 칩의 한 지역에 들어간다", () => {
     for (const place of places) {
       const latitude = Number(resolvedValue(place, "latitude"));
       const longitude = Number(resolvedValue(place, "longitude"));
-      expect(latitude, place.slug).toBeGreaterThanOrEqual(SOKCHO_BOUNDS.south);
-      expect(latitude, place.slug).toBeLessThanOrEqual(SOKCHO_BOUNDS.north);
-      expect(longitude, place.slug).toBeGreaterThanOrEqual(SOKCHO_BOUNDS.west);
-      expect(longitude, place.slug).toBeLessThanOrEqual(SOKCHO_BOUNDS.east);
-      expect(String(resolvedValue(place, "address")), place.slug).toContain("속초시");
+      expect(latitude, place.slug).toBeGreaterThanOrEqual(MAP_REGION_BOUNDS.south);
+      expect(latitude, place.slug).toBeLessThanOrEqual(MAP_REGION_BOUNDS.north);
+      expect(longitude, place.slug).toBeGreaterThanOrEqual(MAP_REGION_BOUNDS.west);
+      expect(longitude, place.slug).toBeLessThanOrEqual(MAP_REGION_BOUNDS.east);
+      const address = resolvedValue(place, "address");
+      const id = "id" in place && typeof place.id === "string" ? place.id : catalogBySlug.get(place.catalogSlug ?? "")?.id ?? "";
+      expect(getPlaceRegion({ id, address: typeof address === "string" ? address : null }), place.slug).not.toBeNull();
     }
   });
 

@@ -60,6 +60,7 @@ export interface NaverMap {
   morph(center: NaverLatLng, zoom?: number): void;
   panTo(center: NaverLatLng): void;
   getZoom(): number;
+  setZoom(zoom: number, effect?: boolean): void;
   autoResize(): void;
   destroy(): void;
 }

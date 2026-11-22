@@ -67,7 +67,7 @@ export default function PrivacyPage() {
         <ul className={listClassName}>
           <li>
             <span className={termClassName}>방문 통계</span>: Google Analytics로 본 화면, 누른 링크·버튼(행사 원문·신청·지도 링크, 가볼만한 곳의
-            공식 홈페이지·예매·길찾기, 공유, 정렬과 진행중·마감 탭, 지도 분야, 공지 띠 열기·닫기), 검색한 글자 수와 결과 수, 머문 시간, 들어온 경로, 기기·운영체제·브라우저 종류,
+            공식 홈페이지·예매·길찾기, 공유, 정렬과 진행중·마감 탭, 지도 분야, 공지 띠 열기·닫기, 가볼만한 곳 지역 고르기), 검색한 글자 수와 결과 수, 머문 시간, 들어온 경로, 기기·운영체제·브라우저 종류,
             IP 주소로 추정한 대략적 지역, 브라우저에 저장한 무작위 식별자(쿠키)를 처리해요. 어떤 정보가 쓸모 있는지 보고
             사이트를 고치는 데만 쓰고, 광고에는 쓰지 않아요. 검색어 원문은 보내지 않고, 주소에 담긴 검색어도 가린 뒤 보내요.
           </li>
@@ -78,6 +78,14 @@ export default function PrivacyPage() {
           <li>
             <span className={termClassName}>접속 기록</span>: 사이트를 서비스하는 Vercel이 보안과 오류 대응을 위해 접속 기록(IP 주소,
             요청한 주소, 시각, 브라우저 정보)을 남겨요.
+          </li>
+        </ul>
+
+        <h3 className={`${subheadingClassName} pt-2`}>이 기기에만 저장하는 정보</h3>
+        <ul className={listClassName}>
+          <li>
+            <span className={termClassName}>최근 검색어</span>: 검색한 말을 최근 10개까지 이 기기의 브라우저 저장소에만 남겨요. 운영자 서버나
+            Google Analytics로 보내지 않아 운영자는 볼 수 없어요. 검색 화면에서 하나씩 또는 모두 지울 수 있고, 브라우저 데이터를 지워도 사라져요.
           </li>
         </ul>
       </PolicySection>

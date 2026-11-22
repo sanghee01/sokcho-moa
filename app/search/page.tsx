@@ -12,7 +12,9 @@ import { filterEvents, sortEvents } from "@/features/events/model/event-list";
 import { isEventClosedForDiscovery } from "@/features/events/model/event-state";
 import { getAllPublicEvents } from "@/features/events/queries";
 import { ActivityPlaceRow, activityPlaceListClassName } from "@/features/places/components/activity-place-row";
+import { PlaceRegionSelect } from "@/features/places/components/place-region-select";
 import { searchActivityPlaces } from "@/features/places/model/activity";
+import { filterPlacesByRegion, listPlaceRegions, resolveSearchRegion } from "@/features/places/model/region";
 import { getPublicPlaces } from "@/features/places/queries";
 import { NOINDEX_FOLLOW_ROBOTS } from "@/lib/seo/site-identity";
 
@@ -53,6 +55,12 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
   const matchedEvents = query ? sortEvents(filterEvents(allEvents, { query }, now), "latest", now) : [];
   const events = [...matchedEvents.filter((event) => !isEventClosedForDiscovery(event, now)), ...matchedEvents.filter((event) => isEventClosedForDiscovery(event, now))];
   const matchedPlaces = query ? searchActivityPlaces(places, query) : [];
+  // "가볼만한 곳" 범위에서는 지역 select(?region=)로 더 좁힌다. 결과가 두 지역 이상에 걸칠 때만 보인다(2026-11-22).
+  // 목록과 달리 기본은 전체 지역이다. 이름으로 찾으면 화진포 같은 고성 장소도 바로 나와야 한다(2026-11-22 사용자 결정).
+  // 검색은 요청마다 그리는 페이지라 목록과 달리 서버가 지역으로 거른다.
+  const placeRegions = type === "places" ? listPlaceRegions(matchedPlaces) : [];
+  const region = resolveSearchRegion(raw.region, placeRegions);
+  const shownPlaces = filterPlacesByRegion(matchedPlaces, region);
   const showEvents = type !== "places";
   const showPlaces = type !== "events";
   const scopes = [
@@ -79,24 +87,28 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
             properties={{ query_length: Array.from(query).length, event_count: events.length, place_count: matchedPlaces.length }}
             onceKey={`${query}|${type ?? "all"}`}
           />
-          <nav aria-label="검색 범위" className="mt-4 flex flex-wrap gap-x-2">
-            {scopes.map((scope) => {
-              const isCurrent = scope.type === type;
-              return (
-                <TransitionLink
-                  key={scope.label}
-                  href={buildSiteSearchHref(query, scope.type)}
-                  showPendingIndicator={false}
-                  scroll={false}
-                  aria-current={isCurrent ? "page" : undefined}
-                  className="group inline-flex min-h-11 items-center"
-                >
-                  {/* 분야 칩과 같은 모양(filter-chip-styles.ts, 2026-11-21 통일) */}
-                  <span className={getFilterChipClassName(isCurrent)}>{scope.label}<span className="ml-1.5 tabular-nums">{scope.count}</span></span>
-                </TransitionLink>
-              );
-            })}
-          </nav>
+          {/* 지역 select는 범위 칩 줄 끝에 둔다(A안, 2026-11-22 사용자 결정). 자리가 모자라면 다음 줄로 꺾인다. */}
+          <div className="mt-4 flex flex-wrap items-center gap-x-2">
+            <nav aria-label="검색 범위" className="flex flex-wrap gap-x-2">
+              {scopes.map((scope) => {
+                const isCurrent = scope.type === type;
+                return (
+                  <TransitionLink
+                    key={scope.label}
+                    href={buildSiteSearchHref(query, scope.type)}
+                    showPendingIndicator={false}
+                    scroll={false}
+                    aria-current={isCurrent ? "page" : undefined}
+                    className="group inline-flex min-h-11 items-center"
+                  >
+                    {/* 분야 칩과 같은 모양(filter-chip-styles.ts, 2026-11-21 통일) */}
+                    <span className={getFilterChipClassName(isCurrent)}>{scope.label}<span className="ml-1.5 tabular-nums">{scope.count}</span></span>
+                  </TransitionLink>
+                );
+              })}
+            </nav>
+            {placeRegions.length > 1 && <PlaceRegionSelect regions={placeRegions} defaultRegion={null} surface="site_search" canSubmitWithoutScript />}
+          </div>
 
           {events.length + matchedPlaces.length === 0 && (
             <div className="mt-10">
@@ -128,7 +140,7 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
                 )}
               </div>
               <ul className={`mt-3 ${activityPlaceListClassName}`}>
-                {(type === null ? matchedPlaces.slice(0, PREVIEW_PLACE_COUNT) : matchedPlaces).map((place) => <ActivityPlaceRow key={place.id} place={place} contentSource="site_search" />)}
+                {(type === null ? matchedPlaces.slice(0, PREVIEW_PLACE_COUNT) : shownPlaces).map((place) => <ActivityPlaceRow key={place.id} place={place} contentSource="site_search" />)}
               </ul>
             </section>
           )}

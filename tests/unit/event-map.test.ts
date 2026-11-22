@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createMapFilter, filterEventMapPlaces, isPinInFilter, selectEventMapPlaces, type PlaceMapPin, type VenueMapPin } from "@/features/map/model/map-pins";
+import { createMapFilter, filterEventMapPlaces, filterPlaceMapPins, isPinInFilter, listPlacePinCategories, orderPinsForList, selectCameraPins, selectMapCameraMove, selectEventMapPlaces, toPlaceMapPins, type PlaceMapPin, type VenueMapPin } from "@/features/map/model/map-pins";
 import type { Venue } from "@/features/events/model/venue";
 import { makeEvent, NOW } from "@/tests/unit/support/event-builder";
 
@@ -205,7 +205,7 @@ describe("createMapFilter", () => {
 
 describe("isPinInFilter", () => {
   const venuePin: VenueMapPin = { kind: "venue", id: "v", name: "문화회관", latitude: 38.2, longitude: 128.59, events: [{ slug: "a", category: "performance" }] };
-  const placePin: PlaceMapPin = { kind: "place", id: "place:p", name: "워터파크", latitude: 38.2, longitude: 128.59, placeCategory: "water" };
+  const placePin: PlaceMapPin = { kind: "place", id: "place:p", name: "워터파크", latitude: 38.2, longitude: 128.59, placeCategory: "water", region: "sokcho" };
 
   it("행사 장소 핀은 행사 레이어에서 그 분야 행사가 있을 때만 보인다", () => {
     expect(isPinInFilter(venuePin, { layer: "events", category: null })).toBe(true);
@@ -219,5 +219,70 @@ describe("isPinInFilter", () => {
     expect(isPinInFilter(placePin, { layer: "places", category: "water" })).toBe(true);
     expect(isPinInFilter(placePin, { layer: "places", category: "exhibition" })).toBe(false);
     expect(isPinInFilter(placePin, { layer: "events", category: null })).toBe(false);
+  });
+});
+
+// 지도는 지역으로 거르지 않고 속초·고성·양양 장소를 모두 보인다(2026-11-22 사용자 결정). 핀의 지역은 목록 판 줄의 지역 이름과 첫 보기 맞추기에 쓴다.
+describe("가볼만한 곳 지도의 지역", () => {
+  const places = [
+    { id: "p1", slug: "naksan-beach", name: "낙산해변", latitude: 38.118, longitude: 128.634, activityCategory: "nature" as const, address: "강원특별자치도 양양군 강현면 해맞이길 55" },
+    { id: "20000000-0000-4000-8000-000000000084", slug: "jinburyeong-art-museum", name: "진부령미술관", latitude: 38.266, longitude: 128.359, activityCategory: "exhibition" as const, address: "강원특별자치도 인제군 북면 진부령로 663" },
+    { id: "p3", slug: "sokcho-beach", name: "속초해변", latitude: 38.19, longitude: 128.6, activityCategory: "nature" as const, address: "강원특별자치도 속초시 조양동 1" },
+  ];
+
+  it("장소 핀에 지역을 붙인다(인제군 주소의 진부령미술관은 고성)", () => {
+    expect(toPlaceMapPins(places).map((pin) => [pin.id, pin.region])).toEqual([
+      ["place:jinburyeong-art-museum", "goseong"],
+      ["place:sokcho-beach", "sokcho"],
+      ["place:naksan-beach", "yangyang"],
+    ]);
+  });
+
+  it("분류 칩은 장소 핀이 있는 분류만 보이고, 이미 고른 분류는 남긴다", () => {
+    const pins = toPlaceMapPins(places);
+    expect(listPlacePinCategories(pins, null)).toEqual(["nature", "exhibition"]);
+    expect(listPlacePinCategories(pins, "water")).toEqual(["nature", "water", "exhibition"]);
+    expect(filterPlaceMapPins(pins, "nature").map((pin) => pin.id)).toEqual(["place:sokcho-beach", "place:naksan-beach"]);
+  });
+
+  it("왼쪽 목록 판은 속초·고성·양양 순서로, 지역 안에서는 북쪽부터 늘어놓는다", () => {
+    const extra = { id: "p4", slug: "hwajinpo-beach", name: "화진포해변", latitude: 38.479, longitude: 128.439, activityCategory: "nature" as const, address: "강원특별자치도 고성군 현내면 초도리 99" };
+    const pins = toPlaceMapPins([...places, extra]);
+    expect(pins.map((pin) => pin.id)).toEqual(["place:hwajinpo-beach", "place:jinburyeong-art-museum", "place:sokcho-beach", "place:naksan-beach"]);
+    expect(orderPinsForList(pins).map((pin) => pin.id)).toEqual(["place:sokcho-beach", "place:hwajinpo-beach", "place:jinburyeong-art-museum", "place:naksan-beach"]);
+    // 행사 핀은 지역이 없어 순서를 그대로 둔다.
+    const venuePins: VenueMapPin[] = [
+      { kind: "venue", id: "a", name: "가", latitude: 38.3, longitude: 128.5, events: [] },
+      { kind: "venue", id: "b", name: "나", latitude: 38.2, longitude: 128.5, events: [] },
+    ];
+    expect(orderPinsForList(venuePins)).toEqual(venuePins);
+  });
+
+  it("첫 보기는 속초 핀에 맞추고, 속초 핀이 없으면 보이는 핀 전체에 맞춘다", () => {
+    const pins = toPlaceMapPins(places);
+    expect(selectCameraPins(pins).map((pin) => pin.id)).toEqual(["place:sokcho-beach"]);
+    const exhibitionOnly = filterPlaceMapPins(pins, "exhibition");
+    expect(selectCameraPins(exhibitionOnly).map((pin) => pin.id)).toEqual(["place:jinburyeong-art-museum"]);
+    // 행사 핀은 그대로다.
+    const venuePin: VenueMapPin = { kind: "venue", id: "v", name: "문화회관", latitude: 38.2, longitude: 128.59, events: [{ slug: "a", category: "performance" }] };
+    expect(selectCameraPins([venuePin])).toEqual([venuePin]);
+  });
+});
+
+// 지도 보기를 언제 어떻게 옮길지. 가볼만한 곳은 처음에 속초 시내 기본 보기로 연다(2026-11-22 사용자 피드백: 처음부터 속초가 보여야 함).
+describe("selectMapCameraMove", () => {
+  it("가볼만한 곳은 처음 열 때 기본 보기를 그대로 두고, 레이어를 바꾸거나 분야를 전체로 돌리면 기본 보기로 간다", () => {
+    expect(selectMapCameraMove({ layer: "places", category: null }, true)).toBe("none");
+    expect(selectMapCameraMove({ layer: "places", category: null }, false)).toBe("default");
+  });
+
+  it("가볼만한 곳 분야를 고르면 그 분야 핀에 맞춘다", () => {
+    expect(selectMapCameraMove({ layer: "places", category: "water" }, true)).toBe("fit");
+    expect(selectMapCameraMove({ layer: "places", category: "water" }, false)).toBe("fit");
+  });
+
+  it("행사 레이어는 지금처럼 늘 핀에 맞춘다", () => {
+    expect(selectMapCameraMove({ layer: "events", category: null }, true)).toBe("fit");
+    expect(selectMapCameraMove({ layer: "events", category: "festival" }, false)).toBe("fit");
   });
 });

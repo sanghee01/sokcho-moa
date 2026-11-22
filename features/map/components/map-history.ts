@@ -1,4 +1,4 @@
-// 지도 탭의 주소(?category=, ?place=)와 브라우저 기록. 분야와 장소를 주소에 남겨 상세에서 뒤로 오면 같은 화면으로 돌아오고,
+// 지도 탭의 주소(?layer=, ?category=, ?place=)와 브라우저 기록. 예전 공유 주소의 ?region=은 읽지 않고, 주소를 다시 쓸 때 빠진다(2026-11-22). 분야와 장소를 주소에 남겨 상세에서 뒤로 오면 같은 화면으로 돌아오고,
 // 브라우저 뒤로 가기로 장소 카드를 닫는다(.ai/DESIGN.md 지도). 주소를 바꾸면 Next.js가 useSearchParams에 반영한다.
 import type { MapFilter } from "@/features/map/model/map-pins";
 

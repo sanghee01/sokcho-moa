@@ -1,4 +1,4 @@
-// 지도 보기(가운데·확대 수준) 계산. 핀을 다 보이게 맞추기, 장소 카드에 가리지 않게 핀 옮기기(event-map.tsx).
+// 지도 보기(가운데·확대 수준) 계산. 핀을 다 보이게 맞추기, 장소 카드에 가리지 않게 핀 옮기기(map-view.tsx).
 import type { NaverLatLng, NaverMap, NaverMapsApi } from "@/features/map/components/naver-maps";
 import { FIT_PINS_PADDING_PX } from "@/features/map/components/map-marker-icon";
 import { MAP_DEFAULT_CENTER, type MapPin } from "@/features/map/model/map-pins";
@@ -9,6 +9,11 @@ export const DEFAULT_ZOOM = 13;
 export const MIN_ZOOM = 10;
 /** 장소를 고르거나 핀이 하나뿐일 때의 확대 수준(골목이 보이는 정도) */
 export const PLACE_ZOOM = 15;
+/**
+ * 가볼만한 곳 분야에 맞출 때 이보다 멀리 줄이지 않는다. 속초 핀에도 설악산 대청봉·공룡능선 같은 곳이 있어 다 담으면 시내가 작아졌다(2026-11-22).
+ * 12면 속초 시내와 설악동이 함께 보인다. 담기지 않은 핀은 지도를 옮겨 본다.
+ */
+export const PLACE_FIT_MIN_ZOOM = 12;
 /** 장소 카드가 지도 아래 시트가 아니라 왼쪽 판으로 열리는 폭(Tailwind md) */
 export const SIDE_PANEL_MEDIA_QUERY = "(width >= 48rem)";
 
@@ -59,11 +64,16 @@ export function getCenterShowingPin(naverMaps: NaverMapsApi, map: NaverMap, pin:
   return projection.fromOffsetToCoord(new naverMaps.Point(pinOffset.x - shiftX, pinOffset.y - shiftY));
 }
 
-/** 핀이 다 보이게 맞춘다. 핀이 없으면 처음 보기, 하나면 그 핀으로 확대한다. */
-export function fitPins(naverMaps: NaverMapsApi, map: NaverMap, pins: readonly MapPin[], maxZoom = PLACE_ZOOM) {
+/** 지도를 처음 보기(속초 시내 가운데, 확대 13)로 옮긴다. */
+export function showDefaultView(naverMaps: NaverMapsApi, map: NaverMap) {
+  map.morph(new naverMaps.LatLng(MAP_DEFAULT_CENTER.latitude, MAP_DEFAULT_CENTER.longitude), DEFAULT_ZOOM);
+}
+
+/** 핀이 다 보이게 맞춘다. 핀이 없으면 처음 보기, 하나면 그 핀으로 확대한다. 맞춘 뒤 minZoom보다 멀면 minZoom으로 당긴다. */
+export function fitPins(naverMaps: NaverMapsApi, map: NaverMap, pins: readonly MapPin[], maxZoom = PLACE_ZOOM, minZoom = MIN_ZOOM) {
   const [first, ...rest] = pins;
   if (first === undefined) {
-    map.morph(new naverMaps.LatLng(MAP_DEFAULT_CENTER.latitude, MAP_DEFAULT_CENTER.longitude), DEFAULT_ZOOM);
+    showDefaultView(naverMaps, map);
     return;
   }
   if (rest.length === 0) {
@@ -74,4 +84,5 @@ export function fitPins(naverMaps: NaverMapsApi, map: NaverMap, pins: readonly M
   const bounds = new naverMaps.LatLngBounds(firstLatLng, firstLatLng);
   for (const pin of rest) bounds.extend(new naverMaps.LatLng(pin.latitude, pin.longitude));
   map.fitBounds(bounds, { ...FIT_PINS_PADDING_PX, maxZoom });
+  if (map.getZoom() < minZoom) map.setZoom(minZoom);
 }

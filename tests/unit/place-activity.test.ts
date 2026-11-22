@@ -4,13 +4,13 @@ import { selectEventsNearPlace } from "@/features/events/model/location";
 import { mapPlaceRow } from "@/features/places/mappers";
 import {
   formatVerifiedOn,
-  getPlaceDistrictLabel,
   listActivityCategories,
   parseCautions,
   selectActivityPlaces,
   selectSimilarPlaces,
 } from "@/features/places/model/activity";
 import type { Place } from "@/features/places/model/place";
+import { getRegionFromAddress } from "@/features/places/model/region";
 import { getVisibleStatusNote } from "@/features/places/model/place-status";
 import { buildPlaceSeoDescription, buildPlaceSeoTitle, buildPlaceStructuredData } from "@/features/places/seo";
 import { makeEvent, NOW } from "@/tests/unit/support/event-builder";
@@ -99,10 +99,11 @@ describe("즐길거리 표시 값", () => {
     expect(parseCautions(null)).toEqual([]);
   });
 
-  it("주소에서 시·군 이름을 꺼낸다", () => {
-    expect(getPlaceDistrictLabel("강원특별자치도 고성군 토성면 미시령옛길 1153")).toBe("고성");
-    expect(getPlaceDistrictLabel("강원특별자치도 속초시 중앙로 338")).toBe("속초");
-    expect(getPlaceDistrictLabel(null)).toBeNull();
+  // 목록 줄의 지역 이름은 지역 칩과 같은 기준(features/places/model/region.ts)으로 정한다. 주소만 보던 getPlaceDistrictLabel을 지역 판정으로 합쳤다(2026-11-22).
+  it("주소에서 시·군으로 지역을 정한다", () => {
+    expect(getRegionFromAddress("강원특별자치도 고성군 토성면 미시령옛길 1153")).toBe("goseong");
+    expect(getRegionFromAddress("강원특별자치도 속초시 중앙로 338")).toBe("sokcho");
+    expect(getRegionFromAddress(null)).toBeNull();
   });
 });
 

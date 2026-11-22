@@ -9,7 +9,7 @@ import type { PlaceMapPin, VenueMapPin } from "@/features/map/model/map-pins";
  * 지도 마커 하나(.ai/DESIGN.md 지도). 행사 개수 동그라미(몸통) + 아래 꼬리와 위치 점이고, 자리가 있으면 몸통 옆에 장소 이름을 붙여 알약이 된다.
  * - 예전에는 맨 앞 행사의 포스터 액자를 마커로 썼지만 시내에 시설이 몰려 포스터끼리 가려 읽고 누르기 어려웠다.
  *   포스터는 장소를 눌러 여는 카드에서 보이고, 지도에는 위치·개수·이름만 둔다(2026-11-21 사용자 결정).
- * - 장소 이름을 보일지는 event-map.tsx가 다른 마커와 겹치는지 따져 정한다(model/map-label-layout.ts). 고른 장소는 늘 보인다.
+ * - 장소 이름을 보일지는 map-view.tsx가 다른 마커와 겹치는지 따져 정한다(model/map-label-layout.ts). 고른 장소는 늘 보인다.
  * - 버튼이라 키보드로도 고를 수 있다.
  */
 export function EventMapMarker({
@@ -37,7 +37,7 @@ export function EventMapMarker({
       // 몸통을 누르면 click이 버튼까지 올라와 onClick이 불리고, 키보드 초점·Enter는 그대로 버튼이 받는다.
       className="group pointer-events-none flex w-max shrink-0 flex-col items-center rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
     >
-      {/* 몸통 높이(h-11)와 이름 알약의 안쪽 여백(p-1, size-9, gap-1.5, pr-3)은 이름 배치 계산의 폭(MAP_LABEL_EXTRA_PX, event-map.tsx)·높이(MAP_MARKER_BODY_PX)와 맞춘다. */}
+      {/* 몸통 높이(h-11)와 이름 알약의 안쪽 여백(p-1, size-9, gap-1.5, pr-3)은 이름 배치 계산의 폭(MAP_LABEL_EXTRA_PX, map-view.tsx)·높이(MAP_MARKER_BODY_PX)와 맞춘다. */}
       <span
         className={`pointer-events-auto relative z-10 flex h-11 shrink-0 items-center gap-1.5 rounded-full bg-surface p-1 shadow-floating ring-1 ring-line group-aria-pressed:bg-primary group-aria-pressed:ring-primary ${shouldShowName ? "pr-3" : ""}`}
       >

@@ -1,13 +1,14 @@
 import { Suspense, type ReactNode } from "react";
-import { EventMap } from "@/features/map/components/event-map";
+import { MapView } from "@/features/map/components/map-view";
 import type { PlaceMapPin, VenueMapPin } from "@/features/map/model/map-pins";
 
 /**
  * 지도 탭 화면(.ai/DESIGN.md 지도). 핀과 카드는 서버에서 만들고, 지도·핀·칩은 브라우저에서 그린다.
  * 행사 카드(EventCard)와 장소 카드는 app/map/page.tsx가 각 도메인에서 그려 넘긴다. 지도는 행사와 가볼만한 곳을 함께 보여 주는 화면이라
  * features/map에 두고, 다른 feature에서는 model만 가져온다(2026-11-22 사용자 결정으로 features/events에서 옮김).
+ * 예전 이름은 EventMapPage였다(같은 이유로 2026-11-22 MapScreen으로 바꿈).
  */
-export function EventMapPage({
+export function MapScreen({
   pins,
   placePins,
   cards,
@@ -27,7 +28,7 @@ export function EventMapPage({
       <h1 className="sr-only">속초 행사·가볼만한 곳 지도</h1>
       {/* 레이어(?layer=)·분야(?category=)·장소(?place=)를 주소에서 읽어, 정적 페이지를 만들 때는 빈 지도 자리만 그린다. */}
       <Suspense fallback={<div className="h-full bg-surface-muted" />}>
-        <EventMap pins={pins} placePins={placePins} cards={cards} clientId={clientId} />
+        <MapView pins={pins} placePins={placePins} cards={cards} clientId={clientId} />
       </Suspense>
     </main>
   );

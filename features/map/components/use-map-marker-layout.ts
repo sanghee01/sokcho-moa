@@ -1,4 +1,4 @@
-// 마커 배치 hook(event-map.tsx). 시내 전체를 볼 때 몸통이 겹치는 마커는 하나로 묶고, 남은 마커 중 다른 마커와 겹치지 않는 것만 장소 이름을 붙인다.
+// 마커 배치 hook(map-view.tsx). 시내 전체를 볼 때 몸통이 겹치는 마커는 하나로 묶고, 남은 마커 중 다른 마커와 겹치지 않는 것만 장소 이름을 붙인다.
 // 포스터 핀이 시내에 몰려 서로 가렸던 문제를 지도 서비스의 마커 묶기·겹침 관리 방식으로 푼다(2026-11-21 사용자 피드백).
 import { useEffect, useState, type RefObject } from "react";
 import { getPinLabel } from "@/features/map/components/map-marker-icon";

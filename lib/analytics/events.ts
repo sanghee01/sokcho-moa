@@ -78,10 +78,18 @@ export interface AnalyticsEventParams {
     event_count: number;
     place_count: number;
   };
+  // 가볼만한 곳의 지역 select로 지역을 실제로 바꿨을 때(2026-11-22). 고성·양양 명소를 더 넓힐지, 기본 지역을 속초로 둘지 정하는 근거다.
+  // region: 고른 값(sokcho·goseong·yangyang·all), surface: 가볼만한 곳 목록·통합 검색. 지도는 지역으로 거르지 않는다(2026-11-22 사용자 결정).
+  place_region_changed: {
+    region: string;
+    surface: "place_list" | "site_search";
+  };
   // 즐길거리 상세(/places/[slug])가 처음 표시될 때(2026-11-21). 즐길거리 메뉴를 넓힐지 줄일지의 기준이다.
   place_detail_viewed: {
     place_slug: string;
     place_category: string;
+    // 장소의 지역(sokcho·goseong·yangyang, 2026-11-22). 고성·양양 장소 상세 조회를 slug 없이 나눠 보려고 더했다.
+    place_region: string;
   };
   // 즐길거리 상세에서 공식 홈페이지·예매·지도로 나갈 때. place_detail_viewed 대비 비율로 상세가 쓸모 있는지 본다.
   place_link_clicked: {
@@ -135,6 +143,7 @@ const analyticsEventNames = {
   map_category_changed: true,
   map_unavailable: true,
   place_detail_viewed: true,
+  place_region_changed: true,
   site_search_viewed: true,
   place_link_clicked: true,
   poster_viewed: true,

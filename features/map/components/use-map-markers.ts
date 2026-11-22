@@ -1,4 +1,4 @@
-// 지도 SDK 마커를 만들고 쌓는 순서를 정하는 hook(event-map.tsx). 마커 상자 안의 내용은 화면이 createPortal로 그린다.
+// 지도 SDK 마커를 만들고 쌓는 순서를 정하는 hook(map-view.tsx). 마커 상자 안의 내용은 화면이 createPortal로 그린다.
 import { useEffect, useState, type RefObject } from "react";
 import { createMarkerContainer, createMarkerIcon, getPinLabel } from "@/features/map/components/map-marker-icon";
 import { callNaverMapsSafely, getNaverMaps, type NaverMap, type NaverMarker } from "@/features/map/components/naver-maps";

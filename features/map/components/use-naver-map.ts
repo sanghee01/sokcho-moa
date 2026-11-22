@@ -1,4 +1,4 @@
-// 네이버 지도 SDK의 지도를 만들고 지우는 hook(event-map.tsx). 지도 상태(status)와 지도(mapRef)는 화면이 가진다:
+// 네이버 지도 SDK의 지도를 만들고 지우는 hook(map-view.tsx). 지도 상태(status)와 지도(mapRef)는 화면이 가진다:
 // 마커 hook(use-map-markers.ts)이 이 hook보다 먼저 effect를 등록해야 화면을 떠날 때 마커를 뗀 뒤 지도를 지운다(정리는 등록 순서대로 돈다).
 import { useEffect, useRef, useState, type Dispatch, type RefObject, type SetStateAction } from "react";
 import { DEFAULT_ZOOM, MIN_ZOOM } from "@/features/map/components/map-camera";

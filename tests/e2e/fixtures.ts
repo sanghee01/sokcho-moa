@@ -49,6 +49,16 @@ export const SAMPLE_PHOTO_PLACE = {
   sourceUrl: "https://commons.wikimedia.org/wiki/File:Seoraksan_Cable_Car_04.jpg",
 };
 
+/**
+ * 고성·양양 명소(2026-11-22, data/activity-places.json). 지역 select E2E가 쓴다.
+ * 진부령미술관은 주소가 인제군이지만 고성으로 묶는다(features/places/model/region.ts).
+ */
+export const SAMPLE_REGION_PLACES = {
+  goseong: { path: "/places/hwajinpo-beach", name: "화진포해변" },
+  goseongOutsideAddress: { path: "/places/jinburyeong-art-museum", name: "고성군 진부령미술관", category: "exhibition" },
+  yangyang: { path: "/places/naksan-beach", name: "낙산해수욕장" },
+};
+
 /** supabase/seed.sql의 즐길거리 가운데 사진이 없는 장소. 사진 자리를 비워 두지 않는지 확인한다. */
 // 사진을 찾지 못한 장소. 스포츠 넥스트레벨은 2026-11-21 공식 누리집 사진이 생겨 바꿨다(레이저어택은 쓸 수 있는 사진이 없어 비워 둠).
 export const SAMPLE_NO_PHOTO_PLACE = { path: "/places/laser-attack-sokcho", name: "레이저어택 속초점" };

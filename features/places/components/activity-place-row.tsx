@@ -7,11 +7,11 @@ import {
   activityCategoryLabels,
   activityPlacePath,
   activityTagLabels,
-  getPlaceDistrictLabel,
   operationStatusLabels,
 } from "@/features/places/model/activity";
 import type { ActivityPlace } from "@/features/places/model/place";
 import { selectPlacePhoto } from "@/features/places/model/place-photo";
+import { getPlaceRegion, getPlaceRegionLabel } from "@/features/places/model/region";
 
 /**
  * 즐길거리 목록의 한 줄(.ai/DESIGN.md ActivityPlaceRow). 줄 전체가 상세로 가는 링크 하나다.
@@ -30,9 +30,10 @@ export function ActivityPlaceRow({
   contentSource: "place_list" | "site_search" | "similar_places";
   showCategory?: boolean;
 }) {
-  const district = getPlaceDistrictLabel(place.address);
-  // 속초 밖의 장소만 지역을 적는다. 대부분 속초라 줄마다 "속초"를 되풀이하지 않는다.
-  const meta = [showCategory ? activityCategoryLabels[place.activityCategory] : null, district !== null && district !== "속초" ? district : null].filter(Boolean).join(" · ");
+  const region = getPlaceRegion(place);
+  // 모든 줄에 지역을 적는다. 예전에는 속초 밖 장소에만 붙여 속초 장소는 어디인지 보이지 않았다(2026-11-22 사용자 요청).
+  // 주소가 아니라 지역 select와 같은 기준으로 적는다(인제군 주소의 진부령미술관도 "고성").
+  const meta = [showCategory ? activityCategoryLabels[place.activityCategory] : null, getPlaceRegionLabel(place)].filter(Boolean).join(" · ");
   // 요금이 이미 "무료"라고 말하면 무료 태그를 되풀이하지 않는다.
   const tags = place.tags.filter((tag) => !(tag === "free" && place.priceSummary?.includes("무료") === true));
   const details = [place.priceSummary, ...tags.map((tag) => activityTagLabels[tag])].filter(Boolean).join(" · ");
@@ -42,7 +43,8 @@ export function ActivityPlaceRow({
     // 링크가 제 높이만 차지해 hover 배경 아래가 비었다(2026-11-21 사용자 피드백).
     // 모든 줄의 최소 높이를 128px로 둬 사진·요금이 있든 없든, 모바일에서 소개가 두 줄이 돼도 줄 높이가 같다(소개는 두 줄까지만).
     // 128px = 위아래 여백 32px + 분류 한 줄 + 이름 + 소개 두 줄 + 요금 한 줄이 들어가는 높이다.
-    <li className="flex border-b border-line">
+    // data-region: 목록에서 고른 지역이 아닌 줄을 CSS가 숨기는 표시(globals.css의 data-region-scope).
+    <li data-region={region ?? undefined} className="flex border-b border-line">
       <TransitionLink href={activityPlacePath(place.slug)} showPendingIndicator={false} {...analyticsData("select_content", { content_type: "place", content_id: place.slug, content_source: contentSource, place_category: place.activityCategory })} className={`${listRowLinkClassName} min-h-32 min-w-0 flex-1 gap-3 py-4`}>
         <span className="min-w-0 flex-1">
           {Boolean(meta) && <span className="block text-caption font-medium text-primary-text">{meta}</span>}

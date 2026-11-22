@@ -49,7 +49,8 @@ const FAKE_NAVER_MAPS_SCRIPT = String.raw`(() => {
     // 실제 SDK처럼 움직임이 끝나면 idle을 알린다.
     emitIdle() { for (const listener of this.listeners) if (listener.name === "idle") listener.handler(); }
     setOptions() {}
-    fitBounds() {}
+    // 핀 맞추기를 했는지 test가 알 수 있게 센다(실제 SDK는 범위에 맞춰 확대 수준을 바꾸지만 가짜는 마커를 늘어놓기만 해 확대 수준이 그대로다).
+    fitBounds() { this.fitBoundsCount = (this.fitBoundsCount ?? 0) + 1; }
     morph(center, zoom) { this.center = center; this.setZoom(zoom); }
     panTo(center) { this.center = center; this.emitIdle(); }
     getZoom() { return this.zoom; }

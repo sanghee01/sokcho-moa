@@ -13,7 +13,10 @@ import {
   getCenterShowingPin,
   getUncoveredMapArea,
   isPinInArea,
+  MIN_ZOOM,
+  PLACE_FIT_MIN_ZOOM,
   PLACE_ZOOM,
+  showDefaultView,
   SIDE_PANEL_MEDIA_QUERY,
 } from "@/features/map/components/map-camera";
 import { MapCategoryChips } from "@/features/map/components/map-category-chips";
@@ -29,6 +32,9 @@ import {
   filterEventMapPlaces,
   filterPlaceMapPins,
   isPinInFilter,
+  listPlacePinCategories,
+  selectCameraPins,
+  selectMapCameraMove,
   type MapFilter,
   type MapLayer,
   type MapPin,
@@ -41,12 +47,13 @@ import { trackAnalyticsEvent } from "@/lib/analytics/events";
 
 /**
  * 지도 탭(.ai/DESIGN.md 지도). 장소 핀을 누르면 지도 아래(md 이상은 왼쪽)에 그 장소의 행사 카드가 열리고, 카드를 누르면 상세로 간다.
+ * 예전 이름은 EventMap이었다. 행사와 가볼만한 곳을 함께 다뤄 MapView로 바꿨다(2026-11-22 사용자 결정).
  * 상세를 시트·모달에 통째로 넣지 않는다: 시트로 페이지 이동을 대신하지 말라는 권고(NN/g Bottom Sheets, 2023)를 따랐다(2026-11-16).
  * 고른 분야(?category=)와 장소(?place=)는 주소에 남기고 지도 보기는 기록 칸에 남겨(map-history.ts), 상세에서 돌아오면 같은 화면으로 돌아오고 뒤로 가기로 카드를 닫는다.
  * 지도 만들기는 use-naver-map.ts, 마커는 use-map-markers.ts, 마커 묶기·이름 배치는 use-map-marker-layout.ts, 보기 계산은 map-camera.ts가 맡는다.
  * 마커 모양은 event-map-marker.tsx, 크기는 map-marker-icon.ts, 카드는 map-place-panel.tsx가 맡는다.
  */
-export function EventMap({
+export function MapView({
   pins,
   placePins,
   cards,
@@ -63,6 +70,10 @@ export function EventMap({
   const layerParam: MapLayer = searchParams.get("layer") === "places" ? "places" : "events";
   const categoryParam = searchParams.get("category");
   const filter = useMemo(() => createMapFilter(layerParam, categoryParam), [layerParam, categoryParam]);
+  const placeCategories = useMemo(
+    () => listPlacePinCategories(placePins, filter.layer === "places" ? filter.category : null),
+    [placePins, filter],
+  );
   const placeId = searchParams.get("place");
   const allPins = useMemo<MapPin[]>(() => [...pins, ...placePins], [pins, placePins]);
   const visiblePins = useMemo<MapPin[]>(
@@ -175,9 +186,18 @@ export function EventMap({
     fittedRef.current = { map, pinsKey };
 
     if (isFirstFit && isViewRestoredRef.current) return;
-    if (isFirstFit && selectedPin !== null) shouldZoomToSelectedRef.current = true;
-    else callNaverMapsSafely(() => fitPins(naverMaps, map, visiblePins));
-  }, [status, visiblePins, selectedPin, isViewRestoredRef]);
+    if (isFirstFit && selectedPin !== null) {
+      shouldZoomToSelectedRef.current = true;
+      return;
+    }
+    // 가볼만한 곳 전체는 속초 시내 기본 보기로 열고, 분야를 고르면 그 분야의 속초 핀에 맞추되 확대 12보다 멀리 줄이지 않는다(selectMapCameraMove, 2026-11-22).
+    const move = selectMapCameraMove(filter, isFirstFit);
+    if (move === "default") callNaverMapsSafely(() => showDefaultView(naverMaps, map));
+    else if (move === "fit") {
+      const minZoom = filter.layer === "places" ? PLACE_FIT_MIN_ZOOM : MIN_ZOOM;
+      callNaverMapsSafely(() => fitPins(naverMaps, map, selectCameraPins(visiblePins), PLACE_ZOOM, minZoom));
+    }
+  }, [status, visiblePins, selectedPin, isViewRestoredRef, filter]);
 
   // 고른 장소. 핀을 눌러 열었으면 카드 제목으로 초점을 옮기고, 핀이 카드나 화면 가장자리에 가리면 카드에 가리지 않는 곳의 가운데로 옮긴다.
   // 예전에는 고를 때마다 지도 안쪽 여백(padding)을 카드 크기로 바꾸고 핀을 가운데로 끌어왔다. 여백을 바꾸는 순간 지도가 한 번 밀린 뒤
@@ -251,7 +271,13 @@ export function EventMap({
       )}
 
       <div className="flex shrink-0 flex-col bg-surface md:w-80 md:border-r md:border-line">
-        <MapCategoryChips layer={filter.layer} category={filter.category} onSelectLayer={handleSelectLayer} onSelectCategory={handleSelectCategory} />
+        <MapCategoryChips
+          layer={filter.layer}
+          category={filter.category}
+          placeCategories={placeCategories}
+          onSelectLayer={handleSelectLayer}
+          onSelectCategory={handleSelectCategory}
+        />
         {/* 모바일은 지도를 넓게 쓰려고 목록을 두지 않는다. 핀과 아래 장소 카드로 고른다. */}
         <div className="hidden min-h-0 flex-1 flex-col md:flex">
           {!isMapUnavailable && <MapPinList pins={visiblePins} selectedId={selectedPinId} onSelect={(pinId) => handleSelectPin(pinId, "list")} />}

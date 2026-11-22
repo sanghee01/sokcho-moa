@@ -29,7 +29,8 @@ GA4 주요 이벤트(Key event)는 `application_link_clicked`(2026-10-25 지정)
 | `map_category_changed` | 지도 탭의 분야 칩이나 레이어(행사 · 가볼만한 곳) 전환으로 실제로 바꿀 때. 이미 고른 칩은 세지 않는다(2026-11-16, 레이어는 2026-11-21) | `map_category`(바꾼 분야, 행사 "전체"는 `all`. 가볼만한 곳은 `places`·`places:<분류>`) | 지도에서 분야 칩을 남길지 |
 | `map_unavailable` | 지도 대신 "지금은 지도를 볼 수 없어요"가 보일 때 화면마다 한 번(2026-11-16) | `reason`(`missing_key` 키 없음, `auth_failed` 키·등록 주소 오류, `script_error` 지도 SDK를 불러오지 못함) | 운영에서 지도가 죽어 있는지. 0이 아니면 Vercel 환경 변수와 네이버 콘솔의 Web 서비스 URL을 확인한다 |
 | `site_search_viewed` | 통합 검색(`/search`) 결과가 그려질 때. 같은 검색어·범위는 한 번만 센다(2026-11-21) | `query_length`, `event_count`, `place_count` | 헤더 검색을 쓰는지, 결과가 0건인 검색이 얼마나 되는지. 검색어 원문은 보내지 않음 |
-| `place_detail_viewed` | 즐길거리 상세(`/places/[slug]`)가 처음 표시될 때(2026-11-21) | `place_slug`, `place_category`(즐길거리 분류: `water`·`exhibition` 등) | 즐길거리 상세 도달. 메뉴를 넓힐지 줄일지의 기준 |
+| `place_region_changed` | 가볼만한 곳의 지역 select로 지역을 실제로 바꿀 때. 이미 고른 값은 세지 않는다(2026-11-22) | `region`(고른 값: `sokcho`·`goseong`·`yangyang`·`all` 전체), `surface`(`place_list` 목록, `site_search` 통합 검색. 지도는 지역으로 거르지 않아 보내지 않는다, 2026-11-22) | 고성·양양 명소를 더 넓힐지, 목록의 기본 지역을 속초로 둘지(아래 판단 규칙) |
+| `place_detail_viewed` | 즐길거리 상세(`/places/[slug]`)가 처음 표시될 때(2026-11-21) | `place_slug`, `place_category`(즐길거리 분류: `water`·`exhibition` 등), `place_region`(장소 지역: `sokcho`·`goseong`·`yangyang`, 2026-11-22) | 즐길거리 상세 도달. 메뉴를 넓힐지 줄일지의 기준 |
 | `notice_banner_viewed` · `notice_banner_clicked` · `notice_banner_dismissed` | 헤더 아래 공지 띠가 보일 때(페이지를 처음 열 때 한 번, 닫은 방문자는 보내지 않음, 2026-11-22) · 띠를 눌러 공지 글로 갈 때 · 띠를 닫을 때(2026-11-21) | `notice_id`, `notice_kind`(`notice`, `update`) | 공지 띠가 읽히는지(클릭), 거슬리기만 하는지(닫기). viewed는 두 비율의 분모 |
 | `place_link_clicked` | 즐길거리 상세에서 공식 홈페이지·예매·지도 버튼을 선택할 때(2026-11-21) | `place_slug`, `place_category`, `link_type`(`official`, `booking`, `map`) | 방문 의도. `place_detail_viewed` 대비 비율이 행사의 `source_link_clicked` 비율보다 크게 낮으면 상세 구성을 다시 본다 |
 | `poster_viewed` | 행사 상세에서 포스터 크게 보기를 열 때. 열 때마다 센다(2026-11-18) | `event_slug`, `event_category` | 크게 보기를 쓰는지. `event_detail_viewed` 대비 비율이 높으면 포스터 여러 장 수집·갤러리를 검토한다 |
@@ -75,6 +76,7 @@ GA4 주요 이벤트(Key event)는 `application_link_clicked`(2026-10-25 지정)
 | 검색이 쓸모 있는지 | `site_search_viewed` 사용자 중 `select_content`(`content_source` = `site_search`) 사용자 비율. 결과 0건 비율은 `event_count` + `place_count` = 0 | 기준값은 출시 뒤 쌓이면 사용자가 정한다(2026-11-21) |
 | 가볼만한 곳 입구를 키울지 | `place_detail_viewed` 직전 `select_content`(`content_type` = `place`)의 `content_source` 나눔: `place_list` · `site_search` · `event_map` · `similar_places` | 한쪽이 대부분이면 그 입구를 키우고, 거의 없는 입구는 줄일지 본다(2026-11-21) |
 | 지도 왼쪽 목록 판을 남길지 | 기기 카테고리 = desktop인 `map_place_selected` 가운데 `select_method` = `list` 비율(GA에는 화면 폭이 없어 기기로 나눈다. 목록 판은 md 이상에만 있다) | 거의 쓰지 않으면 지도를 넓게 쓰도록 판을 줄인다(2026-11-21) |
+| 고성·양양을 더 넓힐지, 기본 지역을 속초로 둘지 | 가볼만한 곳 목록(`/places`, `/places/category/…`) `page_view` 사용자 중 `place_region_changed`(`surface` = `place_list`) 사용자 비율과 `region` 나눔. 고성·양양 장소의 `place_detail_viewed`(`place_region` = `goseong`·`yangyang`) 비율을 함께 본다 | 기준값은 출시 뒤 쌓이면 사용자가 정한다. 바꾸는 사람이 드물면 지금처럼 속초 기본, 고성·양양을 고르는 사람이 많으면 장소를 더 넓히거나 기본값을 다시 본다 |
 | 공지 띠를 둘지 | 공지를 공개한 뒤 띠가 뜨는 14일 동안 `notice_banner_viewed` 사용자 중(띠에는 늘 가장 최근 공지 하나만 떠서 `notice_id`로 나누지 않아도 된다) `notice_banner_clicked` 비율과 `notice_banner_dismissed` 비율 | 닫기만 많고 클릭이 거의 없으면 띠 대신 공지 아이콘 표시(점)로 바꿀지 본다(2026-11-21) |
 | 지도 탭을 둘지 | `/map`의 `page_view` 사용자 중 `map_place_selected` 사용자 비율, 그중 `select_content`(`content_source` = `event_map`) 사용자 비율. 분야 칩은 `map_category_changed` 사용자 비율 | 기준값은 아직 정하지 않았다. 지도 방문 사용자가 몇백 명 쌓인 뒤 사용자가 정한다(2026-11-16). `map_unavailable`이 있는 기간은 빼고 본다 |
 
@@ -162,7 +164,7 @@ GA4 주요 이벤트(Key event)는 `application_link_clicked`(2026-10-25 지정)
 - `status_tab`
 - `result_count`
 - `map_category`, `event_count`, `reason`(지도 탭, 2026-11-16 등록)
-- 등록할 것(2026-11-21 출시 때): `content_type`, `place_category`, `link_type`, `select_method`, `notice_kind`. `place_slug`·`content_id`·`notice_id`는 값이 계속 늘어나 등록하지 않는다
+- 등록할 것(2026-11-21 출시 때): `content_type`, `place_category`, `link_type`, `select_method`, `notice_kind`, `region`·`surface`(지역 select, 2026-11-22), `place_region`(장소 상세의 지역, 2026-11-22). `place_slug`·`content_id`·`notice_id`는 값이 계속 늘어나 등록하지 않는다
 - `in_app_browser`(유입 경로, 2026-11-17 등록)
 
 `event_slug`, `place_name`, 날짜처럼 값 종류가 계속 늘어나는 항목은 등록하지 않는다. 행사 상세에서 일어난 이벤트는 모든 이벤트에 자동으로 붙는 페이지 경로로 행사를 구분한다.

@@ -2,14 +2,13 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ActivityListPage } from "@/features/places/components/activity-list-page";
 import {
-  activityCategoryLabels,
   activityCategoryPath,
   isActivityCategory,
   listActivityCategories,
   selectActivityPlaces,
 } from "@/features/places/model/activity";
 import { getPublicPlaces } from "@/features/places/queries";
-import { buildActivityListDescription } from "@/features/places/seo";
+import { buildActivityCategorySeoTitle, buildActivityListDescription } from "@/features/places/seo";
 import { INDEXABLE_ROBOTS, SITE_NAME, SITE_OPEN_GRAPH_IMAGES, SITE_OPEN_GRAPH_IMAGE_PATH } from "@/lib/seo/site-identity";
 
 export const revalidate = 3600;
@@ -22,7 +21,7 @@ export async function generateMetadata({ params }: PageProps<"/places/category/[
   const { category } = await params;
   if (!isActivityCategory(category)) return { title: "페이지를 찾을 수 없습니다" };
   const places = selectActivityPlaces(await getPublicPlaces(), category);
-  const title = `속초 ${activityCategoryLabels[category]} 운영시간·요금 안내`;
+  const title = buildActivityCategorySeoTitle(places, category);
   const description = buildActivityListDescription(places, category);
   const path = activityCategoryPath(category);
   return {
