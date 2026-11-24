@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cacheLife, cacheTag } from "next/cache";
 import { notFound } from "next/navigation";
 import { AnalyticsViewTracking } from "@/components/analytics/analytics-view-tracking";
 import { BackToListLink } from "@/components/ui/back-to-list-link";
@@ -15,6 +16,7 @@ import { EventPosterViewer } from "@/features/events/components/detail/event-pos
 import { EventViewCount } from "@/features/events/components/detail/event-view-count";
 import { PosterBackdrop } from "@/features/events/components/poster-backdrop";
 import { StatusBadges } from "@/features/events/components/status-badges";
+import { PUBLIC_EVENTS_CACHE_TAG } from "@/features/events/cache";
 import { getAllPublicEvents, getPublicEventBySlug } from "@/features/events/queries";
 import { getEventIntroduction } from "@/features/events/model/event";
 import { getRelatedEvents } from "@/features/events/model/event-list";
@@ -27,13 +29,17 @@ import {
   buildEventStructuredData,
 } from "@/features/events/seo";
 import { getPublicEnv } from "@/lib/env";
+import { PUBLIC_PAGE_CACHE_LIFE } from "@/lib/public-cache-life";
+import { withEmptyStaticParam } from "@/lib/static-params";
 import { INDEXABLE_ROBOTS, SITE_NAME, SITE_OPEN_GRAPH_IMAGE_PATH } from "@/lib/seo/site-identity";
 
-export const revalidate = 3600;
+// 미리 만든 정적 결과로만 응답해야 하는 페이지다. 누가 요청 값(searchParams·cookies)이나 캐시하지 않은 조회를 더하면 빌드가 멈춘다.
+// 루트 layout의 instant = false가 사이트 전체의 미리 만들기 검사를 끄므로, 검색 유입을 받는 정적 페이지는 여기서 따로 지킨다(2026-11-24 리뷰).
+export const ensureStatic = "navigation";
 
 export async function generateStaticParams() {
   const events = await getAllPublicEvents();
-  return events.map((event) => ({ slug: event.slug }));
+  return withEmptyStaticParam(events.map((event) => ({ slug: event.slug })), "slug");
 }
 
 export async function generateMetadata({ params }: PageProps<"/events/[slug]">): Promise<Metadata> {
@@ -76,10 +82,25 @@ const sectionTitleClassName = "text-title-2 text-content-strong";
 const lowerSectionClassName = "mt-14 px-4 lg:px-0";
 
 // 페이지는 데이터를 불러와 부품을 조립한다. 핵심 정보·행사 정보·행동 바·포스터 배경은 features/events/components에 있다(2026-11-07 나눔).
+// 없는 행사는 여기서 404로 끝낸다. params는 Suspense 밖에서 읽어, 미리 만들지 않은 행사도 첫 요청 때 완성된 HTML을 보낸다(ISR, 2026-11-24).
 export default async function EventDetailPage({ params }: PageProps<"/events/[slug]">) {
-  const [{ slug }, allEvents] = await Promise.all([params, getAllPublicEvents()]);
-  const event = allEvents.find((item) => item.slug === slug) ?? null;
-  if (!event) notFound();
+  const { slug } = await params;
+  if ((await getPublicEventBySlug(slug)) === null) notFound();
+  return <EventDetail slug={slug} />;
+}
+
+/**
+ * 행사 상세 본문. 상태 배지·비슷한 행사·JSON-LD가 지금 시각으로 정해져, 그린 결과를 5분 저장해 둔다(전환 전 다시 만들던 주기와 같음).
+ * cacheComponents에서는 미리 만드는 화면이 new Date()를 쓰려면 이렇게 저장 기간을 정해야 한다(2026-11-24).
+ */
+async function EventDetail({ slug }: { slug: string }) {
+  "use cache";
+  cacheLife(PUBLIC_PAGE_CACHE_LIFE);
+  cacheTag(PUBLIC_EVENTS_CACHE_TAG);
+  const allEvents = await getAllPublicEvents();
+  const event = allEvents.find((item) => item.slug === slug);
+  // 페이지가 같은 행사 목록 캐시로 먼저 확인하므로 실제로는 오지 않는다. 타입을 좁히려고 둔다.
+  if (event === undefined) return null;
 
   const siteUrl = getPublicEnv().NEXT_PUBLIC_SITE_URL;
   const eventJsonLd = buildEventStructuredData(event, siteUrl);

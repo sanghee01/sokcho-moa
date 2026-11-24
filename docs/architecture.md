@@ -64,7 +64,7 @@ public/              brand/(헤더 로고 wordmark.webp, 기본 포스터 defaul
                      places/(즐길거리 장소 사진 <slug>.webp와 목록 썸네일 <slug>-thumb.webp. 공개 라이선스 사진과 공식 누리집 사진이고, 출처·원본 주소는 data/activity-places.json의 imageProvenance에 남긴다).
                      icon.jpeg(검색엔진 로고)와 검색엔진 소유 확인 html은 URL이 외부에 알려져 있어 루트에 둔다
 tests/               unit/(Vitest), e2e/(Playwright, 로컬 Supabase)
-proxy.ts             없는 토픽 404, 관리자 세션 갱신
+proxy.ts             없는 토픽 404, /months·/calendar·예전 검색 주소(?q=) 리다이렉트, 관리자 세션 갱신
 .claude/             Claude Code 설정. hooks/guard-tool-use.mjs가 운영 DB 명령·비밀값 파일·커밋된 migration 수정을 실행 전에 막음
 .ai/                 화면 명세(DESIGN.md), 리뷰 정책(review/). AI 작업 규칙은 루트·폴더별 AGENTS.md
 ```
@@ -77,17 +77,19 @@ import합니다. 이 규칙은 `pnpm lint`가 강제합니다(`eslint.config.mjs
 ## 라우트
 
 렌더링: 정적(빌드 때 생성) / ISR(정적으로 만들고 일정 시간마다 다시 생성) / 동적(요청마다 생성). `pnpm build` 출력 기준입니다.
+2026-11-24부터 `cacheComponents`를 켰습니다. 다시 만드는 주기는 `revalidate` 대신, 지금 시각을 쓰는 본문의 `"use cache"`·`cacheLife(PUBLIC_PAGE_CACHE_LIFE)`(`lib/public-cache-life.ts`, 5분)와 공개 조회 캐시(`unstable_cache` 5분)가 정합니다.
+떠난 화면은 React `<Activity>`로 숨겨 두었다가(최근 3개) 돌아오면 그대로 다시 보여, 상세에서 목록으로 돌아와도 목록을 새로 그리지 않습니다. 본문은 Suspense로 미루지 않고 다 그린 HTML을 보냅니다(루트 layout의 `instant = false`, `app/AGENTS.md`).
 
 | 경로 | 렌더링 | 조립하는 것 |
 | --- | --- | --- |
 | `/` | 동적(`searchParams`) | `features/events/components/browse/event-browse-page` + `getAllPublicEvents` |
 | `/topics/[topic]` | 동적 | 위와 같음. 카테고리 SEO 페이지 6개. 없는 토픽은 `proxy.ts`가 404 |
 | (공통 틀) `app/(event-browse)/layout.tsx` | - | `/`와 `/topics/[topic]`이 함께 쓰는 보기 전환·분야 탭·배너(많이 보는 행사). 탭을 바꿔도 다시 그리지 않음 |
-| `/events/[slug]` | ISR 1시간, 공개 행사 전부 미리 생성 | 행사 상세, 관련 행사. 주변 명소 구역은 2026-11-21에 뺐다 |
-| `/months` | 동적 | 행사 목록 상태 탭 "월별"의 목적지. 요청한 때의 이번 달 `/months/YYYY-MM`으로 307 redirect |
-| `/months/[month]` | ISR 5분(`revalidate = 3600`이지만 행사 데이터 캐시 5분을 따름), 이번 달·다음 달 미리 생성 | 월별 행사(`features/events/components/month`, `features/events/model/event-month.ts`). 지난 달은 행사가 있을 때만 열고 다다음 달부터 404 |
+| `/events/[slug]` | ISR 5분, 공개 행사 전부 미리 생성 | 행사 상세, 관련 행사. 주변 명소 구역은 2026-11-21에 뺐다 |
+| `/months` | 동적 | 행사 목록 상태 탭 "월별"의 목적지. 요청한 때의 이번 달 `/months/YYYY-MM`으로 307 redirect(주소로 바로 열면 `proxy.ts`가 보냄. cacheComponents에서는 페이지의 redirect가 200 + 브라우저 이동이 되기 때문, 2026-11-24) |
+| `/months/[month]` | ISR 5분, 이번 달·다음 달 미리 생성 | 월별 행사(`features/events/components/month`, `features/events/model/event-month.ts`). 지난 달은 행사가 있을 때만 열고 다다음 달부터 404 |
 | `/months/[month]/[category]` | 위와 같음, 이번 달·다음 달 × 6분야 미리 생성 | 그 달의 한 분야(헤더 분야 탭). 행사가 없으면 `noindex`. 조회는 `features/events/month-page.ts`를 두 route가 함께 씀 |
-| `/places` | ISR 5분(`revalidate = 3600`이지만 장소 데이터 캐시 5분을 따름) | 즐길거리 목록(`features/places/components/activity-list-page`, `features/places/model/activity.ts`). `places` 가운데 즐길거리 분류(`activity_category`)가 있고 운영을 끝내지 않은 곳만, 분류별로 묶어 보인다. 지역 select는 `?region=goseong|yangyang|all`(없으면 속초)이고, 페이지는 정적이라 모든 지역을 그린 뒤 브라우저가 고른 지역만 남긴다(`features/places/model/region.ts`, `globals.css`의 `data-region-scope`, 2026-11-22). 장소가 없으면 `noindex` |
+| `/places` | ISR 5분(장소 데이터 캐시 5분을 따름) | 즐길거리 목록(`features/places/components/activity-list-page`, `features/places/model/activity.ts`). `places` 가운데 즐길거리 분류(`activity_category`)가 있고 운영을 끝내지 않은 곳만, 분류별로 묶어 보인다. 지역 select는 `?region=goseong|yangyang|all`(없으면 속초)이고, 페이지는 정적이라 모든 지역을 그린 뒤 브라우저가 고른 지역만 남긴다(`features/places/model/region.ts`, `globals.css`의 `data-region-scope`, 2026-11-22). 장소가 없으면 `noindex` |
 | `/places/category/[category]` | 위와 같음, 장소가 있는 분류만 미리 생성 | 한 분류의 목록(지역 select 같음). 모르는 분류와 장소가 없는 분류는 404 |
 | (공통 틀) `app/places/(list)/layout.tsx` | - | `/places`와 `/places/category/[category]`가 함께 쓰는 지역 select·분류 칩 줄과 `main`(`features/places/components/activity-list-layout.tsx`). 분류를 바꿔도 칩 줄을 다시 그리지 않음(2026-11-24). 상세 `/places/[slug]`는 이 틀 밖 |
 | `/places/[slug]` | 위와 같음, 즐길거리 장소 전부 미리 생성 | 즐길거리 상세: 핵심 정보, 공식 홈페이지·예매·길찾기 버튼, 확인일, 근처에서 열리는 행사(`features/events/model/location.ts`의 `selectEventsNearPlace`, 300m 안), 같은 분류의 다른 곳. 분류가 없는 장소는 404 |
@@ -102,7 +104,7 @@ import합니다. 이 규칙은 `pnpm lint`가 강제합니다(`eslint.config.mjs
 | `/privacy` | 정적 | 개인정보 처리방침(GA 사용, 쿠키 거부 방법, 보호책임자) |
 | `/admin/**` | 동적(쿠키) | 모든 페이지가 `requireAdmin()`으로 시작 |
 | `POST /api/events/[slug]/view` | 동적 | 요청 제한(IP·행사별 10분 10회) 뒤 service_role로 조회수 +1 RPC |
-| `/sitemap.xml` | ISR 5분(`revalidate = 3600`이지만 안에서 쓰는 데이터 캐시 5분을 따름) | 검색엔진용 |
+| `/sitemap.xml` | ISR 5분(안에서 쓰는 데이터 캐시 5분을 따름) | 검색엔진용 |
 | `/rss.xml` | sitemap과 같음 | 최근 공개 행사 50개 RSS 2.0(`features/events/rss.ts`). 네이버 서치어드바이저 제출용, 홈 `<link rel="alternate">`로도 알림 |
 | `/robots.txt`, `/indexnow-key.txt`, `/manifest.webmanifest` | 정적 | 검색엔진·PWA용 |
 
@@ -123,7 +125,7 @@ flowchart LR
 ```
 
 - 행사 수가 적어 전체 목록 하나만 캐시하고 필터·정렬은 메모리에서 합니다. 조건별 캐시는 적중률만 떨어뜨립니다.
-- `unstable_cache`는 Next.js 16에서 `use cache`로 대체 예정이지만, 배포를 넘어 유지되는 특성 때문에 유지합니다.
+- `unstable_cache`는 Next.js 16에서 `use cache`로 대체 예정이지만, 배포를 넘어 유지되는 특성 때문에 유지합니다. `cacheComponents`를 켠 뒤에도 그대로 동작합니다(2026-11-24).
 
 ### 방문자 쓰기(제보·의견)
 

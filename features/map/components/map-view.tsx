@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import Script from "next/script";
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { getButtonClassName } from "@/components/ui/button-styles";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
@@ -165,6 +165,12 @@ export function MapView({
     reportedUnavailableRef.current = true;
     trackAnalyticsEvent("map_unavailable", { reason: unavailableReason });
   }, [unavailableReason]);
+
+  // cacheComponents는 떠난 지도 화면을 숨겨 두었다가 다시 보여 준다(React <Activity>). 숨겨질 때 보낸 기록을 지워, 다시 보인 화면도
+  // 새 화면처럼 한 번 센다. 전에는 화면을 새로 만들어 저절로 그렇게 됐다(2026-11-24).
+  useLayoutEffect(() => () => {
+    reportedUnavailableRef.current = false;
+  }, []);
 
   // 지도에 없는 장소(행사가 끝나 핀이 사라졌거나 고른 분야에 없는 장소)는 주소에서 뺀다. 남겨 두면 카드 없이 주소만 남았다(2026-11-16 리뷰).
   useEffect(() => {

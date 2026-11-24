@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Locator, type Page } from "@playwright/test";
 import { routeFakeNaverMaps } from "@/tests/e2e/naver-maps-stub";
 
 // 상세의 "목록으로 돌아가기"는 목록에서 들어왔으면 들어오기 전 화면(같은 분류·탭, 같은 스크롤 위치, 같은 지도)으로 돌아간다.
@@ -6,6 +6,28 @@ import { routeFakeNaverMaps } from "@/tests/e2e/naver-maps-stub";
 
 async function getScrollY(page: Page) {
   return page.evaluate(() => window.scrollY);
+}
+
+/**
+ * 목록의 썸네일 요소를 기억해 둔다. 돌아온 뒤 같은 요소인지 비교한다.
+ * 이미지 요청이 끝난 뒤에 기억한다. seed에는 일부러 깨진 이미지가 있어, 불러오기에 실패하면 기본 그림으로 바뀐다(event-image.tsx).
+ */
+async function rememberListImages(page: Page, list: Locator) {
+  await page.waitForLoadState("networkidle");
+  const count = await list.locator("img").evaluateAll((images) => {
+    (window as unknown as { __listImages: Set<Element> }).__listImages = new Set(images);
+    return images.length;
+  });
+  expect(count).toBeGreaterThan(0);
+}
+
+/** 기억해 둔 썸네일 가운데 지금 목록에 그대로 남은 요소의 비율. 목록을 새로 그렸으면 0이다. */
+async function keptListImageRatio(list: Locator) {
+  return list.locator("img").evaluateAll((images) => {
+    const remembered = (window as unknown as { __listImages?: Set<Element> }).__listImages;
+    if (remembered === undefined || images.length === 0) return 0;
+    return images.filter((image) => remembered.has(image)).length / images.length;
+  });
 }
 
 test("가볼만한 곳 분류 목록에서 상세에 갔다가 돌아가면 같은 분류의 같은 위치로 돌아간다", async ({ page }) => {
@@ -90,4 +112,36 @@ test("지도에서 상세에 갔다가 돌아가면 같은 카드와 확대 수�
     const maps = (window as unknown as { __fakeNaverMaps: { getZoom: () => number }[] }).__fakeNaverMaps;
     return maps[maps.length - 1].getZoom();
   })).toBe(16);
+});
+
+// 상세에서 돌아올 때 목록 화면을 새로 만들면 썸네일이 다시 그려져 아이폰에서 깜빡였다(2026-11-24 사용자 피드백).
+// cacheComponents로 떠난 목록을 숨겨 두었다가 그대로 다시 보여 주므로, 돌아온 목록의 이미지는 떠나기 전과 같은 요소여야 한다.
+test("행사 목록에서 상세에 갔다가 돌아오면 목록 이미지를 새로 그리지 않는다", async ({ page }) => {
+  await page.goto("/");
+  const list = page.getByRole("region", { name: "행사 목록" });
+  await expect(list.locator("img").first()).toBeVisible();
+  await rememberListImages(page, list);
+
+  await list.getByRole("article").first().getByRole("link").first().click();
+  await expect(page).toHaveURL(/\/events\//);
+  await page.getByRole("link", { name: "목록으로 돌아가기" }).first().click();
+
+  await expect(page).toHaveURL(/:\d+\/$/);
+  await expect(list.locator("img").first()).toBeVisible();
+  expect(await keptListImageRatio(list)).toBe(1);
+});
+
+test("가볼만한 곳 목록에서 상세에 갔다가 돌아오면 목록 이미지를 새로 그리지 않는다", async ({ page }) => {
+  await page.goto("/places");
+  const list = page.getByRole("main");
+  await expect(list.locator("img").first()).toBeAttached();
+  await rememberListImages(page, list);
+
+  await list.getByRole("listitem").filter({ has: page.locator("img") }).first().getByRole("link").first().click();
+  await expect(page).toHaveURL(/\/places\/(?!category)[^/]+$/);
+  await page.getByRole("main").getByRole("link", { name: "목록으로 돌아가기" }).first().click();
+
+  await expect(page).toHaveURL(/\/places$/);
+  await expect(list.locator("img").first()).toBeAttached();
+  expect(await keptListImageRatio(list)).toBe(1);
 });

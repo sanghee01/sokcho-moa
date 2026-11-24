@@ -1,6 +1,13 @@
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 
+// 'use cache' 함수 안의 cacheLife·cacheTag는 Next.js 밖(vitest)에서 부르면 오류를 낸다. 저장 기간은 이 test가 보는 값이 아니라 아무 일도 하지 않게 둔다(2026-11-24).
+vi.mock("next/cache", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("next/cache")>()),
+  cacheLife: vi.fn(),
+  cacheTag: vi.fn(),
+}));
+
 vi.mock("@/lib/env", () => ({
   getPublicEnv: () => ({
     NEXT_PUBLIC_SITE_URL: "https://sokcho-moa.vercel.app",
@@ -31,7 +38,6 @@ vi.mock("@/components/ui/transition-link", () => ({
 import { generateMetadata as generateHomeMetadata } from "@/app/(event-browse)/page";
 import sitemap from "@/app/sitemap";
 import {
-  dynamicParams,
   generateMetadata as generateTopicMetadata,
   generateStaticParams,
 } from "@/app/(event-browse)/topics/[topic]/page";
@@ -46,7 +52,6 @@ import { buildTopicStructuredData } from "@/features/events/topic-seo";
 
 describe("event topic SEO", () => {
   it("모든 공개 주제를 중복 없는 대표 경로로 제공한다", () => {
-    expect(dynamicParams).toBe(false);
     expect(eventTopics.map((topic) => topic.category)).toEqual(eventCategories);
     expect(new Set(eventTopics.map((topic) => topic.slug)).size).toBe(eventTopics.length);
     expect(eventTopics.every((topic) => topic.path === `/topics/${topic.slug}`)).toBe(true);

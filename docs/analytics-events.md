@@ -19,7 +19,7 @@ GA4 주요 이벤트(Key event)는 `application_link_clicked`(2026-10-25 지정)
 
 | 이벤트 | 발생 시점 | 주요 파라미터 | 역할 |
 | --- | --- | --- | --- |
-| `event_detail_viewed` | 행사 상세가 처음 표시될 때 | `event_slug`, `event_category`, `event_audiences`, `application_available` | 상세 도달 |
+| `event_detail_viewed` | 행사 상세가 표시될 때마다. 뒤로·앞으로 가기로 숨겨 둔 상세가 다시 보일 때도 `page_view`처럼 센다(2026-11-24) | `event_slug`, `event_category`, `event_audiences`, `application_available` | 상세 도달 |
 | `select_content` | 목록·관련 행사·많이 보는 행사·지도 장소 카드·통합 검색에서 행사나 장소를 선택할 때 | 행사: `content_type` = `event`, `content_id`, `content_source`(`event_list`, `related_events`, `popular_events`, `event_map`, `place_detail`, `site_search`), `event_category`. 장소(2026-11-21): `content_type` = `place`, `content_id`(장소 slug), `content_source`(`place_list`, `site_search`, `similar_places`, `event_map`), `place_category` | 상세 진입 출처, 상세에서 다른 행사로 이어 가는지. 장소는 가볼만한 곳 목록·검색·지도 가운데 어디서 고르는지 |
 | `sort_changed` | 정렬 칩으로 정렬 기준을 실제로 변경할 때 | `sort_method`(`latest` 행사일순·기본, `views` 조회순) | 정렬 선호도. 2026-11-06 기본을 `published`에서 `latest`로 바꾸고 `published`·`deadline` 칩을 뺐으므로 그 전후 값을 따로 본다. |
 | `application_link_clicked` | 신청·예매 링크를 선택할 때 | `event_slug`, `event_category`, `link_position` | 주요 이벤트. 참여 의도 |
@@ -27,16 +27,16 @@ GA4 주요 이벤트(Key event)는 `application_link_clicked`(2026-10-25 지정)
 | `map_link_clicked` | 행사 상세의 지도 링크를 선택할 때 | `event_slug`, `link_position`, `map_method` | 방문 의도. 가볼만한 곳의 길찾기는 `place_link_clicked`(`map`)로 센다 |
 | `map_place_selected` | 지도 탭(`/map`)에서 핀이나 왼쪽 목록(md 이상)을 눌러 장소 카드를 열 때(2026-11-16) | `map_category`(행사 레이어는 고른 분야, 없으면 `all`. 가볼만한 곳 레이어는 `places` 또는 `places:<분류>`, 2026-11-21), `event_count`(그 장소에 보이는 행사 수. 가볼만한 곳 핀은 0), `select_method`(`pin` 지도 핀, `list` md 이상 왼쪽 목록 판, 2026-11-21) | 지도를 실제로 쓰는지. 지도 페이지 `page_view` 대비 비율과, 이어진 `select_content`(`event_map`)를 함께 본다 |
 | `map_category_changed` | 지도 탭의 분야 칩이나 레이어(행사 · 가볼만한 곳) 전환으로 실제로 바꿀 때. 이미 고른 칩은 세지 않는다(2026-11-16, 레이어는 2026-11-21) | `map_category`(바꾼 분야, 행사 "전체"는 `all`. 가볼만한 곳은 `places`·`places:<분류>`) | 지도에서 분야 칩을 남길지 |
-| `map_unavailable` | 지도 대신 "지금은 지도를 볼 수 없어요"가 보일 때 화면마다 한 번(2026-11-16) | `reason`(`missing_key` 키 없음, `auth_failed` 키·등록 주소 오류, `script_error` 지도 SDK를 불러오지 못함) | 운영에서 지도가 죽어 있는지. 0이 아니면 Vercel 환경 변수와 네이버 콘솔의 Web 서비스 URL을 확인한다 |
+| `map_unavailable` | 지도 대신 "지금은 지도를 볼 수 없어요"가 보일 때 화면마다 한 번(2026-11-16). 숨겨 둔 지도 화면이 다시 보여도 한 번(2026-11-24) | `reason`(`missing_key` 키 없음, `auth_failed` 키·등록 주소 오류, `script_error` 지도 SDK를 불러오지 못함) | 운영에서 지도가 죽어 있는지. 0이 아니면 Vercel 환경 변수와 네이버 콘솔의 Web 서비스 URL을 확인한다 |
 | `site_search_viewed` | 통합 검색(`/search`) 결과가 그려질 때. 같은 검색어·범위는 한 번만 센다(2026-11-21) | `query_length`, `event_count`, `place_count` | 헤더 검색을 쓰는지, 결과가 0건인 검색이 얼마나 되는지. 검색어 원문은 보내지 않음 |
 | `place_region_changed` | 가볼만한 곳의 지역 select로 지역을 실제로 바꿀 때. 이미 고른 값은 세지 않는다(2026-11-22) | `region`(고른 값: `sokcho`·`goseong`·`yangyang`·`all` 전체), `surface`(`place_list` 목록, `site_search` 통합 검색. 지도는 지역으로 거르지 않아 보내지 않는다, 2026-11-22) | 고성·양양 명소를 더 넓힐지, 목록의 기본 지역을 속초로 둘지(아래 판단 규칙) |
-| `place_detail_viewed` | 즐길거리 상세(`/places/[slug]`)가 처음 표시될 때(2026-11-21) | `place_slug`, `place_category`(즐길거리 분류: `water`·`exhibition` 등), `place_region`(장소 지역: `sokcho`·`goseong`·`yangyang`, 2026-11-22) | 즐길거리 상세 도달. 메뉴를 넓힐지 줄일지의 기준 |
+| `place_detail_viewed` | 즐길거리 상세(`/places/[slug]`)가 표시될 때마다(2026-11-21). 뒤로·앞으로 가기로 다시 보일 때와 같은 장소를 연달아 열 때도 센다. 2026-11-24 전에는 같은 장소를 연달아 보면 한 번만 셌다(`event_detail_viewed`와 맞춤) | `place_slug`, `place_category`(즐길거리 분류: `water`·`exhibition` 등), `place_region`(장소 지역: `sokcho`·`goseong`·`yangyang`, 2026-11-22) | 즐길거리 상세 도달. 메뉴를 넓힐지 줄일지의 기준 |
 | `notice_banner_viewed` · `notice_banner_clicked` · `notice_banner_dismissed` | 헤더 아래 공지 띠가 보일 때(페이지를 처음 열 때 한 번, 닫은 방문자는 보내지 않음, 2026-11-22) · 띠를 눌러 공지 글로 갈 때 · 띠를 닫을 때(2026-11-21) | `notice_id`, `notice_kind`(`notice`, `update`) | 공지 띠가 읽히는지(클릭), 거슬리기만 하는지(닫기). viewed는 두 비율의 분모 |
 | `place_link_clicked` | 즐길거리 상세에서 공식 홈페이지·예매·지도 버튼을 선택할 때(2026-11-21) | `place_slug`, `place_category`, `link_type`(`official`, `booking`, `map`) | 방문 의도. `place_detail_viewed` 대비 비율이 행사의 `source_link_clicked` 비율보다 크게 낮으면 상세 구성을 다시 본다 |
 | `poster_viewed` | 행사 상세에서 포스터 크게 보기를 열 때. 열 때마다 센다(2026-11-18) | `event_slug`, `event_category` | 크게 보기를 쓰는지. `event_detail_viewed` 대비 비율이 높으면 포스터 여러 장 수집·갤러리를 검토한다 |
 | `share` | 네이티브 공유 또는 링크 복사가 성공했을 때 | `method`, `content_type`, `item_id` | 추천·확산 |
 | `status_tab_changed` | 목록의 진행중·마감 탭을 눌러 실제로 바꿀 때. 이미 선택된 탭은 세지 않는다 | `status_tab`(`active` 진행중, `closed` 마감) | 마감 행사를 찾는 수요. 마감 탭을 계속 둘지 |
-| `related_events_viewed` | 행사 상세 아래쪽의 "이 행사도 살펴보세요" 목록이 화면 아래쪽 4분의 1을 뺀 영역에 처음 들어왔을 때. 상세 화면마다 한 번 | `event_category` | 관련 행사 클릭률의 분모. 아래까지 내려온 사람이 다른 행사로 이어 가는지 |
+| `related_events_viewed` | 행사 상세 아래쪽의 "이 행사도 살펴보세요" 목록이 화면 아래쪽 4분의 1을 뺀 영역에 처음 들어왔을 때. 상세 화면마다 한 번, 뒤로·앞으로 가기로 다시 보인 상세도 한 번(2026-11-24) | `event_category` | 관련 행사 클릭률의 분모. 아래까지 내려온 사람이 다른 행사로 이어 가는지 |
 | `event_report_submitted` | 제보(행사·가볼만한 곳, 2026-11-21부터 한 폼)가 서버에 접수돼 완료 화면이 보일 때. 입력 오류·서버 오류는 세지 않는다 | 없음 | 제보 완료율(아래 판단 규칙). 제보 폼을 줄일지 |
 | `feedback_submitted` | 의견 보내기가 서버에 접수돼 완료 화면이 보일 때 | 없음 | 위와 같음(의견 창구) |
 
@@ -206,7 +206,7 @@ GA4 주요 이벤트(Key event)는 `application_link_clicked`(2026-10-25 지정)
 E2E는 `dataLayer`로 GA에 보낼 이벤트 이름·파라미터·횟수를 확인한다(`tests/e2e/public-event-flow.spec.ts`, `tests/e2e/feedback-flow.spec.ts`, `tests/e2e/analytics-internal-traffic.spec.ts`).
 GA가 받아서 어떻게 처리했는지는 배포 뒤에만 볼 수 있으므로, 측정을 바꿔 배포하면 DebugView나 실시간 보고서에서 아래를 본다.
 
-- 상세 진입 한 번에 `event_detail_viewed`와 `page_view`가 한 번씩만 온다
+- 상세 진입 한 번에 `event_detail_viewed`(장소는 `place_detail_viewed`)와 `page_view`가 한 번씩만 온다
 - 상세에서 관련 행사 상세로 이동하면 새 상세에서 `related_events_viewed`가 다시 온다
 - 사이트 안에서 이동한 뒤 `page_view`의 `page_title`이 새 화면 제목이다
 - `application_available` 같은 true/false 값이 어떤 형태로 들어오는지 본다

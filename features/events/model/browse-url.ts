@@ -72,3 +72,20 @@ export function clearEventFiltersHref(params: EventSearchParams) {
   const clearedFilters = Object.fromEntries([...EVENT_FILTER_PARAMS, "q"].map((name) => [name, undefined]));
   return buildEventBrowseHref(params, clearedFilters);
 }
+
+/**
+ * 예전 검색 주소(?q=)가 옮겨 갈 통합 검색의 행사 결과 주소. 검색어가 없으면 null이다(2026-11-22 사용자 결정).
+ * 행사 목록 페이지와 proxy.ts가 함께 쓴다. proxy가 모든 요청을 그리기 전에 308로 보내고, 페이지의 redirect는 proxy matcher가 빠졌을 때의 안전장치다.
+ */
+export function legacyEventSearchHref(params: EventSearchParams) {
+  const query = firstSearchParam(params.q)?.trim();
+  return query ? `/search?${new URLSearchParams({ q: query, type: "events" })}` : null;
+}
+
+/**
+ * 삭제한 캘린더(/calendar) 북마크가 옮겨 갈 목록 주소: 같은 필터의 진행 중 목록. 이동 경로는 사용자 입력(__browsePath)에서 받지 않고 홈으로 고정한다.
+ * app/calendar/page.tsx와 proxy.ts가 함께 쓴다.
+ */
+export function calendarRedirectHref(params: EventSearchParams) {
+  return buildEventBrowseHref(params, { view: undefined, month: undefined, status: undefined }, "/");
+}

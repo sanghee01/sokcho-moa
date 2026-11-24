@@ -4,10 +4,12 @@ import { formatEventMonthKey, getListedEventMonths } from "@/features/events/mod
 import { loadEventMonthPage } from "@/features/events/month-page";
 import { buildEventMonthMetadata } from "@/features/events/month-seo";
 
-// 행사의 진행·종료 구역과 이번 달이 바뀌는 것을 반영하려고 다시 만든다(행사 상세와 같은 값).
-// 실제 주기는 안에서 쓰는 행사 데이터 캐시(5분, features/events/queries.ts)를 따른다(빌드 결과로 확인, 2026-11-15).
-export const revalidate = 3600;
+// 미리 만든 정적 결과로만 응답해야 하는 페이지다. 누가 요청 값(searchParams·cookies)이나 캐시하지 않은 조회를 더하면 빌드가 멈춘다.
+// 루트 layout의 instant = false가 사이트 전체의 미리 만들기 검사를 끄므로, 검색 유입을 받는 정적 페이지는 여기서 따로 지킨다(2026-11-24 리뷰).
+export const ensureStatic = "navigation";
 
+// 행사의 진행·종료 구역과 이번 달이 바뀌는 것을 반영하려고 5분마다 다시 만든다. 예전에는 revalidate로 정했고,
+// cacheComponents에서는 지금 시각을 쓰는 조회·화면이 'use cache'로 저장 기간을 정한다(features/events/month-page.ts, 2026-11-24).
 export function generateStaticParams() {
   return getListedEventMonths().map((month) => ({ month: formatEventMonthKey(month) }));
 }

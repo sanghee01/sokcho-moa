@@ -1,16 +1,20 @@
 import type { Metadata } from "next";
+import { cacheLife, cacheTag } from "next/cache";
 import { EventCard } from "@/features/events/components/event-card";
+import { PUBLIC_EVENTS_CACHE_TAG } from "@/features/events/cache";
 import { getAllPublicEvents } from "@/features/events/queries";
 import { MapScreen } from "@/features/map/components/map-screen";
 import { placeMapPinId, selectEventMapPlaces, toEventMapPins, toPlaceMapPins } from "@/features/map/model/map-pins";
 import { PlaceMapCard } from "@/features/places/components/place-map-card";
 import { selectActivityPlaces } from "@/features/places/model/activity";
+import { PUBLIC_PLACES_CACHE_TAG } from "@/features/places/cache";
 import { getPublicPlaces } from "@/features/places/queries";
 import { getNaverMapClientId } from "@/lib/env";
+import { PUBLIC_PAGE_CACHE_LIFE } from "@/lib/public-cache-life";
 
-// 끝나거나 신청이 마감된 행사를 핀에서 빼려고 다시 만든다(월별 페이지와 같은 값).
-// 실제 주기는 안에서 쓰는 행사 데이터 캐시(5분, features/events/queries.ts)를 따른다.
-export const revalidate = 3600;
+// 미리 만든 정적 결과로만 응답해야 하는 페이지다. 누가 요청 값(searchParams·cookies)이나 캐시하지 않은 조회를 더하면 빌드가 멈춘다.
+// 루트 layout의 instant = false가 사이트 전체의 미리 만들기 검사를 끄므로, 검색 유입을 받는 정적 페이지는 여기서 따로 지킨다(2026-11-24 리뷰).
+export const ensureStatic = "navigation";
 
 // 화면 내용 대부분이 지도(스크립트)라 검색 결과에 올리지 않는다. 행사 상세·목록·월별 페이지가 검색을 맡는다(2026-11-16).
 export const metadata: Metadata = {
@@ -21,6 +25,11 @@ export const metadata: Metadata = {
 };
 
 export default async function MapPage() {
+  // 끝나거나 신청이 마감된 행사를 핀에서 빼려고 지금 시각으로 고르고, 그린 결과를 5분 저장해 둔다(월별 페이지와 같은 주기).
+  // 예전에는 revalidate로 정했다. cacheComponents에서는 미리 만드는 화면이 new Date()를 쓰려면 저장 기간을 정해야 한다(2026-11-24).
+  "use cache";
+  cacheLife(PUBLIC_PAGE_CACHE_LIFE);
+  cacheTag(PUBLIC_EVENTS_CACHE_TAG, PUBLIC_PLACES_CACHE_TAG);
   const [events, places] = await Promise.all([getAllPublicEvents(), getPublicPlaces()]);
   const eventPlaces = selectEventMapPlaces(events);
   const activityPlaces = selectActivityPlaces(places);

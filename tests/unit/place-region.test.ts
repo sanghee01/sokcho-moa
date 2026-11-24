@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { activityListPathForPlace, searchActivityPlaces, selectActivityPlaces, selectSimilarPlaces } from "@/features/places/model/activity";
 import type { Place } from "@/features/places/model/place";
-import { buildActivityCategorySeoTitle, buildActivityListDescription, buildPlaceBreadcrumbStructuredData, buildPlaceSeoDescription } from "@/features/places/seo";
+import { buildActivityCategorySeoTitle, buildActivityListDescription, buildActivityListStructuredData, buildPlaceBreadcrumbStructuredData, buildPlaceSeoDescription } from "@/features/places/seo";
 import {
   filterPlacesByRegion,
   getPlaceRegion,
@@ -187,6 +187,42 @@ describe("장소 상세 경로의 지역", () => {
       ["속초 가볼만한 곳", "https://sokchomoa.com/places"],
       ["속초 자연·명소", "https://sokchomoa.com/places/category/nature"],
     ]);
+  });
+});
+
+// 행사 분야 목록(features/events/topic-seo.ts)과 같은 모양이다. 검색 결과에 "속초모아 › 속초 가볼만한 곳 › 속초 자연·명소" 경로가 보이게 한다(2026-11-24).
+describe("가볼만한 곳 목록의 구조화 데이터", () => {
+  const nature = [sokcho].map((place) => ({ ...place, activityCategory: "nature" as const }));
+
+  it("전체 목록은 CollectionPage와 경로를 같은 대표 주소로 잇는다", () => {
+    expect(buildActivityListStructuredData(nature, "https://sokchomoa.com")["@graph"]).toEqual([
+      expect.objectContaining({
+        "@type": "CollectionPage",
+        url: "https://sokchomoa.com/places",
+        name: "속초 가볼만한 곳",
+        breadcrumb: { "@id": "https://sokchomoa.com/places#breadcrumb" },
+      }),
+      expect.objectContaining({
+        "@type": "BreadcrumbList",
+        "@id": "https://sokchomoa.com/places#breadcrumb",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "속초모아", item: "https://sokchomoa.com/" },
+          { "@type": "ListItem", position: 2, name: "속초 가볼만한 곳", item: "https://sokchomoa.com/places" },
+        ],
+      }),
+    ]);
+  });
+
+  it("분류 목록은 전체 목록을 거쳐 그 분류로 이어지고, 장소 상세의 경로와 이름이 같다", () => {
+    const [page, breadcrumb] = buildActivityListStructuredData(nature, "https://sokchomoa.com", "nature")["@graph"];
+    expect(page).toMatchObject({ url: "https://sokchomoa.com/places/category/nature", name: "속초 자연·명소" });
+    expect(breadcrumb).toMatchObject({
+      itemListElement: [
+        { position: 1, name: "속초모아", item: "https://sokchomoa.com/" },
+        { position: 2, name: "속초 가볼만한 곳", item: "https://sokchomoa.com/places" },
+        { position: 3, name: "속초 자연·명소", item: "https://sokchomoa.com/places/category/nature" },
+      ],
+    });
   });
 });
 

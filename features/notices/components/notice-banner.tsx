@@ -1,10 +1,13 @@
 import { Megaphone } from "lucide-react";
+import { cacheLife, cacheTag } from "next/cache";
 import Link from "next/link";
 import { iconProps } from "@/components/ui/icon";
 import { NoticeBannerFrame } from "@/features/notices/components/notice-banner-frame";
+import { PUBLIC_NOTICES_CACHE_TAG } from "@/features/notices/cache";
 import { DISMISSED_NOTICE_STORAGE_KEY, noticeKindLabels, noticePath } from "@/features/notices/model/notice";
 import { getBannerNotice } from "@/features/notices/queries";
 import { analyticsData } from "@/lib/analytics/events";
+import { PUBLIC_PAGE_CACHE_LIFE } from "@/lib/public-cache-life";
 import { isUuid } from "@/lib/uuid";
 
 /**
@@ -14,6 +17,10 @@ import { isUuid } from "@/lib/uuid";
  * 홈·분야 목록에서도 같은 띠로 알린다. 위쪽 배너는 "지금 많이 보는 행사"만 둔다(2026-11-21 사용자 결정).
  */
 export async function NoticeBanner() {
+  // 알릴 글은 지금 시각으로 고른다(공개 14일). 모든 페이지의 틀에 있어 미리 만드는 페이지에 들어가므로, 고른 결과를 5분 저장해 둔다(2026-11-24).
+  "use cache";
+  cacheLife(PUBLIC_PAGE_CACHE_LIFE);
+  cacheTag(PUBLIC_NOTICES_CACHE_TAG);
   const notice = await getBannerNotice();
   // id를 script 안에 넣으므로 uuid 모양일 때만 그린다.
   if (notice === null || !isUuid(notice.id)) return null;

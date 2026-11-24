@@ -5,8 +5,6 @@ import { getPublicPlaces } from "@/features/places/queries";
 import { ACTIVITY_LIST_TITLE, buildActivityListDescription } from "@/features/places/seo";
 import { INDEXABLE_ROBOTS, NOINDEX_FOLLOW_ROBOTS, SITE_NAME, SITE_OPEN_GRAPH_IMAGE_PATH, SITE_OPEN_GRAPH_IMAGES } from "@/lib/seo/site-identity";
 
-export const revalidate = 3600;
-
 export async function generateMetadata(): Promise<Metadata> {
   const places = selectActivityPlaces(await getPublicPlaces());
   const title = `${ACTIVITY_LIST_TITLE} 명소·워터파크·전시·전망대`;

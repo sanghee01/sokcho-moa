@@ -1,3 +1,4 @@
+import { io } from "next/cache";
 import { Suspense, type ReactNode } from "react";
 import { BannerVisibility } from "@/features/events/components/browse/banner-visibility";
 import { CategoryNavigation } from "@/features/events/components/browse/category-navigation";
@@ -12,8 +13,11 @@ import { getAllPublicEvents } from "@/features/events/queries";
  * 분야 탭은 헤더와 함께 고정하려고 전역 헤더(app/layout.tsx)로 옮겼다(2026-11-07).
  * 이 묶음에는 loading.tsx를 두지 않는다. 있으면 제목(h1)과 행사 목록이 HTML의 푸터 뒤 숨김 영역으로 가서
  * JS를 실행하지 않는 크롤러가 못 읽을 수 있다. 탭을 바꾸는 동안에는 이전 목록이 남고, 누른 분야 탭이 먼저 선택된다(2026-11-15).
+ * cacheComponents(2026-11-24)에서도 같은 이유로 Suspense를 두지 않고, 요청이 올 때 목록까지 다 그려 보낸다(app/layout.tsx의 instant = false).
  */
 export default async function EventBrowseLayout({ children }: { children: ReactNode }) {
+  // 인기 배너는 요청한 때의 시각으로 고른다(목록과 같음). io()는 미리 만들 때 여기서 멈추고, 요청이 오면 바로 지나간다.
+  await io();
   const popularEvents = selectPopularEvents(await getAllPublicEvents(), new Date());
   const banner = <PopularBanner events={popularEvents} />;
 

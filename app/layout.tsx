@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cacheLife } from "next/cache";
 import localFont from "next/font/local";
 import Image from "next/image";
 import Link from "next/link";
@@ -67,11 +68,29 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
-  // 서버(Vercel)는 UTC라 getFullYear()는 1월 1일 0~9시(KST)에 전년도를 돌려준다. 서울 날짜로 센다(2026-11-07).
-  // 정적 페이지는 build 때의 연도가 굳으므로, 브라우저에서 CopyrightYear가 지금 연도로 다시 그린다.
-  const currentYear = getSeoulDateParts(new Date()).year;
+/**
+ * 사이트 전체가 "다 그린 뒤 보내도 된다"는 표시다(cacheComponents, 2026-11-24). 검색 유입이 대부분이라 본문을 Suspense fallback으로 미루지 않고
+ * 첫 HTML에 그대로 담는다. 헤더 메뉴·하단 탭·분석은 지금 위치(usePathname)를 읽는데, Suspense로 감싸면 첫 HTML에는 현재 위치 표시가 없는
+ * 메뉴가 먼저 들어가고 표시가 있는 메뉴는 푸터 뒤에서 스크립트로 바꿔 끼워져 처음 들어올 때 하단 탭 강조가 늦게 보일 수 있었다.
+ * 감싸지 않으면 주소가 아직 정해지지 않은 화면(관리자 상세, 미리 만들지 않은 상세)을 미리 만들 때 이 값을 기다려야 해서 이 표시가 필요하다.
+ */
+export const instant = false;
 
+const COPYRIGHT_YEAR_REVALIDATE_SECONDS = 86_400;
+
+/**
+ * 푸터 저작권 연도. 서버(Vercel)는 UTC라 getFullYear()는 1월 1일 0~9시(KST)에 전년도를 돌려준다. 서울 날짜로 센다(2026-11-07).
+ * 미리 만드는 페이지에 들어가 그때의 연도가 굳으므로 하루 저장해 두고, 브라우저에서 CopyrightYear가 지금 연도로 다시 그린다.
+ * cacheComponents에서는 미리 만드는 화면이 new Date()를 쓰려면 이렇게 저장 기간을 정해야 한다(2026-11-24).
+ */
+async function FooterCopyrightYear() {
+  "use cache";
+  // 하루마다 새로 만든다. 기본 이름("days")은 만료가 1주라 모든 페이지가 1주 동안 방문이 없으면 다음 방문자가 새로 그리기를 기다리게 되어 쓰지 않는다.
+  cacheLife({ revalidate: COPYRIGHT_YEAR_REVALIDATE_SECONDS });
+  return <CopyrightYear serverYear={getSeoulDateParts(new Date()).year} />;
+}
+
+export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
     <html lang="ko" className={pretendard.variable}>
       {/* 브라우저 확장 프로그램이 hydration 전에 body 속성을 주입해도 앱 내부 오류와 구분한다. */}
@@ -124,7 +143,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
           {/* 저작권 줄은 구분선으로 위 내용과 나누고, 흔히 쓰는 "All rights reserved."를 붙인다. */}
           <div className="border-t border-line">
             <p className="mx-auto max-w-6xl px-4 py-4 text-caption text-content-subtle sm:px-6">
-              © <CopyrightYear serverYear={currentYear} /> <span className="font-semibold text-content-muted">{SITE_NAME}</span>. All rights reserved.
+              © <FooterCopyrightYear /> <span className="font-semibold text-content-muted">{SITE_NAME}</span>. All rights reserved.
             </p>
           </div>
         </footer>

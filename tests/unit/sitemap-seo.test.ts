@@ -1,5 +1,12 @@
 import { describe, expect, it, vi } from "vitest";
 
+// 'use cache' 함수 안의 cacheLife·cacheTag는 Next.js 밖(vitest)에서 부르면 오류를 낸다. 저장 기간은 이 test가 보는 값이 아니라 아무 일도 하지 않게 둔다(2026-11-24).
+vi.mock("next/cache", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("next/cache")>()),
+  cacheLife: vi.fn(),
+  cacheTag: vi.fn(),
+}));
+
 vi.mock("@/lib/env", () => ({
   getPublicEnv: () => ({ NEXT_PUBLIC_SITE_URL: "https://sokcho-moa.vercel.app" }),
 }));

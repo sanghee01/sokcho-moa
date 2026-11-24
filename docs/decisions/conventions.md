@@ -69,7 +69,7 @@ AI가 읽는 규칙 문서(`AGENTS.md`)에는 규칙과 한 구절짜리 이유�
 | `process.env`는 `lib/env*.ts`에서만 | 4곳 중 2곳 정리 필요 | `data-security.md` |
 | Supabase client 세 종류의 쓰임, `getSession()` 금지 | 지킴 | [Supabase API keys](https://supabase.com/docs/guides/api/api-keys), [Next.js 서버 인증](https://supabase.com/docs/guides/auth/server-side/nextjs) |
 | action 순서(관리자·방문자), 페이지마다 인가 | 지킴 | `N/02-guides/server-actions.md`, `authentication.md` |
-| 캐시 단위와 `cache.ts`, `updateTag`·`revalidateTag(…, "max")` | 지킴 | `updateTag.md`, `revalidateTag.md`. `unstable_cache`는 `"use cache"`로 대체 예정이지만 cacheComponents가 꺼져 있어 유효 |
+| 캐시 단위와 `cache.ts`, `updateTag`·`revalidateTag(…, "max")` | 지킴 | `updateTag.md`, `revalidateTag.md`. `unstable_cache`는 `"use cache"`로 대체 예정이지만 cacheComponents를 켠 뒤에도 그대로 동작해 유지(`N/02-guides/migrating-to-cache-components.md`, 2026-11-24) |
 | `Asia/Seoul` helper, `now` 인자, 상태는 model에서 | 지킴, 15곳 | `N/02-guides/preventing-flash-before-hydration.md`, react.dev "components must be pure" |
 | RLS `to` 역할과 `(select auth.uid())`, `security definer` + `search_path = ''`, execute 회수 | 지킴 | [Supabase RLS](https://supabase.com/docs/guides/database/postgres/row-level-security), [Database functions](https://supabase.com/docs/guides/database/functions) |
 | 이름(handleX·onX, is·has, 단위 접미사, xxxAction·getXxx), 한국어 "왜" 주석 | 지킴 | react.dev Responding to Events, `N/02-guides/server-and-client-boundary.md` |

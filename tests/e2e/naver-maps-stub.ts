@@ -20,20 +20,22 @@ const FAKE_NAVER_MAPS_SCRIPT = String.raw`(() => {
       (window.__fakeNaverMaps ??= []).push(this);
       this.listeners = [];
       this.markers = [];
-      Object.assign(element.style, { display: "flex", flexWrap: "wrap", justifyContent: "flex-end", alignContent: "flex-start", gap: "16px", padding: "16px" });
+      // 실제 SDK처럼 지도 상자 밖으로 넘친 마커는 자른다(overflow: hidden, use-naver-map.ts 주석). 없으면 마커가 모두 이름표를 단 화면에서 페이지가 가로로 넘쳤다.
+      Object.assign(element.style, { display: "flex", flexWrap: "wrap", justifyContent: "flex-end", alignContent: "flex-start", gap: "16px", padding: "16px", overflow: "hidden" });
       // 실제 SDK처럼 마커가 아닌 빈 곳을 누르면 click을 알린다(마커 상자 안을 누른 것은 마커 몫이라 알리지 않는다).
       element.addEventListener("click", (domEvent) => {
         if (domEvent.target instanceof Element && domEvent.target.closest("[data-fake-marker]")) return;
         for (const listener of this.listeners) if (listener.name === "click") listener.handler({ pointerEvent: domEvent });
       });
     }
-    // 마커 묶기·장소 이름 배치는 화면 위치로 겹침을 따진다. 가짜 지도는 좌표 대신 마커를 늘어놓으므로, 그 마커가 놓인 자리(상자 아래 가운데)를 돌려준다.
+    // 마커 묶기·장소 이름 배치는 화면 위치로 겹침을 따진다. 가짜 지도는 좌표를 쓰지 않으므로 마커마다 서로 겹치지 않는 고정 자리(만든 순서대로 120px 간격)를 돌려준다.
+    // 예전에는 마커 상자의 화면 위치를 돌려줬는데, 내용이 그려지기 전(폭 0)에 재거나 숨긴 마커(상자 0)를 재면 모두 겹친 것으로 보여
+    // 전체 E2E를 병렬로 돌릴 때 핀이 처음부터 하나로 묶여 남았다. 실제 SDK도 그리기 상태와 상관없이 좌표로 위치를 준다(2026-11-24).
     getProjection() {
       return {
         fromCoordToOffset: (coord) => {
-          const marker = this.markers.find((item) => item.position.lat() === coord.lat() && item.position.lng() === coord.lng());
-          const box = marker?.wrapper.getBoundingClientRect();
-          return box ? new Point(box.left + box.width / 2, box.bottom) : new Point(0, 0);
+          const index = this.markers.findIndex((item) => item.position.lat() === coord.lat() && item.position.lng() === coord.lng());
+          return index === -1 ? new Point(0, 0) : new Point(60 + index * 120, 60);
         },
         fromOffsetToCoord: () => new LatLng(0, 0),
       };

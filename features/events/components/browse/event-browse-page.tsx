@@ -18,6 +18,7 @@ import {
   buildEventBrowseHref,
   clearEventFiltersHref,
   type EventSearchParams,
+  legacyEventSearchHref,
   withEventBrowsePath,
 } from "@/features/events/model/browse-url";
 import type { EventTopic } from "@/features/events/model/topics";
@@ -99,9 +100,10 @@ export async function EventBrowsePage({
   const parsedFilters = parseEventFilters(rawParams);
   // 예전 검색 주소(?q=)는 통합 검색의 행사 결과로 영구 이동한다(2026-11-22 사용자 결정). 목록 위 검색창을 헤더 통합 검색으로 옮긴 뒤에도
   // ?q=가 목록을 걸렀는데, 걸렀다는 표시도 지울 방법도 없어 일부 행사만 보이는 목록이 됐다. 예전 링크의 뜻(행사 검색)대로 행사 범위로 보낸다.
-  if (parsedFilters.query !== undefined) {
-    permanentRedirect(`/search?${new URLSearchParams({ q: parsedFilters.query, type: "events" })}`);
-  }
+  // 주소로 바로 열면 proxy.ts가 그리기 전에 308로 보낸다. cacheComponents에서는 여기서 보내는 redirect가 상태 코드 200에 담긴
+  // 브라우저 이동이 되기 때문이다(2026-11-24). proxy는 사이트 안 이동의 데이터 요청까지 모두 보내므로, 여기는 proxy matcher가 빠졌을 때의 안전장치다.
+  const legacySearchHref = legacyEventSearchHref(rawParams);
+  if (legacySearchHref !== null) permanentRedirect(legacySearchHref);
   const filters = topic
     ? { ...parsedFilters, category: topic.category }
     : parsedFilters;

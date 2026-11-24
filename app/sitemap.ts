@@ -1,7 +1,10 @@
 import type { MetadataRoute } from "next";
+import { cacheLife, cacheTag } from "next/cache";
 import { getPublicEnv } from "@/lib/env";
+import { PUBLIC_PAGE_CACHE_LIFE } from "@/lib/public-cache-life";
 import { SITE_LOGO_PATH } from "@/lib/seo/site-identity";
 import { isHttpUrl } from "@/lib/url";
+import { PUBLIC_EVENTS_CACHE_TAG } from "@/features/events/cache";
 import { getAllPublicEvents } from "@/features/events/queries";
 import {
   ACTIVITY_LIST_PATH,
@@ -11,6 +14,7 @@ import {
   selectActivityPlaces,
 } from "@/features/places/model/activity";
 import { selectPlacePhoto } from "@/features/places/model/place-photo";
+import { PUBLIC_PLACES_CACHE_TAG } from "@/features/places/cache";
 import { getPublicPlaces } from "@/features/places/queries";
 import type { Event } from "@/features/events/model/event";
 import { eventTopics } from "@/features/events/model/topics";
@@ -21,9 +25,18 @@ import {
   selectMonthEvents,
 } from "@/features/events/model/event-month";
 
-export const revalidate = 3600;
-
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  return buildSitemap();
+}
+
+/**
+ * 월별 페이지 목록(이번 달·다음 달)이 지금 시각으로 정해져, 만든 결과를 5분 저장해 둔다. 예전에는 revalidate로 다시 만드는 주기를 정했다.
+ * cacheComponents에서는 미리 만드는 화면이 new Date()를 쓰려면 'use cache'로 저장해야 한다(2026-11-24).
+ */
+async function buildSitemap(): Promise<MetadataRoute.Sitemap> {
+  "use cache";
+  cacheLife(PUBLIC_PAGE_CACHE_LIFE);
+  cacheTag(PUBLIC_EVENTS_CACHE_TAG, PUBLIC_PLACES_CACHE_TAG);
   const baseUrl = getPublicEnv().NEXT_PUBLIC_SITE_URL.replace(/\/$/, "");
   const [events, places] = await Promise.all([getAllPublicEvents(), getPublicPlaces()]);
   // 즐길거리: 운영을 끝낸 곳을 뺀 목록·분류·상세. 확인일(verifiedOn)이 있으면 마지막으로 바뀐 날로 알린다.

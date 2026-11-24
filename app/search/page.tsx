@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { z } from "zod";
 import { AnalyticsMountTracking } from "@/components/analytics/analytics-mount-tracking";
+import { FreshOnNewVisit } from "@/components/layout/fresh-on-new-visit";
+import { VisiblePageStyle } from "@/components/layout/visible-page-style";
 import { RecentSearchList } from "@/components/layout/recent-search-list";
 import { SiteSearchField } from "@/components/layout/site-search-field";
 import { buildSiteSearchHref } from "@/components/layout/site-search-href";
@@ -25,6 +27,12 @@ export const metadata: Metadata = {
   robots: NOINDEX_FOLLOW_ROBOTS,
 };
 
+// 둘 다 보이면 같은 이름("사이트 검색")의 검색 영역이 둘로 읽혔다(2026-11-21 리뷰). 검색 화면이 보일 때만 켠다(VisiblePageStyle).
+// 예전에는 globals.css의 :has() 규칙이라 검색 결과에서 상세로 가도 헤더 검색창이 숨은 채 남았다(2026-11-24 리뷰).
+const HEADER_SEARCH_HIDDEN_PAGE_CSS = `@layer base {
+  [data-header-search] { display: none; }
+}`;
+
 const searchTypes = ["events", "places"] as const;
 
 const searchParamsSchema = z.object({
@@ -40,7 +48,7 @@ const PREVIEW_PLACE_COUNT = 5;
  * 통합 검색(.ai/DESIGN.md 통합 검색). 헤더 돋보기(lg 미만)나 검색창(lg 이상)에서 온다.
  * 행사와 가볼만한 곳을 함께 찾고, 범위 칩(전체·행사·가볼만한 곳)과 건수로 좁힌다. 검색어와 범위는 주소에 남는다(2026-11-21 사용자 결정).
  * data-hide-bottom-nav: 검색창에 입력하는 동안만 하단 탭을 숨긴다. 키보드가 열리면 고정된 탭이 가려지거나 떠 보인다(globals.css).
- * data-hide-header-search: 화면 안의 검색창과 겹치지 않게 lg 이상 헤더 검색창을 숨긴다(globals.css).
+ * 화면 안의 검색창과 겹치지 않게 lg 이상 헤더 검색창을 숨긴다(HEADER_SEARCH_HIDDEN_PAGE_CSS).
  */
 export default async function SearchPage({ searchParams }: PageProps<"/search">) {
   const raw = await searchParams;
@@ -70,10 +78,15 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
   ];
 
   return (
-    <main id="main-content" data-hide-bottom-nav data-hide-header-search className="mx-auto max-w-6xl px-4 pb-16 pt-4 sm:px-6 lg:pt-8">
+    <main id="main-content" data-hide-bottom-nav className="mx-auto max-w-6xl px-4 pb-16 pt-4 sm:px-6 lg:pt-8">
+      <VisiblePageStyle css={HEADER_SEARCH_HIDDEN_PAGE_CSS} />
       <h1 className="sr-only">검색</h1>
       <div className="lg:mx-auto lg:max-w-2xl">
-        <SiteSearchField query={query} type={type} />
+        {/* 돋보기·검색창으로 새로 들어오면 입력창을 새로 만들어 커서가 다시 들어가게 한다(autoFocus). 숨겨 둔 화면(cacheComponents)을
+            다시 보이면 적다 만 글이 남고 커서가 들어가지 않았다. 뒤로 가기로 돌아오면 그대로 둔다(2026-11-24). */}
+        <FreshOnNewVisit>
+          <SiteSearchField query={query} type={type} />
+        </FreshOnNewVisit>
       </div>
 
       {query === "" ? (

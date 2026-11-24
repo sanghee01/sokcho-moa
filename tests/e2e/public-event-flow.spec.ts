@@ -48,6 +48,14 @@ test("없는 페이지와 없는 행사를 각각 이해하기 쉬운 화면으�
   await expect(page.getByText(/비공개로 전환됐거나 주소가 바뀌었을 수 있습니다/)).toBeVisible();
 });
 
+// 화면만이 아니라 HTTP 상태도 404여야 검색엔진이 빈 페이지를 색인하지 않는다. 예전에는 없는 주제를 dynamicParams = false로 막았고,
+// cacheComponents에서는 그 설정을 쓸 수 없어 proxy.ts와 페이지의 notFound()가 막는다(2026-11-24 사용자 결정).
+test("없는 주제와 없는 행사는 404로 응답한다", async ({ request }) => {
+  for (const path of ["/topics/unknown", "/events/no-such-event"]) {
+    expect((await request.get(path)).status(), path).toBe(404);
+  }
+});
+
 // GPTBot·ClaudeBot·PerplexityBot처럼 JS를 실행하지 않는 크롤러는 받은 HTML만 읽는다. 로딩 화면을 먼저 보내고
 // 본문을 푸터 뒤 숨김 영역에 붙이면 본문을 못 찾을 수 있어, 첫 HTML에서 본문이 제자리에 있는지 지킨다(2026-11-15).
 test("행사 상세 HTML은 JS를 실행하지 않아도 본문이 푸터보다 먼저 온다", async ({ request }) => {
@@ -263,6 +271,21 @@ test("GA 이벤트는 관련 행사 목록이 화면에 들어왔을 때 상세 
   await expect.poll(() => analyticsEventParams(page, "related_events_viewed")).toEqual([
     { event_category: "festival" },
   ]);
+});
+
+// cacheComponents는 떠난 상세를 숨겨 두었다가 뒤로·앞으로 가기에서 그대로 다시 보여 준다. 상세 조회는 page_view처럼 화면이 보일 때마다 센다
+// (docs/analytics-events.md: 상세 진입 한 번에 event_detail_viewed와 page_view가 한 번씩, 2026-11-24 사용자 결정).
+test("GA 이벤트는 뒤로·앞으로 가기로 상세가 다시 보일 때도 상세 조회로 센다", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("region", { name: "행사 목록" }).getByRole("article").first().getByRole("link").first().click();
+  await expect(page).toHaveURL(/\/events\//);
+  await expect.poll(() => analyticsEventParams(page, "event_detail_viewed")).toHaveLength(1);
+
+  await page.goBack();
+  await expect(page).toHaveURL(/:\d+\/$/);
+  await page.goForward();
+  await expect(page).toHaveURL(/\/events\//);
+  await expect.poll(() => analyticsEventParams(page, "event_detail_viewed")).toHaveLength(2);
 });
 
 test("GA page_view는 주소에 담긴 검색어를 가려서 보낸다", async ({ page }) => {

@@ -1,3 +1,4 @@
+import { JsonLd } from "@/components/seo/json-ld";
 import { getButtonClassName } from "@/components/ui/button-styles";
 import { InfoNote } from "@/features/places/components/info-note";
 import { TransitionLink } from "@/components/ui/transition-link";
@@ -12,7 +13,8 @@ import {
 } from "@/features/places/model/activity";
 import type { Place } from "@/features/places/model/place";
 import { ALL_REGIONS, listPlaceRegions, placeRegionHref, placeRegionLabels, placeRegions } from "@/features/places/model/region";
-import { ACTIVITY_LIST_TITLE } from "@/features/places/seo";
+import { ACTIVITY_LIST_TITLE, buildActivityListStructuredData } from "@/features/places/seo";
+import { getPublicEnv } from "@/lib/env";
 
 /**
  * 즐길거리 목록의 본문. 전체(/places)와 분류(/places/category/*)가 함께 쓴다.
@@ -35,6 +37,7 @@ export function ActivityListPage({ places, category }: { places: readonly Place[
 
   return (
     <>
+      <JsonLd data={buildActivityListStructuredData(selectActivityPlaces(places, category), getPublicEnv().NEXT_PUBLIC_SITE_URL, category)} />
       <h1 className="sr-only">
         {category === undefined ? ACTIVITY_LIST_TITLE : `속초 ${activityCategoryLabels[category]}`}
       </h1>

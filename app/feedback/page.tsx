@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { FreshOnNewVisit } from "@/components/layout/fresh-on-new-visit";
 import { SiteFeedbackForm } from "@/features/feedback/components/site-feedback-form";
 import { feedbackPageMetadata } from "@/lib/seo/utility-page-metadata";
 
@@ -11,7 +12,10 @@ export default function FeedbackPage() {
       <h1 className="text-title-1 text-content-strong lg:text-title-1-lg">의견 보내기</h1>
       <p className="mt-2 text-body text-content-muted">사이트를 쓰며 불편했던 점, 개선하면 좋을 점, 좋았던 점을 자유롭게 보내 주세요.</p>
       <div className="mt-8">
-        <SiteFeedbackForm />
+        {/* 메뉴로 다시 들어오면 빈 폼부터 시작한다. 숨겨 둔 화면(cacheComponents)에 이전 접수 결과가 남지 않게 한다(2026-11-24). */}
+        <FreshOnNewVisit>
+          <SiteFeedbackForm />
+        </FreshOnNewVisit>
       </div>
     </main>
   );

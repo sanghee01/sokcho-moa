@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cacheLife, cacheTag } from "next/cache";
 import { notFound } from "next/navigation";
 import { Fragment } from "react";
 import { AnalyticsMountTracking } from "@/components/analytics/analytics-mount-tracking";
@@ -9,6 +10,7 @@ import { BackToListLink } from "@/components/ui/back-to-list-link";
 import { TransitionLink } from "@/components/ui/transition-link";
 import { EventCard } from "@/features/events/components/event-card";
 import { selectEventsNearPlace } from "@/features/events/model/location";
+import { PUBLIC_EVENTS_CACHE_TAG } from "@/features/events/cache";
 import { getAllPublicEvents } from "@/features/events/queries";
 import { ActivityPlaceRow } from "@/features/places/components/activity-place-row";
 import { PlaceActions } from "@/features/places/components/place-actions";
@@ -27,6 +29,7 @@ import {
 import { selectPlacePhoto } from "@/features/places/model/place-photo";
 import { getVisibleStatusNote } from "@/features/places/model/place-status";
 import { getPlaceRegion } from "@/features/places/model/region";
+import { PUBLIC_PLACES_CACHE_TAG } from "@/features/places/cache";
 import { getPublicPlaces } from "@/features/places/queries";
 import {
   buildPlaceBreadcrumbItems,
@@ -36,9 +39,13 @@ import {
   buildPlaceStructuredData,
 } from "@/features/places/seo";
 import { getPublicEnv } from "@/lib/env";
+import { PUBLIC_PAGE_CACHE_LIFE } from "@/lib/public-cache-life";
+import { withEmptyStaticParam } from "@/lib/static-params";
 import { INDEXABLE_ROBOTS, SITE_NAME, SITE_OPEN_GRAPH_IMAGE_PATH } from "@/lib/seo/site-identity";
 
-export const revalidate = 3600;
+// 미리 만든 정적 결과로만 응답해야 하는 페이지다. 누가 요청 값(searchParams·cookies)이나 캐시하지 않은 조회를 더하면 빌드가 멈춘다.
+// 루트 layout의 instant = false가 사이트 전체의 미리 만들기 검사를 끄므로, 검색 유입을 받는 정적 페이지는 여기서 따로 지킨다(2026-11-24 리뷰).
+export const ensureStatic = "navigation";
 
 async function getActivityPlace(slug: string) {
   const place = (await getPublicPlaces()).find((item) => item.slug === slug);
@@ -46,7 +53,7 @@ async function getActivityPlace(slug: string) {
 }
 
 export async function generateStaticParams() {
-  return (await getPublicPlaces()).filter(isActivityPlace).map((place) => ({ slug: place.slug }));
+  return withEmptyStaticParam((await getPublicPlaces()).filter(isActivityPlace).map((place) => ({ slug: place.slug })), "slug");
 }
 
 export async function generateMetadata({ params }: PageProps<"/places/[slug]">): Promise<Metadata> {
@@ -78,11 +85,26 @@ const nearbyEventGridClassName = "grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-
 
 const sectionClassName = "mt-12";
 
+// 없는 장소와 가볼만한 곳 분류가 없는 장소는 여기서 404로 끝낸다. 분류가 없는 곳은 사이트 어디에도 보이지 않고, 채운 정보가 없어 빈 페이지가 된다.
+// params는 Suspense 밖에서 읽어, 미리 만들지 않은 장소도 첫 요청 때 완성된 HTML을 보낸다(ISR, 2026-11-24).
 export default async function PlaceDetailPage({ params }: PageProps<"/places/[slug]">) {
-  const [{ slug }, places, events] = await Promise.all([params, getPublicPlaces(), getAllPublicEvents()]);
+  const { slug } = await params;
+  if ((await getActivityPlace(slug)) === null) notFound();
+  return <PlaceDetail slug={slug} />;
+}
+
+/**
+ * 가볼만한 곳 상세 본문. 상태 안내(기한)와 근처 행사가 지금 시각으로 정해져, 그린 결과를 5분 저장해 둔다(전환 전 다시 만들던 주기와 같음).
+ * cacheComponents에서는 미리 만드는 화면이 new Date()를 쓰려면 이렇게 저장 기간을 정해야 한다(2026-11-24).
+ */
+async function PlaceDetail({ slug }: { slug: string }) {
+  "use cache";
+  cacheLife(PUBLIC_PAGE_CACHE_LIFE);
+  cacheTag(PUBLIC_PLACES_CACHE_TAG, PUBLIC_EVENTS_CACHE_TAG);
+  const [places, events] = await Promise.all([getPublicPlaces(), getAllPublicEvents()]);
   const found = places.find((item) => item.slug === slug);
-  // 가볼만한 곳 분류가 없는 장소는 상세를 열지 않는다. 사이트 어디에도 보이지 않는 곳이고, 채운 정보가 없어 빈 페이지가 된다.
-  if (found === undefined || !isActivityPlace(found)) notFound();
+  // 페이지가 같은 장소 목록 캐시로 먼저 확인하므로 실제로는 오지 않는다. 타입을 좁히려고 둔다.
+  if (found === undefined || !isActivityPlace(found)) return null;
   const place = found;
 
   const siteUrl = getPublicEnv().NEXT_PUBLIC_SITE_URL;
@@ -98,7 +120,8 @@ export default async function PlaceDetailPage({ params }: PageProps<"/places/[sl
     // PC도 가운데 한 단이다(본문 폭 640px + 좌우 여백, 2026-11-22 사용자 결정). 예전에는 main이 1152px이고 본문만 640px라 왼쪽에 붙고
     // 오른쪽이 비었으며, 아래 목록은 전체 폭·맨 아래 버튼은 가운데라 정렬이 셋으로 갈렸다. 행사 상세의 2단과 달리 글을 읽는 화면이다.
     <main id="main-content" className="mx-auto w-full max-w-172 px-4 pb-16 pt-6 sm:px-6 lg:pt-8">
-      <AnalyticsMountTracking name="place_detail_viewed" properties={{ place_slug: place.slug, place_category: place.activityCategory, place_region: getPlaceRegion(place) ?? "unknown" }} onceKey={place.slug} />
+      {/* 행사 상세(event_detail_viewed)와 같이 보일 때마다 센다. 예전에는 같은 장소를 연달아 보면 한 번만 셌다(onceKey, 2026-11-24 사용자 결정으로 통일). */}
+      <AnalyticsMountTracking name="place_detail_viewed" properties={{ place_slug: place.slug, place_category: place.activityCategory, place_region: getPlaceRegion(place) ?? "unknown" }} shouldCountEachView />
       <JsonLd data={buildPlaceStructuredData(place, siteUrl)} />
       <JsonLd data={buildPlaceBreadcrumbStructuredData(place, siteUrl)} />
       {/* 맨 위의 "‹ 목록으로 돌아가기"(행사 상세와 같음, 2026-11-21 사용자 결정). 경로는 화면 읽기 프로그램용으로만 두되,

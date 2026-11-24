@@ -11,8 +11,8 @@ import {
   SITE_OPEN_GRAPH_IMAGE_PATH,
 } from "@/lib/seo/site-identity";
 
-export const dynamicParams = false;
-
+// 예전에는 dynamicParams = false로 목록에 없는 주제를 막았지만 cacheComponents에서는 쓸 수 없다(2026-11-24).
+// 없는 주제는 proxy.ts가 404로 응답하고, 아래 페이지도 notFound()를 부른다.
 export function generateStaticParams() {
   return eventTopics.map((topic) => ({ topic: topic.slug }));
 }

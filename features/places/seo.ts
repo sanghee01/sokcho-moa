@@ -107,6 +107,44 @@ export function buildPlaceStructuredData(place: ActivityPlace, siteUrl: string) 
 }
 
 /**
+ * 가볼만한 곳 목록(/places)과 분류 목록(/places/category/*)의 구조화 데이터. 행사 분야 목록(features/events/topic-seo.ts)과 같은 모양으로,
+ * 검색 결과에 "속초모아 › 속초 가볼만한 곳 › 속초 자연·명소" 같은 경로가 보이게 한다(2026-11-24). 목록이 처음 보이는 지역(속초)의 주소와 이름을 쓰고,
+ * 장소 상세의 속초 경로(buildPlaceBreadcrumbItems)와 같다. places는 그 목록에 보이는 장소(selectActivityPlaces)다.
+ */
+export function buildActivityListStructuredData(places: readonly ActivityPlace[], siteUrl: string, category?: ActivityCategory) {
+  const homeUrl = absoluteUrl("/", siteUrl);
+  const listUrl = absoluteUrl(ACTIVITY_LIST_PATH, siteUrl);
+  const pageUrl = category === undefined ? listUrl : absoluteUrl(activityCategoryPath(category), siteUrl);
+  const name = category === undefined ? ACTIVITY_LIST_TITLE : `속초 ${activityCategoryLabels[category]}`;
+  const breadcrumbId = `${pageUrl}#breadcrumb`;
+  const crumbs = [
+    { name: SITE_NAME, item: homeUrl },
+    { name: ACTIVITY_LIST_TITLE, item: listUrl },
+    ...(category === undefined ? [] : [{ name, item: pageUrl }]),
+  ];
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "CollectionPage",
+        "@id": `${pageUrl}#collection`,
+        url: pageUrl,
+        name,
+        description: buildActivityListDescription(places, category),
+        inLanguage: "ko-KR",
+        isPartOf: { "@id": `${homeUrl}#website` },
+        breadcrumb: { "@id": breadcrumbId },
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": breadcrumbId,
+        itemListElement: crumbs.map((crumb, index) => ({ "@type": "ListItem", position: index + 1, name: crumb.name, item: crumb.item })),
+      },
+    ],
+  };
+}
+
+/**
  * 장소 상세의 경로(목록 → 분류). 장소 지역의 목록을 거친다: 고성 장소는 "고성 가볼만한 곳 / 고성 자연·명소"(2026-11-22 리뷰).
  * 예전에는 모든 장소가 "속초 …"를 거쳐 고성 장소의 경로가 속초를 말했다. 화면 읽기용 경로와 구조화 데이터가 함께 쓴다.
  */

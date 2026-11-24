@@ -92,6 +92,27 @@ test.describe("가볼만한 곳", () => {
     await expect(main.getByRole("link", { name: new RegExp(SAMPLE_PLACE.name) })).toBeHidden();
   });
 
+  // 느린 폰에서 앱 스크립트가 붙기 전에 지역을 고르면, 붙을 때 select가 기본 지역(속초)으로 돌아가 선택이 사라졌다(2026-11-24).
+  test("앱 스크립트가 붙기 전에 고른 지역은 붙은 뒤에도 남는다", async ({ page }) => {
+    let releaseScripts: () => void = () => {};
+    const scriptsReleased = new Promise<void>((resolve) => { releaseScripts = resolve; });
+    await page.route("**/_next/static/chunks/**/*.js", async (route) => {
+      await scriptsReleased;
+      await route.continue();
+    });
+    await page.goto("/places", { waitUntil: "domcontentloaded" });
+    const main = page.getByRole("main");
+    const regionSelect = main.getByRole("combobox", { name: "지역" });
+    await regionSelect.selectOption("goseong");
+    await expect(page).toHaveURL("/places?region=goseong");
+
+    releaseScripts();
+    await page.waitForLoadState("networkidle");
+    await expect(regionSelect).toHaveValue("goseong");
+    await expect(page).toHaveURL("/places?region=goseong");
+    await expect(main.getByRole("link", { name: new RegExp(SAMPLE_REGION_PLACES.goseong.name) })).toBeVisible();
+  });
+
   test("고성 장소 상세에 바로 들어오면 목록으로 돌아가기가 고성 목록으로 간다", async ({ page }) => {
     await page.goto(SAMPLE_REGION_PLACES.goseong.path);
     // 상세 조회에 장소 지역을 붙인다(고성·양양 장소 조회를 slug 없이 나눠 봄, 2026-11-22).
@@ -148,6 +169,28 @@ test.describe("가볼만한 곳", () => {
       expect(boxes[0].y).toBeLessThan(boxes[1].y);
       expect(boxes[1].x).toBeLessThan(boxes[2].x);
     }
+  });
+
+  // 행사 상세(event_detail_viewed)와 같이 장소 상세가 보일 때마다 센다. 예전에는 같은 장소를 연달아 보면 한 번만 셌다.
+  // 뒤로·앞으로 가기로 숨겨 둔 상세가 다시 보일 때도, 목록에서 같은 장소를 다시 열 때도 센다(2026-11-24 사용자 결정).
+  test("장소 상세 조회 GA 이벤트는 같은 장소가 다시 보일 때마다 센다", async ({ page }) => {
+    await page.goto("/places");
+    const placeLink = page.getByRole("main").getByRole("link", { name: new RegExp(SAMPLE_PLACE.name) });
+    await placeLink.click();
+    await expect(page).toHaveURL(SAMPLE_PLACE.path);
+    await expect.poll(() => analyticsEventParams(page, "place_detail_viewed")).toHaveLength(1);
+
+    await page.goBack();
+    await expect(page).toHaveURL("/places");
+    await page.goForward();
+    await expect(page).toHaveURL(SAMPLE_PLACE.path);
+    await expect.poll(() => analyticsEventParams(page, "place_detail_viewed")).toHaveLength(2);
+
+    await page.goBack();
+    await expect(page).toHaveURL("/places");
+    await placeLink.click();
+    await expect(page).toHaveURL(SAMPLE_PLACE.path);
+    await expect.poll(() => analyticsEventParams(page, "place_detail_viewed")).toHaveLength(3);
   });
 
   test("상세를 열고 공식 홈페이지를 누르면 GA 이벤트를 보낸다", async ({ page }) => {

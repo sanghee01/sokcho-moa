@@ -10,11 +10,10 @@ import {
 import { getPublicPlaces } from "@/features/places/queries";
 import { buildActivityCategorySeoTitle, buildActivityListDescription } from "@/features/places/seo";
 import { INDEXABLE_ROBOTS, SITE_NAME, SITE_OPEN_GRAPH_IMAGES, SITE_OPEN_GRAPH_IMAGE_PATH } from "@/lib/seo/site-identity";
-
-export const revalidate = 3600;
+import { withEmptyStaticParam } from "@/lib/static-params";
 
 export async function generateStaticParams() {
-  return listActivityCategories(await getPublicPlaces()).map((category) => ({ category }));
+  return withEmptyStaticParam(listActivityCategories(await getPublicPlaces()).map((category) => ({ category })), "category");
 }
 
 export async function generateMetadata({ params }: PageProps<"/places/category/[category]">): Promise<Metadata> {
