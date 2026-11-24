@@ -37,6 +37,22 @@ AI가 읽는 규칙 문서(`AGENTS.md`)에는 규칙과 한 구절짜리 이유�
 | 동작을 검사하고 구현 세부는 검사하지 않기 | 구현 세부 test는 리팩토링마다 깨지고 실제 버그는 잡지 못함. Google SWE book 12장, Testing Trophy. 화면 배치 예외(가로 넘침, 첫 화면 노출)는 디자인 개편 지침을 정하며 추가 |
 | 권한을 바꾸면 pgTAP에 허용·거부 test | DB 권한은 마지막 방어선이고 RLS 거부는 오류 없이 0행이 됨. [Supabase RLS testing](https://supabase.com/docs/guides/database/postgres/testing-row-level-security) |
 
+### 남길 가치가 있는 test (2026-11-24)
+
+CI의 browser 작업이 11-22부터 계속 실패했다. 가짜 지도 SDK가 실제 배치와 다른 위치를 알려 핀을 누를 수 없었고, 바깥 리조트 누리집을 실제로 연 새 창 test가 CI에서 응답을 기다렸다.
+이어 E2E 171개·unit 73개 파일을 점검해 기능이 깨져도 통과하는 test, 설정값을 그대로 옮긴 test, 다른 test 순서에 기대는 test를 찾았다. 사용자 요청으로 리서치한 기준을 규칙으로 정했다.
+규칙 본문: [tests/AGENTS.md](../../tests/AGENTS.md#남길-가치가-있는-test-2026-11-24).
+
+| 규칙 | 이유와 근거 |
+| --- | --- |
+| 기능이 깨지면 실패하고 리팩토링에는 통과하는 test만 둔다 | 좋은 test의 네 기준 중 "회귀를 잡는 힘"과 "리팩토링 내성"은 둘 다 있어야 가치가 있다. Khorikov, *Unit Testing Principles, Practices, and Patterns* 4장. 구현에 묶인 test는 해로운 변경 감지기가 된다(Google Testing Blog, "Change-Detector Tests Considered Harmful", 2015) |
+| 한 동작은 한 층에서 한 번 | E2E는 느리고 흔들리며 유지 비용이 크다. 논리는 아래 층에서 보고 E2E는 여정만 본다. Google Testing Blog "Just Say No to More End-to-End Tests"(2015), Testing Trophy(Kent C. Dodds) |
+| 우리가 통제하는 것만, 바깥 요청은 막거나 가짜 응답 | Playwright Best Practices "Avoid testing third-party dependencies". 이번 CI 실패의 직접 원인 |
+| 역할·이름으로 찾고 web-first assertion으로 기다림, `waitForTimeout`·`networkidle` 금지 | Playwright Best Practices "Use locators", "Use web first assertions". 고정 대기는 느린 CI에서 흔들린다 |
+| test끼리 독립, DB를 바꾸면 정리 | Playwright Best Practices "Make tests as isolated as possible". 정리하지 않은 관리자 E2E가 쌓여 다른 test의 첫 페이지 가정을 깨뜨릴 수 있었다 |
+| 시각에 기대는 seed는 하루 이상 여유 | seed 날짜가 `db:reset` 시각 기준이라 6시간 뒤 신청 마감 행사 때문에 "진행 중 7개" test가 로컬에서 거짓으로 실패했다(2026-11-24) |
+| flaky는 고치거나 지움 | 재시도로만 통과하는 test는 비용이 크고 신뢰를 낮춘다(Fuchsia testing best practices). 재시도를 늘리면 진짜 회귀도 가려진다 |
+
 ## 화면·스타일 (2026-11-06)
 
 사용자가 디자인 개편 "추천안"을 채택하고 지침 갱신을 지시했습니다. 규칙 본문: [루트 AGENTS.md의 코드 규칙](../../AGENTS.md#코드-규칙), 명세: [.ai/DESIGN.md](../../.ai/DESIGN.md).

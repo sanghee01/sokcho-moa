@@ -7,6 +7,11 @@ import type { Page } from "@playwright/test";
  * playwright.config.ts가 가짜 Client ID로 빌드하므로, 이 파일로 막지 않은 요청은 네이버에서 인증 실패가 난다.
  */
 const FAKE_NAVER_MAPS_SCRIPT = String.raw`(() => {
+  // 마커 상자(몸통 44px, 꼬리까지 높이 49px)와 마커 사이 간격, 지도 안쪽 여백. 아래 flex 배치와 getProjection이 같은 값을 쓴다.
+  const MARKER_BOX_PX = 44;
+  const MARKER_HEIGHT_PX = 49;
+  const MARKER_GAP_PX = 16;
+  const MAP_PADDING_PX = 16;
   class LatLng { constructor(lat, lng) { this._lat = lat; this._lng = lng; } lat() { return this._lat; } lng() { return this._lng; } }
   class LatLngBounds { extend() { return this; } }
   class Point { constructor(x, y) { this.x = x; this.y = y; } }
@@ -21,21 +26,31 @@ const FAKE_NAVER_MAPS_SCRIPT = String.raw`(() => {
       this.listeners = [];
       this.markers = [];
       // 실제 SDK처럼 지도 상자 밖으로 넘친 마커는 자른다(overflow: hidden, use-naver-map.ts 주석). 없으면 마커가 모두 이름표를 단 화면에서 페이지가 가로로 넘쳤다.
-      Object.assign(element.style, { display: "flex", flexWrap: "wrap", justifyContent: "flex-end", alignContent: "flex-start", gap: "16px", padding: "16px", overflow: "hidden" });
+      Object.assign(element.style, { display: "flex", flexWrap: "wrap", justifyContent: "flex-end", alignContent: "flex-start", gap: MARKER_GAP_PX + "px", padding: MAP_PADDING_PX + "px", overflow: "hidden" });
       // 실제 SDK처럼 마커가 아닌 빈 곳을 누르면 click을 알린다(마커 상자 안을 누른 것은 마커 몫이라 알리지 않는다).
       element.addEventListener("click", (domEvent) => {
         if (domEvent.target instanceof Element && domEvent.target.closest("[data-fake-marker]")) return;
         for (const listener of this.listeners) if (listener.name === "click") listener.handler({ pointerEvent: domEvent });
       });
     }
-    // 마커 묶기·장소 이름 배치는 화면 위치로 겹침을 따진다. 가짜 지도는 좌표를 쓰지 않으므로 마커마다 서로 겹치지 않는 고정 자리(만든 순서대로 120px 간격)를 돌려준다.
-    // 예전에는 마커 상자의 화면 위치를 돌려줬는데, 내용이 그려지기 전(폭 0)에 재거나 숨긴 마커(상자 0)를 재면 모두 겹친 것으로 보여
-    // 전체 E2E를 병렬로 돌릴 때 핀이 처음부터 하나로 묶여 남았다. 실제 SDK도 그리기 상태와 상관없이 좌표로 위치를 준다(2026-11-24).
+    // 마커 묶기·장소 이름 배치는 화면 위치로 겹침을 따진다. 가짜 지도는 좌표를 쓰지 않으므로, 위 flex 배치(오른쪽 위부터 줄바꿈)에서
+    // 보이는 마커가 놓일 자리를 계산해 돌려준다. 재지 않고 계산하는 이유: 내용이 그려지기 전(폭 0)이나 숨긴 마커(상자 0)를 재면 모두 겹친 것으로 보여
+    // 전체 E2E를 병렬로 돌릴 때 핀이 처음부터 하나로 묶여 남았다. 실제 SDK도 그리기 상태와 상관없이 좌표로 위치를 준다.
+    // 실제 배치와 다른 자리(예전의 120px 고정 간격)를 알리면 앱이 자리가 넉넉하다고 보고 붙인 이름표가 옆 핀을 덮어 핀을 누를 수 없었다(2026-11-24 CI).
     getProjection() {
       return {
         fromCoordToOffset: (coord) => {
-          const index = this.markers.findIndex((item) => item.position.lat() === coord.lat() && item.position.lng() === coord.lng());
-          return index === -1 ? new Point(0, 0) : new Point(60 + index * 120, 60);
+          // 지도에서 뗀 마커와 숨긴 마커(display: none)는 화면 줄에서 빠지므로 세지 않는다.
+          const visible = this.markers.filter((item) => item.wrapper.isConnected && !item.wrapper.hidden);
+          const index = visible.findIndex((item) => item.position.lat() === coord.lat() && item.position.lng() === coord.lng());
+          if (index === -1) return new Point(0, 0);
+          const step = MARKER_BOX_PX + MARKER_GAP_PX;
+          const perRow = Math.max(1, Math.floor((this.element.clientWidth - MAP_PADDING_PX * 2 + MARKER_GAP_PX) / step));
+          const row = Math.floor(index / perRow);
+          const countInRow = Math.min(perRow, visible.length - row * perRow);
+          const fromRight = countInRow - 1 - (index - row * perRow);
+          const x = this.element.clientWidth - MAP_PADDING_PX - MARKER_BOX_PX / 2 - fromRight * step;
+          return new Point(x, MAP_PADDING_PX + MARKER_HEIGHT_PX + row * (MARKER_HEIGHT_PX + MARKER_GAP_PX));
         },
         fromOffsetToCoord: () => new LatLng(0, 0),
       };

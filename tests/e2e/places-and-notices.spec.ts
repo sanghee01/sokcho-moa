@@ -193,7 +193,10 @@ test.describe("가볼만한 곳", () => {
     await expect.poll(() => analyticsEventParams(page, "place_detail_viewed")).toHaveLength(3);
   });
 
-  test("상세를 열고 공식 홈페이지를 누르면 GA 이벤트를 보낸다", async ({ page }) => {
+  test("상세를 열고 공식 홈페이지를 누르면 GA 이벤트를 보낸다", async ({ context, page }) => {
+    // 새 창이 바깥 사이트를 실제로 열지 않게 막는다. CI(GitHub Actions)에서는 리조트 누리집 응답을 기다리다 새 창 이벤트가 오지 않아
+    // 계속 실패했다(2026-11-24). 행사 상세의 원문 링크 E2E와 같은 방법이다(public-event-flow.spec.ts).
+    await context.route((url) => url.hostname !== "127.0.0.1", (route) => route.abort());
     await page.goto(SAMPLE_PLACE.path);
     await expect.poll(() => analyticsEventParams(page, "place_detail_viewed")).toEqual([
       { place_slug: SAMPLE_PLACE.slug, place_category: SAMPLE_PLACE.category, place_region: "sokcho" },
