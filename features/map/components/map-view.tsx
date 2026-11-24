@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 import Script from "next/script";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
@@ -27,6 +26,7 @@ import { callNaverMapsSafely, getNaverMaps, hasNaverMapsAuthFailed, NAVER_MAPS_S
 import { CLUSTER_EXPAND_MAX_ZOOM, useMapMarkerLayout } from "@/features/map/components/use-map-marker-layout";
 import { useMapMarkers } from "@/features/map/components/use-map-markers";
 import { useNaverMap, type MapStatus, type MapUnavailableReason } from "@/features/map/components/use-naver-map";
+import { useSearchParamsWhileShown } from "@/features/map/components/use-search-params-while-shown";
 import {
   createMapFilter,
   filterEventMapPlaces,
@@ -66,7 +66,8 @@ export function MapView({
   cards: Record<string, ReactNode>;
   clientId: string | null;
 }) {
-  const searchParams = useSearchParams();
+  // 상세에 갔다 오는 동안 숨은 지도가 장소 카드를 지우지 않게, 지도 주소일 때의 값만 쓴다.
+  const searchParams = useSearchParamsWhileShown(isMapPathname);
   const layerParam: MapLayer = searchParams.get("layer") === "places" ? "places" : "events";
   const categoryParam = searchParams.get("category");
   const filter = useMemo(() => createMapFilter(layerParam, categoryParam), [layerParam, categoryParam]);
@@ -374,4 +375,8 @@ function MapNotice({ message, children }: { message: string; children: ReactNode
       {children}
     </div>
   );
+}
+
+function isMapPathname(pathname: string) {
+  return pathname === "/map";
 }

@@ -145,3 +145,21 @@ test("가볼만한 곳 목록에서 상세에 갔다가 돌아오면 목록 이�
   await expect(list.locator("img").first()).toBeAttached();
   expect(await keptListImageRatio(list)).toBe(1);
 });
+
+// 숨은 지도도 지금 주소(상세)의 ?place= 없음을 읽어 장소 카드를 지웠다가, 돌아올 때 새로 그려 포스터가 아이폰에서 깜빡였다(2026-11-24 사용자 피드백).
+test("지도 장소 카드에서 상세에 갔다가 돌아오면 카드 포스터를 새로 그리지 않는다", async ({ page }) => {
+  await routeFakeNaverMaps(page);
+  await page.goto("/map");
+  await page.getByRole("button", { name: /^국립산악박물관, 행사 \d+개$/ }).click();
+  const panel = page.getByRole("region", { name: "국립산악박물관" });
+  await expect(panel.locator("img").first()).toBeAttached();
+  await rememberListImages(page, panel);
+
+  await panel.getByRole("link").first().click();
+  await expect(page).toHaveURL(/\/events\//);
+  await page.getByRole("link", { name: "목록으로 돌아가기" }).first().click();
+
+  await expect(page).toHaveURL(/\/map\?place=/);
+  await expect(panel).toBeVisible();
+  expect(await keptListImageRatio(panel)).toBe(1);
+});

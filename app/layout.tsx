@@ -100,8 +100,10 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
         </a>
         {/* 어느 페이지든 내려도 헤더가 화면 위에 붙어 있다(2026-11-07 사용자 결정). 높이는 globals.css의 --site-header-height와 맞춘다.
             모바일: 로고 | 검색·공지·문의 아이콘, 주요 메뉴는 하단 탭. md 이상: 로고 | 주요 메뉴 | 검색창·공지·문의(2026-11-21 사용자 결정).
-            행사 분야 탭은 헤더에서 행사 목록 안으로 옮겼다. 하단 탭까지 생기면 위아래 고정 영역이 너무 커진다. */}
-        <header className="sticky top-0 z-30 border-b border-line bg-surface">
+            행사 분야 탭은 헤더에서 행사 목록 안으로 옮겼다. 하단 탭까지 생기면 위아래 고정 영역이 너무 커진다.
+            sticky가 아니라 fixed다: iPhone Safari는 상세에서 목록으로 돌아오며 스크롤 위치를 되살릴 때 sticky 헤더를 한 프레임 늦게 옮겨,
+            헤더가 사라지고 그 자리에 목록이 비쳤다. 화면에 고정한 하단 탭은 그러지 않았다(2026-11-24 시뮬레이터 녹화). 본문은 body의 padding-top(globals.css)으로 내린다. */}
+        <header className="fixed inset-x-0 top-0 z-30 border-b border-line bg-surface">
           <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4 sm:px-6 lg:h-18 lg:gap-6">
             {/* placeholder="blur"를 쓰지 않는다. 로고는 바탕이 투명해 흐린 미리보기가 회색 덩어리로 보이고,
                 hydration이 끝날 때까지 글자 뒤에 비쳤다(2026-11-15). */}
