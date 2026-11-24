@@ -68,6 +68,36 @@ test("뒤쪽 분류 페이지에 바로 들어오면 고른 분류 칩이 보인
   await expect.poll(() => isFullyVisibleInRow(selectedChip)).toBe(true);
 });
 
+// 칩 줄 뒤의 inline script가 첫 그리기 전에 민다. React가 붙기 전 상태를 보려고 Next.js 스크립트를 막는다(inline script는 HTML 안에 있어 그대로 돈다).
+test("앱 스크립트를 불러오기 전에도 뒤쪽 분류 칩이 보인다", async ({ page }) => {
+  await openList(page, "/places");
+  const lastHref = await getCategoryNav(page).getByRole("link").last().getAttribute("href");
+  expect(lastHref).toMatch(/^\/places\/category\/[^/?]+$/);
+
+  await page.route("**/_next/static/chunks/**/*.js", (route) => route.abort());
+  await page.goto(lastHref ?? "/places");
+
+  const selectedChip = getCategoryNav(page).locator('[aria-current="page"]');
+  await expect(selectedChip).toHaveAttribute("href", lastHref ?? "");
+  expect(await isFullyVisibleInRow(selectedChip)).toBe(true);
+});
+
+// 칩 줄은 분류를 바꿔도 남아 가로 위치가 그대로다. 누르지 않고 고른 분류가 바뀌면(뒤로 가기, 하단 탭) 고른 칩이 화면 밖에 남으면 안 된다(2026-11-24 리뷰).
+test("뒤쪽 분류를 누른 뒤 뒤로 가면 전체 칩이 보인다", async ({ page }) => {
+  await openList(page, "/places");
+  const lastChip = getCategoryNav(page).getByRole("link").last();
+  await lastChip.scrollIntoViewIfNeeded();
+  await lastChip.click();
+  await expect(page).toHaveURL(/\/places\/category\/[^/]+$/);
+
+  await page.goBack();
+
+  await expect(page).toHaveURL(/\/places$/);
+  const allChip = getCategoryNav(page).getByRole("link", { name: "전체" });
+  await expect(allChip).toHaveAttribute("aria-current", "page");
+  await expect.poll(() => isFullyVisibleInRow(allChip)).toBe(true);
+});
+
 test("뒤쪽 분류에서 상세에 갔다가 돌아오면 고른 분류 칩이 보인다", async ({ page }) => {
   await openList(page, "/places");
   const lastChip = getCategoryNav(page).getByRole("link").last();
