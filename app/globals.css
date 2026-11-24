@@ -241,7 +241,7 @@ body {
 }
 
 /*
- * 가볼만한 곳 목록의 지역 거르기(features/places/components/activity-list-page.tsx, 2026-11-22 사용자 결정).
+ * 가볼만한 곳 목록의 지역 거르기(features/places/components/activity-list-layout.tsx·activity-list-page.tsx, 2026-11-22 사용자 결정).
  * 목록은 장소 값이 거의 바뀌지 않아 미리 만들어 두는 정적 페이지라 서버가 주소의 ?region=을 모른다. 모든 지역의 줄을 그려 두고,
  * 지역 select(data-region-select)에서 고른 값을 보고 다른 지역의 줄(data-region)·분류 묶음과 칩(data-regions)을 숨기고 빈 안내(data-region-empty)를 보인다.
  * 줄의 flex·hidden 같은 유틸리티보다 앞서야 해서 @layer 밖에 둔다.

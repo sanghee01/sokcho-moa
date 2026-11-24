@@ -89,6 +89,7 @@ import합니다. 이 규칙은 `pnpm lint`가 강제합니다(`eslint.config.mjs
 | `/months/[month]/[category]` | 위와 같음, 이번 달·다음 달 × 6분야 미리 생성 | 그 달의 한 분야(헤더 분야 탭). 행사가 없으면 `noindex`. 조회는 `features/events/month-page.ts`를 두 route가 함께 씀 |
 | `/places` | ISR 5분(`revalidate = 3600`이지만 장소 데이터 캐시 5분을 따름) | 즐길거리 목록(`features/places/components/activity-list-page`, `features/places/model/activity.ts`). `places` 가운데 즐길거리 분류(`activity_category`)가 있고 운영을 끝내지 않은 곳만, 분류별로 묶어 보인다. 지역 select는 `?region=goseong|yangyang|all`(없으면 속초)이고, 페이지는 정적이라 모든 지역을 그린 뒤 브라우저가 고른 지역만 남긴다(`features/places/model/region.ts`, `globals.css`의 `data-region-scope`, 2026-11-22). 장소가 없으면 `noindex` |
 | `/places/category/[category]` | 위와 같음, 장소가 있는 분류만 미리 생성 | 한 분류의 목록(지역 select 같음). 모르는 분류와 장소가 없는 분류는 404 |
+| (공통 틀) `app/places/(list)/layout.tsx` | - | `/places`와 `/places/category/[category]`가 함께 쓰는 지역 select·분류 칩 줄과 `main`(`features/places/components/activity-list-layout.tsx`). 분류를 바꿔도 칩 줄을 다시 그리지 않음(2026-11-24). 상세 `/places/[slug]`는 이 틀 밖 |
 | `/places/[slug]` | 위와 같음, 즐길거리 장소 전부 미리 생성 | 즐길거리 상세: 핵심 정보, 공식 홈페이지·예매·길찾기 버튼, 확인일, 근처에서 열리는 행사(`features/events/model/location.ts`의 `selectEventsNearPlace`, 300m 안), 같은 분류의 다른 곳. 분류가 없는 장소는 404 |
 | `/notices`, `/notices/[id]` | ISR 5분, 공개한 공지 전부 미리 생성 | 공지·업데이트 목록과 글 페이지(`features/notices`). 공개하지 않은 글과 uuid가 아닌 주소는 404 |
 | (공통 틀) 공지 띠 | - | `app/layout.tsx`의 `NoticeBanner`가 공개한 지 14일이 지나지 않은 가장 최근 공지 하나를 헤더 아래에 보인다. 공통 틀이 공지 캐시(5분)를 읽으므로 `/report`·`/feedback`·`/privacy`도 정적에서 ISR 5분으로 바뀌었다. 닫은 글은 브라우저(localStorage)에 적고 inline script가 첫 그리기 전에 숨긴다 |

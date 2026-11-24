@@ -59,7 +59,9 @@ export function ActivityPlaceRow({
         {/* 이름이 바로 옆에 글로 있어 대체 텍스트는 비운다(W3C alt 결정 트리: 옆 글과 같은 내용). 화면 아래 줄은 보일 때 불러온다. */}
         {/* 사진이 없는 줄에도 화살표(>)를 두지 않는다. 사진 있는 줄에는 화살표가 없어 줄마다 모양이 달랐고,
             줄 전체가 링크라는 것은 hover 배경과 목록 모양으로 이미 알 수 있다(2026-11-21 사용자 피드백). */}
-        {thumbnailUrl !== null && <Image src={thumbnailUrl} alt="" width={80} height={80} unoptimized loading="lazy" className="size-20 shrink-0 rounded-control bg-surface-muted object-cover" />}
+        {/* decoding="sync": 상세에서 돌아오면 목록 줄이 새로 만들어지는데, next/image 기본값(async)이면 이미 받아 둔 사진도 해독을 기다리지 않고
+            회색 칸부터 그려 깜빡였다. 240px 썸네일이라 줄과 함께 한 번에 그려도 부담이 작다(2026-11-24 사용자 피드백). */}
+        {thumbnailUrl !== null && <Image src={thumbnailUrl} alt="" width={80} height={80} unoptimized loading="lazy" decoding="sync" className="size-20 shrink-0 rounded-control bg-surface-muted object-cover" />}
       </TransitionLink>
     </li>
   );
